@@ -396,8 +396,8 @@ namespace SemWeb.IO {
 			if (str == "@prefix")
 				return PrefixResource;
 			
-			if (str == "@keywords")
-				OnError("The @keywords command is not supported", loc);
+			if (str.StartsWith("@"))
+				OnError("The " + str + " directive is not supported", loc);
 
 			// Standard Keywords
 			// TODO: Turn these off with @keywords
@@ -408,6 +408,8 @@ namespace SemWeb.IO {
 				return context.store.GetResource( "http://www.w3.org/2002/07/owl#sameAs" );
 			if (str == "=>") // ?
 				return context.store.GetResource( "http://www.w3.org/2000/10/swap/log#implies" );
+			if (str == "<=") // ?
+				OnError("The <= predicate is not supported (because I don't know what it translates to)", loc);
 
 			if (str == "has") // ignore this token
 				str = ReadToken(context.source);
@@ -441,6 +443,7 @@ namespace SemWeb.IO {
 			
 			// NUMERIC LITERAL
 			
+			// In Turtle, numbers are restricted to [0-9]+, and are datatyped xsd:integer.
 			double numval;
 			if (double.TryParse(str, System.Globalization.NumberStyles.Any, null, out numval))
 				return new Literal(numval.ToString(), context.store.Model);
@@ -509,7 +512,7 @@ namespace SemWeb.IO {
 					context.store.Add(new Statement(ent, "http://www.w3.org/1999/02/22-rdf-syntax-ns#first", res, context.meta));					
 				}
 				if (ent == null) // No list items.
-					ent = context.store.CreateAnonymousResource();
+					ent = context.store.GetResource("http://www.w3.org/1999/02/22-rdf-syntax-ns#nil"); // according to Turtle spec
 				else
 					context.store.Add(new Statement(ent, "http://www.w3.org/1999/02/22-rdf-syntax-ns#rest", (Entity)"http://www.w3.org/1999/02/22-rdf-syntax-ns#nil", context.meta));
 				return ent;

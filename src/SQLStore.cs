@@ -101,6 +101,37 @@ namespace SemWeb.Stores {
 			RunCommand(cmd.ToString());
 		}
 		
+		public override Entity[] GetAllEntities() {
+			Hashtable h = new Hashtable();
+			foreach (string col in new string[] { "subject", "predicate", "object" }) {
+				IDataReader reader = RunReader("SELECT DISTINCT " + col + " FROM " + table);
+				try {
+					while (reader.Read()) {
+						int id = AsInt(reader[0]);
+						if (id != 0)
+							h[new DBResource(this, id, null, false)] = h;
+					}
+				} finally {
+					reader.Close();
+				}
+			}
+			return (Entity[])new ArrayList(h.Keys).ToArray(typeof(Entity));
+		}
+		
+		public override Entity[] GetAllPredicates() {
+			Hashtable h = new Hashtable();
+			IDataReader reader = RunReader("SELECT DISTINCT predicate FROM " + table);
+			try {
+				while (reader.Read()) {
+					int id = AsInt(reader[0]);
+					h[new DBResource(this, id, null, false)] = h;
+				}
+			} finally {
+				reader.Close();
+			}
+			return (Entity[])new ArrayList(h.Keys).ToArray(typeof(Entity));
+		}
+		
 		public override Entity GetResource(string uri, bool create) {
 			if (uri == null) throw new ArgumentNullException();
 			

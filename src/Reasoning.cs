@@ -19,6 +19,14 @@ namespace SemWeb {
 
 		public override void Clear() { store.Clear(); }
 		
+		public override Entity[] GetAllEntities() {
+			return store.GetAllEntities();
+		}
+		
+		public override Entity[] GetAllPredicates() {
+			return store.GetAllPredicates();
+		}
+			
 		public override Entity GetResource(string uri, bool create) {
 			return store.GetResource(uri, create);
 		}
@@ -38,7 +46,7 @@ namespace SemWeb {
 		public override void Import(RdfParser parser) {
 			store.Import(parser);
 		}
-
+		
 		public sealed override void Select(Statement template, StatementSink result) {
 			// If the template is a full statement (has a subject, predicate,
 			// and object), use the specialized routine to check if the statement
@@ -104,6 +112,7 @@ namespace SemWeb.Reasoning {
 	
 	public class RDFSReasoning : ReasoningEngine {
 		public static readonly Entity rdfType = new Entity("http://www.w3.org/1999/02/22-rdf-syntax-ns#type");
+		public static readonly Entity rdfProperty = new Entity("http://www.w3.org/1999/02/22-rdf-syntax-ns#Property");
 		public static readonly Entity rdfsSubClassOf = new Entity("http://www.w3.org/2000/01/rdf-schema#subClassOf");
 		public static readonly Entity rdfsSubPropertyOf = new Entity("http://www.w3.org/2000/01/rdf-schema#subPropertyOf");
 		public static readonly Entity rdfsDomain = new Entity("http://www.w3.org/2000/01/rdf-schema#domain");
@@ -115,16 +124,20 @@ namespace SemWeb.Reasoning {
 		Hashtable closures = new Hashtable();
 		
 		private class PutInArraySink : StatementSink {
-			bool subject;
+			int spo;
 			ArrayList sink;
 			
-			public PutInArraySink(bool subject, ArrayList sink) {
-				this.subject = subject; this.sink = sink;
+			public PutInArraySink(int spo, ArrayList sink) {
+				this.spo = spo; this.sink = sink;
 			}
 
 			public bool Add(Statement statement) {
-				if (subject) sink.Add(statement.Subject);
-				else if (statement.Object is Entity) sink.Add(statement.Object);
+				object obj = null;
+				if (spo == 0) obj = statement.Subject;
+				else if (spo == 1) obj = statement.Predicate;
+				else if (spo == 2) obj = statement.Object;
+				if (obj is Entity && !sink.Contains(obj))
+					sink.Add(obj);
 				return true;
 			}
 		}
@@ -143,7 +156,7 @@ namespace SemWeb.Reasoning {
 			
 			items = new ArrayList();
 			
-			OWLReasoning.TransitiveSelect(type, type, relation, inverse, source, new PutInArraySink(inverse, items));
+			OWLReasoning.TransitiveSelect(type, type, relation, inverse, source, new PutInArraySink(inverse ? 0 : 2, items));
 			
 			// Everything is a subClassOf rdfs:Resource
 			if (relation == rdfsSubClassOf && !inverse && !items.Contains(rdfsResource))
@@ -227,6 +240,13 @@ namespace SemWeb.Reasoning {
 			if ((template.Predicate.Uri == rdfsDomain || template.Predicate.Uri == rdfsRange) && template.Object != null && template.Object is Entity) {
 				foreach (Entity type in getSuperTypes((Entity)template.Object, source))
 					source.Select(new Statement(template.Subject, template.Predicate, type), result);
+			}
+			
+			// X rdf:type rdf:Property
+			// Return everything that is in the predicate position of a statement
+			if (template.Predicate.Uri == rdfType && template.Object != null && template.Object.Uri != null && template.Object.Uri == rdfProperty) {
+				foreach (Entity predicate in source.GetAllPredicates())
+					result.Add(new Statement(predicate, template.Predicate, template.Object));
 			}
 		}
 

@@ -15,10 +15,6 @@ namespace SemWeb {
 			mainstore = stores;
 		}
 		
-		public KnowledgeModel(Store store) : this() {
-			stores.Add(store);
-		}
-		
 		public KnowledgeModel(RdfParser parser) : this() {
 			stores.Add(new SemWeb.Stores.MemoryStore(parser, this));
 		}
@@ -44,6 +40,10 @@ namespace SemWeb {
 		public override Entity GetResource(string uri, bool create) {
 			return stores.GetResource(uri, create);
 		}
+
+		public override Entity[] GetAllEntities() { return stores.GetAllEntities(); }
+		
+		public override Entity[] GetAllPredicates() { return stores.GetAllPredicates(); }
 		
 		public override void Select(Statement template, StatementSink result) {
 			mainstore.Select(template, result);

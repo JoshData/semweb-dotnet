@@ -8,13 +8,18 @@ namespace SemWeb {
 		
 		Hashtable anonymousNodes = new Hashtable();
 		
-		protected static TextWriter GetWriter(string dest) {
+		internal static TextWriter GetWriter(string dest) {
 			if (dest == "-")
 				return Console.Out;
 			return new StreamWriter(dest);
 		}
 		
-		public bool Add(Statement statement) {
+		bool StatementSink.Add(Statement statement) {
+			Add(statement);
+			return true;
+		}
+		
+		public void Add(Statement statement) {
 			if (statement.AnyNull)
 				throw new ArgumentNullException();
 			
@@ -28,8 +33,6 @@ namespace SemWeb {
 				string o = getUri((Entity)statement.Object);
 				WriteStatement(s, p, o);
 			}
-			
-			return true;
 		}
 		
 		private string getUri(Entity e) {

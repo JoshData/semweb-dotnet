@@ -64,6 +64,24 @@ namespace SemWeb.Stores {
 			GetIndexArray(statementsAboutObject, statement.Object).Remove(statement);
 		}
 		
+		public override Entity[] GetAllEntities() {
+			Hashtable h = new Hashtable();
+			foreach (Statement s in Statements) {
+				h[s.Subject] = h;
+				h[s.Predicate] = h;
+				if (s.Object is Entity) h[s.Object] = h;
+				if (s.Meta != null) h[s.Meta] = h;
+			}
+			return (Entity[])new ArrayList(h.Keys).ToArray(typeof(Entity));
+		}
+		
+		public override Entity[] GetAllPredicates() {
+			Hashtable h = new Hashtable();
+			foreach (Statement s in Statements)
+				h[s.Predicate] = h;
+			return (Entity[])new ArrayList(h.Keys).ToArray(typeof(Entity));
+		}
+
 		public override Entity GetResource(string uri, bool create) {
 			Entity ret = (Entity)uriToResource[uri];
 			if (ret == null && create) {

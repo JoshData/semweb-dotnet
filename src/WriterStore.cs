@@ -60,6 +60,14 @@ namespace SemWeb.Stores {
 			}
 		}
 		
+		public override Entity[] GetAllEntities() {
+			throw new InvalidOperationException();
+		}
+		
+		public override Entity[] GetAllPredicates() {
+			throw new InvalidOperationException();
+		}
+			
 		public override bool Contains(Statement statement) {
 			throw new InvalidOperationException();
 		}

@@ -31,8 +31,7 @@ namespace SemWeb.Query {
 		
 		Hashtable variableHash = new Hashtable();
 		VariableBinding[] initialBindings;
-		IList[,] predicateFilters;
-		MemoryStore[,][] predicateFilterPreCache;
+		ArrayList[] predicateFilters;
 		ArrayList[] valueFilters;
 		ArrayList[] variablesDistinct;
 		VariableNode rootVariable;			
@@ -40,7 +39,13 @@ namespace SemWeb.Query {
 		int start = -1;
 		int limit = -1;
 		
+		public int ReturnStart { get { return start; } set { start = value; } }
+		
+		public int ReturnLimit { get { return limit; } set { limit = value; } }
+		
 		private class VariableNode {
+			public RSquary RSquary;
+			
 			public Resource Variable;
 			public int BindingIndex;
 			
@@ -49,9 +54,6 @@ namespace SemWeb.Query {
 			public VariableNode Parent = null;
 			public ArrayList Children = new ArrayList();
 
-			public Set parentAlternatives;
-			public Hashtable predicateFilterCache = new Hashtable();
-			
 			public bool NoSelect;
 			public int Depth;
 			
@@ -89,6 +91,7 @@ namespace SemWeb.Query {
 				Children.Sort(new ChildComparer());
 				foreach (VariableNode child in Children)
 					child.SortChildren();
+				RSquary.predicateFilters[BindingIndex].Sort(new FilterComparer(this));
 			}
 			
 			private class ChildComparer : IComparer {
@@ -102,6 +105,24 @@ namespace SemWeb.Query {
 				}
 			}
 			
+			private class FilterComparer : IComparer {
+				VariableNode node;
+				public FilterComparer(VariableNode node) { this.node = node; }
+				public int Compare(object a, object b) {
+					return -Order((Statement)a).CompareTo(Order((Statement)b));
+				}
+				int Order(Statement s) {
+					return Order(s.Subject) + Order(s.Predicate) + Order(s.Object);
+				}
+				int Order(Resource r) {
+					if (r == node.Variable) return 0;
+					if (r is Literal) return 1; // literals are always constant
+					if (!node.RSquary.variableHash.ContainsKey(r)) return 1; // constant
+					if (node.Sees((VariableNode)node.RSquary.variableHash[r])) return 1;
+					return 0;
+				}
+			}
+
 			public void Dump() { Dump(""); }
 			public void Dump(string indent) {
 				Console.Write(indent + Variable);
@@ -173,10 +194,9 @@ namespace SemWeb.Query {
 			
 			// Get a list of all statements about each variable.
 			
-			predicateFilters = new ArrayList[initialBindings.Length,2];
+			predicateFilters = new ArrayList[initialBindings.Length];
 			valueFilters = new ArrayList[initialBindings.Length];
 			variablesDistinct = new ArrayList[initialBindings.Length];
-			predicateFilterPreCache = new MemoryStore[initialBindings.Length,2][];			
 			
 			int[] constantFilters = new int[initialBindings.Length];
 			
@@ -184,28 +204,29 @@ namespace SemWeb.Query {
 				Entity variable = initialBindings[i].Variable;
 
 				valueFilters[i] = new ArrayList();
+
+				predicateFilters[i] = new ArrayList();
 				
 				for (int forward = 0; forward <= 1; forward++) {
-					predicateFilters[i,forward] = model.Select(new Statement((forward==1) ? variable : null, null, (forward==1) ? null : variable)).Statements;
+					IList filters = model.Select(new Statement((forward==1) ? variable : null, null, (forward==1) ? null : variable)).Statements;
 					
 					// Remove any query predicates and value filters
-					for (int z = 0; z < predicateFilters[i,forward].Count; z++) {
-						Statement statement = (Statement)predicateFilters[i,forward][z];
-						
+					foreach (Statement statement in filters) {
 						ValueFilter f = null;
-						if (extraValueFilters != null)
+						if (extraValueFilters != null && statement.Predicate.Uri != null)
 							f = extraValueFilters[statement.Predicate.Uri] as ValueFilter;
-						if (f == null)
+						if (f == null && statement.Predicate.Uri != null)
 							f = ValueFilter.GetValueFilter(statement.Predicate, (forward == 1) ? statement.Object : statement.Subject);
 						
-						if (f != null)
+						if (f != null) {
 							valueFilters[i].Add(f);
-							
-						if (f != null || IsQueryPredicate(statement.Predicate)) {
-							predicateFilters[i,forward].RemoveAt(z);
-							z--;
 							continue;
 						}
+							
+						if (IsQueryPredicate(statement.Predicate))
+							continue;
+						
+						predicateFilters[i].Add(statement);
 						
 						// Increment the count of filters based only on constants.
 						// TODO: Give (inverse) functional properties (in the right direction)
@@ -218,6 +239,8 @@ namespace SemWeb.Query {
 
 				}
 				
+				// Get a list of distict variables from this one
+				
 				variablesDistinct[i] = SymmetricSelect(variable, qDistinctFrom, model);
 			}
 			
@@ -226,6 +249,7 @@ namespace SemWeb.Query {
 			VariableNode[] variableNodes = new VariableNode[initialBindings.Length];
 			for (int v = 0; v < initialBindings.Length; v++) {
 				variableNodes[v] = new VariableNode();
+				variableNodes[v].RSquary = this;
 				variableNodes[v].Variable = initialBindings[v].Variable;
 				variableNodes[v].BindingIndex = v;
 				variableNodes[v].NoSelect = initialBindings[v].var;
@@ -235,16 +259,13 @@ namespace SemWeb.Query {
 			// Find the dependencies among the nodes.
 			
 			for (int v = 0; v < initialBindings.Length; v++) {
-				for (int forward = 0; forward <= 1; forward++) {
-					foreach (Statement s in predicateFilters[v, forward]) {
-						if (variableHash.ContainsKey(s.Predicate))
-							variableNodes[v].Dependencies.Add( variableHash[s.Predicate] );
-						Resource obj = forward == 1 ? s.Object : s.Subject;
-						if (variableHash.ContainsKey(obj))
-							variableNodes[v].Dependencies.Add( variableHash[obj] );
-					}
+				foreach (Statement s in predicateFilters[v]) {
+					if (variableHash.ContainsKey(s.Predicate))
+						variableNodes[v].Dependencies.Add( variableHash[s.Predicate] );
+					Resource obj = (s.Subject == initialBindings[v].Variable) ? s.Object : s.Subject;
+					if (variableHash.ContainsKey(obj))
+						variableNodes[v].Dependencies.Add( variableHash[obj] );
 				}
-				
 			}
 			
 			// Choose a root variable.  This should have the most number of
@@ -345,6 +366,8 @@ namespace SemWeb.Query {
 				
 			rootVariable.SetNoSelectAndDepth();
 			rootVariable.SortChildren();
+			
+			//rootVariable.Dump();
 		}
 		
 		private int GetIntOption(Entity predicate) {
@@ -390,6 +413,7 @@ namespace SemWeb.Query {
 			return ret;
 		}
 
+		/*
 		private Set GetAlternativesSet(Resource ent, VariableNode var, SearchState state, SelectCacheKey key) {
 			if (!(ent is Entity)) return null;
 			if (var.Parent == var) return null;
@@ -402,6 +426,7 @@ namespace SemWeb.Query {
 			
 			return null;
 		}
+		*/
 
 		public void Query(Store target, QueryResultSink sink) {
 			if (start != -1 || limit != -1)
@@ -425,108 +450,117 @@ namespace SemWeb.Query {
 		private bool Recurse(SearchState state, VariableNode node, out bool emittedBinding) {
 			Set resources = null;
 			
-			bool forward = true;
-			while (true) {
-				IList filters = predicateFilters[node.BindingIndex, forward ? 1 : 0];
-				for (int si = 0; si < filters.Count; si++) {
-					Statement s = (Statement)filters[si];
-
-					Entity filterPredicate = (Entity)GetBinding(s.Predicate, node, true, state);
-					Resource filterObject = GetBinding(forward ? s.Object : s.Subject, node, !forward, state);
-
-					Store selectCache = null;
-					if (predicateFilterPreCache[node.BindingIndex, forward ? 1 : 0] != null)
-						selectCache = predicateFilterPreCache[node.BindingIndex, forward ? 1 : 0][si];
-					/*SelectCacheKey selectCacheKey = new SelectCacheKey(s, node);
-					Store selectCache = (MemoryStore)node.Parent.predicateFilterCache[selectCacheKey];
+			foreach (Statement s in predicateFilters[node.BindingIndex]) {
+				Store selectCache = null;
+				/*
+				if (predicateFilterPreCache[node.BindingIndex, forward ? 1 : 0] != null)
+					selectCache = predicateFilterPreCache[node.BindingIndex, forward ? 1 : 0][si];
+				SelectCacheKey selectCacheKey = new SelectCacheKey(s, node);
+				Store selectCache = (MemoryStore)node.Parent.predicateFilterCache[selectCacheKey];
+				
+				if (selectCache == null) {
+					// See if we want to precache results for other alternative
+					// choices of variables for previously selected variables.
+					Set altPred = GetAlternativesSet(s.Predicate, node, state, selectCacheKey);
+					Set altObj = GetAlternativesSet(forward ? s.Object : s.Subject, node, state, selectCacheKey);
 					
-					if (selectCache == null) {
-						// See if we want to precache results for other alternative
-						// choices of variables for previously selected variables.
-						Set altPred = GetAlternativesSet(s.Predicate, node, state, selectCacheKey);
-						Set altObj = GetAlternativesSet(forward ? s.Object : s.Subject, node, state, selectCacheKey);
+					// There are alternatives to precache.
+					if (altPred != null || altObj != null) {
+						// Get sets for the predicate and object.  If there aren't
+						// alternatives for one, use the single target object.
+						Set altPred2 = altPred, altObj2 = altObj;
+						if (altPred2 == null) { altPred2 = new Set(); altPred2.Add(filterPredicate); }
+						if (altObj2 == null) { altObj2 = new Set(); altObj2.Add(filterObject); }
 						
-						// There are alternatives to precache.
-						if (altPred != null || altObj != null) {
-							// Get sets for the predicate and object.  If there aren't
-							// alternatives for one, use the single target object.
-							Set altPred2 = altPred, altObj2 = altObj;
-							if (altPred2 == null) { altPred2 = new Set(); altPred2.Add(filterPredicate); }
-							if (altObj2 == null) { altObj2 = new Set(); altObj2.Add(filterObject); }
-							
-							// Get an array of statements that match the query.
-							ArrayList queries = new ArrayList();
-							foreach (Resource p in altPred2.Items()) {
-								if (!(p is Entity)) continue;
-								foreach (Resource o in altObj2.Items()) {
-									if (!forward && !(o is Entity)) continue;
-									Statement qq = new Statement(forward ? null : (Entity)o, (Entity)p, forward ? o : null);
-									queries.Add(qq);
-								}
+						// Get an array of statements that match the query.
+						ArrayList queries = new ArrayList();
+						foreach (Resource p in altPred2.Items()) {
+							if (!(p is Entity)) continue;
+							foreach (Resource o in altObj2.Items()) {
+								if (!forward && !(o is Entity)) continue;
+								Statement qq = new Statement(forward ? null : (Entity)o, (Entity)p, forward ? o : null);
+								queries.Add(qq);
 							}
-							
-							selectCache = new MemoryStore(null);
-							state.target.Select((Statement[])queries.ToArray(typeof(Statement)), selectCache);
-							
-							node.Parent.predicateFilterCache[selectCacheKey] = selectCache;
 						}
-					}*/
-					
-					Statement q = new Statement(forward ? null : (Entity)filterObject, filterPredicate, forward ? filterObject : null);
-					
-					if (resources == null) {
-						// Select all resources that match this statement
-						// The selection will also apply any value filters for this variable
-						resources = SelectCache(q, forward, state, selectCache, node).Clone();
 						
-						// Apply distinctFrom restrictions to make sure the value of this
-						// variable is not equal to the value of other variables, as specified.
-						foreach (Resource r in variablesDistinct[node.BindingIndex]) {
-							Resource rb = GetBinding(r, node, false, state);
-							if (rb != null) resources.Remove(rb);
+						selectCache = new MemoryStore(null);
+						state.target.Select((Statement[])queries.ToArray(typeof(Statement)), selectCache);
+						
+						node.Parent.predicateFilterCache[selectCacheKey] = selectCache;
+					}
+				}*/
+				
+				int spo;
+				if (s.Subject == node.Variable) spo = 0;
+				else if (s.Predicate == node.Variable) spo = 1;
+				else spo = 2;
+				
+				Statement q = new Statement(
+					spo == 0 ? null : (Entity)GetBinding(s.Subject, node, true, state),
+					spo == 1 ? null : (Entity)GetBinding(s.Predicate, node, true, state),
+					spo == 2 ? null : GetBinding(s.Object, node, false, state));
+				
+				if (resources == null) {
+					// Select all resources that match this statement
+					// The selection will also apply any value filters for this variable
+					resources = SelectCache(q, spo, state, selectCache, node).Clone();
+					
+					// Apply distinctFrom restrictions to make sure the value of this
+					// variable is not equal to the value of other variables, as specified.
+					foreach (Resource r in variablesDistinct[node.BindingIndex]) {
+						Resource rb = GetBinding(r, node, false, state);
+						if (rb != null) resources.Remove(rb);
+					}
+					
+				} else {
+					int nullCount = ((q.Subject == null) ? 1 : 0) + ((q.Predicate == null) ? 1 : 0) + ((q.Object == null) ? 1 : 0);
+					
+					if (nullCount >= 2) {						
+						Store localTarget = state.target;
+
+						// Run a combined select on all of the potential resources.
+						ArrayList queries = new ArrayList();
+						foreach (Resource r in resources.Items()) {
+							if (spo != 2 && !(r is Entity)) continue;
+							
+							Statement q2 = new Statement(
+								spo == 0 ? (Entity)r : (Entity)GetBinding(s.Subject, node, true, state),
+								spo == 1 ? (Entity)r : (Entity)GetBinding(s.Predicate, node, true, state),
+								spo == 2 ? r : GetBinding(s.Object, node, false, state));
+							
+							queries.Add(q2);
+						}
+						
+						MemoryStore result = new MemoryStore(null);
+						state.target.Select((Statement[])queries.ToArray(typeof(Statement)), result);
+						localTarget = result;
+						
+						// Check that each resource matches the filter
+						foreach (Resource r in resources.Items()) {
+							if (spo != 2 && !(r is Entity)) continue;
+							
+							Statement q2 = new Statement(
+								spo == 0 ? (Entity)r : (Entity)GetBinding(s.Subject, node, true, state),
+								spo == 1 ? (Entity)r : (Entity)GetBinding(s.Predicate, node, true, state),
+								spo == 2 ? r : GetBinding(s.Object, node, false, state));
+								
+							if (localTarget.Select(q2).StatementCount == 0)
+								resources.Remove(r);
 						}
 						
 					} else {
-						// Filter out resources that don't match the pattern
-						if (filterPredicate == null || filterObject == null) continue;
+						// Find all items that satisfy the filter, and then intersect the sets.
+						Set filter = SelectCache(q, spo, state, selectCache, null);
 						
-						if (filterObject is Literal) {
-							Store localTarget = state.target;
-
-							// Run a combined select on all of the potential resources.
-							ArrayList queries = new ArrayList();
-							foreach (Resource r in resources.Items()) {
-								if (forward && !(r is Entity)) continue;
-								queries.Add(new Statement(forward ? (Entity)r : (Entity)filterObject, filterPredicate, forward ? filterObject : r));
-							}
-							
-							MemoryStore result = new MemoryStore(null);
-							state.target.Select((Statement[])queries.ToArray(typeof(Statement)), result);
-							localTarget = result;
-							
-							// Check that each resource matches the filter
-							foreach (Resource r in resources.Items()) {
-								if ((forward && !(r is Entity)) || !localTarget.Contains(new Statement(forward ? (Entity)r : (Entity)filterObject, filterPredicate, forward ? filterObject : r)))
-									resources.Remove(r);
-							}
-							
-						} else {
-							// Find all items that satisfy the filter, and then intersect the sets.
-							Set filter = SelectCache(q, forward, state, selectCache, null);
-							
-							// Perform the loop on the items of the smaller set.
-							Set smaller = (filter.Size() < resources.Size()) ? filter : resources;
-							Set larger = (filter.Size() < resources.Size()) ? resources : filter;						
-							foreach (Resource r in smaller.Items())
-								if (!larger.Contains(r))
-									smaller.Remove(r);							
-							resources = smaller;
-						}
+						// Perform the loop on the items of the smaller set.
+						Set smaller = (filter.Size() < resources.Size()) ? filter : resources;
+						Set larger = (filter.Size() < resources.Size()) ? resources : filter;						
+						foreach (Resource r in smaller.Items())
+							if (!larger.Contains(r))
+								smaller.Remove(r);							
+						resources = smaller;
 					}
 				}
-				
-				if (forward) forward = false;
-				else break;
 			}
 			
 			if (resources == null) {
@@ -559,7 +593,7 @@ namespace SemWeb.Query {
 			} if (node.Children.Count == 1) {
 				// The node has one child, so simply recurse into the child.
 				VariableNode child = (VariableNode)node.Children[0];
-				PrecacheSelect(node, resources, child, state);
+				//PrecacheSelect(node, resources, child, state);
 				foreach (Resource r in resources.Items()) {
 					state.bindings[node.BindingIndex].Target = r;
 					
@@ -584,7 +618,7 @@ namespace SemWeb.Query {
 				
 				for (int i = 0; i < node.Children.Count; i++) {
 					VariableNode child = (VariableNode)node.Children[i];
-					PrecacheSelect(node, resources, child, state);
+					//PrecacheSelect(node, resources, child, state);
 					
 					for (int r = 0; r < resourceItems.Count; r++) {
 						if (filteredOut[r]) continue;
@@ -672,6 +706,7 @@ namespace SemWeb.Query {
 			return false;
 		}
 		
+		/*
 		private void PrecacheSelect(VariableNode node, Set resources, VariableNode child, SearchState state) {
 			for (int fwd = 0; fwd <= 1; fwd++) {
 				IList filters = predicateFilters[child.BindingIndex, fwd];
@@ -701,11 +736,12 @@ namespace SemWeb.Query {
 				}					
 			}
 		}
+		*/
 		
 		private ArrayList SymmetricSelect(Entity e, Entity p, Store model) {
 			ArrayList ret = new ArrayList();
-			model.Select(new Statement(e, p, null), new PutInArraySink(false, ret));
-			model.Select(new Statement(null, p, e), new PutInArraySink(true, ret));
+			model.Select(new Statement(e, p, null), new PutInArraySink(2, ret));
+			model.Select(new Statement(null, p, e), new PutInArraySink(0, ret));
 			return ret;
 		}
 		
@@ -724,9 +760,11 @@ namespace SemWeb.Query {
 			}
 		}
 		
-		private Set SelectCache(Statement q, bool forward, SearchState state, Store queryTarget, VariableNode var) {
+		private Set SelectCache(Statement q, int spo, SearchState state, Store queryTarget, VariableNode var) {
 			if (var != null && valueFilters[var.BindingIndex].Count == 0)
 				var = null;
+			
+			//Console.WriteLine(q);
 			
 			//Console.WriteLine((queryTarget == null ? "SQL" : "MEM") + " : " + q + " (" + (var == null ? "no var" : var.Variable.ToString()) + ")");
 			
@@ -738,7 +776,7 @@ namespace SemWeb.Query {
 			Set cached = (Set)state.cachedSelections[key];
 			if (cached == null) {
 				cached = new Set();
-				queryTarget.Select(q, new PutInSet(forward, cached));
+				queryTarget.Select(q, new PutInSet(spo, cached));
 				
 				// Do value filters
 				if (var != null)
@@ -746,6 +784,7 @@ namespace SemWeb.Query {
 							
 				state.cachedSelections[key] = cached;
 			}
+			
 			return cached;
 		}
 		
@@ -762,16 +801,17 @@ namespace SemWeb.Query {
 		
 		private class PutInArraySink : StatementSink {
 			Hashtable seen = new Hashtable();
-			bool subject;
+			int spo;
 			ArrayList sink;
 			
-			public PutInArraySink(bool subject, ArrayList sink) {
-				this.subject = subject; this.sink = sink;
+			public PutInArraySink(int spo, ArrayList sink) {
+				this.spo = spo; this.sink = sink;
 			}
 
 			public bool Add(Statement statement) {
 				Resource r;
-				if (subject) r = statement.Subject;
+				if (spo == 0) r = statement.Subject;
+				else if (spo == 1) r = statement.Predicate;
 				else r = statement.Object;
 				if (!(r.Uri != null || r is Literal) || !seen.ContainsKey(r)) {
 					sink.Add(r);
@@ -783,15 +823,16 @@ namespace SemWeb.Query {
 		}
 		
 		private class PutInSet : StatementSink {
-			bool subject;
+			int spo;
 			Set sink;
 			
-			public PutInSet(bool subject, Set sink) {
-				this.subject = subject; this.sink = sink;
+			public PutInSet(int spo, Set sink) {
+				this.spo = spo; this.sink = sink;
 			}
 
 			public bool Add(Statement statement) {
-				if (subject) sink.Add(statement.Subject);
+				if (spo == 0) sink.Add(statement.Subject);
+				else if (spo == 1) sink.Add(statement.Predicate);
 				else sink.Add(statement.Object);
 				return true;
 			}

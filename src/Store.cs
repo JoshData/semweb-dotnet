@@ -157,6 +157,10 @@ namespace SemWeb {
 			parser.Parse(this);
 		}
 		
+		public abstract Entity[] GetAllEntities();
+		
+		public abstract Entity[] GetAllPredicates();
+		
 		public virtual bool Contains(Statement statement) {
 			StatementExistsSink sink = new StatementExistsSink();
 			Select(statement, sink);
@@ -249,6 +253,22 @@ namespace SemWeb.Stores {
 			return new Entity(uri, Model);
 		}
 		
+		public override Entity[] GetAllEntities() {
+			Hashtable h = new Hashtable();
+			foreach (Store s in stores)
+				foreach (Resource r in s.GetAllEntities())
+					h[r] = h;
+			return (Entity[])new ArrayList(h.Keys).ToArray(typeof(Entity));
+		}
+		
+		public override Entity[] GetAllPredicates() {
+			Hashtable h = new Hashtable();
+			foreach (Store s in stores)
+				foreach (Resource r in s.GetAllPredicates())
+					h[r] = h;
+			return (Entity[])new ArrayList(h.Keys).ToArray(typeof(Entity));
+		}
+
 		public override Entity CreateAnonymousResource() {
 			throw new InvalidOperationException("CreateAnonymousResource is not a valid operation on a MultiStore.");
 		}
