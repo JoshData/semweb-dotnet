@@ -4,8 +4,6 @@ using System.Collections;
 namespace SemWeb {
 	public class WriterStore : Store {
 		RdfWriter writer;
-		Hashtable uriToResource = new Hashtable();
-		Hashtable anons = new Hashtable();
 		long anonId = 0;
 		
 		int ctr = 0;
@@ -27,36 +25,22 @@ namespace SemWeb {
 			ctr++;
 			
 			string subj = statement.Subject.Uri;
-			if (subj == null) {
-				subj = (string)anons[statement.Subject];
-				if (subj == null) {
-					subj = writer.CreateAnonymousNode();
-					anons[statement.Subject] = subj;
-				}
-			}				
+			if (subj == null && statement.Subject is MyAnonymousNode)
+				subj = ((MyAnonymousNode)statement.Subject).writerURI;
+			if (subj == null) return;
 			
 			string pred = statement.Predicate.Uri;
-			if (pred == null) {
-				pred = (string)anons[statement.Predicate];
-				if (pred == null) {
-					pred = writer.CreateAnonymousNode();
-					anons[statement.Predicate] = pred;
-				}
-			}				
+			if (pred == null && statement.Predicate is MyAnonymousNode)
+				pred = ((MyAnonymousNode)statement.Predicate).writerURI;
+			if (pred == null) return;
 
 			if (statement.Object is Literal) {
 				Literal lit = (Literal)statement.Object;
 				writer.WriteStatementLiteral(subj, pred, lit.Value, lit.Language, lit.DataType);
 			} else if (statement.Object.Uri != null) {
-				string obj = statement.Object.Uri;
-				writer.WriteStatement(subj, pred, obj);
-			} else {
-				string obj = (string)anons[statement.Object];
-				if (obj == null) {
-					obj = writer.CreateAnonymousNode();
-					anons[statement.Object] = obj;
-				}
-				writer.WriteStatement(subj, pred, obj);
+				writer.WriteStatement(subj, pred, statement.Object.Uri);
+			} else if (statement.Predicate is MyAnonymousNode) {
+				writer.WriteStatement(subj, pred, ((MyAnonymousNode)statement.Predicate).writerURI);
 			}
 		}
 		
@@ -73,16 +57,16 @@ namespace SemWeb {
 		}
 		
 		public override Entity GetResource(string uri, bool create) {
-			Entity ret = (Entity)uriToResource[uri];
-			if (ret == null && create) {
-				ret = new Entity(uri, Model);
-				uriToResource[uri] = ret;
-			}
-			return ret;
+			return new Entity(uri, Model);
 		}
 		
 		public override Entity CreateAnonymousResource() {
-			return new AnonymousNode(Model);
+			return new MyAnonymousNode(writer.CreateAnonymousNode(), Model);
+		}
+		
+		private class MyAnonymousNode : AnonymousNode {
+			public readonly string writerURI;
+			public MyAnonymousNode(string uri, KnowledgeModel model) : base(model) { this.writerURI = uri; } 
 		}
 	}
 	

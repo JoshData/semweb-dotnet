@@ -132,9 +132,11 @@ namespace SemWeb {
 			ReadWhitespace(source);
 			StringBuilder b = new StringBuilder();
 			int c;
+			bool quoted = false;
 			bool escaped = false;
 			while ((c = source.Read()) != -1) {
-				if (char.IsWhiteSpace((char)c) && b[0] != '\"' && b[0] != '<') break;
+				if (b.Length == 0 && (c == '\"' || c == '<')) quoted = true;
+				else if (quoted && !escaped && (c == '\"' || c == '>')) quoted = false;
 				
 				if (!escaped) {
 					if (c != '\\') b.Append((char)c);
@@ -143,14 +145,11 @@ namespace SemWeb {
 					b.Append((char)c);
 				}
 				 
-				if (!escaped && b.Length > 1 && b[0] == '\"' && c == '\"') break;
-				if (!escaped && b[0] == '<' && c == '>') break;
-				
 				if (escaped) escaped = false;
 				else escaped = (c == '\\');
 				
 				int next = source.Peek();
-				if (b.Length > 1 && !(b[0] == '"' || b[0] == '<') && (next == '.' || next == ',' || next == ';' || next == '['))
+				if (b.Length > 1 && !quoted && (next == '.' || next == ',' || next == ';' || next == '[' || char.IsWhiteSpace((char)next)))
 					break;
 			}
 			//Console.WriteLine(b.ToString());

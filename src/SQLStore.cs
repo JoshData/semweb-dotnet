@@ -171,8 +171,12 @@ namespace SemWeb {
 			}
 		}
 		
-		internal static string Escape(string s) {
-			return s;
+		internal static string Escape(string str) {
+			System.Text.StringBuilder b = new System.Text.StringBuilder(str);
+			b.Replace("\\", "\\\\");
+			b.Replace("\"", "\\\"");
+			b.Replace("\n", "\\n");
+			return b.ToString();
 		}
 
 		class DBResource : Entity {
@@ -251,6 +255,8 @@ namespace SemWeb {
 		
 		NamespaceManager m = new NamespaceManager();
 		
+		string[,] fastmap = new string[3,2];
+		
 		public SQLWriter(string spec) : this(GetWriter("-"), spec) { }
 		
 		public SQLWriter(string file, string tablename) : this(GetWriter(file), tablename) { }
@@ -258,22 +264,23 @@ namespace SemWeb {
 		public SQLWriter(TextWriter writer, string tablename) {
 			this.writer = writer;
 			this.table = tablename;
+			
+			writer.WriteLine("CREATE TABLE `" + table + "` (`subject` int NOT NULL, `predicate` int NOT NULL, `object` int NOT NULL, `literal` blob, `meta` int NOT NULL);");
 		}
 		
 		public override NamespaceManager Namespaces { get { return m; } }
 		
 		public override void WriteStatement(string subj, string pred, string obj) {
-			writer.WriteLine("INSERT INTO {0} VALUES ({1}, {2}, {3}, DEFAULT);", table, ID(subj), ID(pred), ID(obj)); 
+			writer.WriteLine("INSERT INTO {0} VALUES ({1}, {2}, {3}, NULL, 0);", table, ID(subj, 0), ID(pred, 1), ID(obj, 2)); 
 		}
 		
 		public override void WriteStatementLiteral(string subj, string pred, string literal, string literalType, string literalLanguage) {
-			writer.WriteLine("INSERT INTO {0} VALUES ({1}, {2}, 0, \"{3}\");", table, ID(subj), ID(pred), SQLStore.Escape(literal)); 
+			writer.WriteLine("INSERT INTO {0} VALUES ({1}, {2}, 0, \"{3}\", 0);", table, ID(subj, 0), ID(pred, 1), SQLStore.Escape(literal)); 
 		}
 		
 		public override string CreateAnonymousNode() {
 			int id = ++resourcecounter;
 			string uri = "_anon:" + id;
-			resources[uri] = id.ToString();
 			return uri;
 		}
 		
@@ -282,16 +289,35 @@ namespace SemWeb {
 		}
 		
 		public override void Close() {
+			writer.WriteLine("CREATE INDEX subject_index ON " + table + "(subject);");
+			writer.WriteLine("CREATE INDEX predicate_index ON " + table + "(predicate);");
+			writer.WriteLine("CREATE INDEX object_index ON " + table + "(object);");
 			writer.Close();
 		}
 
 		
-		private string ID(string uri) {
-			if (resources.ContainsKey(uri)) return (string)resources[uri];
-			int id = ++resourcecounter;
-			resources[uri] = id.ToString();
-			writer.WriteLine("INSERT INTO {0} VALUES ({1}, 0, 0, \"{2}\";", table, id, SQLStore.Escape(uri));
-			return id.ToString();
+		private string ID(string uri, int x) {
+			if (uri.StartsWith("_anon:")) return uri.Substring(6);
+			
+			// Make this faster when a subject, predicate, or object is repeated.
+			if (fastmap[0,0] != null && uri == fastmap[0, 0]) return fastmap[0, 1];
+			if (fastmap[1,0] != null && uri == fastmap[1, 0]) return fastmap[1, 1];
+			if (fastmap[2,0] != null && uri == fastmap[2, 0]) return fastmap[2, 1];
+			
+			string id;
+			
+			if (resources.ContainsKey(uri)) {
+				id = (string)resources[uri];
+			} else {
+				id = (++resourcecounter).ToString();
+				resources[uri] = id;
+				writer.WriteLine("INSERT INTO {0} VALUES ({1}, 0, 0, \"{2}\", 0);", table, id, SQLStore.Escape(uri));
+			}
+			
+			fastmap[x, 0] = uri;
+			fastmap[x, 1] = id;
+			
+			return id;
 		}
 
 	}
