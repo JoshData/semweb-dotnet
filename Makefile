@@ -1,4 +1,4 @@
-all: bin/test.exe bin/rdfs2cs.exe bin/SemWeb.MySQLStore.dll bin/SemWeb.SqliteStore.dll bin/SemWeb.dll bin/rdfstorage.exe bin/rdfquery.exe doc
+all: bin/test.exe bin/rdfs2cs.exe bin/SemWeb.MySQLStore.dll bin/SemWeb.SqliteStore.dll bin/SemWeb.dll bin/rdfstorage.exe bin/rdfquery.exe
 	
 bin/test.exe: test.cs bin/SemWeb.dll bin/SemWeb.SqliteStore.dll
 	mcs test.cs -out:bin/test.exe \

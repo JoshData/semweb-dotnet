@@ -2,7 +2,7 @@
   <TypeSignature Language="C#" Value="public class KnowledgeModel : SemWeb.Store" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
-    <AssemblyVersion>1.0.1898.28475</AssemblyVersion>
+    <AssemblyVersion>1.0.1899.17598</AssemblyVersion>
   </AssemblyInfo>
   <Base>
     <BaseTypeName>SemWeb.Store</BaseTypeName>
@@ -19,22 +19,11 @@
       <MemberType>Constructor</MemberType>
       <Parameters />
       <Docs>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
+        <summary>Constructs a new empty KnowledgeModel.</summary>
+        <remarks>None.</remarks>
       </Docs>
     </Member>
-    <Member MemberName=".ctor">
-      <MemberSignature Language="C#" Value="public KnowledgeModel (SemWeb.Store store);" />
-      <MemberType>Constructor</MemberType>
-      <Parameters>
-        <Parameter Name="store" Type="SemWeb.Store" />
-      </Parameters>
-      <Docs>
-        <param name="store">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
-      </Docs>
-    </Member>
+    
     <Member MemberName=".ctor">
       <MemberSignature Language="C#" Value="public KnowledgeModel (SemWeb.RdfParser parser);" />
       <MemberType>Constructor</MemberType>
@@ -42,9 +31,9 @@
         <Parameter Name="parser" Type="SemWeb.RdfParser" />
       </Parameters>
       <Docs>
-        <param name="parser">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
+        <param name="parser">A parser containing statements to load into the memory store.</param>
+        <summary>Creates a new KnowledgeModel, adds to it a <see cref="T:SemWeb.Stores.MemoryStore" />, and loads in the statements from the given parser.</summary>
+        <remarks>This is a convenience function.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Add">
@@ -57,9 +46,12 @@
         <Parameter Name="storage" Type="SemWeb.Store" />
       </Parameters>
       <Docs>
-        <param name="storage">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
+        <param name="storage">The store to add into the model.</param>
+        <summary>Adds a store into the KnowledgeModel.</summary>
+        <remarks>
+          <para>The statements in <paramref name="store" /> become available through calls to this KnowledgeModel's select and contains methods.</para>
+
+<para>The store should have been created passing this KnowledgeModel to its constructor so that the store is associated with this KnowledgeModel.</para></remarks>
       </Docs>
     </Member>
     <Member MemberName="AddReasoning">
@@ -72,9 +64,11 @@
         <Parameter Name="engine" Type="SemWeb.ReasoningEngine" />
       </Parameters>
       <Docs>
-        <param name="engine">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
+        <param name="engine">An inference engine.</param>
+        <summary>Adds an inference engine to the KnowledgeModel.</summary>
+        <remarks>
+          <para>Calls to Select and Contains on this KnowledgeModel will reflect the capabilities of the added inference engine.</para>
+<para>Inference engines are executed in the order in which they were added.  The inferences made by a later engine are not available as input to an earlier engine.</para></remarks>
       </Docs>
     </Member>
     <Member MemberName="Storage">
@@ -84,9 +78,11 @@
         <ReturnType>SemWeb.Stores.MultiStore</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
+        <summary>The MultiStore that maintains the list of stores within this KnowledgeModel.</summary>
+        <value>The list of stores within this KnowledgeModel.</value>
+        <remarks>
+          <para>It is safe to manipulate the object returned by this property to change the stores associated with the KnowledgeModel.</para>
+<para>Calls to Contains and Select on the MultiStore reflect the contents of the stores contained in it without the application of the KnowledgeModel's inference engines.</para></remarks>
       </Docs>
     </Member>
     <Member MemberName="Item">
@@ -99,15 +95,18 @@
         <Parameter Name="uri" Type="System.String" />
       </Parameters>
       <Docs>
-        <param name="uri">To be added.</param>
-        <summary>To be added.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
+        <param name="uri">A URI.</param>
+        <summary>Gets the <see cref="T:SemWeb.Entity" /> with the given URI.</summary>
+        <value>The entity from the first store that contains an entity with the given URI.</value>
+        <remarks>None.</remarks>
       </Docs>
     </Member>
   </Members>
   <Docs>
-    <summary>To be added.</summary>
-    <remarks>To be added.</remarks>
+    <summary>A store for combining multiple stores and inference engines.</summary>
+    <remarks>
+      <para>Resources and stores can be associated with KnowledgeModels through their constructors.  Associating a KnowledgeModel is optional, but doing so enables the default accessor of Resources, which allows for easy traversal of the RDF graph.</para>
+
+<para>Associating resources and stores with KnowledgeModels can only be done through their constructors.  But, doing so to stores does not add the store into the KnowledgeModel to make the statements available for calls to <see cref="M:SemWeb.Store.Select(SemWeb.Statement,SemWeb.StatementSink)" />.  <see cref="M:SemWeb.KnowledgeModel.Add(SemWeb.Store)" /> must be called separately.  Likewise, calling <see cref="M:SemWeb.KnowledgeModel.Add(SemWeb.Store)" /> does not change which KnowledgeModel a store is associate with (if any).</para></remarks>
   </Docs>
 </Type>

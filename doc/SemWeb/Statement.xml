@@ -2,7 +2,7 @@
   <TypeSignature Language="C#" Value="public struct Statement" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
-    <AssemblyVersion>1.0.1898.28475</AssemblyVersion>
+    <AssemblyVersion>1.0.1899.17598</AssemblyVersion>
   </AssemblyInfo>
   <Base>
     <BaseTypeName>System.ValueType</BaseTypeName>

@@ -2,7 +2,7 @@
   <TypeSignature Language="C#" Value="public interface StatementSink" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
-    <AssemblyVersion>1.0.1898.28475</AssemblyVersion>
+    <AssemblyVersion>1.0.1899.17598</AssemblyVersion>
   </AssemblyInfo>
   <Interfaces />
   <Members>
@@ -18,7 +18,7 @@
       <Docs>
         <param name="statement">A statement.</param>
         <summary>Called to stream a new statement.</summary>
-        <returns>Return true to signal the caller to discontinue streaming.</returns>
+        <returns>Return <see langword="false" /> to signal the caller to discontinue streaming.  Otherwise, return <see langword="true" />.</returns>
         <remarks>None.</remarks>
       </Docs>
     </Member>

@@ -2,7 +2,7 @@
   <TypeSignature Language="C#" Value="public abstract class RdfParser : System.IDisposable" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
-    <AssemblyVersion>1.0.1898.28475</AssemblyVersion>
+    <AssemblyVersion>1.0.1899.17598</AssemblyVersion>
   </AssemblyInfo>
   <Base>
     <BaseTypeName>System.Object</BaseTypeName>
@@ -18,8 +18,8 @@
       <MemberType>Constructor</MemberType>
       <Parameters />
       <Docs>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
+        <summary>The protected no-arg constructor used by derived classes.</summary>
+        <remarks>None.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Parse">
@@ -32,9 +32,9 @@
         <Parameter Name="storage" Type="SemWeb.Store" />
       </Parameters>
       <Docs>
-        <param name="storage">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
+        <param name="storage">The store into which statements will be added.</param>
+        <summary>Parses the stream into a store.</summary>
+        <remarks>Though this method may be called directly, it is more efficient to use <see cref="M:SemWeb.Store.Import(SemWeb.RdfParser)" /> which prepares the store for receiving many statements at once.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Dispose">
@@ -45,8 +45,8 @@
       </ReturnValue>
       <Parameters />
       <Docs>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
+        <summary>Disposes the parser.</summary>
+        <remarks>The resources associated with the parser are freed.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Create">
@@ -60,11 +60,33 @@
         <Parameter Name="source" Type="System.String" />
       </Parameters>
       <Docs>
-        <param name="type">To be added.</param>
-        <param name="source">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
+        <param name="type">The stream type.</param>
+        <param name="source">The name of the source stream, as a file name, or "-" for standard input.</param>
+        <summary>Creates a parser in the factory paradigm.</summary>
+        <returns>
+          <para>The type of parser returned is given in the following table.</para>
+
+<list type="table">
+  <listheader>
+    <term>
+                <paramref name="type" />
+              </term>
+    <description>Parser</description>
+  </listheader>
+  <item>
+    <term>"xml" or "text/xml"</term>
+    <description>
+                <see cref="T:SemWeb.IO.RdfXmlParser" />
+              </description>
+  </item>
+  <item>
+    <term>"n3" or "text/n3"</term>
+    <description>
+                <see cref="T:SemWeb.IO.N3Parser" />
+              </description>
+  </item>
+</list></returns>
+        <remarks>None.</remarks>
       </Docs>
     </Member>
     
@@ -75,9 +97,9 @@
         <ReturnType>SemWeb.Entity</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
+        <summary>An entity to assign as the meta entity for statements loaded by this parser.</summary>
+        <value>An entity to use for meta information, or <see langword="null" />.</value>
+        <remarks>The value of this property is used as the meta argument in calls to <see cref="C:SemWeb.Statement(SemWeb.Entity,SemWeb.Entity,SemWeb.Resource,SemWeb.Entity)" />.  The use of <see cref="P:SemWeb.Statement.Meta" /> is up to the application.</remarks>
       </Docs>
     </Member>
     <Member MemberName="BaseUri">
@@ -87,14 +109,14 @@
         <ReturnType>System.String</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
+        <summary>The base URI for resolving relative URIs found in the stream.</summary>
+        <value>The base URI for resolving relative URIs found in the stream.  May be, and is initially, <see langword="null" />.  </value>
+        <remarks>When this property is <see langword="null" />, the parser may not be able to parse streams containing relative URIs.</remarks>
       </Docs>
     </Member>
   </Members>
   <Docs>
-    <summary>To be added.</summary>
-    <remarks>To be added.</remarks>
+    <summary>The base class of types that read statements from streams.</summary>
+    <remarks>This is an abstract class. See the classes in <see cref="N:SemWeb.IO" /> for implementations of parsers.</remarks>
   </Docs>
 </Type>

@@ -18,6 +18,15 @@ public class RDFQuery {
 		
 		[Mono.GetOptions.Option("The {format} for variable binding output: simple, sql, or html")]
 		public string format = "simple";
+		
+		[Mono.GetOptions.Option("Use RDFS reasoning.")]
+		public bool rdfs = false;
+
+		[Mono.GetOptions.Option("Use OWL reasoning.")]
+		public bool owl = false;
+
+		[Mono.GetOptions.Option("Maximum number of results to report.")]
+		public int limit = 0;
 	}
 
 	public static void Main(string[] args) {
@@ -52,7 +61,16 @@ public class RDFQuery {
 			model.Add(storage);
 		}
 		
+		if (opts.rdfs) model.AddReasoning(new SemWeb.Reasoning.RDFSReasoning());
+		if (opts.owl) model.AddReasoning(new SemWeb.Reasoning.OWLReasoning());
+		
+		if (opts.limit > 0)
+			query.ReturnLimit = opts.limit;
+		
 		query.Query(model, qs);
+		
+		if (qs is IDisposable)
+			((IDisposable)qs).Dispose();
 	}
 }
 
