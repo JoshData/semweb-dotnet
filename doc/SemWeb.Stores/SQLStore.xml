@@ -1,13 +1,17 @@
 <Type Name="SQLStore" FullName="SemWeb.Stores.SQLStore">
-  <TypeSignature Language="C#" Value="public abstract class SQLStore : SemWeb.Store" />
+  <TypeSignature Language="C#" Value="public abstract class SQLStore : SemWeb.Store, SemWeb.Entity+LazyUriLoader" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
-    <AssemblyVersion>1.0.1902.15879</AssemblyVersion>
+    <AssemblyVersion>1.0.1909.16213</AssemblyVersion>
   </AssemblyInfo>
   <Base>
     <BaseTypeName>SemWeb.Store</BaseTypeName>
   </Base>
-  <Interfaces />
+  <Interfaces>
+    <Interface>
+      <InterfaceName>SemWeb.Entity+LazyUriLoader</InterfaceName>
+    </Interface>
+  </Interfaces>
   <Members>
     <Member MemberName=".ctor">
       <MemberSignature Language="C#" Value="public SQLStore (string table, SemWeb.KnowledgeModel model);" />

@@ -2,7 +2,7 @@
   <TypeSignature Language="C#" Value="public abstract class RdfParser : System.IDisposable" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
-    <AssemblyVersion>1.0.1902.15879</AssemblyVersion>
+    <AssemblyVersion>1.0.1909.16213</AssemblyVersion>
   </AssemblyInfo>
   <Base>
     <BaseTypeName>System.Object</BaseTypeName>
@@ -112,6 +112,21 @@
         <summary>The base URI for resolving relative URIs found in the stream.</summary>
         <value>The base URI for resolving relative URIs found in the stream.  May be, and is initially, <see langword="null" />.  </value>
         <remarks>When this property is <see langword="null" />, the parser may not be able to parse streams containing relative URIs.</remarks>
+      </Docs>
+    </Member>
+  <Member MemberName="OnWarning">
+      <MemberSignature Language="C#" Value="protected void OnWarning (string message);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="message" Type="System.String" />
+      </Parameters>
+      <Docs>
+        <param name="message">To be added.</param>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

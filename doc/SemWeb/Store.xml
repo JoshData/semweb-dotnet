@@ -2,7 +2,7 @@
   <TypeSignature Language="C#" Value="public abstract class Store : SemWeb.StatementSink" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
-    <AssemblyVersion>1.0.1902.15879</AssemblyVersion>
+    <AssemblyVersion>1.0.1909.16213</AssemblyVersion>
   </AssemblyInfo>
   <Base>
     <BaseTypeName>System.Object</BaseTypeName>
@@ -379,6 +379,39 @@
       <Docs>
         <summary>To be added.</summary>
         <returns>To be added.</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+  <Member MemberName="GetResourceKey">
+      <MemberSignature Language="C#" Value="protected object GetResourceKey (SemWeb.Resource resource);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Object</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="resource" Type="SemWeb.Resource" />
+      </Parameters>
+      <Docs>
+        <param name="resource">To be added.</param>
+        <summary>To be added.</summary>
+        <returns>To be added.</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+  <Member MemberName="SetResourceKey">
+      <MemberSignature Language="C#" Value="protected void SetResourceKey (SemWeb.Resource resource, object value);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="resource" Type="SemWeb.Resource" />
+        <Parameter Name="value" Type="System.Object" />
+      </Parameters>
+      <Docs>
+        <param name="resource">To be added.</param>
+        <param name="value">To be added.</param>
+        <summary>To be added.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>

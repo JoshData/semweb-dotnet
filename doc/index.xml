@@ -17,6 +17,7 @@
       <Type Name="Entity" />
       <Type Name="Literal" />
       <Type Name="Statement" />
+      <Type Name="Entity+LazyUriLoader" />
     </Namespace>
     <Namespace Name="SemWeb.Query">
       <Type Name="QueryException" />
@@ -28,6 +29,7 @@
       <Type Name="VariableBinding" />
       <Type Name="ValueFilter" />
       <Type Name="LiteralValueFilter" />
+      <Type Name="XMLQuerySink" />
     </Namespace>
     <Namespace Name="SemWeb.Stores">
       <Type Name="MultiStore" />
@@ -42,7 +44,7 @@
       <Type Name="RdfXmlParser" />
       <Type Name="RdfXmlWriter" />
       <Type Name="AutoPrefixNamespaceManager" />
-      <Type Name="RdfBinaryWriter" />
+      <Type Name="RdfCompactWriter" />
     </Namespace>
     <Namespace Name="SemWeb.Reasoning">
       <Type Name="RDFSReasoning" />
