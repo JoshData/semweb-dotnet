@@ -37,6 +37,9 @@ public class RDFQuery {
 			opts.DoHelp();
 			return;
 		}
+
+		RdfParser queryparser = RdfParser.Create(opts.@in, "-");
+		queryparser.BaseUri = "query://query/#";
 		
 		QueryResultSink qs;
 		if (opts.format == "simple")
@@ -45,16 +48,21 @@ public class RDFQuery {
 			qs = new SQLQuerySink(Console.Out, "rdf");
 		else if (opts.format == "html")
 			qs = new HTMLQuerySink(Console.Out);
+		else if (opts.format == "xml")
+			qs = new SparqlXmlQuerySink(new System.Xml.XmlTextWriter(Console.Out), queryparser.BaseUri);
 		else {
 			Console.Error.WriteLine("Invalid output format.");
 			return;
 		}
 
-		RdfParser queryparser = RdfParser.Create(opts.@in, "-");
-		queryparser.BaseUri = "query://query/#";
 		KnowledgeModel querymodel = new KnowledgeModel(queryparser);
 		
 		RSquary query = new RSquary(querymodel, "query://query/#query");
+		
+		// Make sure the ?abc variables in N3 are considered variables.
+		foreach (Entity var in queryparser.Variables)
+			query.Select(var);
+		
 		KnowledgeModel model = new KnowledgeModel();
 		foreach (string arg in opts.RemainingArguments) {
 			Store storage = Store.CreateForInput(arg, model);

@@ -77,10 +77,14 @@ namespace SemWeb.Stores {
 			throw new InvalidOperationException();
 		}
 		
-		public override void Select(Statement template, StatementSink result) {
+		public override void Select(Statement template, SelectPartialFilter partialFilter, StatementSink result) {
 			throw new InvalidOperationException();
 		}
 		
+		public override void Select(Statement[] templates, SelectPartialFilter partialFilter, StatementSink result) {
+			throw new InvalidOperationException();
+		}
+
 		public override Entity GetResource(string uri, bool create) {
 			return new Entity(uri, Model);
 		}
@@ -89,6 +93,10 @@ namespace SemWeb.Stores {
 			Entity e = new Entity(Model);
 			SetResourceKey(e, writer.CreateAnonymousNode());
 			return e;
+		}
+
+		public override void Replace(Entity a, Entity b) {
+			throw new InvalidOperationException();
 		}
 	}
 	

@@ -77,4 +77,41 @@ namespace SemWeb {
 			return !(a == b);
 		}
 	}
+	
+	public struct SelectPartialFilter {
+		bool s, p, o, m;
+		bool first;
+		
+		public static readonly SelectPartialFilter All = new SelectPartialFilter(true, true, true, true);
+		
+		public SelectPartialFilter(bool subject, bool predicate, bool @object, bool meta) {
+			s = subject;
+			p = predicate;
+			o = @object;
+			m = meta;
+			
+			first = false;
+		}
+		
+		public bool Subject { get { return s; } }
+		public bool Predicate { get { return p; } }
+		public bool Object { get { return o; } }
+		public bool Meta { get { return m; } }
+		
+		public bool SelectAll { get { return s && p && o && m; } }
+		public bool SelectNone { get { return !s && !p && !o && !m; } }
+		
+		public bool SelectFirst { get { return first; } set { first = value; } }
+		
+		public override string ToString() {
+			if (SelectAll) return "All";
+			if (SelectNone) return "None";
+			string ret = "";
+			if (Subject) ret += "S";
+			if (Predicate) ret += "P";
+			if (Object) ret += "O";
+			if (Meta) ret += "M";
+			return ret;
+		}
+	}
 }

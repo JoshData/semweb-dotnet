@@ -4,6 +4,10 @@ using System.Collections;
 using SemWeb;
 
 namespace SemWeb.Query {
+	public abstract class ValueFilterFactory {
+		public abstract ValueFilter GetValueFilter(string predicate, Resource obj);
+	}
+	
 	public abstract class ValueFilter {
 		public static Entity qFilterStringContains = "http://purl.oclc.org/NET/rsquary/string-contains";
 		

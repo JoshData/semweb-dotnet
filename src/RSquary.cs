@@ -14,20 +14,97 @@ namespace SemWeb.Query {
 		}
 	}
 	
-	public class RSquary {
+	public class RSquary : QueryEngine {
 		
 		// TODO: Optional statements
 		// TODO: Grouping and disjunctions
 		
 		public static Entity qSelect = "http://purl.oclc.org/NET/rsquary/select";
-		public static Entity qVariable = "http://purl.oclc.org/NET/rsquary/selectfirst";
+		public static Entity qSelectFirst = "http://purl.oclc.org/NET/rsquary/selectfirst";
 		public static Entity qLimit = "http://purl.oclc.org/NET/rsquary/returnLimit";
 		public static Entity qStart = "http://purl.oclc.org/NET/rsquary/returnStart";
 		public static Entity qDistinctFrom = "http://purl.oclc.org/NET/rsquary/distinctFrom";
 		
-		KnowledgeModel model;
-		MemoryStore store;
-		Entity query;
+		public RSquary(Store queryModel, string queryUri) : this(queryModel, queryUri, null) {
+		}
+		
+		public RSquary(Store queryModel, string queryUri, Hashtable extraValueFilters) {
+			Entity query = queryModel.GetResource(queryUri);
+			
+			// Find the query options
+			ReturnStart = GetIntOption(queryModel, query, qStart);
+			ReturnLimit = GetIntOption(queryModel, query, qLimit);
+
+			// Search the query for 'select' and 'selectfirst' predicates for variables.
+			foreach (Resource r in queryModel.SelectObjects(query, qSelect)) {
+				if (!(r is Entity)) throw new QueryException("Query variables cannot be literals.");
+				Select((Entity)r);
+			}
+			foreach (Resource r in queryModel.SelectObjects(query, qSelectFirst)) {
+				if (!(r is Entity)) throw new QueryException("Query variables cannot be literals.");
+				SelectFirst((Entity)r);
+			}
+			
+			// Search the query for 'distinct' predicates between variables.
+			foreach (Statement s in queryModel.Select(new Statement(null, qDistinctFrom, null))) {
+				if (!(s.Object is Entity)) throw new QueryException("The distinctFrom predicate cannot have a literal as its object.");
+				MakeDistinct(s.Subject, (Entity)s.Object);
+			}
+			
+			// Add all statements except the query predicates and value filters into a
+			// new store with just the statements relevant to the search.
+			Store matchModel = new MemoryStore(null);
+			foreach (Statement s in queryModel.Select(Statement.Empty)) {
+				if (IsQueryPredicate(s.Predicate)) continue;
+				
+				if (s.Predicate.Uri != null && extraValueFilters != null && extraValueFilters.ContainsKey(s.Predicate.Uri)) {
+					ValueFilterFactory f = (ValueFilterFactory)extraValueFilters[s.Predicate.Uri];
+					AddValueFilter(s.Subject, f.GetValueFilter(s.Predicate.Uri, s.Object));
+					continue;
+				} else {
+					ValueFilter f = ValueFilter.GetValueFilter(s.Predicate, s.Object);
+					if (f != null) {
+						AddValueFilter(s.Subject, f);
+					}
+				}
+				
+				matchModel.Add(s);
+			}
+			
+			SetGraph(matchModel);
+		}
+		
+		private int GetIntOption(Store queryModel, Entity query, Entity predicate) {
+			Resource[] rr = queryModel.SelectObjects(query, predicate);
+			if (rr.Length == 0) return -1;
+			Resource r = rr[0];
+			if (r == null || !(r is Literal)) return -1;
+			try {
+				return int.Parse(((Literal)r).Value);
+			} catch (Exception e) {
+				throw new QueryException("Invalid integer value for <" + predicate + ">, '" + ((Literal)r).Value + "'.", e);
+			}
+		}		
+
+		private bool IsQueryPredicate(Entity e) {
+			if (e == qSelect) return true;
+			if (e == qSelectFirst) return true;
+			if (e == qDistinctFrom) return true;
+			if (e == qLimit) return true;
+			if (e == qStart) return true;
+			return false;
+		}
+	}
+	
+	public class QueryEngine {
+		MemoryStore model;
+		
+		ArrayList setupVariablesSelect = new ArrayList();
+		ArrayList setupVariablesSelectFirst = new ArrayList();
+		ArrayList setupVariablesDistinct = new ArrayList();
+		ArrayList setupValueFilters = new ArrayList();
+		
+		bool setup = false;
 		
 		Hashtable variableHash = new Hashtable();
 		VariableBinding[] initialBindings;
@@ -39,12 +116,54 @@ namespace SemWeb.Query {
 		int start = -1;
 		int limit = -1;
 		
+		public void Select(Entity entity) {
+			SelectInternal(entity, setupVariablesSelect);
+		}
+		
+		public void SelectFirst(Entity entity) {
+			SelectInternal(entity, setupVariablesSelectFirst);
+		}
+
+		private void SelectInternal(Entity entity, ArrayList list) {
+			if (entity.Uri == null) throw new QueryException("Anonymous nodes are automatically considered variables.");
+			if (setupVariablesSelect.Contains(entity) || setupVariablesSelectFirst.Contains(entity)) return;
+			list.Add(entity);
+		}
+
+		public void MakeDistinct(Entity a, Entity b) {
+			SetupVariablesDistinct d = new SetupVariablesDistinct();
+			d.a = a;
+			d.b = b;
+			setupVariablesDistinct.Add(d);
+		}
+		
+		public void AddValueFilter(Entity entity, ValueFilter filter) {
+			SetupValueFilter d = new SetupValueFilter();
+			d.a = entity;
+			d.b = filter;
+			setupValueFilters.Add(d);
+		}
+
+		public void SetGraph(Store graph) {
+			if (model != null) throw new ArgumentException("A graph has already been set for this query.");
+			model = new MemoryStore(null);
+			model.Import(graph);
+		}
+		
 		public int ReturnStart { get { return start; } set { start = value; } }
 		
 		public int ReturnLimit { get { return limit; } set { limit = value; } }
 		
+		private class SetupVariablesDistinct {
+			public Entity a, b;
+		}
+		private class SetupValueFilter {
+			public Entity a;
+			public ValueFilter b;
+		}
+		
 		private class VariableNode {
-			public RSquary RSquary;
+			public QueryEngine Engine;
 			
 			public Resource Variable;
 			public int BindingIndex;
@@ -56,6 +175,15 @@ namespace SemWeb.Query {
 
 			public bool NoSelect;
 			public int Depth;
+			
+			public Set Alternatives;
+			public Hashtable PreCache = new Hashtable();		
+			
+			public bool ValueNotImportant {
+				get {
+					return Variable.Uri == null && Children.Count == 0;
+				}
+			}
 			
 			public bool Sees(VariableNode dependency) {
 				if (this == dependency) return true;
@@ -91,7 +219,18 @@ namespace SemWeb.Query {
 				Children.Sort(new ChildComparer());
 				foreach (VariableNode child in Children)
 					child.SortChildren();
-				RSquary.predicateFilters[BindingIndex].Sort(new FilterComparer(this));
+				Engine.predicateFilters[BindingIndex].Sort(new FilterComparer(this));
+			}
+			
+			public void PruneAnonymousLeaves() {
+				for (int i = 0; i < Children.Count; i++) {
+					VariableNode child = (VariableNode)Children[i];
+					child.PruneAnonymousLeaves();
+					if (child.ValueNotImportant) {
+						Children.RemoveAt(i);
+						i--;
+					}					
+				}				
 			}
 			
 			private class ChildComparer : IComparer {
@@ -117,18 +256,18 @@ namespace SemWeb.Query {
 				int Order(Resource r) {
 					if (r == node.Variable) return 0;
 					if (r is Literal) return 1; // literals are always constant
-					if (!node.RSquary.variableHash.ContainsKey(r)) return 1; // constant
-					if (node.Sees((VariableNode)node.RSquary.variableHash[r])) return 1;
+					if (!node.Engine.variableHash.ContainsKey(r)) return 1; // constant
+					if (node.Sees((VariableNode)node.Engine.variableHash[r])) return 1;
 					return 0;
 				}
 			}
 
 			public void Dump() { Dump(""); }
 			public void Dump(string indent) {
-				Console.Write(indent + Variable);
+				Console.Error.Write(indent + Variable);
 				if (NoSelect)
-					Console.Write(" NoSelect");
-				Console.WriteLine();
+					Console.Error.Write(" NoSelect");
+				Console.Error.WriteLine();
 				foreach (VariableNode child in Children)
 					child.Dump(indent + " ");
 			}
@@ -142,45 +281,22 @@ namespace SemWeb.Query {
 			public Hashtable targetQueryObject = new Hashtable();
 		}	
 		
-		private bool IsQueryPredicate(Entity e) {
-			if (e == qSelect) return true;
-			if (e == qVariable) return true;
-			if (e == qDistinctFrom) return true;
-			if (e == qLimit) return true;
-			if (e == qStart) return true;
-			return false;
-		}
-		
-		public RSquary(Store queryModel, string queryUri) : this(queryModel, queryUri, null) {
-		}
-		
-		public RSquary(Store queryModel, string queryUri, Hashtable extraValueFilters) {			
-			model = new KnowledgeModel();
-			
-			store = new MemoryStore(model);
-			model.Add(store);
-			store.Import(queryModel);
-			
-			query = model.GetResource(queryUri);
 
-			start = GetIntOption(qStart);
-			limit = GetIntOption(qLimit);
-			
-			// Get the list of variables
+		private void SetUp() {
+			if (setup) return;
+			setup = true;
 			
 			ArrayList variables = new ArrayList();
-			foreach (Resource r in query[qSelect]) {
-				if (!(r is Entity)) throw new QueryException("Query variables cannot be literals.");
-				variables.Add(new VariableBinding((Entity)r, null, false));
-			}
-			foreach (Resource r in query[qVariable]) {
-				if (!(r is Entity)) throw new QueryException("Query variables cannot be literals.");
-				variables.Add(new VariableBinding((Entity)r, null, true));
-			}
 			
-			// And all anonymous nodes in the graph (is this a good idea?)
+			// Get the list of variables			
+			foreach (Entity v in setupVariablesSelect)
+				variables.Add(new VariableBinding(v, null, false));
+			foreach (Entity v in setupVariablesSelectFirst)
+				variables.Add(new VariableBinding(v, null, true));
+			
+			// And all anonymous nodes in the graph
 			Hashtable seenAnonNodes = new Hashtable();
-			foreach (Statement s in queryModel.Select(Statement.Empty)) {
+			foreach (Statement s in model.Select(Statement.Empty)) {
 				foreach (Resource r in new Resource[] { s.Subject, s.Predicate, s.Object }) {
 					if (r.Uri != null || !(r is Entity) || seenAnonNodes.ContainsKey(r)) continue;
 					seenAnonNodes[r] = r;
@@ -204,45 +320,44 @@ namespace SemWeb.Query {
 			for (int i = 0; i < initialBindings.Length; i++) {
 				Entity variable = initialBindings[i].Variable;
 
-				valueFilters[i] = new ArrayList();
-
 				predicateFilters[i] = new ArrayList();
 				
-				for (int forward = 0; forward <= 1; forward++) {
-					IList filters = model.Select(new Statement((forward==1) ? variable : null, null, (forward==1) ? null : variable)).Statements;
+				for (int spo = 0; spo <= 2; spo++) {
+					IList filters = model.Select(new Statement(
+						spo == 0 ? variable : null,
+						spo == 1 ? variable : null,
+						spo == 2 ? variable : null)).Statements;
 					
-					// Remove any query predicates and value filters
 					foreach (Statement statement in filters) {
-						ValueFilter f = null;
-						if (extraValueFilters != null && statement.Predicate.Uri != null)
-							f = extraValueFilters[statement.Predicate.Uri] as ValueFilter;
-						if (f == null && statement.Predicate.Uri != null)
-							f = ValueFilter.GetValueFilter(statement.Predicate, (forward == 1) ? statement.Object : statement.Subject);
-						
-						if (f != null) {
-							valueFilters[i].Add(f);
-							continue;
-						}
-							
-						if (IsQueryPredicate(statement.Predicate))
-							continue;
-						
 						predicateFilters[i].Add(statement);
 						
 						// Increment the count of filters based only on constants.
+						if (spo == 0 && !variableHash.ContainsKey(statement.Predicate) && !variableHash.ContainsKey(statement.Object))
+							constantFilters[i]++;
+						if (spo == 1 && !variableHash.ContainsKey(statement.Subject) && !variableHash.ContainsKey(statement.Object))
+							constantFilters[i]++;
+						if (spo == 2 && !variableHash.ContainsKey(statement.Subject) && !variableHash.ContainsKey(statement.Predicate))
+							constantFilters[i]++;
+						
 						// TODO: Give (inverse) functional properties (in the right direction)
 						// an advantage, since they essentially turn a variable into a constant.
-						// TODO: Give a disadvantage to nodes that have functional properties
-						// going in the wrong direction.
-						if (!variableHash.ContainsKey(statement.Predicate) && (forward == 1 ? !variableHash.ContainsKey(statement.Object) : !variableHash.ContainsKey(statement.Subject)))
-							constantFilters[i]++;
 					}
 
 				}
 				
 				// Get a list of distict variables from this one
 				
-				variablesDistinct[i] = SymmetricSelect(variable, qDistinctFrom, model);
+				variablesDistinct[i] = new ArrayList();
+				foreach (SetupVariablesDistinct d in setupVariablesDistinct) {
+					if (d.a == variable) variablesDistinct[i].Add(d.b);
+					if (d.b == variable) variablesDistinct[i].Add(d.a);
+				}
+				
+				// Get a list of predicate filters for this one
+				valueFilters[i] = new ArrayList();
+				foreach (SetupValueFilter d in setupValueFilters) {
+					if (d.a == variable) valueFilters[i].Add(d.b);
+				}
 			}
 			
 			// Create variable nodes for each variable.
@@ -250,7 +365,7 @@ namespace SemWeb.Query {
 			VariableNode[] variableNodes = new VariableNode[initialBindings.Length];
 			for (int v = 0; v < initialBindings.Length; v++) {
 				variableNodes[v] = new VariableNode();
-				variableNodes[v].RSquary = this;
+				variableNodes[v].Engine = this;
 				variableNodes[v].Variable = initialBindings[v].Variable;
 				variableNodes[v].BindingIndex = v;
 				variableNodes[v].NoSelect = initialBindings[v].var;
@@ -261,11 +376,12 @@ namespace SemWeb.Query {
 			
 			for (int v = 0; v < initialBindings.Length; v++) {
 				foreach (Statement s in predicateFilters[v]) {
-					if (variableHash.ContainsKey(s.Predicate))
+					if (s.Subject != initialBindings[v].Variable && variableHash.ContainsKey(s.Subject))
+						variableNodes[v].Dependencies.Add( variableHash[s.Subject] );
+					if (s.Predicate != initialBindings[v].Variable && variableHash.ContainsKey(s.Predicate))
 						variableNodes[v].Dependencies.Add( variableHash[s.Predicate] );
-					Resource obj = (s.Subject == initialBindings[v].Variable) ? s.Object : s.Subject;
-					if (variableHash.ContainsKey(obj))
-						variableNodes[v].Dependencies.Add( variableHash[obj] );
+					if (s.Object != initialBindings[v].Variable && variableHash.ContainsKey(s.Object))
+						variableNodes[v].Dependencies.Add( variableHash[s.Object] );
 				}
 			}
 			
@@ -282,8 +398,13 @@ namespace SemWeb.Query {
 					 && initialBindings[rootVariable.BindingIndex].var && !initialBindings[v.BindingIndex].var)
 					rootVariable = v;
 			}
-			if (rootVariable == null)
-				throw new QueryException("No variables have any relations to the target model.");
+			if (rootVariable == null) {
+				// No variables had any anchoring in the target model.
+				// Root the tree on an arbitrary variable.
+				rootVariable = variableNodes[0];
+			}
+			
+			// Signifies the root node.
 			rootVariable.Parent = rootVariable;
 			
 			// Hook the remaining variables into the tree somewhere
@@ -296,9 +417,7 @@ namespace SemWeb.Query {
 				
 				// TODO: Prioritize variables that are determined
 				// through functional properties from variables on
-				// the tree, and deprioritize variables that could
-				// be determined that way but the dependency isn't
-				// on the tree yet.
+				// the tree.
 				
 				VariableNode node = null;
 				int dc = -1;
@@ -311,7 +430,10 @@ namespace SemWeb.Query {
 							c++;
 					
 					if (node == null || c > dc) { node = n; dc = c; continue; }
-					if (c == dc && initialBindings[node.BindingIndex].var && !initialBindings[n.BindingIndex].var) { node = n; dc = c; continue; }
+					if (c == dc && ( 
+						(initialBindings[node.BindingIndex].var && !initialBindings[n.BindingIndex].var)
+						|| (constantFilters[node.BindingIndex] < constantFilters[n.BindingIndex])
+						)) { node = n; dc = c; continue; }
 				}
 				
 				// Find a place for this variable on the tree.  Place
@@ -365,22 +487,21 @@ namespace SemWeb.Query {
 				if (v.Parent != v)
 					v.Parent.Children.Add(v);
 				
+			// Determine which children
 			rootVariable.SetNoSelectAndDepth();
+			
+			// Sort the order of children.  Children dependent through
+			// functional properties (TODO), and children marked as
+			// SelectFirst go first, because they will have one result,
+			// which makes permutations on later children faster.  Children
+			// heading shorter trees go first, but I don't remember why.
 			rootVariable.SortChildren();
 			
+			// Anonymous nodes at the leaves of the dependency tree are
+			// irrelevant. Prune them off.
+			rootVariable.PruneAnonymousLeaves();
+			
 			//rootVariable.Dump();
-		}
-		
-		private int GetIntOption(Entity predicate) {
-			Resource[] rr = query[predicate];
-			if (rr.Length == 0) return -1;
-			Resource r = rr[0];
-			if (r == null || !(r is Literal)) return -1;
-			try {
-				return int.Parse(((Literal)r).Value);
-			} catch (Exception e) {
-				throw new QueryException("Invalid integer value for <" + predicate + ">, '" + ((Literal)r).Value + "'.", e);
-			}
 		}
 		
 		private Resource GetBinding(Resource ent, VariableNode currentNode, bool reqEntity, SearchState state) {
@@ -414,22 +535,26 @@ namespace SemWeb.Query {
 			return ret;
 		}
 
-		/*
-		private Set GetAlternativesSet(Resource ent, VariableNode var, SearchState state, SelectCacheKey key) {
-			if (!(ent is Entity)) return null;
-			if (var.Parent == var) return null;
-			
-			if (state.bindings[var.Parent.BindingIndex].Variable.Equals(ent)) {
-				if (var.Parent.parentAlternatives != null && var.Parent.parentAlternatives.Size() > 1)
-					return var.Parent.parentAlternatives;
-				return null;
+		private bool GetAlternativesSet(Resource ent, VariableNode currentNode, out VariableNode outNode, out Set outSet) {
+			if (variableHash.ContainsKey(ent)) {
+				while (currentNode.Parent != currentNode) {
+					currentNode = currentNode.Parent;
+					if (currentNode.Variable.Equals(ent)) {
+						outNode = currentNode;
+						outSet = currentNode.Alternatives;
+						return true;
+					}
+				}
 			}
 			
-			return null;
+			outNode = null;
+			outSet = null;
+			return false;
 		}
-		*/
 
 		public void Query(Store target, QueryResultSink sink) {
+			SetUp();
+			
 			if (start != -1 || limit != -1)
 				sink = new StartLimitSink(start, limit, sink);
 			
@@ -438,8 +563,16 @@ namespace SemWeb.Query {
 			state.sink = sink;
 			state.bindings = (VariableBinding[])initialBindings.Clone();
 			
+			// Send the query sink the list of variables.
+			Entity[] varList = new Entity[initialBindings.Length];
+			for (int i = 0; i < initialBindings.Length; i++)
+				varList[i] = initialBindings[i].Variable;
+			sink.Init(varList);
+			
 			bool emittedBinding;			
 			Recurse(state, rootVariable, out emittedBinding);
+			
+			sink.Finished();
 		}
 		
 		public bool Test(Store target) {
@@ -451,45 +584,10 @@ namespace SemWeb.Query {
 		private bool Recurse(SearchState state, VariableNode node, out bool emittedBinding) {
 			Set resources = null;
 			
-			foreach (Statement s in predicateFilters[node.BindingIndex]) {
-				Store selectCache = null;
-				/*
-				if (predicateFilterPreCache[node.BindingIndex, forward ? 1 : 0] != null)
-					selectCache = predicateFilterPreCache[node.BindingIndex, forward ? 1 : 0][si];
-				SelectCacheKey selectCacheKey = new SelectCacheKey(s, node);
-				Store selectCache = (MemoryStore)node.Parent.predicateFilterCache[selectCacheKey];
+			for (int sIndex = 0; sIndex < predicateFilters[node.BindingIndex].Count; sIndex++) { 
+				Statement s = (Statement)predicateFilters[node.BindingIndex][sIndex];
 				
-				if (selectCache == null) {
-					// See if we want to precache results for other alternative
-					// choices of variables for previously selected variables.
-					Set altPred = GetAlternativesSet(s.Predicate, node, state, selectCacheKey);
-					Set altObj = GetAlternativesSet(forward ? s.Object : s.Subject, node, state, selectCacheKey);
-					
-					// There are alternatives to precache.
-					if (altPred != null || altObj != null) {
-						// Get sets for the predicate and object.  If there aren't
-						// alternatives for one, use the single target object.
-						Set altPred2 = altPred, altObj2 = altObj;
-						if (altPred2 == null) { altPred2 = new Set(); altPred2.Add(filterPredicate); }
-						if (altObj2 == null) { altObj2 = new Set(); altObj2.Add(filterObject); }
-						
-						// Get an array of statements that match the query.
-						ArrayList queries = new ArrayList();
-						foreach (Resource p in altPred2.Items()) {
-							if (!(p is Entity)) continue;
-							foreach (Resource o in altObj2.Items()) {
-								if (!forward && !(o is Entity)) continue;
-								Statement qq = new Statement(forward ? null : (Entity)o, (Entity)p, forward ? o : null);
-								queries.Add(qq);
-							}
-						}
-						
-						selectCache = new MemoryStore(null);
-						state.target.Select((Statement[])queries.ToArray(typeof(Statement)), selectCache);
-						
-						node.Parent.predicateFilterCache[selectCacheKey] = selectCache;
-					}
-				}*/
+				Store selectCache = null;
 				
 				int spo;
 				if (s.Subject == node.Variable) spo = 0;
@@ -502,9 +600,36 @@ namespace SemWeb.Query {
 					spo == 2 ? null : GetBinding(s.Object, node, false, state));
 				
 				if (resources == null) {
-					// Select all resources that match this statement
-					// The selection will also apply any value filters for this variable
-					resources = SelectCache(q, spo, state, selectCache, node).Clone();
+					if (spo == 2 && node.NoSelect && q.Subject != null && q.Predicate != null) {
+						VariableNode altNode;
+						Set altSet;
+						if (GetAlternativesSet(s.Subject, node, out altNode, out altSet)) {
+							PreCacheKey key = new PreCacheKey(q.Subject, q.Predicate);
+							Resource value = (Resource)altNode.PreCache[key];
+							if (value == null) {
+								// Run a combined select on all of the potential resources.
+								ArrayList queries = new ArrayList();
+								foreach (Resource r in altSet.Items()) {
+									if (!(r is Entity)) continue;
+									Statement q2 = new Statement((Entity)r, q.Predicate, null);
+									queries.Add(q2);
+								}
+								
+								state.target.Select((Statement[])queries.ToArray(typeof(Statement)), new PutInHash(0, 1, 2, altNode.PreCache));
+							}
+							
+							value = (Resource)altNode.PreCache[key];
+							resources = new Set();
+							if (value != null)
+								resources.Add(value);
+						}
+					}
+					
+					if (resources == null) {
+						// Select all resources that match this statement
+						// The selection will also apply any value filters for this variable
+						resources = SelectCache(q, spo, state, selectCache, node).Clone();
+					}
 					
 					// Apply distinctFrom restrictions to make sure the value of this
 					// variable is not equal to the value of other variables, as specified.
@@ -516,38 +641,37 @@ namespace SemWeb.Query {
 				} else {
 					int nullCount = ((q.Subject == null) ? 1 : 0) + ((q.Predicate == null) ? 1 : 0) + ((q.Object == null) ? 1 : 0);
 					
-					if (nullCount >= 2) {						
-						Store localTarget = state.target;
-
+					// Deal with queries with nothing yet known with a later variable.
+					if (nullCount == 3)
+						continue;
+					
+					if (nullCount >= 2) {
 						// Run a combined select on all of the potential resources.
 						ArrayList queries = new ArrayList();
 						foreach (Resource r in resources.Items()) {
 							if (spo != 2 && !(r is Entity)) continue;
 							
 							Statement q2 = new Statement(
-								spo == 0 ? (Entity)r : (Entity)GetBinding(s.Subject, node, true, state),
-								spo == 1 ? (Entity)r : (Entity)GetBinding(s.Predicate, node, true, state),
-								spo == 2 ? r : GetBinding(s.Object, node, false, state));
+								spo == 0 ? (Entity)r : q.Subject,
+								spo == 1 ? (Entity)r : q.Predicate,
+								spo == 2 ? r : q.Object);
 							
 							queries.Add(q2);
 						}
 						
-						MemoryStore result = new MemoryStore(null);
-						state.target.Select((Statement[])queries.ToArray(typeof(Statement)), result);
-						localTarget = result;
-						
-						// Check that each resource matches the filter
-						foreach (Resource r in resources.Items()) {
-							if (spo != 2 && !(r is Entity)) continue;
+						SelectPartialFilter selectFilter = new SelectPartialFilter(
+							spo == 0 ? true : false,
+							spo == 1 ? true : false,
+							spo == 2 ? true : false,
+							false);
 							
-							Statement q2 = new Statement(
-								spo == 0 ? (Entity)r : (Entity)GetBinding(s.Subject, node, true, state),
-								spo == 1 ? (Entity)r : (Entity)GetBinding(s.Predicate, node, true, state),
-								spo == 2 ? r : GetBinding(s.Object, node, false, state));
-								
-							if (localTarget.Select(q2).StatementCount == 0)
-								resources.Remove(r);
-						}
+						if (sIndex == predicateFilters[node.BindingIndex].Count-1 && node.NoSelect)
+							selectFilter.SelectFirst = true;
+	
+						Set resources2 = new Set();
+						state.target.Select((Statement[])queries.ToArray(typeof(Statement)), selectFilter, new PutInSet(spo, resources2));
+						
+						resources = resources2;
 						
 					} else {
 						// Find all items that satisfy the filter, and then intersect the sets.
@@ -567,15 +691,14 @@ namespace SemWeb.Query {
 			if (resources == null) {
 				// There were no statements about this variable.  Set it
 				// to an anonymous node, since it may have any value at all.
+				// This is important because this will be invoked when
+				// an anonymous variable node has no children.
 				resources = new Set();
 				resources.Add(new Entity(state.target.Model));
 			}
 			
-			/*foreach (SelectCacheKey predicateFilterCacheKey in state.predicateFilterCacheClear[varIndex])
-				state.predicateFilterCache.Remove(predicateFilterCacheKey);
-			state.predicateFilterCacheClear[varIndex].Clear();
-			
-			state.alternatives[varIndex] = resources;*/
+			node.Alternatives = resources;
+			node.PreCache.Clear();
 			
 			emittedBinding = false;
 			
@@ -707,38 +830,6 @@ namespace SemWeb.Query {
 			return false;
 		}
 		
-		/*
-		private void PrecacheSelect(VariableNode node, Set resources, VariableNode child, SearchState state) {
-			for (int fwd = 0; fwd <= 1; fwd++) {
-				IList filters = predicateFilters[child.BindingIndex, fwd];
-				predicateFilterPreCache[child.BindingIndex, fwd] = new MemoryStore[filters.Count];
-				for (int si = 0; si < filters.Count; si++) {
-					Statement s = (Statement)filters[si];
-					MemoryStore precache = null;
-					
-					if (s.Subject == node.Variable || s.Predicate == node.Variable || s.Object == node.Variable) {
-						precache = new MemoryStore(null);
-						
-						ArrayList queries = new ArrayList();
-						foreach (Resource p in resources.Items()) {
-							if (!(p is Entity) && (s.Subject == node.Variable || s.Predicate == node.Variable)) continue;
-							Statement qq = new Statement(
-								s.Subject == node.Variable ? (Entity)p : (Entity)GetBinding(s.Subject, child, true, state),
-								s.Predicate == node.Variable ? (Entity)p : (Entity)GetBinding(s.Predicate, child, true, state),
-								s.Object == node.Variable ? p : GetBinding(s.Object, child, false, state));
-							if (s.AnyNull) continue;
-							queries.Add(qq);
-						}
-						
-						state.target.Select((Statement[])queries.ToArray(typeof(Statement)), precache);
-					}
-
-					predicateFilterPreCache[child.BindingIndex, fwd][si] = precache;
-				}					
-			}
-		}
-		*/
-		
 		private ArrayList SymmetricSelect(Entity e, Entity p, Store model) {
 			ArrayList ret = new ArrayList();
 			model.Select(new Statement(e, p, null), new PutInArraySink(2, ret));
@@ -748,16 +839,19 @@ namespace SemWeb.Query {
 		
 		private class SelectCacheKey {
 			public Statement Q;
+			public SelectPartialFilter F;
 			public VariableNode Var;
 			
-			public SelectCacheKey(Statement q, VariableNode var) {
+			public SelectCacheKey(Statement q, SelectPartialFilter f, VariableNode var) {
 				Q = q;
+				F = f;
 				Var = var;
 			}
 			
 			public override int GetHashCode() { return Q.GetHashCode(); }
 			public override bool Equals(object other) {
-				return ((SelectCacheKey)other).Var == Var && Q.Equals(((SelectCacheKey)other).Q);
+				return ((SelectCacheKey)other).Var == Var && Q.Equals(((SelectCacheKey)other).Q)
+				 && F.Equals(((SelectCacheKey)other).F);
 			}
 		}
 		
@@ -772,12 +866,19 @@ namespace SemWeb.Query {
 			if (queryTarget == null)
 				queryTarget = state.target;
 			
-			SelectCacheKey key = new SelectCacheKey(q, var);
+			SelectPartialFilter f = new SelectPartialFilter(
+				spo == 0 ? true : false,
+				spo == 1 ? true : false,
+				spo == 2 ? true : false,
+				false
+				);
+			
+			SelectCacheKey key = new SelectCacheKey(q, f, var);
 			
 			Set cached = (Set)state.cachedSelections[key];
 			if (cached == null) {
 				cached = new Set();
-				queryTarget.Select(q, new PutInSet(spo, cached));
+				queryTarget.Select(q, f, new PutInSet(spo, cached));
 				
 				// Do value filters
 				if (var != null)
@@ -839,18 +940,30 @@ namespace SemWeb.Query {
 			}
 		}
 
-		private class StatementExistsSink2 : StatementSink {
-			bool exists = false;
+		private class PutInHash : StatementSink {
+			int spo1, spo2, spo3;
+			Hashtable cache;
 			
-			public bool Exists { get { return exists; } }
-			
+			public PutInHash(int spo1, int spo2, int spo3, Hashtable cache) {
+				this.spo1 = spo1; this.spo2 = spo2; this.spo3 = spo3; this.cache = cache;
+			}
+
 			public bool Add(Statement statement) {
-				if (statement.Predicate == qDistinctFrom) return true;
-				exists = true;
-				return false;
+				Resource a, b, c;
+				if (spo1 == 0) a = statement.Subject;
+				else if (spo1 == 1) a = statement.Predicate;
+				else a = statement.Object;
+				if (spo2 == 0) b = statement.Subject;
+				else if (spo2 == 1) b = statement.Predicate;
+				else b = statement.Object;
+				if (spo3 == 0) c = statement.Subject;
+				else if (spo3 == 1) c = statement.Predicate;
+				else c = statement.Object;
+				cache[new PreCacheKey(a,b)] = c;
+				return true;
 			}
 		}
-		
+
 		private class Set {
 			Hashtable store;
 			ArrayList items;
@@ -881,6 +994,8 @@ namespace SemWeb.Query {
 				Found = true;
 				return false;
 			}
+			public override void Init(Entity[] variables) { }
+			public override void Finished() { }
 		}
 	
 		private class BufferSink : QueryResultSink {
@@ -889,6 +1004,8 @@ namespace SemWeb.Query {
 				Bindings.Add(result.Clone());
 				return true;
 			}
+			public override void Init(Entity[] variables) { }
+			public override void Finished() { }
 		}
 
 		private class StartLimitSink : QueryResultSink {
@@ -902,13 +1019,29 @@ namespace SemWeb.Query {
 				if (counter == limit) return false;
 				return true;
 			}
+			public override void Init(Entity[] variables) { sink.Init(variables); }
+			public override void Finished() { sink.Finished(); }
+		}
+		
+		private class PreCacheKey {
+			Resource s, p;
+			public PreCacheKey(Resource subject, Resource predicate) { s = subject; p = predicate; }
+			public override bool Equals(object other) {
+				return ((PreCacheKey)other).s.Equals(s) && ((PreCacheKey)other).p.Equals(p);
+			}
+			public override int GetHashCode() {
+				return s.GetHashCode() ^ p.GetHashCode();
+			}
 		}
 	}
 	
 	public class PrintQuerySink : QueryResultSink {
+		public override void Init(Entity[] variables) { }
+		public override void Finished() { }
 		public override bool Add(VariableBinding[] result) {
 			foreach (VariableBinding var in result)
-				Console.WriteLine(var.Variable + " ==> " + var.Target.ToString());
+				if (var.Variable.Uri != null)
+					Console.WriteLine(var.Variable + " ==> " + var.Target.ToString());
 			Console.WriteLine();
 			return true;
 		}
@@ -916,20 +1049,20 @@ namespace SemWeb.Query {
 	
 	public class HTMLQuerySink : QueryResultSink {
 		TextWriter output;
-		bool first = true;
 		
 		public HTMLQuerySink(TextWriter output) { this.output = output; }
+
+		public override void Init(Entity[] variables) {
+			output.WriteLine("<tr>");
+			foreach (Entity var in variables)
+				if (var.Uri != null)
+					output.WriteLine("<th>" + var + "</th>");
+			output.WriteLine("</tr>");
+		}
+		
+		public override void Finished() { }
 		
 		public override bool Add(VariableBinding[] result) {
-			if (first) {
-				first = false;
-				output.WriteLine("<tr>");
-				foreach (VariableBinding var in result)
-					if (var.Variable.Uri != null)
-						output.WriteLine("<th>" + var.Variable + "</th>");
-				output.WriteLine("</tr>");
-			}
-			
 			output.WriteLine("<tr>");
 			foreach (VariableBinding var in result) {
 				if (var.Variable.Uri == null) continue;
@@ -937,8 +1070,7 @@ namespace SemWeb.Query {
 				if (var.Target is Literal) t = ((Literal)var.Target).Value;
 				output.WriteLine("<td>" + t + "</td>");
 			}
-			output.WriteLine("</tr>");
-			
+			output.WriteLine("</tr>");			
 			return true;
 		}
 	}
@@ -950,6 +1082,9 @@ namespace SemWeb.Query {
 		
 		public SQLQuerySink(TextWriter output, string table) { this.output = output; this.table = table; }
 		
+		public override void Init(Entity[] variables) { }
+		public override void Finished() { }
+
 		private string GetFieldType(string datatype) {
 			switch (datatype) {
 				case "http://www.w3.org/2001/XMLSchema#string":
@@ -1051,45 +1186,80 @@ namespace SemWeb.Query {
 		}
 	}
 
-	public class XMLQuerySink : QueryResultSink, IDisposable {
+	public class SparqlXmlQuerySink : QueryResultSink {
 		System.Xml.XmlWriter output;
-		bool first = true;
+		string variableNamespace;
 		
-		public XMLQuerySink(System.Xml.XmlWriter output) { this.output = output; }
+		int blankNodeCounter = 0;
+		Hashtable blankNodes = new Hashtable();
+		
+		public SparqlXmlQuerySink(System.Xml.XmlWriter output, string variableNamespace) {
+			this.output = output;
+			this.variableNamespace = variableNamespace;
+			output.WriteStartElement("sparql");
+			output.WriteAttributeString("xmlns", "http://www.w3.org/2001/sw/DataAccess/rf1/result");
+			output.WriteStartElement("head");
+		}
+		
+		public override void Init(Entity[] variables) {
+			foreach (Entity var in variables) {
+				if (var.Uri == null) continue;
+				if (!var.Uri.StartsWith(variableNamespace))
+					throw new InvalidOperationException("The SparqlXmlQuerySink requires that all variables be within the URI given in the variableNamespace argument to SparqlXmlQuerySink's constructor."); 
+				output.WriteStartElement("variable");
+				output.WriteAttributeString("name", var.Uri.Substring(variableNamespace.Length));
+				output.WriteEndElement();
+			}
+			output.WriteEndElement(); // head
+			output.WriteStartElement("results");
+		}
 		
 		public override bool Add(VariableBinding[] result) {
-			if (first) {
-				output.WriteStartElement("results");
-				first = false;
-			}
-			
 			output.WriteStartElement("result");
 			foreach (VariableBinding var in result) {
 				if (var.Variable.Uri == null) continue;
-				output.WriteStartElement("binding");
-				output.WriteAttributeString("variable", var.Variable.ToString());
 				
-				if (var.Target is Literal) {
-					output.WriteAttributeString("targetType", "literal");
-					output.WriteAttributeString("target", ((Literal)var.Target).Value);
+				output.WriteStartElement(var.Variable.Uri.Substring(variableNamespace.Length));
+				if (var.Target == null) {
+					output.WriteAttributeString("bound", "false");
+				} else if (var.Target.Uri != null) {
+					output.WriteAttributeString("uri", var.Target.Uri);
+				} else if (var.Target is Literal) {
+					Literal literal = (Literal)var.Target;
+					if (literal.DataType != null)
+						output.WriteAttributeString("datatype", literal.DataType);
+					if (literal.Language != null)
+						output.WriteAttributeString("language", literal.Language);
+					output.WriteString(literal.Value);				
 				} else {
-					output.WriteAttributeString("targetType", "resource");
-					output.WriteAttributeString("target", var.Target.ToString());
+					string id;
+					if (blankNodes.ContainsKey(var.Target))
+						id = (string)blankNodes[var.Target];
+					else {
+						id = "r" + (++blankNodeCounter);
+						blankNodes[var.Target] = id;
+					}
+					output.WriteAttributeString("bnodeid", id);
 				}
+				
+				output.WriteEndElement();
 			}
 			output.WriteEndElement();
 			
 			return true;
 		}
 		
-		public void Dispose() {
-			output.WriteEndElement();
+		public override void Finished() {
+			output.WriteEndElement(); // results
+			output.WriteEndElement(); // sparql
 			output.Close();
 		}
 	}
 
 	public abstract class QueryResultSink {
+		public abstract void Init(Entity[] variables);
 		public abstract bool Add(VariableBinding[] result);
+		public abstract void Finished();
 	}
 	
 	public struct VariableBinding {

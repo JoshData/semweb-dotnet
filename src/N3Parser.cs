@@ -451,9 +451,11 @@ namespace SemWeb.IO {
 			// VARIABLE
 			
 			if (str[0] == '?') {
-				// TODO: Preserve the mapping.
-				Entity variable = context.store.CreateAnonymousResource();
-				return variable;
+				if (BaseUri == null)
+					OnError("Variables require that a BaseUri be specified for the document", loc);
+				Entity var = context.store.GetResource( BaseUri + str.Substring(1) );
+				variables.Add(var);
+				return var;
 			}
 			
 			// QNAME
@@ -484,9 +486,14 @@ namespace SemWeb.IO {
 			
 			if (str == "[") {
 				Entity ret = context.store.CreateAnonymousResource();
-				char bracket = ReadPredicates(ret, context);
-				if (bracket != ']')
-					OnError("Expected a close bracket but found '" + bracket + "'", loc);
+				ReadWhitespace(context.source);
+				if (context.source.Peek() != ']') {
+					char bracket = ReadPredicates(ret, context);
+					if (bracket != ']')
+						OnError("Expected a close bracket but found '" + bracket + "'", loc);
+				} else {
+					context.source.Read();
+				}
 				return ret;
 			}
 			

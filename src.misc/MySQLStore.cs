@@ -10,6 +10,8 @@ namespace SemWeb.Stores {
 		MySqlConnection connection;
 		string connectionString;
 		
+		bool Debug = false;
+		
 		public MySQLStore(string connectionString, string table, KnowledgeModel model)
 			: base(table, model) {
 			this.connectionString = connectionString;
@@ -28,6 +30,7 @@ namespace SemWeb.Stores {
 		}
 		
 		protected override void RunCommand(string sql) {
+			if (Debug) Console.Error.WriteLine(sql);
 			MySqlCommand cmd = new MySqlCommand(sql, connection);
 			cmd.ExecuteNonQuery();
 			cmd.Dispose();
@@ -42,10 +45,12 @@ namespace SemWeb.Stores {
 			}
 			reader.Close();
 			cmd.Dispose();
+			if (Debug) Console.Error.WriteLine(sql + " => " + ret);
 			return ret;
 		}
 
 		protected override IDataReader RunReader(string sql) {
+			if (Debug) Console.Error.WriteLine(sql);
 			MySqlCommand cmd = new MySqlCommand(sql, connection);
 			IDataReader reader = cmd.ExecuteReader();
 			cmd.Dispose();
@@ -59,7 +64,8 @@ namespace SemWeb.Stores {
 				RunCommand("DROP INDEX subject_index on " + TableName);
 				RunCommand("DROP INDEX predicate_index on " + TableName);
 				RunCommand("DROP INDEX object_index on " + TableName);
-				RunCommand("DROP INDEX literal_index on " + TableName);
+				RunCommand("DROP INDEX subject_predicate_index on " + TableName);
+				RunCommand("DROP INDEX predicate_object_index on " + TableName);
 			} catch (Exception e) {
 			}
 			
@@ -71,10 +77,7 @@ namespace SemWeb.Stores {
 			RunCommand("COMMIT");
 			//RunCommand("UNLOCK TABLES");
 			
-			try {
-				CreateIndexes();
-			} catch (Exception e) {
-			}
+			CreateIndexes();
 		}
 	}
 }

@@ -100,7 +100,7 @@ namespace SemWeb.Stores {
 				list1 = list2;
 		}
 		
-		public override void Select(Statement template, StatementSink result) {
+		public override void Select(Statement template, SelectPartialFilter partialFilter, StatementSink result) {
 			IList source = statements;
 			if (template.Subject != null) ShorterList(ref source, GetIndexArray(statementsAboutSubject, template.Subject));
 			else if (template.Object != null) ShorterList(ref source, GetIndexArray(statementsAboutObject, template.Object));
@@ -115,5 +115,23 @@ namespace SemWeb.Stores {
 			}
 		}
 
-  }
+		public override void Select(Statement[] templates, SelectPartialFilter partialFilter, StatementSink result) {
+			foreach (Statement t in templates)
+				Select(t, result);
+		}
+
+		public override void Replace(Entity a, Entity b) {
+			foreach (Statement statement in statements) {
+				if (statement.Subject == a || statement.Predicate == a || statement.Object == a || statement.Meta == a) {
+					Remove(statement);
+					Add(new Statement(
+						statement.Subject == a ? b : a,
+						statement.Predicate == a ? b : a,
+						statement.Object == a ? b : a,
+						statement.Meta == a ? b : a
+						));
+				}
+			}
+		}
+	}
 }

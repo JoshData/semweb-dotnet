@@ -18,6 +18,8 @@ namespace SemWeb.Stores {
 		Hashtable entityMap = new Hashtable();
 		int entityMapInsertions = 0;
 		
+		bool Debug = false;
+		
 		private class ResourceKey {
 			public int ResId;
 			
@@ -27,7 +29,7 @@ namespace SemWeb.Stores {
 			public override bool Equals(object other) { return (other is ResourceKey) && ((ResourceKey)other).ResId == ResId; }
 		}
 		
-		private static readonly string[] threecols = new string[] { "subject", "predicate", "object" };
+		private static readonly string[] fourcols = new string[] { "subject", "predicate", "object", "meta" };
 		private static readonly string[] predcol = new string[] { "predicate" };
 
 		public SQLStore(string table, KnowledgeModel model) : base(model) {
@@ -143,6 +145,19 @@ namespace SemWeb.Stores {
 				if (idobj != null) return (int)idobj;
 			}
 			
+			// First try a complex SQL statement.
+			StringBuilder cmd = new StringBuilder();
+			cmd.Append("SELECT subject FROM ");
+			cmd.Append(table);
+			cmd.Append("_statements, ");
+			cmd.Append(table);
+			cmd.Append("_literals WHERE predicate = 0 and objecttype = 1 and object = id and value =");
+			cmd.Append(Escape(uri));
+			cmd.Append(" LIMIT 1");
+			int id = RunScalarInt(cmd.ToString(), 0);
+			if (id != 0 || !create) return id;
+			
+			// Fall back to first getting the literal ID, then getting the resource id.
 			int literalId = GetLiteralId(new Literal(uri), create);
 			if (literalId == 0) return 0; // only happens if !create
 			return GetEntityId(literalId, uri, create);
@@ -227,6 +242,17 @@ namespace SemWeb.Stores {
 		}		
 		
 		private string GetEntityUri(int resourceId) {
+			StringBuilder cmd = new StringBuilder();
+			cmd.Append("SELECT value FROM ");
+			cmd.Append(table);
+			cmd.Append("_statements, ");
+			cmd.Append(table);
+			cmd.Append("_literals WHERE predicate = 0 and objecttype = 1 and object = id and subject =");
+			cmd.Append(resourceId);
+			cmd.Append(" LIMIT 1");
+			return RunScalarString(cmd.ToString());
+			
+			/*
 			StringBuilder b = new StringBuilder();
 			b.Append("SELECT object FROM ");
 			b.Append(table);
@@ -239,6 +265,7 @@ namespace SemWeb.Stores {
 			int literalId = AsInt(id);
 			if (literalId == 0) return null; // reserved anonymous node
 			return GetLiteral(literalId, null).Value;
+			*/
 		}
 
 		private Entity GetEntity(int resourceId, string uri, bool anon, Hashtable cache) {
@@ -328,7 +355,7 @@ namespace SemWeb.Stores {
 		}
 		
 		public override Entity[] GetAllEntities() {
-			return GetAllEntities(threecols);
+			return GetAllEntities(fourcols);
 		}
 			
 		public override Entity[] GetAllPredicates() {
@@ -452,14 +479,31 @@ namespace SemWeb.Stores {
 			public int S, P, OT, OID, M;
 		}
 		
-		public override void Select(Statement[] templates, StatementSink result) {
+		private static void AppendComma(StringBuilder builder, string text, bool comma) {
+			if (comma)
+				builder.Append(", ");
+			builder.Append(text);
+		}
+		
+		private static void SelectFilter(SelectPartialFilter partialFilter, StringBuilder cmd) {
+			bool f = true;
+			
+			if (partialFilter.Subject) { cmd.Append("subject"); f = false; }
+			if (partialFilter.Predicate) { AppendComma(cmd, "predicate", !f); f = false; }
+			if (partialFilter.Object) { AppendComma(cmd, "objecttype, object", !f); f = false; }
+			if (partialFilter.Meta) { AppendComma(cmd, "meta", !f); f = false; }
+		}
+		
+		public override void Select(Statement[] templates, SelectPartialFilter partialFilter, StatementSink result) {
 			if (templates == null) throw new ArgumentNullException();
 			if (result == null) throw new ArgumentNullException();
 			if (templates.Length == 0) return;
 	
 			Init();
 			
-			System.Text.StringBuilder cmd = new System.Text.StringBuilder("SELECT subject, predicate, objecttype, object, meta FROM ");
+			System.Text.StringBuilder cmd = new System.Text.StringBuilder("SELECT ");
+			SelectFilter(partialFilter, cmd);
+			cmd.Append(" FROM ");
 			cmd.Append(table);
 			cmd.Append("_statements WHERE (");
 			
@@ -484,8 +528,6 @@ namespace SemWeb.Stores {
 			if (!sm && !pm && !om && !mm) {
 				Select(templates[0], result);
 				return;
-			} else if (sm && pm && om && mm) {
-				cmd.Append("1");
 			} else {
 				if (!sm && sv != null)
 					if (!WhereItem("subject", sv, cmd, false)) return;
@@ -495,6 +537,10 @@ namespace SemWeb.Stores {
 					if (!WhereItem("object", ov, cmd, (!sm && sv != null) || (!pm && pv != null))) return;
 				if (!mm && mv != null)
 					if (!WhereItem("meta", mv, cmd, (!sm && sv != null) || (!pm && pv != null) || (!om && ov != null))) return;
+				
+				if (!((!sm && sv != null) || (!pm && pv != null) || (!om && ov != null) || (!mm && mv != null))) {
+					cmd.Append("1");
+				}
 			}
 			
 			cmd.Append(") and (");
@@ -529,34 +575,58 @@ namespace SemWeb.Stores {
 			
 			cmd.Append(")");
 			
-			Select2(cmd.ToString(), result);
+			Select2(cmd.ToString(), Statement.Empty, partialFilter, partialFilter.SelectFirst, result);
 		}
 		
-		public override void Select(Statement template, StatementSink result) {
+		public override void Select(Statement template, SelectPartialFilter partialFilter, StatementSink result) {
 			if (result == null) throw new ArgumentNullException();
 	
 			Init();
 			
-			System.Text.StringBuilder cmd = new System.Text.StringBuilder("SELECT subject, predicate, objecttype, object, meta FROM ");
+			bool limitOne = partialFilter.SelectFirst;
+			
+			// Don't select on columns that we already know from the template
+			partialFilter = new SelectPartialFilter(
+				partialFilter.Subject && template.Subject == null,
+				partialFilter.Predicate && template.Predicate == null,
+				partialFilter.Object && template.Object == null,
+				partialFilter.Meta && template.Meta == null
+				);
+			
+			System.Text.StringBuilder cmd = new System.Text.StringBuilder("SELECT ");
+			SelectFilter(partialFilter, cmd);
+			cmd.Append(" FROM ");
 			cmd.Append(table);
 			cmd.Append("_statements");
 			if (!WhereClause(template, cmd)) return;
 			
-			Select2(cmd.ToString(), result);
+			Select2(cmd.ToString(), template, partialFilter, limitOne, result);
 		}
 		
-		private void Select2(string cmd, StatementSink result) {
-			//Console.WriteLine(cmd);
+		private void Select2(string cmd, Statement template, SelectPartialFilter partialFilter, bool limitOne, StatementSink result) {
+			// Run the query
+			
+			if (limitOne)
+				cmd += " LIMIT 1";
+			
+			if (Debug) {
+				string cmd2 = cmd;
+				if (cmd2.Length > 80) cmd2 = cmd2.Substring(0, 80);
+				Console.Error.WriteLine(cmd2);
+			}
 			
 			ArrayList items = new ArrayList();
 			IDataReader reader = RunReader(cmd);
+			ArrayList entities = new ArrayList();
 			try {
 				while (reader.Read()) {
-					int s = AsInt(reader[0]);
-					int p = AsInt(reader[1]);
-					int ot = AsInt(reader[2]);
-					int oid = AsInt(reader[3]);
-					int m = AsInt(reader[4]);
+					int col = 0;
+					int s = -1, p = -1, ot = 0, oid = -1, m = -1;
+					
+					if (partialFilter.Subject) { s = AsInt(reader[col++]); entities.Add(s); }
+					if (partialFilter.Predicate) { p = AsInt(reader[col++]); entities.Add(p); }
+					if (partialFilter.Object) { ot = AsInt(reader[col++]); oid = AsInt(reader[col++]); if (ot == 0) entities.Add(oid); }
+					if (partialFilter.Meta) { m = AsInt(reader[col++]); if (m > 0) entities.Add(m); }
 					
 					SPOLM d = new SPOLM();
 					d.S = s;
@@ -571,20 +641,49 @@ namespace SemWeb.Stores {
 				reader.Close();
 			}
 			
+			/*
+			Hashtable uris = new Hashtable();		
+			if (entities.Count > 0) {
+				// Get all of the URIs of the resources
+				StringBuilder uricmd = new StringBuilder();
+				uricmd.Append("SELECT subject, value FROM ");
+				uricmd.Append(table);
+				uricmd.Append("_statements, ");
+				uricmd.Append(table);
+				uricmd.Append("_literals WHERE predicate = 0 and objecttype = 1 and object = id and (0");
+				foreach (int ent in entities) {
+					uricmd.Append(" or subject = ");
+					uricmd.Append(ent);
+				}
+				uricmd.Append(")");
+				IDataReader urireader = RunReader(uricmd.ToString());
+				try {
+					while (urireader.Read()) {
+						int ent = AsInt(urireader[0]);
+						string uri = AsString(urireader[1]);
+						uris[ent] = uri;
+					}
+				} finally {
+					urireader.Close();
+				}
+			}
+			*/
+			
 			Hashtable entMap = new Hashtable();
 			Hashtable litMap = new Hashtable();
 			
 			foreach (SPOLM item in items) {
 				bool ret = result.Add(new Statement(
-					GetEntity(item.S, null, false, entMap),
-					GetEntity(item.P, null, false, entMap),
-					item.OT == 0 ? (Resource)GetEntity(item.OID, null, false, entMap) : (Resource)GetLiteral(item.OID, litMap),
-					GetEntity(item.M, null, false, entMap)
+					template.Subject != null ? template.Subject : GetEntity(item.S, null, false, entMap),
+					template.Predicate != null ? template.Predicate : GetEntity(item.P, null, false, entMap),
+					template.Object != null ? template.Object : 
+						(item.OT == 0 ? (Resource)GetEntity(item.OID, null, false, entMap) : (Resource)GetLiteral(item.OID, litMap)),
+					(template.Meta != null || item.M <= 0) ? template.Meta : GetEntity(item.M, null, false, entMap)
 					));
 				if (!ret) break;
 			}
 		}
-
+		
 		internal static string Escape(string str) {
 			if (str == null) return "NULL";
 			System.Text.StringBuilder b = new System.Text.StringBuilder(str);
@@ -625,6 +724,20 @@ namespace SemWeb.Stores {
 				lockedIdCache = oldLockedIdCache;
 				EndTransaction();
 			}
+		}
+
+		public override void Replace(Entity a, Entity b) {
+			foreach (string col in fourcols) {
+				StringBuilder cmd = new StringBuilder();
+				cmd.Append("UPDATE ");
+				cmd.Append(table);
+				cmd.Append("_statements SET ");
+				cmd.Append(col);
+				cmd.Append("=");
+				cmd.Append(GetResourceId(b, true));
+				if (!WhereItem(col, a, cmd, false)) return;
+				RunCommand(cmd.ToString());
+			}			
 		}
 		
 		protected abstract void RunCommand(string sql);

@@ -167,33 +167,44 @@ namespace SemWeb {
 			return sink.Exists;
 		}
 		
-		public abstract void Select(Statement template, StatementSink result);
-		
-		public virtual void Select(Statement[] templates, StatementSink result) {
-			foreach (Statement template in templates)
-				Select(template, result);
+		public void Select(Statement template, StatementSink result) {
+			Select(template, SelectPartialFilter.All, result);
 		}
 		
+		public void Select(Statement[] templates, StatementSink result) {
+			Select(templates, SelectPartialFilter.All, result);
+		}
+		
+		public abstract void Select(Statement template, SelectPartialFilter partialFilter, StatementSink result);
+		
+		public abstract void Select(Statement[] templates, SelectPartialFilter partialFilter, StatementSink result);
+		
 		public SemWeb.Stores.MemoryStore Select(Statement template) {
+			return Select(template, SelectPartialFilter.All);
+		}
+		
+		public SemWeb.Stores.MemoryStore Select(Statement template, SelectPartialFilter partialFilter) {
 			SemWeb.Stores.MemoryStore ms = new SemWeb.Stores.MemoryStore(Model);
-			Select(template, ms);
+			Select(template, partialFilter, ms);
 			return ms;
 		}
 		
 		public Resource[] SelectObjects(Entity subject, Entity predicate) {
 			Hashtable resources = new Hashtable();
-			foreach (Statement s in Select(new Statement(subject, predicate, null)).Statements)
+			foreach (Statement s in Select(new Statement(subject, predicate, null), new SelectPartialFilter(false, false, true, false)))
 				if (!resources.ContainsKey(s.Object))
 					resources[s.Object] = s.Object;
 			return (Resource[])new ArrayList(resources.Keys).ToArray(typeof(Resource));
 		}
 		public Entity[] SelectSubjects(Entity predicate, Entity @object) {
 			Hashtable resources = new Hashtable();
-			foreach (Statement s in Select(new Statement(null, predicate, @object)).Statements)
+			foreach (Statement s in Select(new Statement(null, predicate, @object), new SelectPartialFilter(true, false, false, false)))
 				if (!resources.ContainsKey(s.Subject))
 					resources[s.Subject] = s.Subject;
 			return (Entity[])new ArrayList(resources.Keys).ToArray(typeof(Entity));
 		}
+		
+		public abstract void Replace(Entity a, Entity b);
 		
 		public void Write(RdfWriter writer) {
 			Select(new Statement(null,null,null), writer);
@@ -290,15 +301,20 @@ namespace SemWeb.Stores {
 			
 		public override void Remove(Statement statement) { throw new InvalidOperationException("Add is not a valid operation on a MultiStore."); }
 		
-		public override void Select(Statement template, StatementSink result) {
+		public override void Select(Statement template, SelectPartialFilter partialFilter, StatementSink result) {
 			foreach (Store s in stores)
-				s.Select(template, result);
+				s.Select(template, partialFilter, result);
 		}
 		
-		public override void Select(Statement[] templates, StatementSink result) {
+		public override void Select(Statement[] templates, SelectPartialFilter partialFilter, StatementSink result) {
 			foreach (Store s in stores)
-				s.Select(templates, result);
+				s.Select(templates, partialFilter, result);
 		}
+
+		public override void Replace(Entity a, Entity b) {
+			foreach (Store s in stores)
+				s.Replace(a, b);
+		}		
 	}
 	
 }

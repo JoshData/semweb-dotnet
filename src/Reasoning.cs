@@ -47,7 +47,7 @@ namespace SemWeb {
 			store.Import(parser);
 		}
 		
-		public sealed override void Select(Statement template, StatementSink result) {
+		public override void Select(Statement template, SelectPartialFilter partialFilter, StatementSink result) {
 			// If the template is a full statement (has a subject, predicate,
 			// and object), use the specialized routine to check if the statement
 			// is asserted in the source.
@@ -59,12 +59,16 @@ namespace SemWeb {
 			
 			// For each matching statement, find further entailments that match the template.
 			result = new ReasoningStatementSink(template, result, this);
-			Source.Select(template, result);
+			Source.Select(template, partialFilter, result);
 			
 			// Do specialized querying based on the template.
 			Engine.Select(template, result, Source);
 		}
 		
+		public override void Select(Statement[] templates, SelectPartialFilter partialFilter, StatementSink result) {
+			throw new NotImplementedException();
+		}
+
 		public override bool Contains(Statement statement) {
 			if (statement.AnyNull)
 				throw new ArgumentNullException();
@@ -75,6 +79,10 @@ namespace SemWeb {
 			return Engine.IsAsserted(statement, Source);
 		}
 		
+		public override void Replace(Entity a, Entity b) {
+			store.Replace(a, b);
+		}
+
 		private class ReasoningStatementSink : StatementSink {
 			Statement template;
 			StatementSink store;

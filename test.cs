@@ -33,12 +33,17 @@ public class Test {
 	}*/
 	
 	public static void Main(string[] args) {
+		
 		KnowledgeModel model = new KnowledgeModel();
 		Store storage = new MemoryStore(model); // new SqliteStore("URI=file:SqliteTest.db", "rdf", model); // new MemoryStore(model);
 		model.Storage.Add(storage);
-		storage.Import(new N3Parser("data.n3"));
+		//storage.Import(new N3Parser("data.n3"));
 		storage.Import(new RdfXmlParser("../rdf/schemas/foaf.rdf"));
 		//model.AddReasoning(new RDFSReasoning());
+
+		RdfCompactWriter writer = new RdfCompactWriter(Console.Out);
+		storage.Write(writer);
+		return;
 		
 		MemoryStore queryfile = new MemoryStore(null);
 		RdfParser qp = new RdfXmlParser("query.rdf");

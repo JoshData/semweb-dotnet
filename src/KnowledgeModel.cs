@@ -49,12 +49,12 @@ namespace SemWeb {
 			return mainstore.Contains(statement);
 		}
 		
-		public override void Select(Statement template, StatementSink result) {
-			mainstore.Select(template, result);
+		public override void Select(Statement template, SelectPartialFilter partialFilter, StatementSink result) {
+			mainstore.Select(template, partialFilter, result);
 		}
 		
-		public override void Select(Statement[] templates, StatementSink result) {
-			mainstore.Select(templates, result);
+		public override void Select(Statement[] templates, SelectPartialFilter partialFilter, StatementSink result) {
+			mainstore.Select(templates, partialFilter, result);
 		}
 
 		public override int StatementCount { get { return stores.StatementCount; } }
@@ -63,6 +63,10 @@ namespace SemWeb {
 		public override Entity CreateAnonymousResource() { throw new InvalidOperationException(); }
 		public override void Add(Statement statement) { throw new InvalidOperationException(); }
 		public override void Remove(Statement statement) { throw new InvalidOperationException(); }
+		
+		public override void Replace(Entity a, Entity b) {
+			mainstore.Replace(a, b);
+		}
 	}
 
 		
