@@ -7,38 +7,44 @@
 	xmlns:foaf="http://xmlns.com/foaf/0.1/"
 	xmlns:pol="urn://govshare.info/rdf/politico/"
 	xmlns:bill="urn://govshare.info/rdf/usbill/"
+	xmlns:vote="urn://govshare.info/rdf/vote/"
 	
 	xmlns:query="http://purl.oclc.org/NET/rsquary/"
 	>
 
 	<query:Query rdf:ID="query">
-		<query:select rdf:resource="#person1"/>
-		<query:select rdf:resource="#name1"/>
-		<query:select rdf:resource="#bill1"/>
-		<query:select rdf:resource="#title1"/>
-		<query:select rdf:resource="#birthday1"/>
+		<query:select rdf:resource="#person"/>
+		<query:select rdf:resource="#name"/>
+
+		<!--<query:select rdf:resource="#bill"/>
+		<query:select rdf:resource="#title"/>-->
+		
+		<query:select rdf:resource="#vote"/>
+		<query:select rdf:resource="#voteballot"/>
+		
+		<query:returnLimit>10</query:returnLimit>
 	</query:Query>
 	
-	<pol:Politician rdf:ID="person1">
-		<foaf:name rdf:resource="#name1"/>
-		<foaf:birthday rdf:resource="#birthday1"/>
+	<pol:Politician rdf:ID="person">
+		<foaf:name rdf:resource="#name"/>
 	</pol:Politician>
 	
-	<bill:Bill rdf:ID="bill1">
-		<bill:sponsor rdf:resource="#person1"/>
-		<dc:title rdf:resource="#title1"/>
-	</bill:Bill>
-
-	<rdf:Description rdf:ID="birthday1">
-		<query:lt rdf:datatype="http://www.w3.org/2001/XMLSchema#dateTime">1950</query:lt>
-	</rdf:Description>
-
-	<!--<rdf:Description rdf:ID="name1">
-		<strfilter:contains>Joseph</strfilter:contains>
+	<!--<rdf:Description rdf:ID="bill">
+		<bill:vote rdf:resource="#vote"/>
+		<dc:title rdf:resource="#title"/>
+		<dc:subject>Copyright</dc:subject>
+	</rdf:Description>-->
+	
+	<rdf:Description rdf:ID="name">
+		<query:string-contains>Joseph</query:string-contains>
 	</rdf:Description>
 	
-	<rdf:Description rdf:ID="title1">
-		<strfilter:contains>Act</strfilter:contains>
-	</rdf:Description>-->
+	<rdf:Description rdf:ID="vote">
+		<vote:hasBallot rdf:resource="#voteballot"/>
+	</rdf:Description>
+	<rdf:Description rdf:ID="voteballot">
+		<vote:voter rdf:resource="#person"/>
+		<vote:option>Aye</vote:option>
+	</rdf:Description>
 </rdf:RDF>
 

@@ -12,6 +12,8 @@ namespace SemWeb {
 		bool firstUse = true;
 		
 		int scount = 0; // number of statements in the store
+		
+		bool hasNextId = false;
 		int nextid = 2; // the next ID of a new resource
 		
 		public SQLStore(string table, KnowledgeModel model) : base(model) {
@@ -29,14 +31,19 @@ namespace SemWeb {
 				CreateIndexes();
 			} catch (Exception e) {
 			}
+		}
+		
+		public override int StatementCount { get { Init(); return RunScalarInt("select count(subject) from " + table, 0); } }
+		
+		private void GetNextId() {
+			if (hasNextId) return;
+			hasNextId = true;
 
 			foreach (string column in new string[] { "subject", "predicate", "object", "meta" }) {
 				int maxid = RunScalarInt("select max(" + column + ") from " + table, 0);
 				if (maxid >= nextid) nextid = maxid + 1;
 			}
 		}
-		
-		public override int StatementCount { get { Init(); return RunScalarInt("select count(subject) from " + table, 0); } }
 		
 		public override void Clear() {
 			Init();
@@ -79,7 +86,36 @@ namespace SemWeb {
 		}
 		
 		public override Entity CreateAnonymousResource() {
+			GetNextId();
 			return new DBResource(this, nextid++, null, true);
+		}
+		
+		private void WhereItem(string col, Resource r, System.Text.StringBuilder cmd) {
+			if (r is MultiEntity) {
+				cmd.Append("(");
+					bool first = true;
+					foreach (Resource rr in ((MultiEntity)r).items) {
+						if (!first)
+							cmd.Append(" or ");
+						first = false;
+						
+						if (col != "object" && rr is Literal) continue;
+						
+						WhereItem(col, rr, cmd);
+					}
+				cmd.Append(")");
+				return;
+			} else if (r is Literal) {
+				cmd.Append(" (object = 0 and literal = \"");
+				cmd.Append(Escape(((Literal)r).Value));
+				cmd.Append("\")");
+			} else {
+				cmd.Append("( ");
+				cmd.Append(col);
+				cmd.Append(" = ");
+				cmd.Append(ID(r));
+				cmd.Append(" )");
+			}
 		}
 		
 		private void WhereClause(Statement template, System.Text.StringBuilder cmd) {
@@ -89,31 +125,78 @@ namespace SemWeb {
 			cmd.Append(" WHERE ");
 			
 			if (template.Subject != null) {
-				cmd.Append(" subject = ");
-				cmd.Append(ID(template.Subject));
+				WhereItem("subject", template.Subject, cmd);
 			}
 			if (template.Predicate != null) {
 				if (template.Subject != null)
 					cmd.Append(" and");
-				cmd.Append(" predicate = ");
-				cmd.Append(ID(template.Predicate));
+				WhereItem("predicate", template.Predicate, cmd);
 			}
 			if (template.Object != null) {
 				if (template.Subject != null || template.Predicate != null)
 					cmd.Append(" and");
-				if (template.Object is Literal) {
-					cmd.Append(" object = 0 and literal = \"");
-					cmd.Append(Escape(((Literal)template.Object).Value));
-					cmd.Append("\"");
-				} else {
-					cmd.Append(" object = ");
-					cmd.Append(ID(template.Object));
-				}
+				
+				WhereItem("object", template.Object, cmd);
 			}
 			if (template.Meta != null) {
 				cmd.Append(" and");
-				cmd.Append(" meta = ");
-				cmd.Append(ID(template.Meta));
+				WhereItem("meta", template.Meta, cmd);
+			}
+		}
+		
+		private int AsInt(object r) {
+			if (r is int) return (int)r;
+			if (r is string) return int.Parse((string)r);
+			throw new ArgumentException(r.ToString());
+		}
+		
+		private struct SPOLM {
+			public int S, P, O, M;
+			public string L;
+		}
+		
+		public override void Select(Statement[] templates, StatementSink result) {
+			if (templates.Length == 0) return;
+			
+			// See how many columns vary.
+			Resource s = null, p = null, o = null, m = null;
+			bool vs = false, vp = false, vo = false, vm = false;
+			bool first = true;
+			
+			foreach (Statement st in templates) {
+				if (first) { s = st.Subject; p = st.Predicate; o = st.Object; m = st.Meta; first = false; }
+				
+				if ((s == null && st.Subject != null) || (s != null && st.Subject == null) || (s != null && !st.Subject.Equals(s))) vs = true;
+				if ((p == null && st.Predicate != null) || (p != null && st.Predicate == null) || (p != null && !st.Predicate.Equals(p))) vp = true;
+				if ((o == null && st.Object != null) || (o != null && st.Object == null) || (o != null && !st.Object.Equals(o))) vo = true;
+				if ((m == null && st.Meta != null) || (m != null && st.Meta == null) || (m != null && !st.Meta.Equals(m))) vm = true;
+			}
+			
+			// If more than one column varies, do the selection individually.
+			int v = (vs ? 1 : 0) + (vp ? 1 : 0) + (vo ? 1 : 0) + (vm ? 1 : 0);
+			if (v > 1) { base.Select(templates, result); return; }
+			
+			if (!(s == null || s is Entity) || !(p == null || p is Entity) || !(m == null || m is Entity)) return;
+			
+			Statement q = new Statement(
+				(v == 0 || vs) ? new MultiEntity(0, templates) : (Entity)s,
+				vp ? new MultiEntity(1, templates) : (Entity)p,
+				vo ? new MultiEntity(2, templates) : o,
+				vm ? new MultiEntity(3, templates) : (Entity)m);
+			
+			Select(q, result);
+		}
+		
+		private class MultiEntity : Entity {
+			public ArrayList items;			
+			public MultiEntity(int c, Statement[] templates) : base(null, null) {
+				items = new ArrayList();
+				foreach (Statement st in templates) {
+					if (c == 0) items.Add(st.Subject);
+					if (c == 1) items.Add(st.Predicate);
+					if (c == 2) items.Add(st.Object);
+					if (c == 3) items.Add(st.Meta);
+				}
 			}
 		}
 		
@@ -124,21 +207,48 @@ namespace SemWeb {
 			cmd.Append(table);
 			WhereClause(template, cmd);
 			
+			ArrayList items = new ArrayList();
+			
 			IDataReader reader = RunReader(cmd.ToString());
-			while (reader.Read()) {
-				int s = int.Parse((string)reader[0]);
-				int p = int.Parse((string)reader[1]);
-				int o = int.Parse((string)reader[2]);
-				int m = int.Parse((string)reader[4]);
+			try {
+				while (reader.Read()) {
+					int s = AsInt(reader[0]);
+					int p = AsInt(reader[1]);
+					int o = AsInt(reader[2]);
+					int m = AsInt(reader[4]);
+					
+					SPOLM d = new SPOLM();
+					d.S = s;
+					d.P = p;
+					d.O = o;
+					d.M = m;
+					
+					string literal = null;
+					if (o == 0) {
+						if (reader[3] is string)
+							literal = (string)reader[3];
+						else if (reader[3] is byte[])
+							literal = System.Text.Encoding.UTF8.GetString((byte[])reader[3]);
+						else
+							throw new FormatException("SQL store returned a literal value as " + reader[3]);
+					}
+					d.L = literal;
+				
+					items.Add(d);
+				}
+			} finally {
+				reader.Close();
+			}
+			
+			foreach (SPOLM item in items) {
 				bool ret = result.Add(new Statement(
-					new DBResource(this, s, null, false),
-					new DBResource(this, p, null, false),
-					o == 0 ? (Resource)new Literal((string)reader[3], Model) : new DBResource(this, o, null, false),
-					m == 0 ? null : new DBResource(this, m, null, false)
+					new DBResource(this, item.S, null, false),
+					new DBResource(this, item.P, null, false),
+					item.O == 0 ? (Resource)new Literal(item.L, Model) : new DBResource(this, item.O, null, false),
+					item.M == 0 ? null : new DBResource(this, item.M, null, false)
 					));
 				if (!ret) break;
 			}
-			reader.Close();
 		}
 
 		private int ID(Resource resource) {
@@ -150,9 +260,7 @@ namespace SemWeb {
 		private string GetUri(int id) {
 			Init();
 			
-			string ret = (string)RunScalar("SELECT literal FROM " + table + " WHERE subject = " + id + " and predicate = 1");
-			if (ret == null) ret = "";
-			return ret;
+			return RunScalarString("SELECT literal FROM " + table + " WHERE subject = " + id + " and predicate = 1");
 		}
 		
 		private int GetId(string uri, bool create) {
@@ -162,6 +270,7 @@ namespace SemWeb {
 			if (ret == null && !create) return 0;
 			
 			if (ret == null) {				
+				GetNextId();
 				RunCommand("INSERT INTO " + table + " VALUES (" + nextid + ", 1, 0, \"" + Escape(uri) + "\", 0)");
 				return nextid++;
 			} else {
@@ -200,8 +309,20 @@ namespace SemWeb {
 				get {
 					if (anon) return null;
 					if (uri == null) uri = store.GetUri(id);
+					if (uri == null) anon = true;
 					return uri;
 				}
+			}
+			
+			public override int GetHashCode() {
+				return GetId().GetHashCode();
+			}
+			
+			public override bool Equals(object o) {
+				if (o is Literal || o is AnonymousNode) return false;
+				if (!(o is DBResource)) return base.Equals(o);
+				DBResource r = (DBResource)o;
+				return GetId() == r.GetId();
 			}
 		}
 
@@ -228,6 +349,14 @@ namespace SemWeb {
 			}
 		}
 		
+		protected string RunScalarString(string sql) {
+			object ret = RunScalar(sql);
+			if (ret == null) return null;
+			if (ret is string) return (string)ret;
+			if (ret is byte[]) return System.Text.Encoding.UTF8.GetString((byte[])ret);
+			throw new FormatException("SQL store returned a literal value as " + ret);
+		}
+
 		protected virtual void CreateTable() {
 			RunCommand("CREATE TABLE " + table + 
 				"(subject int, predicate int, object int, literal blob, meta int)");
@@ -285,13 +414,13 @@ namespace SemWeb {
 		}
 		
 		public override void Dispose() {
+			writer.WriteLine("CREATE INDEX subject_index ON " + table + "(subject);");
+			writer.WriteLine("CREATE INDEX predicate_index ON " + table + "(predicate);");
+			writer.WriteLine("CREATE INDEX object_index ON " + table + "(object);");
 			Close();
 		}
 		
 		public override void Close() {
-			writer.WriteLine("CREATE INDEX subject_index ON " + table + "(subject);");
-			writer.WriteLine("CREATE INDEX predicate_index ON " + table + "(predicate);");
-			writer.WriteLine("CREATE INDEX object_index ON " + table + "(object);");
 			writer.Close();
 		}
 
@@ -311,7 +440,7 @@ namespace SemWeb {
 			} else {
 				id = (++resourcecounter).ToString();
 				resources[uri] = id;
-				writer.WriteLine("INSERT INTO {0} VALUES ({1}, 0, 0, \"{2}\", 0);", table, id, SQLStore.Escape(uri));
+				writer.WriteLine("INSERT INTO {0} VALUES ({1}, 1, 0, \"{2}\", 0);", table, id, SQLStore.Escape(uri));
 			}
 			
 			fastmap[x, 0] = uri;

@@ -12,17 +12,17 @@ public class RDFQuery {
 			return;
 		}
 		
+		RdfParser queryparser = new RdfXmlParser(Console.In);
+		queryparser.BaseUri = "query://query/";
+		KnowledgeModel querymodel = new KnowledgeModel(queryparser);
+		
+		RSquary query = new RSquary(querymodel, "query://query/#query");
 		KnowledgeModel model = new KnowledgeModel();
 		foreach (string arg in args) {
 			Store storage = Store.CreateForInput(arg, model);
 			model.Add(storage);
 		}
 		
-		RdfParser queryparser = new RdfXmlParser(Console.In);
-		queryparser.BaseUri = "query://query/";
-		KnowledgeModel querymodel = new KnowledgeModel(queryparser);
-		
-		RSquary query = new RSquary(querymodel, "query://query/#query");
 		query.Query(model, new PrintQuerySink());
 	}
 }

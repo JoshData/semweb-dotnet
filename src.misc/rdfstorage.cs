@@ -43,6 +43,8 @@ public class RDFStorage {
 			RdfParser parser = RdfParser.Create(opts.@in, infile);
 			storage.Import(parser);
 		}
+		
+		if (storage is IDisposable) ((IDisposable)storage).Dispose();
 	}
 }
 

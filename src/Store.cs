@@ -40,7 +40,7 @@ namespace SemWeb {
 			return true;
 		}
 	}
-
+	
 	public abstract class Store : StatementSink {
 		
 		KnowledgeModel model;
@@ -271,6 +271,10 @@ namespace SemWeb {
 				s.Select(template, result);
 		}
 		
+		public override void Select(Statement[] templates, StatementSink result) {
+			foreach (Store s in stores)
+				s.Select(templates, result);
+		}
 	}
 	
 }

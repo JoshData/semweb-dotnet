@@ -42,9 +42,9 @@ namespace SemWeb {
 			}
 		}
 		
-		public override void Parse(Store Store) {
+		public override void Parse(Store store) {
 			Hashtable anonymous = new Hashtable();
-			while (ReadStatement(new MyReader(sourcestream), Store, namespaces, anonymous)) { }
+			while (ReadStatement(new MyReader(sourcestream), store, namespaces, anonymous)) { }
 		}
 		
 		private bool ReadStatement(MyReader source, Store Store, NamespaceManager namespaces, Hashtable anonymous) {

@@ -49,6 +49,10 @@ namespace SemWeb {
 			mainstore.Select(template, result);
 		}
 		
+		public override void Select(Statement[] templates, StatementSink result) {
+			mainstore.Select(templates, result);
+		}
+
 		public override int StatementCount { get { return stores.StatementCount; } }
 
 		public override void Clear() { throw new InvalidOperationException(); }
