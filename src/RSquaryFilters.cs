@@ -47,7 +47,7 @@ namespace SemWeb.Query {
 	public abstract class LiteralValueFilter : ValueFilter {
 	}
 
-	public abstract class StringFilter : LiteralValueFilter {
+	internal abstract class StringFilter : LiteralValueFilter {
 		protected readonly string pattern;
 		public StringFilter(Literal res) : this(res.Value) {
 		}
@@ -56,7 +56,7 @@ namespace SemWeb.Query {
 		}
 	}
 	
-	public class StringCompareFilter : StringFilter {
+	internal class StringCompareFilter : StringFilter {
 		int compare;
 		bool eq;
 		
@@ -80,7 +80,7 @@ namespace SemWeb.Query {
 		}
 	}	
 
-	public class StringContainsFilter : StringFilter {
+	internal class StringContainsFilter : StringFilter {
 		public StringContainsFilter(Literal res) : base(res) { }
 		public StringContainsFilter(string pattern) : base(pattern) { }
 		
@@ -90,14 +90,14 @@ namespace SemWeb.Query {
 		}
 	}
 	
-	public abstract class NumericFilter : LiteralValueFilter {
+	internal abstract class NumericFilter : LiteralValueFilter {
 		protected readonly Decimal number;
 		public NumericFilter(Literal res) : this(int.Parse(res.Value)) { }
 		public NumericFilter(Decimal number) { this.number = number; }
 		
 	}
 
-	public class NumericCompareFilter : NumericFilter {
+	internal class NumericCompareFilter : NumericFilter {
 		int compare;
 		bool eq;
 		
@@ -117,14 +117,14 @@ namespace SemWeb.Query {
 		}
 	}
 
-	public abstract class DateTimeFilter : LiteralValueFilter {
+	internal abstract class DateTimeFilter : LiteralValueFilter {
 		protected readonly DateTime datetime;
 		public DateTimeFilter(Literal res) : this(DateTime.Parse(res.Value)) { }
 		public DateTimeFilter(DateTime datetime) { this.datetime = datetime; }
 		
 	}
 
-	public class DateTimeCompareFilter : DateTimeFilter {
+	internal class DateTimeCompareFilter : DateTimeFilter {
 		int compare;
 		bool eq;
 		
@@ -144,14 +144,14 @@ namespace SemWeb.Query {
 		}
 	}
 	
-	public abstract class TimeSpanFilter : LiteralValueFilter {
+	internal abstract class TimeSpanFilter : LiteralValueFilter {
 		protected readonly TimeSpan timespan;
 		public TimeSpanFilter(Literal res) : this(TimeSpan.Parse(res.Value)) { }
 		public TimeSpanFilter(TimeSpan timespan) { this.timespan = timespan; }
 		
 	}
 
-	public class TimeSpanCompareFilter : TimeSpanFilter {
+	internal class TimeSpanCompareFilter : TimeSpanFilter {
 		int compare;
 		bool eq;
 		

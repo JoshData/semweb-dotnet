@@ -46,7 +46,7 @@ namespace SemWeb {
 				} else
 					template = new Statement(null, relation, this);
 				
-				MemoryStore result = model.Select(template);
+				SemWeb.Stores.MemoryStore result = model.Select(template);
 				foreach (Statement s in result.Statements) {
 					Resource obj;
 					if (forward)
@@ -173,15 +173,15 @@ namespace SemWeb {
 			return ret.ToString();
 		}
 		
-		public static Literal Parse(string literal, KnowledgeModel model) {
+		public static Literal Parse(string literal, KnowledgeModel model, NamespaceManager namespaces) {
 			if (!literal.StartsWith("\"")) throw new FormatException("Literal value must start with a quote.");
 			int quote = literal.LastIndexOf('"');
 			if (quote <= 0) throw new FormatException("Literal value must have an end quote (" + literal + ")");
 			string value = literal.Substring(1, quote-1);
 			literal = literal.Substring(quote+1);
 			
-			literal = literal.Replace("\\\"", "\"");
-			literal = literal.Replace("\\\\", "\\");
+			value = value.Replace("\\\"", "\"");
+			value = value.Replace("\\\\", "\\");
 			
 			string lang = null;
 			string datatype = null;
@@ -195,8 +195,14 @@ namespace SemWeb {
 				}
 			}
 			
-			if (literal.StartsWith("^^<") && literal.EndsWith(">")) {
-				datatype = literal.Substring(3, literal.Length-4);
+			if (literal.StartsWith("^^")) {
+				if (literal.StartsWith("^^<") && literal.EndsWith(">")) {
+					datatype = literal.Substring(3, literal.Length-4);
+				} else {
+					if (namespaces == null)
+						throw new ArgumentException("No NamespaceManager was given to resolve the QName in the literal string.");
+					datatype = namespaces.Resolve(literal.Substring(2));
+				}
 			}
 			
 			return new Literal(value, lang, datatype, model);

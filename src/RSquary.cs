@@ -3,6 +3,7 @@ using System.Collections;
 using System.IO;
 
 using SemWeb;
+using SemWeb.Stores;
 
 namespace SemWeb.Query {
 	public class QueryException : ApplicationException {

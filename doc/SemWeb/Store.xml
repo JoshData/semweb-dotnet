@@ -2,7 +2,7 @@
   <TypeSignature Language="C#" Value="public abstract class Store : SemWeb.StatementSink" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
-    <AssemblyVersion>1.0.1898.26734</AssemblyVersion>
+    <AssemblyVersion>1.0.1898.28475</AssemblyVersion>
   </AssemblyInfo>
   <Base>
     <BaseTypeName>System.Object</BaseTypeName>
@@ -247,22 +247,7 @@
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
-    <Member MemberName="Select">
-      <MemberSignature Language="C#" Value="public SemWeb.MemoryStore Select (SemWeb.Statement template);" />
-      <MemberType>Method</MemberType>
-      <ReturnValue>
-        <ReturnType>SemWeb.MemoryStore</ReturnType>
-      </ReturnValue>
-      <Parameters>
-        <Parameter Name="template" Type="SemWeb.Statement" />
-      </Parameters>
-      <Docs>
-        <param name="template">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
-      </Docs>
-    </Member>
+    
     <Member MemberName="SelectObjects">
       <MemberSignature Language="C#" Value="public SemWeb.Resource[] SelectObjects (SemWeb.Entity subject, SemWeb.Entity predicate);" />
       <MemberType>Method</MemberType>
@@ -355,9 +340,25 @@
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
+  <Member MemberName="Select">
+      <MemberSignature Language="C#" Value="public SemWeb.Stores.MemoryStore Select (SemWeb.Statement template);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>SemWeb.Stores.MemoryStore</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="template" Type="SemWeb.Statement" />
+      </Parameters>
+      <Docs>
+        <param name="template">To be added.</param>
+        <summary>To be added.</summary>
+        <returns>To be added.</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
   </Members>
   <Docs>
-    <summary>A repository for <see cref="T:SemWeb.Statement" />s.</summary>
-    <remarks>This class is abstract.  Two implementations are provided in this assembly.  The <see cref="T:SemWeb.MemoryStore" /> maintains an in-memory array of statements.  The <see cref="T:SemWeb.WriterStore" /> is a helper class which writes all statements added to the store to a <see cref="T:SemWeb.RdfWriter" />.</remarks>
+    <summary>An RDF graph, which is a repository for <see cref="T:SemWeb.Statement" />s.</summary>
+    <remarks>This class is abstract.  The <see cref="T:SemWeb.Stores.MemoryStore" /> maintains an in-memory array of statements.</remarks>
   </Docs>
 </Type>

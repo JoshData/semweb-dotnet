@@ -37,15 +37,17 @@ namespace SemWeb {
 		public static RdfParser Create(string type, string source) {
 			switch (type) {
 				case "xml":
+				case "text/xml":
 					return new SemWeb.IO.RdfXmlParser(source);
 				case "n3":
+				case "text/n3":
 					return new SemWeb.IO.N3Parser(source);
 				default:
 					throw new ArgumentException("Unknown parser type: " + type);
 			}
 		}
 		
-		protected static TextReader GetReader(string file) {
+		internal static TextReader GetReader(string file) {
 			if (file == "-") return Console.In;
 			return new StreamReader(file);
 		}

@@ -2,7 +2,7 @@
   <TypeSignature Language="C#" Value="public abstract class RdfParser : System.IDisposable" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
-    <AssemblyVersion>1.0.1898.26734</AssemblyVersion>
+    <AssemblyVersion>1.0.1898.28475</AssemblyVersion>
   </AssemblyInfo>
   <Base>
     <BaseTypeName>System.Object</BaseTypeName>
@@ -67,22 +67,7 @@
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
-    <Member MemberName="GetReader">
-      <MemberSignature Language="C#" Value="protected static System.IO.TextReader GetReader (string file);" />
-      <MemberType>Method</MemberType>
-      <ReturnValue>
-        <ReturnType>System.IO.TextReader</ReturnType>
-      </ReturnValue>
-      <Parameters>
-        <Parameter Name="file" Type="System.String" />
-      </Parameters>
-      <Docs>
-        <param name="file">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
-      </Docs>
-    </Member>
+    
     <Member MemberName="Meta">
       <MemberSignature Language="C#" Value="public SemWeb.Entity Meta { set; get; };" />
       <MemberType>Property</MemberType>

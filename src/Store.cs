@@ -68,25 +68,25 @@ namespace SemWeb {
 			
 			switch (type) {
 				case "mem":
-					return new MemoryStore(model);
+					return new SemWeb.Stores.MemoryStore(model);
 				case "xml":
 					if (spec == "") throw new ArgumentException("Use: xml:filename");
 					if (output) {
-						return new WriterStore(new SemWeb.IO.RdfXmlWriter(spec), model);
+						return new SemWeb.Stores.WriterStore(new SemWeb.IO.RdfXmlWriter(spec), model);
 					} else {
-						return new MemoryStore(new SemWeb.IO.RdfXmlParser(spec), model);
+						return new SemWeb.Stores.MemoryStore(new SemWeb.IO.RdfXmlParser(spec), model);
 					}
 				case "n3":
 					if (spec == "") throw new ArgumentException("Use: n3:filename");
 					if (output) {
-						return new WriterStore(new SemWeb.IO.N3Writer(spec), model);
+						return new SemWeb.Stores.WriterStore(new SemWeb.IO.N3Writer(spec), model);
 					} else {
-						return new MemoryStore(new SemWeb.IO.N3Parser(spec), model);
+						return new SemWeb.Stores.MemoryStore(new SemWeb.IO.N3Parser(spec), model);
 					}
 				case "sql":
 					if (spec == "") throw new ArgumentException("Use: sql:tablename");
 					if (output)
-						return new WriterStore(new SemWeb.IO.SQLWriter(spec), model);
+						return new SemWeb.Stores.WriterStore(new SemWeb.IO.SQLWriter(spec), model);
 					else
 						throw new InvalidOperationException("sql output does not support input.");
 				case "sqlite":
@@ -133,7 +133,7 @@ namespace SemWeb {
 		public Entity[] GetEntitiesOfType(Entity type) {
 			ArrayList entities = new ArrayList();
 			
-			MemoryStore result = Select(new Statement(null, rdfType, type));
+			SemWeb.Stores.MemoryStore result = Select(new Statement(null, rdfType, type));
 			foreach (Statement s in result.Statements) {
 				entities.Add(s.Subject);
 			}
@@ -170,8 +170,8 @@ namespace SemWeb {
 				Select(template, result);
 		}
 		
-		public MemoryStore Select(Statement template) {
-			MemoryStore ms = new MemoryStore(Model);
+		public SemWeb.Stores.MemoryStore Select(Statement template) {
+			SemWeb.Stores.MemoryStore ms = new SemWeb.Stores.MemoryStore(Model);
 			Select(template, ms);
 			return ms;
 		}
@@ -219,7 +219,7 @@ namespace SemWeb.Stores {
 		}
 		
 		public void Add(Store store, RdfParser source) {
-			stores.Add(store);
+			Add(store);
 			store.Import(source);
 		}
 		

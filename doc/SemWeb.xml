@@ -3,9 +3,7 @@
     <summary><para>The SemWeb namespace contains types related to using information in Resource Description Format (RDF).</para>
 
 </summary>
-    <remarks><para>Classes that inherit from <see cref="T:SemWeb.Store" /> are repositories of RDF <see cref="T:SemWeb.Statement" />s about <see cref="T:SemWeb.Resource" />s (<see cref="T:SemWeb.Entity" />s and <see cref="T:SemWeb.Literal" />s).</para>
-
-<para>The <see cref="T:SemWeb.N3Parser" /> and <see cref="T:SemWeb.N3Writer" />, as well as the Drive-based <see cref="T:SemWeb.RdfXmlParser" />, are the primary means of loading RDF data into stores and writing out RDF data into files.</para>
+    <remarks><para>Classes that inherit from <see cref="T:SemWeb.Store" /> are repositories of <see cref="T:SemWeb.Statement" />s about <see cref="T:SemWeb.Resource" />s (<see cref="T:SemWeb.Entity" />s and <see cref="T:SemWeb.Literal" />s).</para>
 
 <para>The <see cref="T:SemWeb.KnowledgeModel" /> is a specialized RDF store used to combine the knowledge in multiple stores with inference engines.</para>
 

@@ -436,7 +436,7 @@ namespace SemWeb.IO {
 			// STRING LITERAL
 			
 			if (str.StartsWith("\"")) {
-				return Literal.Parse(str, context.store.Model);
+				return Literal.Parse(str, context.store.Model, context.namespaces);
 			}
 			
 			// NUMERIC LITERAL

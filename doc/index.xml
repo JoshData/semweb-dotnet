@@ -7,7 +7,6 @@
       <Type Name="StatementSink" />
       <Type Name="Store" />
       <Type Name="KnowledgeModel" />
-      <Type Name="MemoryStore" />
       <Type Name="RdfParser" />
       <Type Name="RdfWriter" />
       <Type Name="NamespaceManager" />
@@ -18,8 +17,6 @@
       <Type Name="Entity" />
       <Type Name="Literal" />
       <Type Name="Statement" />
-      <Type Name="WriterStore" />
-      <Type Name="XPathSemWebNavigator" />
     </Namespace>
     <Namespace Name="SemWeb.Query">
       <Type Name="QueryException" />
@@ -31,19 +28,12 @@
       <Type Name="VariableBinding" />
       <Type Name="ValueFilter" />
       <Type Name="LiteralValueFilter" />
-      <Type Name="StringFilter" />
-      <Type Name="StringCompareFilter" />
-      <Type Name="StringContainsFilter" />
-      <Type Name="NumericFilter" />
-      <Type Name="NumericCompareFilter" />
-      <Type Name="DateTimeFilter" />
-      <Type Name="DateTimeCompareFilter" />
-      <Type Name="TimeSpanFilter" />
-      <Type Name="TimeSpanCompareFilter" />
     </Namespace>
     <Namespace Name="SemWeb.Stores">
       <Type Name="MultiStore" />
       <Type Name="SQLStore" />
+      <Type Name="MemoryStore" />
+      <Type Name="WriterStore" />
     </Namespace>
     <Namespace Name="SemWeb.IO">
       <Type Name="N3Parser" />

@@ -2,7 +2,7 @@
   <TypeSignature Language="C#" Value="public class InferenceStore : SemWeb.Store" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
-    <AssemblyVersion>1.0.1898.26734</AssemblyVersion>
+    <AssemblyVersion>1.0.1898.28475</AssemblyVersion>
   </AssemblyInfo>
   <Base>
     <BaseTypeName>SemWeb.Store</BaseTypeName>
@@ -17,10 +17,10 @@
         <Parameter Name="engine" Type="SemWeb.ReasoningEngine" />
       </Parameters>
       <Docs>
-        <param name="store">To be added.</param>
-        <param name="engine">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
+        <param name="store">The underlying data model from which to draw inferences.</param>
+        <param name="engine">A reasoning engine that is able to draw interences.</param>
+        <summary>Constructs a new inference store.</summary>
+        <remarks>None.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Source">
@@ -30,9 +30,9 @@
         <ReturnType>SemWeb.Store</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
+        <summary>The underlying data model passed to the constructor.</summary>
+        <value>The underlying data model passed to the constructor.</value>
+        <remarks>None.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Engine">
@@ -42,14 +42,20 @@
         <ReturnType>SemWeb.ReasoningEngine</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
+        <summary>The reasoning engine passed to the constructor.</summary>
+        <value>The reasoning engine passed to the constructor.</value>
+        <remarks>None.</remarks>
       </Docs>
     </Member>
   </Members>
   <Docs>
-    <summary>To be added.</summary>
-    <remarks>To be added.</remarks>
+    <summary>A store that draws interences using reasoning engines.</summary>
+    <remarks>
+      <para>Reasoning engines are implemented in the <see cref="N:SemWeb.Reasoning" /> namespace.</para>
+
+<para>This class overrides the Contains and Select methods to augment the corresponding methods in the underlying data model with inferences.</para>
+
+<para>The underlying data store should not be modified once it is passed to the constructor of InferenceStore.</para>
+</remarks>
   </Docs>
 </Type>

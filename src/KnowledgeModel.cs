@@ -20,7 +20,7 @@ namespace SemWeb {
 		}
 		
 		public KnowledgeModel(RdfParser parser) : this() {
-			stores.Add(new MemoryStore(parser, this));
+			stores.Add(new SemWeb.Stores.MemoryStore(parser, this));
 		}
 
 		public override KnowledgeModel Model { get { return this; } }

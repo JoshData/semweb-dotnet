@@ -21,7 +21,7 @@ public class Test {
 		return new SqliteStore("URI=file:SqliteTest.db", "rdf", model);
 	}
 	
-	private static void Recurse(XPathSemWebNavigator nav, string indent) {
+	/*private static void Recurse(XPathSemWebNavigator nav, string indent) {
 		nav = (XPathSemWebNavigator)nav.Clone();
 		Console.Write(indent);
 		Console.WriteLine(nav.NamespaceURI + nav.LocalName + " = " + nav.Value);
@@ -30,7 +30,7 @@ public class Test {
 			Recurse(nav, indent + " ");
 			if (!nav.MoveToNext()) break;
 		}
-	}
+	}*/
 	
 	public static void Main(string[] args) {
 		KnowledgeModel model = new KnowledgeModel();
@@ -45,8 +45,8 @@ public class Test {
 		qp.BaseUri = "query://query/";
 		queryfile.Import(qp);
 		
-		XPathSemWebNavigator nav = new XPathSemWebNavigator(queryfile.GetResource("query://query/#query"), queryfile, null);
-		Recurse(nav, "");
+		//XPathSemWebNavigator nav = new XPathSemWebNavigator(queryfile.GetResource("query://query/#query"), queryfile, null);
+		//Recurse(nav, "");
 
 		RSquary query = new RSquary(queryfile, "query://query/#query");
 		

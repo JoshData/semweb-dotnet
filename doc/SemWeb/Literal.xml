@@ -2,7 +2,7 @@
   <TypeSignature Language="C#" Value="public class Literal : SemWeb.Resource" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
-    <AssemblyVersion>1.0.1898.26734</AssemblyVersion>
+    <AssemblyVersion>1.0.1898.28475</AssemblyVersion>
   </AssemblyInfo>
   <Base>
     <BaseTypeName>SemWeb.Resource</BaseTypeName>
@@ -16,9 +16,9 @@
         <Parameter Name="value" Type="System.String" />
       </Parameters>
       <Docs>
-        <param name="value">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
+        <param name="value">The value of the Literal node.</param>
+        <summary>Creates a new Literal with the given value not associated with a KnowledgeModel.</summary>
+        <remarks>None.</remarks>
       </Docs>
     </Member>
     <Member MemberName=".ctor">
@@ -29,10 +29,10 @@
         <Parameter Name="model" Type="SemWeb.KnowledgeModel" />
       </Parameters>
       <Docs>
-        <param name="value">To be added.</param>
-        <param name="model">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
+        <param name="value">The value of the Literal node.</param>
+        <param name="model">The KnowledgeModel to associate the node with, or <see langword="null" />.</param>
+        <summary>Creates a new Literal with the given value, associated with a KnoeledgeModel.</summary>
+        <remarks>None.</remarks>
       </Docs>
     </Member>
     <Member MemberName=".ctor">
@@ -44,11 +44,11 @@
         <Parameter Name="dataType" Type="System.String" />
       </Parameters>
       <Docs>
-        <param name="value">To be added.</param>
-        <param name="language">To be added.</param>
-        <param name="dataType">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
+        <param name="value">The value of the Literal node.</param>
+        <param name="language">A language identifier, or <see langword="null" /> to leave the language unspecified.</param>
+        <param name="dataType">The URI that gives the datatype of the literal, or <see langword="null" /> to leave the specific datatype unspecified.</param>
+        <summary>Creates a new Literal with the given value, language, and datatype.</summary>
+        <remarks>None.</remarks>
       </Docs>
     </Member>
     <Member MemberName=".ctor">
@@ -61,16 +61,16 @@
         <Parameter Name="model" Type="SemWeb.KnowledgeModel" />
       </Parameters>
       <Docs>
-        <param name="value">To be added.</param>
-        <param name="language">To be added.</param>
-        <param name="dataType">To be added.</param>
-        <param name="model">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
+        <param name="value">The value of the Literal node.</param>
+        <param name="language">A language identifier, or <see langword="null" /> to leave the language unspecified.</param>
+        <param name="dataType">The URI that gives the datatype of the literal, or <see langword="null" /> to leave the specific datatype unspecified.</param>
+        <param name="model">The KnowledgeModel to associate the node with, or <see langword="null" />.</param>
+        <summary>Creates a new Literal with the given value, language, and datatype, and associates the Literal with a KnowledgeModel.</summary>
+        <remarks>None.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Parse">
-      <MemberSignature Language="C#" Value="public static SemWeb.Literal Parse (string literal, SemWeb.KnowledgeModel model);" />
+      <MemberSignature Language="C#" Value="public static SemWeb.Literal Parse (string literal, SemWeb.KnowledgeModel model, SemWeb.NamespaceManager namespaces);" />
       <MemberType>Method</MemberType>
       <ReturnValue>
         <ReturnType>SemWeb.Literal</ReturnType>
@@ -78,13 +78,17 @@
       <Parameters>
         <Parameter Name="literal" Type="System.String" />
         <Parameter Name="model" Type="SemWeb.KnowledgeModel" />
+        <Parameter Name="namespaces" Type="SemWeb.NamespaceManager" />
       </Parameters>
       <Docs>
-        <param name="literal">To be added.</param>
-        <param name="model">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
+        <param name="literal">The string value of the Literal.</param>
+        <param name="model">The KnowledgeModel to associate with the Literal, or <see langword="null" />.</param>
+        <param name="namespaces">A NamespaceManager to use to resolve a QName in the datatype, or <see langword="null" />.</param>
+        <summary>Parses a Literal from an N3-style representation.</summary>
+        <returns>A Literal object.</returns>
+        <remarks>
+          <para>The string form must have the format:  "value"@langid|^^datatype, where datatype is an angle-bracket-enclosed URI, or a qualified name.  The only require part is the quote-enclosed value, and only one of the language and datatype can be given.</para>
+<para>If <paramref name="namespaces" /> is <see langword="null" /> and a QName is found as the datatype, a <see cref="T:System.ArgumentException" /> is thrown. </para></remarks>
       </Docs>
     </Member>
     <Member MemberName="Value">
@@ -94,9 +98,9 @@
         <ReturnType>System.String</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
+        <summary>The value of the literal.</summary>
+        <value>The string value of the literal.</value>
+        <remarks>None.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Language">
@@ -106,9 +110,9 @@
         <ReturnType>System.String</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
+        <summary>The language of the literal.</summary>
+        <value>The language identifier of the literal, or <see langword="null" />.</value>
+        <remarks>None.</remarks>
       </Docs>
     </Member>
     <Member MemberName="DataType">
@@ -118,14 +122,14 @@
         <ReturnType>System.String</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
+        <summary>The datatype URI of the literal.</summary>
+        <value>The datatype URI of the literal, or <see langword="null" />.</value>
+        <remarks>None.</remarks>
       </Docs>
     </Member>
   </Members>
   <Docs>
-    <summary>To be added.</summary>
-    <remarks>To be added.</remarks>
+    <summary>A literal node in an RDF graph.</summary>
+    <remarks>Literals are string values optionally with a language string or datatype URI.</remarks>
   </Docs>
 </Type>

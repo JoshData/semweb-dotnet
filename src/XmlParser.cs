@@ -58,7 +58,7 @@ namespace SemWeb.IO {
 				return ret;
 			}
 			if (str.StartsWith("\""))
-				return Literal.Parse(str, storage.Model);
+				return Literal.Parse(str, storage.Model, null);
 			
 			if (str.StartsWith("_:")) {
 				if (anons.ContainsKey(str))

@@ -288,7 +288,7 @@ namespace SemWeb.Stores {
 				bool ret = result.Add(new Statement(
 					new DBResource(this, item.S, null, false),
 					new DBResource(this, item.P, null, false),
-					item.O == 0 ? (Resource)Literal.Parse(item.L, Model) : new DBResource(this, item.O, null, false),
+					item.O == 0 ? (Resource)Literal.Parse(item.L, Model, null) : new DBResource(this, item.O, null, false),
 					item.M == 0 ? null : new DBResource(this, item.M, null, false)
 					));
 				if (!ret) break;

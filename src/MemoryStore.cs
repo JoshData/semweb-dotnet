@@ -1,7 +1,9 @@
 using System;
 using System.Collections;
 
-namespace SemWeb {
+using SemWeb;
+
+namespace SemWeb.Stores {
 	public class MemoryStore : Store, IEnumerable {
 		Hashtable uriToResource = new Hashtable();
 		

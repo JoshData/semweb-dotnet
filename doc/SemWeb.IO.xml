@@ -1,6 +1,7 @@
 <Namespace Name="SemWeb.IO">
   <Docs>
-    <summary>To be added.</summary>
-    <remarks>To be added.</remarks>
+    <summary>This namespace contains classes for reading and writing RDF data in RDF/XML and Notation 3 formats.</summary>
+    <remarks><para>The <see cref="T:SemWeb.N3Parser" /> and <see cref="T:SemWeb.N3Writer" />, as well as the Drive-based <see cref="T:SemWeb.RdfXmlParser" />, are the primary means of loading RDF data into stores and writing out RDF data into files.</para>
+</remarks>
   </Docs>
 </Namespace>

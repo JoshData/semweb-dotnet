@@ -2,7 +2,7 @@
   <TypeSignature Language="C#" Value="public class ParserException : System.ApplicationException" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
-    <AssemblyVersion>1.0.1898.26734</AssemblyVersion>
+    <AssemblyVersion>1.0.1898.28475</AssemblyVersion>
   </AssemblyInfo>
   <Base>
     <BaseTypeName>System.ApplicationException</BaseTypeName>

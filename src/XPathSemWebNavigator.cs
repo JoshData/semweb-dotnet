@@ -4,7 +4,7 @@ using System.Xml;
 using System.Xml.XPath;
 
 namespace SemWeb {
-	public class XPathSemWebNavigator : XPathNavigator {
+	internal class XPathSemWebNavigator : XPathNavigator {
 		Store model;
 		NamespaceManager nsmgr;
 		

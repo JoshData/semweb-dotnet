@@ -2,7 +2,7 @@
   <TypeSignature Language="C#" Value="public class MultiStore : SemWeb.Store" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
-    <AssemblyVersion>1.0.1898.26734</AssemblyVersion>
+    <AssemblyVersion>1.0.1898.28475</AssemblyVersion>
   </AssemblyInfo>
   <Base>
     <BaseTypeName>SemWeb.Store</BaseTypeName>
@@ -16,9 +16,9 @@
         <Parameter Name="model" Type="SemWeb.KnowledgeModel" />
       </Parameters>
       <Docs>
-        <param name="model">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
+        <param name="model">A KnowledgeModel to associate with the store, or <see langword="null" /> to not associate the store with a KnowledgeModel.</param>
+        <summary>Creates a new MultiStore associated with the KnowledgeModel.</summary>
+        <remarks>None.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Add">
@@ -31,9 +31,9 @@
         <Parameter Name="store" Type="SemWeb.Store" />
       </Parameters>
       <Docs>
-        <param name="store">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
+        <param name="store">A store to add to the group.</param>
+        <summary>Adds a store to the group.</summary>
+        <remarks>None.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Add">
@@ -47,10 +47,10 @@
         <Parameter Name="source" Type="SemWeb.RdfParser" />
       </Parameters>
       <Docs>
-        <param name="store">To be added.</param>
-        <param name="source">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
+        <param name="store">The store to add into the group.</param>
+        <param name="source">Statements to add into the store.</param>
+        <summary>Adds a store into the group and loads the contents of the parser into the store.</summary>
+        <remarks>This is a convenience function.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Remove">
@@ -63,14 +63,16 @@
         <Parameter Name="store" Type="SemWeb.Store" />
       </Parameters>
       <Docs>
-        <param name="store">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
+        <param name="store">The store to remove.</param>
+        <summary>Removes a store from the group.</summary>
+        <remarks>None.</remarks>
       </Docs>
     </Member>
   </Members>
   <Docs>
-    <summary>To be added.</summary>
-    <remarks>To be added.</remarks>
+    <summary>A group of stores.</summary>
+    <remarks>
+      <para>The class groups together multiple stores.  It is used by the <see cref="T:SemWeb.KnowledgeModel" /> class.</para>
+<para>The MultiStore does not support the Clear, Add, and Remove methods.</para></remarks>
   </Docs>
 </Type>
