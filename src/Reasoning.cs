@@ -233,8 +233,9 @@ namespace SemWeb.Reasoning {
 			
 			// X P Y
 			// Run a select for all Q s.t. Q subPropertyOf Y.
-			foreach (Entity predicate in getSubProperties(template.Predicate, source))
-				source.Select(new Statement(template.Subject, predicate, template.Object), result);			
+			foreach (Entity predicate in getSubProperties(template.Predicate, source)) {
+				source.Select(new Statement(template.Subject, predicate, template.Object), result);
+			}
 
 			// X rdfs:domain/range Y
 			if ((template.Predicate.Uri == rdfsDomain || template.Predicate.Uri == rdfsRange) && template.Object != null && template.Object is Entity) {
@@ -399,7 +400,6 @@ namespace SemWeb.Reasoning {
 				
 				// If P owl:Symmetric, find all Y P X.
 				if (source.Contains(new Statement(template.Predicate, rdfType, owlSymmetric))) {
-					Console.WriteLine(template.Predicate);
 					if (filter == null) filter = new InverseFilter(template.Predicate, result);
 					source.Select(new Statement((Entity)template.Object, template.Predicate, template.Subject), filter );
 				}			

@@ -70,6 +70,15 @@ namespace SemWeb.IO {
 		
 		private string URI(string uri) {
 			if (uri.StartsWith("_:anon")) return uri;
+			if (BaseUri != null && uri.StartsWith(BaseUri)) {
+				int len = BaseUri.Length;
+				bool ok = true;
+				for (int i = len; i < uri.Length; i++) {
+					if (!char.IsLetterOrDigit(uri[i])) { ok = false; break; }
+				}
+				if (ok)
+					return ":" + uri.Substring(len);
+			}
 			return ns.Normalize(uri);
 		}
 		

@@ -2,8 +2,10 @@ using System;
 using System.Collections;
 
 namespace SemWeb {
+	
 	public abstract class Resource {
 		KnowledgeModel model;
+		internal Hashtable extraKeys = new Hashtable();
 		
 		internal Resource() {
 			this.model = null;
@@ -65,28 +67,58 @@ namespace SemWeb {
 		}		
 	}
 	
-	public class Entity : Resource {
-		// Don't use this field directly below.  Use only the
-		// Uri property to allow derived classes to lazily load
-		// the Uri on the first request.
-		protected string uri;
+	public sealed class Entity : Resource {
+		private string uri;
+		private LazyUriLoader lazyLoader;
 		
 		public Entity(string uri) : this(uri, null) { }
 		
+		public Entity(KnowledgeModel model) : base(model) { this.uri = null; }
+		
 		public Entity(string uri, KnowledgeModel model) : base(model) { this.uri = uri; }
 		
-		public override string Uri { get { return uri; } }
+		public Entity(LazyUriLoader uriLoader, KnowledgeModel model) : base(model) { this.lazyLoader = uriLoader; }
+
+		public override string Uri {
+			get {
+				if (lazyLoader != null) {
+					uri = lazyLoader.LazyLoadUri(this);
+					lazyLoader = null;
+				}					
+				return uri;
+			}
+		}
 		
 		public static implicit operator Entity(string uri) { return new Entity(uri); }
 		
 		public override int GetHashCode() {
-			if (Uri == null) return 0;
+			if (lazyLoader != null || Uri == null) {
+				foreach (DictionaryEntry v in extraKeys)
+					return unchecked(v.Key.GetHashCode() + v.Value.GetHashCode());
+				return 0;
+			}
 			return Uri.GetHashCode();
 		}
 			
 		public override bool Equals(object other) {
 			if (!(other is Resource)) return false;
 			if ((object)this == other) return true;
+			
+			// If anonymous, then we have to compare extraKeys.  If we're lazy-loading
+			// the URI of this resource, then go for the extra keys too.
+			// Test the lazLoader first so that the Uri property isn't called!
+			if (lazyLoader != null || (Uri == null && ((Resource)other).Uri == null)) {
+				foreach (DictionaryEntry v in extraKeys) {
+					object v2 = ((Resource)other).extraKeys[v.Key];
+					if (v2 != null)
+						return v.Value.Equals(v2);
+				}
+				
+				// If anonymous and no match, false.  If LazyLoading, go on to test the URIs.
+				if (lazyLoader == null)
+					return false;
+			}				
+			
 			return ((Resource)other).Uri != null && ((Resource)other).Uri == Uri;
 		}
 
@@ -103,9 +135,13 @@ namespace SemWeb {
 		public static bool operator !=(Entity a, Entity b) {
 			return !(a == b);
 		}
+		
+		public interface LazyUriLoader {
+			string LazyLoadUri(Entity entity);
+		}
 	}
 	
-	public class Literal : Resource { 
+	public sealed class Literal : Resource { 
 		private string value, lang, type;
 		
 		public Literal(string value) : this(value, null) { }

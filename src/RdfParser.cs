@@ -10,6 +10,7 @@ namespace SemWeb {
 	public abstract class RdfParser : IDisposable {
 		Entity meta = null;
 		string baseuri = null;
+		ArrayList warnings = new ArrayList();
 		
 		public Entity Meta {
 			get {
@@ -50,6 +51,10 @@ namespace SemWeb {
 		internal static TextReader GetReader(string file) {
 			if (file == "-") return Console.In;
 			return new StreamReader(file);
+		}
+		
+		protected void OnWarning(string message) {
+			warnings.Add(message);
 		}
 	}
 	

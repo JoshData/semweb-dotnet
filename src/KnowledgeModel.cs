@@ -45,6 +45,10 @@ namespace SemWeb {
 		
 		public override Entity[] GetAllPredicates() { return stores.GetAllPredicates(); }
 		
+		public override bool Contains(Statement statement) {
+			return mainstore.Contains(statement);
+		}
+		
 		public override void Select(Statement template, StatementSink result) {
 			mainstore.Select(template, result);
 		}

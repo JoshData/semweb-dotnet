@@ -4,8 +4,19 @@ using System.IO;
 
 namespace SemWeb {
 	public abstract class RdfWriter : IDisposable, StatementSink {
+		private string baseuri;
+		
 		public abstract NamespaceManager Namespaces { get; }
 		
+		public string BaseUri {
+			get {
+				return baseuri;
+			}
+			set {
+				baseuri = value;
+			}
+		}
+
 		Hashtable anonymousNodes = new Hashtable();
 		
 		internal static TextWriter GetWriter(string dest) {

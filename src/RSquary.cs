@@ -156,6 +156,7 @@ namespace SemWeb.Query {
 		
 		public RSquary(Store queryModel, string queryUri, Hashtable extraValueFilters) {			
 			model = new KnowledgeModel();
+			
 			store = new MemoryStore(model);
 			model.Add(store);
 			store.Import(queryModel);
@@ -567,7 +568,7 @@ namespace SemWeb.Query {
 				// There were no statements about this variable.  Set it
 				// to an anonymous node, since it may have any value at all.
 				resources = new Set();
-				resources.Add(new Entity(null));
+				resources.Add(new Entity(state.target.Model));
 			}
 			
 			/*foreach (SelectCacheKey predicateFilterCacheKey in state.predicateFilterCacheClear[varIndex])
@@ -1047,6 +1048,43 @@ namespace SemWeb.Query {
 			output.WriteLine(");");
 			
 			return true;
+		}
+	}
+
+	public class XMLQuerySink : QueryResultSink, IDisposable {
+		System.Xml.XmlWriter output;
+		bool first = true;
+		
+		public XMLQuerySink(System.Xml.XmlWriter output) { this.output = output; }
+		
+		public override bool Add(VariableBinding[] result) {
+			if (first) {
+				output.WriteStartElement("results");
+				first = false;
+			}
+			
+			output.WriteStartElement("result");
+			foreach (VariableBinding var in result) {
+				if (var.Variable.Uri == null) continue;
+				output.WriteStartElement("binding");
+				output.WriteAttributeString("variable", var.Variable.ToString());
+				
+				if (var.Target is Literal) {
+					output.WriteAttributeString("targetType", "literal");
+					output.WriteAttributeString("target", ((Literal)var.Target).Value);
+				} else {
+					output.WriteAttributeString("targetType", "resource");
+					output.WriteAttributeString("target", var.Target.ToString());
+				}
+			}
+			output.WriteEndElement();
+			
+			return true;
+		}
+		
+		public void Dispose() {
+			output.WriteEndElement();
+			output.Close();
 		}
 	}
 

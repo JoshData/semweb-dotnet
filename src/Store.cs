@@ -185,7 +185,7 @@ namespace SemWeb {
 			foreach (Statement s in Select(new Statement(subject, predicate, null)).Statements)
 				if (!resources.ContainsKey(s.Object))
 					resources[s.Object] = s.Object;
-			return (Entity[])new ArrayList(resources.Keys).ToArray(typeof(Entity));
+			return (Resource[])new ArrayList(resources.Keys).ToArray(typeof(Resource));
 		}
 		public Entity[] SelectSubjects(Entity predicate, Entity @object) {
 			Hashtable resources = new Hashtable();
@@ -205,6 +205,12 @@ namespace SemWeb {
 			}
 		}
 
+		protected object GetResourceKey(Resource resource) {
+			return resource.extraKeys[this];
+		}
+		protected void SetResourceKey(Resource resource, object value) {
+			resource.extraKeys[this] = value;
+		}
 	}
 }
 

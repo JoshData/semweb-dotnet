@@ -41,7 +41,14 @@ namespace SemWeb {
 			string ret = "";
 			if (Subject != null) ret += "<" + Subject + "> "; else ret += "? ";
 			if (Predicate != null) ret += "<" + Predicate + "> "; else ret += "? ";
-			if (Object != null) ret += "<" + Object + ">"; else ret += "?";
+			if (Object != null) {
+				if (Object is Literal)
+					ret += Object;
+				else
+					ret += "<" + Object + ">";
+			} else {
+				ret += "?";
+			}
 			return ret + ".";
 		}
 		

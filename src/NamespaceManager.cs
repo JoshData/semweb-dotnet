@@ -61,15 +61,26 @@ namespace SemWeb {
 		
 		public string Normalize(string uri) {
 			string prefix, localname;
-			if (Normalize(uri, out prefix, out localname))
-				return prefix + ":" + localname;
+			if (Normalize(uri, out prefix, out localname)) {
+				bool ok = true;
+				if (localname.Length == 0) ok = false;
+				else if (!char.IsLetter(localname[0])) ok = false;
+				foreach (char c in localname)
+					if (!char.IsLetterOrDigit(c))
+						ok = false;
+				if (ok)
+					return prefix + ":" + localname;
+			}
 			return "<" + uri + ">";
 		}
 		
 		public string Resolve(string qname) {
 			int colon = qname.IndexOf(':');
 			if (colon == -1) throw new ArgumentException("Invalid qualified name.");
-			return GetNamespace(qname.Substring(0, colon)) + qname.Substring(colon+1);
+			string prefix = qname.Substring(0, colon);
+			string ns = GetNamespace(prefix);
+			if (ns == null) throw new ArgumentException("The prefix " + prefix + " is not declared.");
+			return ns + qname.Substring(colon+1);
 		}
 		
 		public ICollection GetNamespaces() {

@@ -92,7 +92,7 @@ namespace SemWeb.Stores {
 		}
 		
 		public override Entity CreateAnonymousResource() {
-			return new Entity(null, Model);
+			return new Entity(Model);
 		}
 		
 		private void ShorterList(ref IList list1, IList list2) {

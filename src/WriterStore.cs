@@ -32,8 +32,9 @@ namespace SemWeb.Stores {
 		}
 		
 		private string GetURI(Entity entity) {
-			if (entity is MyAnonymousNode)
-				return ((MyAnonymousNode)entity).writerURI;
+			object key = GetResourceKey(entity);
+			if (key != null)
+				return (string)key;
 			if (entity.Uri == null) throw new ArgumentException("Cannot add a statement with an anonymous resource not created from this store.");
 			return entity.Uri;
 		}
@@ -85,12 +86,9 @@ namespace SemWeb.Stores {
 		}
 		
 		public override Entity CreateAnonymousResource() {
-			return new MyAnonymousNode(writer.CreateAnonymousNode(), Model);
-		}
-		
-		private class MyAnonymousNode : Entity {
-			public readonly string writerURI;
-			public MyAnonymousNode(string uri, KnowledgeModel model) : base(null, model) { this.writerURI = uri; } 
+			Entity e = new Entity(Model);
+			SetResourceKey(e, writer.CreateAnonymousNode());
+			return e;
 		}
 	}
 	

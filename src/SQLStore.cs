@@ -8,19 +8,28 @@ namespace SemWeb.Stores {
 	// TODO: It's not safe to have two concurrent accesses to the same database
 	// because the creation of new entities will use the same IDs.
 	
-	public abstract class SQLStore : Store {
+	public abstract class SQLStore : Store, Entity.LazyUriLoader {
 		string table;
+		
 		bool firstUse = true;
+		Hashtable lockedIdCache = null;
+		int cachedNextId = -1;
 		
-		int scount = 0; // number of statements in the store
+		Hashtable entityMap = new Hashtable();
+		int entityMapInsertions = 0;
 		
-		bool hasNextId = false;
-		int nextid = 2; // the next ID of a new resource
+		private class ResourceKey {
+			public int ResId;
+			
+			public ResourceKey(int id) { ResId = id; }
+			
+			public override int GetHashCode() { return ResId; }
+			public override bool Equals(object other) { return (other is ResourceKey) && ((ResourceKey)other).ResId == ResId; }
+		}
 		
-		bool tableIsLocked = false;
-		
-		Hashtable lockedIdCache;
-		
+		private static readonly string[] threecols = new string[] { "subject", "predicate", "object" };
+		private static readonly string[] predcol = new string[] { "predicate" };
+
 		public SQLStore(string table, KnowledgeModel model) : base(model) {
 			this.table = table;
 		}
@@ -31,60 +40,277 @@ namespace SemWeb.Stores {
 			if (!firstUse) return;
 			firstUse = false;
 			
-			try {
-				CreateTable();
-				CreateIndexes();
-			} catch (Exception e) {
-			}
+			CreateTable();
+			CreateIndexes();
 		}
 		
-		public override int StatementCount { get { Init(); return RunScalarInt("select count(subject) from " + table, 0); } }
+		public override int StatementCount { get { Init(); return RunScalarInt("select count(subject) from " + table + "_statements", 0); } }
 		
-		private void GetNextId() {
-			if (hasNextId && tableIsLocked) return;
-
-			foreach (string column in new string[] { "subject", "predicate", "object", "meta" }) {
-				int maxid = RunScalarInt("select max(" + column + ") from " + table, 0);
-				if (maxid >= nextid) nextid = maxid + 1;
-			}
+		private int NextId() {
+			if (lockedIdCache != null && cachedNextId != -1)
+				return ++cachedNextId;
 			
-			if (nextid <= 2) nextid = 2;
+			// the 0 id is reserved for linking resources to their URIs,
+			// and for indicating a resource/literal is not present in the tables
+			int nextid = 1;
 			
-			if (tableIsLocked) hasNextId = true;
+			CheckMax("select max(subject) from " + table + "_statements", ref nextid);
+			CheckMax("select max(predicate) from " + table + "_statements", ref nextid);
+			CheckMax("select max(object) from " + table + "_statements where objecttype=0", ref nextid);
+			CheckMax("select max(meta) from " + table + "_statements", ref nextid);
+			CheckMax("select max(id) from " + table + "_literals", ref nextid);
+			
+			cachedNextId = nextid;
+			
+			return nextid;
+		}
+		
+		private void CheckMax(string command, ref int nextid) {
+			int maxid = RunScalarInt(command, 0);
+			if (maxid >= nextid) nextid = maxid + 1;
 		}
 		
 		public override void Clear() {
 			Init();
-			RunCommand("DELETE FROM " + table);
+			RunCommand("DELETE FROM " + table + "_statements");
+			RunCommand("DELETE FROM " + table + "_literals");
+		}
+		
+		private int GetLiteralId(Literal literal, bool create) {
+			// Returns the literal ID associated with the literal.  If a literal
+			// doesn't exist and create is true, a new literal is created,
+			// otherwise 0 is returned.
+
+			StringBuilder b = new StringBuilder();
+			b.Append("SELECT id FROM ");
+			b.Append(table);
+			b.Append("_literals WHERE value = ");
+			b.Append(Escape(literal.Value));
+			if (literal.Language != null) {
+				b.Append(" and language = ");
+				b.Append(Escape(literal.Language));
+			}
+			if (literal.DataType != null) {
+				b.Append(" and datatype = ");
+				b.Append(Escape(literal.DataType));
+			}
+			b.Append(" LIMIT 1");
+			
+			object id = RunScalar(b.ToString());
+			if (id == null) {
+				if (create) return AddLiteral(literal);
+				return 0;
+			}
+			
+			return AsInt(id);
+		}
+		
+		private int AddLiteral(Literal literal) {
+			int id = NextId();
+			
+			StringBuilder b = new StringBuilder();
+			b.Append("INSERT INTO ");
+			b.Append(table);
+			b.Append("_literals VALUES(");
+			b.Append(id);
+			b.Append(",");
+			b.Append(Escape(literal.Value));
+			b.Append(",");
+			if (literal.Language != null)
+				b.Append(Escape(literal.Language));
+			else
+				b.Append("NULL");
+			b.Append(",");
+			if (literal.DataType != null)
+				b.Append(Escape(literal.DataType));
+			else
+				b.Append("NULL");
+			b.Append(")");			
+			
+			RunCommand(b.ToString());
+			
+			return id;
+		}
+		
+		private int GetEntityId(string uri, bool create) {
+			// Returns the resource ID associated with the URI.  If a resource
+			// doesn't exist and create is true, a new resource is created,
+			// otherwise 0 is returned.	
+			
+			if (lockedIdCache != null) {
+				object idobj = lockedIdCache[uri];
+				if (idobj == null && !create) return 0;
+				if (idobj != null) return (int)idobj;
+			}
+			
+			int literalId = GetLiteralId(new Literal(uri), create);
+			if (literalId == 0) return 0; // only happens if !create
+			return GetEntityId(literalId, uri, create);
+		}
+		
+		private int GetEntityId(int uriId, string uri, bool create) {
+			StringBuilder b = new StringBuilder();
+			b.Append("SELECT subject FROM ");
+			b.Append(table);
+			b.Append("_statements WHERE predicate = 0 AND object = ");
+			b.Append(uriId);
+			b.Append(" LIMIT 1");
+			object id = RunScalar(b.ToString());
+			
+			if (id == null) {
+				if (create) return AddEntity(uriId, uri);
+				return 0;
+			}
+			
+			return AsInt(id);
+		}
+		
+		private int GetResourceId(Resource resource, bool create) {
+			if (resource == null) return 0;
+			
+			ResourceKey key = (ResourceKey)GetResourceKey(resource);
+			if (key != null) return key.ResId;
+			
+			if (resource is Literal)
+				return GetLiteralId((Literal)resource, create);
+
+			if (resource.Uri == null) throw new ArgumentException("An anonymous resource created by another store cannot be used in this store.");
+
+			int id = GetEntityId(resource.Uri, create);
+			if (id != 0)
+				SetResourceKey(resource, new ResourceKey(id));
+			return id;
+		}
+		
+		private int AddEntity(int uriId, string uri) {
+			int id = NextId();
+			StringBuilder b = new StringBuilder();
+			b.Append("INSERT INTO ");
+			b.Append(table);
+			b.Append("_statements VALUES(");
+			b.Append(id);
+			b.Append(",0,1,");
+			b.Append(uriId);
+			b.Append(",0)");
+			RunCommand(b.ToString());
+			
+			if (lockedIdCache != null && uri != null)
+				lockedIdCache[uri] = uriId;
+			
+			return id;
+		}
+		
+		private int ObjectType(Resource r) {
+			if (r is Literal) return 1;
+			return 0;
+		}
+		
+		private Literal GetLiteral(int literalId, Hashtable cache) {
+			if (cache != null && cache.ContainsKey(literalId))
+				return (Literal)cache[literalId];
+			
+			IDataReader reader = RunReader("SELECT value, language, datatype FROM " + table + "_literals WHERE id = " + literalId + " LIMIT 1");
+			try {
+				while (reader.Read()) {
+					string value = AsString(reader[0]);
+					string lang = AsString(reader[1]);
+					string datatype = AsString(reader[2]);
+					Literal lit = new Literal(value, lang, datatype, Model);
+					if (cache != null)
+						cache[literalId] = lit;
+					return lit;
+				}
+			} finally {
+				reader.Close();
+			}
+			return null;
+		}		
+		
+		private string GetEntityUri(int resourceId) {
+			StringBuilder b = new StringBuilder();
+			b.Append("SELECT object FROM ");
+			b.Append(table);
+			b.Append("_statements WHERE subject = ");
+			b.Append(resourceId);
+			b.Append(" and predicate = 0");
+			b.Append(" LIMIT 1");
+			object id = RunScalar(b.ToString());
+			if (id == null) return null;
+			int literalId = AsInt(id);
+			if (literalId == 0) return null; // reserved anonymous node
+			return GetLiteral(literalId, null).Value;
+		}
+
+		private Entity GetEntity(int resourceId, string uri, bool anon, Hashtable cache) {
+			if (resourceId == 0)
+				return null;
+			
+			ResourceKey rk = new ResourceKey(resourceId);
+			
+			if (cache != null && cache.ContainsKey(rk))
+				return (Entity)cache[rk];
+			
+			if (entityMap.ContainsKey(rk)) {
+				WeakReference wr = (WeakReference)entityMap[rk];
+				if (wr.Target != null)
+					return (Entity)wr.Target;
+			}				
+			
+			Entity ent;
+			if (anon)
+				ent = new Entity(Model);
+			else if (uri == null)
+				ent = new Entity(this, Model);
+			else
+				ent = new Entity(uri, Model);
+			SetResourceKey(ent, rk);
+			
+			if (cache != null)
+				cache[rk] = ent;
+			
+			entityMap[rk] = new WeakReference(ent);
+			entityMapInsertions++;
+			if (entityMapInsertions == 10000) {
+				// Clear out the map of old references.
+				Hashtable newMap = new Hashtable();
+				foreach (DictionaryEntry d in entityMap) {
+					if (((WeakReference)d.Value).Target != null)
+						newMap[d.Key] = d.Value;
+				}
+				entityMap = newMap;
+				entityMapInsertions = 0;
+			}
+			
+			return ent;
+		}
+		
+		string Entity.LazyUriLoader.LazyLoadUri(Entity entity) {
+			ResourceKey id = (ResourceKey)GetResourceKey(entity);
+			return GetEntityUri(id.ResId);
 		}
 		
 		public override void Add(Statement statement) {
 			if (statement.AnyNull) throw new ArgumentNullException();
 			Init();
-			int subj = ID(statement.Subject);
-			int pred = ID(statement.Predicate);
-			int meta = statement.Meta == null ? 0 : ID(statement.Meta);
+			
+			int subj = GetResourceId(statement.Subject, true);
+			int pred = GetResourceId(statement.Predicate, true);
+			int objtype = ObjectType(statement.Object);
+			int obj = GetResourceId(statement.Object, true);
+			int meta = GetResourceId(statement.Meta, true);
 			
 			StringBuilder cmd = new StringBuilder();
 			cmd.Append("INSERT INTO ");
 			cmd.Append(table);
-			cmd.Append(" VALUES (");
+			cmd.Append("_statements VALUES (");
 
 			cmd.Append(subj);
 			cmd.Append(", ");
 			cmd.Append(pred);
 			cmd.Append(", ");
-			
-			if (statement.Object is Literal) {
-				Literal lit = (Literal)statement.Object;
-				cmd.Append("0, ");
-				cmd.Append(Escape(lit.ToString()));
-			} else {
-				int obj = ID(statement.Object);
-				cmd.Append(obj);
-				cmd.Append(", NULL");
-			}
-			
+			cmd.Append(objtype);
+			cmd.Append(", ");
+			cmd.Append(obj);
 			cmd.Append(", ");
 			cmd.Append(meta);
 			cmd.Append(")");
@@ -97,19 +323,27 @@ namespace SemWeb.Stores {
 
 			System.Text.StringBuilder cmd = new System.Text.StringBuilder("REMOVE FROM ");
 			cmd.Append(table);
-			WhereClause(statement, cmd);
+			if (!WhereClause(statement, cmd)) return;
 			RunCommand(cmd.ToString());
 		}
 		
 		public override Entity[] GetAllEntities() {
+			return GetAllEntities(threecols);
+		}
+			
+		public override Entity[] GetAllPredicates() {
+			return GetAllEntities(predcol);
+		}
+		
+		private Entity[] GetAllEntities(string[] cols) {
 			Hashtable h = new Hashtable();
-			foreach (string col in new string[] { "subject", "predicate", "object" }) {
-				IDataReader reader = RunReader("SELECT DISTINCT " + col + " FROM " + table);
+			foreach (string col in cols) {
+				IDataReader reader = RunReader("SELECT DISTINCT " + col + " FROM " + table + (col == "object" ? " WHERE objecttype=0" : ""));
 				try {
 					while (reader.Read()) {
 						int id = AsInt(reader[0]);
-						if (id != 0)
-							h[new DBResource(this, id, null, false)] = h;
+						if (id != 0 && !h.ContainsKey(id))
+							h[id] = GetEntity(id, null, false, null);
 					}
 				} finally {
 					reader.Close();
@@ -118,94 +352,82 @@ namespace SemWeb.Stores {
 			return (Entity[])new ArrayList(h.Keys).ToArray(typeof(Entity));
 		}
 		
-		public override Entity[] GetAllPredicates() {
-			Hashtable h = new Hashtable();
-			IDataReader reader = RunReader("SELECT DISTINCT predicate FROM " + table);
-			try {
-				while (reader.Read()) {
-					int id = AsInt(reader[0]);
-					h[new DBResource(this, id, null, false)] = h;
-				}
-			} finally {
-				reader.Close();
-			}
-			return (Entity[])new ArrayList(h.Keys).ToArray(typeof(Entity));
-		}
-		
 		public override Entity GetResource(string uri, bool create) {
-			if (uri == null) throw new ArgumentNullException();
-			
-			if (create)
-				return new DBResource(this, 0, uri, false);
-			
-			int id = GetId(uri, false);
-			if (id == 0) return null;
-			
-			return new DBResource(this, id, uri, false);
+			int resId = GetEntityId(uri, create);
+			if (resId == 0) return null;
+			return GetEntity(resId, uri, false, null);
 		}
 		
 		public override Entity CreateAnonymousResource() {
-			GetNextId();
-			return new DBResource(this, nextid++, null, true);
+			int resId;
+			if (lockedIdCache != null) {
+				// Can just increment the counter.
+				resId = NextId();
+			} else {
+				// Reserve a slot in the database for this resource so its
+				// id is not reused by another call to CreateAnonymousResource.
+				resId = AddEntity(0, null);
+			}
+			return GetEntity(resId, null, true, null);
 		}
 		
-		private void WhereItem(string col, Resource r, System.Text.StringBuilder cmd) {
-			if (r is MultiEntity) {
-				cmd.Append("(");
-					bool first = true;
-					foreach (Resource rr in ((MultiEntity)r).items) {
-						if (!first)
-							cmd.Append(" or ");
-						first = false;
-						
-						if (col != "object" && rr is Literal) continue;
-						
-						WhereItem(col, rr, cmd);
-					}
-				cmd.Append(")");
-				return;
-			} else if (r is Literal) {
-				cmd.Append(" (object = 0 and literal = ");
-				cmd.Append(Escape(((Literal)r).ToString()));
-				cmd.Append(")");
+		private bool WhereItem(string col, Resource r, System.Text.StringBuilder cmd, bool and) {
+			if (and) cmd.Append(" and ");
+			
+			if (col == "object") {
+				if (r is Literal) {
+					int id = GetLiteralId((Literal)r, false);
+					if (id == 0) return false;
+					cmd.Append(" (objecttype = 1 and object = ");
+					cmd.Append(id);
+					cmd.Append(")");
+				} else {
+					int id = GetResourceId(r, false);
+					if (id == 0) return false;
+					cmd.Append(" (objecttype = 0 and object = ");
+					cmd.Append(id);
+					cmd.Append(")");
+				}
+				
 			} else {
+				int id = GetResourceId(r, false);
+				if (id == 0) return false;
+				
 				cmd.Append("( ");
 				cmd.Append(col);
 				cmd.Append(" = ");
-				cmd.Append(ID(r));
+				cmd.Append(id);
 				cmd.Append(" )");
 			}
+			
+			return true;
 		}
 		
-		private void WhereClause(Statement template, System.Text.StringBuilder cmd) {
+		private bool WhereClause(Statement template, System.Text.StringBuilder cmd) {
 			if (template.Subject == null && template.Predicate == null && template.Object == null)
-				return;
+				return true;
 			
 			cmd.Append(" WHERE ");
 			
-			if (template.Subject != null) {
-				WhereItem("subject", template.Subject, cmd);
-			}
+			if (template.Subject != null)
+				if (!WhereItem("subject", template.Subject, cmd, false)) return false;
 			
+			if (template.Subject != null)
+				cmd.Append(" and");
+
 			if (template.Predicate != null) {
-				if (template.Subject != null)
-					cmd.Append(" and");
-				WhereItem("predicate", template.Predicate, cmd);
+				if (!WhereItem("predicate", template.Predicate, cmd, false)) return false;
 			} else {
-				if (template.Subject != null)
-					cmd.Append(" and");
-				cmd.Append(" predicate != 1");
+				cmd.Append(" predicate != 0");
 			}
 			
-			if (template.Object != null) {
-				cmd.Append(" and");
-				WhereItem("object", template.Object, cmd);
-			}
+			if (template.Object != null)
+				if (!WhereItem("object", template.Object, cmd, true)) return false;
 			
-			if (template.Meta != null) {
-				cmd.Append(" and");
-				WhereItem("meta", template.Meta, cmd);
-			}
+			if (template.Meta != null)
+				if (!WhereItem("meta", template.Meta, cmd, true)) return false;
+			
+			return true;
 		}
 		
 		private int AsInt(object r) {
@@ -216,64 +438,98 @@ namespace SemWeb.Stores {
 		}
 		
 		private string AsString(object r) {
-			if (r is string)
+			if (r is System.DBNull)
+				return null;
+			else if (r is string)
 				return (string)r;
 			else if (r is byte[])
 				return System.Text.Encoding.UTF8.GetString((byte[])r);
 			else
-				throw new FormatException("SQL store returned a literal value as " + r);
+				throw new FormatException("SQL store returned a literal value as " + r.GetType());
 		}
 		
 		private struct SPOLM {
-			public int S, P, O, M;
-			public string L;
+			public int S, P, OT, OID, M;
 		}
 		
 		public override void Select(Statement[] templates, StatementSink result) {
 			if (templates == null) throw new ArgumentNullException();
 			if (result == null) throw new ArgumentNullException();
 			if (templates.Length == 0) return;
+	
+			Init();
 			
-			// See how many columns vary.
-			Resource s = null, p = null, o = null, m = null;
-			bool vs = false, vp = false, vo = false, vm = false;
+			System.Text.StringBuilder cmd = new System.Text.StringBuilder("SELECT subject, predicate, objecttype, object, meta FROM ");
+			cmd.Append(table);
+			cmd.Append("_statements WHERE (");
+			
 			bool first = true;
-			
-			foreach (Statement st in templates) {
-				if (first) { s = st.Subject; p = st.Predicate; o = st.Object; m = st.Meta; first = false; }
-				
-				if ((s == null && st.Subject != null) || (s != null && st.Subject == null) || (s != null && !st.Subject.Equals(s))) vs = true;
-				if ((p == null && st.Predicate != null) || (p != null && st.Predicate == null) || (p != null && !st.Predicate.Equals(p))) vp = true;
-				if ((o == null && st.Object != null) || (o != null && st.Object == null) || (o != null && !st.Object.Equals(o))) vo = true;
-				if ((m == null && st.Meta != null) || (m != null && st.Meta == null) || (m != null && !st.Meta.Equals(m))) vm = true;
-			}
-			
-			// If more than one column varies, do the selection individually.
-			int v = (vs ? 1 : 0) + (vp ? 1 : 0) + (vo ? 1 : 0) + (vm ? 1 : 0);
-			if (v > 1) { base.Select(templates, result); return; }
-			
-			if (!(s == null || s is Entity) || !(p == null || p is Entity) || !(m == null || m is Entity)) return;
-			
-			Statement q = new Statement(
-				vs ? new MultiEntity(0, templates) : (Entity)s,
-				vp ? new MultiEntity(1, templates) : (Entity)p,
-				vo ? new MultiEntity(2, templates) : o,
-				vm ? new MultiEntity(3, templates) : (Entity)m);
-			
-			Select(q, result);
-		}
-		
-		private class MultiEntity : Entity {
-			public ArrayList items;			
-			public MultiEntity(int c, Statement[] templates) : base(null, null) {
-				items = new ArrayList();
-				foreach (Statement st in templates) {
-					if (c == 0) items.Add(st.Subject);
-					if (c == 1) items.Add(st.Predicate);
-					if (c == 2) items.Add(st.Object);
-					if (c == 3) items.Add(st.Meta);
+			Resource sv = null, pv = null, ov = null, mv = null;
+			bool sm = false, pm = false, om = false, mm = false;
+			foreach (Statement template in templates) {
+				if (first) {
+					first = false;
+					sv = template.Subject;
+					pv = template.Predicate;
+					ov = template.Object;
+					mv = template.Meta;
+				} else {
+					if (sv != template.Subject) sm = true;
+					if (pv != template.Predicate) pm = true;
+					if (ov != template.Object) om = true;
+					if (mv != template.Meta) mm = true;
 				}
 			}
+			
+			if (!sm && !pm && !om && !mm) {
+				Select(templates[0], result);
+				return;
+			} else if (sm && pm && om && mm) {
+				cmd.Append("1");
+			} else {
+				if (!sm && sv != null)
+					if (!WhereItem("subject", sv, cmd, false)) return;
+				if (!pm && pv != null)
+					if (!WhereItem("predicate", pv, cmd, (!sm && sv != null))) return;
+				if (!om && ov != null)
+					if (!WhereItem("object", ov, cmd, (!sm && sv != null) || (!pm && pv != null))) return;
+				if (!mm && mv != null)
+					if (!WhereItem("meta", mv, cmd, (!sm && sv != null) || (!pm && pv != null) || (!om && ov != null))) return;
+			}
+			
+			cmd.Append(") and (");
+			
+			first = true;
+			foreach (Statement template in templates) {
+				if (template.Subject == null && template.Predicate == null && template.Object == null) {
+					Select(Statement.Empty, result);
+					return;
+				}
+				
+				if (!first)
+					cmd.Append(" OR ");
+				first = false;
+				
+				cmd.Append("(");
+
+				if (sm && template.Subject != null)
+					if (!WhereItem("subject", template.Subject, cmd, false)) return;
+
+				if (pm && template.Predicate != null)
+					if (!WhereItem("predicate", template.Predicate, cmd, (sm && template.Subject != null))) return;
+					
+				if (om && template.Object != null)
+					if (!WhereItem("object", template.Object, cmd, (sm && template.Subject != null) || (pm && template.Predicate != null))) return;
+
+				if (mm && template.Meta != null)
+					if (!WhereItem("meta", template.Meta, cmd, (sm && template.Subject != null) || (pm && template.Predicate != null) || (om && template.Object != null))) return;
+
+				cmd.Append(")");
+			}
+			
+			cmd.Append(")");
+			
+			Select2(cmd.ToString(), result);
 		}
 		
 		public override void Select(Statement template, StatementSink result) {
@@ -281,93 +537,56 @@ namespace SemWeb.Stores {
 	
 			Init();
 			
-			System.Text.StringBuilder cmd = new System.Text.StringBuilder("SELECT subject, predicate, object, literal, meta FROM ");
+			System.Text.StringBuilder cmd = new System.Text.StringBuilder("SELECT subject, predicate, objecttype, object, meta FROM ");
 			cmd.Append(table);
-			WhereClause(template, cmd);
+			cmd.Append("_statements");
+			if (!WhereClause(template, cmd)) return;
+			
+			Select2(cmd.ToString(), result);
+		}
+		
+		private void Select2(string cmd, StatementSink result) {
+			//Console.WriteLine(cmd);
 			
 			ArrayList items = new ArrayList();
-			
-			string cmdstr = cmd.ToString();
-			//Console.WriteLine(cmdstr);
-			
-			IDataReader reader = RunReader(cmdstr);
+			IDataReader reader = RunReader(cmd);
 			try {
 				while (reader.Read()) {
 					int s = AsInt(reader[0]);
 					int p = AsInt(reader[1]);
-					int o = AsInt(reader[2]);
+					int ot = AsInt(reader[2]);
+					int oid = AsInt(reader[3]);
 					int m = AsInt(reader[4]);
 					
 					SPOLM d = new SPOLM();
 					d.S = s;
 					d.P = p;
-					d.O = o;
+					d.OT = ot;
+					d.OID = oid;
 					d.M = m;
 					
-					string literal = null;
-					if (o == 0)
-						literal = AsString(reader[3]);
-					d.L = literal;
-				
 					items.Add(d);
 				}
 			} finally {
 				reader.Close();
 			}
 			
+			Hashtable entMap = new Hashtable();
+			Hashtable litMap = new Hashtable();
+			
 			foreach (SPOLM item in items) {
 				bool ret = result.Add(new Statement(
-					new DBResource(this, item.S, null, false),
-					new DBResource(this, item.P, null, false),
-					item.O == 0 ? (Resource)Literal.Parse(item.L, Model, null) : new DBResource(this, item.O, null, false),
-					item.M == 0 ? null : new DBResource(this, item.M, null, false)
+					GetEntity(item.S, null, false, entMap),
+					GetEntity(item.P, null, false, entMap),
+					item.OT == 0 ? (Resource)GetEntity(item.OID, null, false, entMap) : (Resource)GetLiteral(item.OID, litMap),
+					GetEntity(item.M, null, false, entMap)
 					));
 				if (!ret) break;
 			}
 		}
 
-		private int ID(Resource resource) {
-			if (resource is DBResource && ((DBResource)resource).store == this) return ((DBResource)resource).GetId();
-			if (resource.Uri == null) throw new ArgumentException("An anonymous resource created by another store cannot be used in this store.");
-			return GetId(resource.Uri, true);
-		}		
-		
-		private string GetUri(int id) {
-			Init();
-			
-			return RunScalarString("SELECT literal FROM " + table + " WHERE subject = " + id + " and predicate = 1");
-		}
-		
-		private int GetId(string uri, bool create) {
-			if (lockedIdCache != null && lockedIdCache.ContainsKey(uri))
-				return (int)lockedIdCache[uri];
-			
-			Init();
-			
-			object ret = null;
-			
-			if (lockedIdCache == null) {
-				ret = RunScalar("SELECT subject FROM " + table + " WHERE predicate = 1 and literal = " + Escape(uri) + "");
-				if (ret == null && !create) return 0;
-			}
-			
-			int id;
-			
-			if (ret == null) {				
-				GetNextId();
-				RunCommand("INSERT INTO " + table + " VALUES (" + nextid + ", 1, 0, " + Escape(uri) + ", 0)");
-				id = nextid++;
-			} else {
-				if (ret is int) id = (int)ret; else id = int.Parse(ret.ToString());
-			}
-			
-			if (lockedIdCache != null)
-				lockedIdCache[uri] = id;
-			
-			return id;
-		}
-		
 		internal static string Escape(string str) {
+			if (str == null) return "NULL";
 			System.Text.StringBuilder b = new System.Text.StringBuilder(str);
 			b.Replace("\\", "\\\\");
 			b.Replace("\"", "\\\"");
@@ -375,59 +594,23 @@ namespace SemWeb.Stores {
 			return "\"" + b.ToString() + "\"";
 		}
 
-		class DBResource : Entity {
-			public readonly SQLStore store;
-			
-			int id;
-			bool anon;
-			
-			public DBResource(SQLStore store, int id, string uri, bool anon) : base(uri, store.Model) {
-				this.store = store; this.id = id; this.anon = anon;
-				if (uri == null && id == 0)
-					throw new ArgumentException("URI-less resources must have an ID.");
-			}
-			
-			public int GetId() {
-				if (id == 0) id = store.GetId(Uri, true);
-				return id;
-			}
-			
-			public override string Uri {
-				get {
-					if (anon) return null;
-					if (uri == null) uri = store.GetUri(id);
-					if (uri == null) anon = true;
-					return uri;
-				}
-			}
-			
-			public override int GetHashCode() {
-				return GetId().GetHashCode();
-			}
-			
-			public override bool Equals(object o) {
-				if (o is Literal) return false;
-				if (!(o is DBResource)) return base.Equals(o);
-				DBResource r = (DBResource)o;
-				return GetId() == r.GetId();
-			}
-		}
-
 		public override void Import(RdfParser parser) {
 			if (parser == null) throw new ArgumentNullException();
 			
 			Init();
 			
-			bool oldLockState = tableIsLocked;
+			Hashtable oldLockedIdCache = lockedIdCache;
 			
 			if (lockedIdCache == null) {
+				cachedNextId = -1;
 				lockedIdCache = new Hashtable();
-				IDataReader reader = RunReader("SELECT subject, literal FROM " + table + " where predicate = 1 and object = 0");
+				IDataReader reader = RunReader("SELECT subject, object FROM " + table + "_statements WHERE predicate = 0");
 				try {
 					while (reader.Read()) {
-						int id = AsInt(reader[0]);
-						string uri = AsString(reader[1]);
-						lockedIdCache[uri] = id;
+						int resourceid = AsInt(reader[0]);
+						int literalid = AsInt(reader[1]);
+						string uri = RunScalarString("SELECT value FROM " + table + "_literals WHERE id = " + literalid);
+						lockedIdCache[uri] = resourceid;
 					}
 				} finally {
 					reader.Close();
@@ -437,11 +620,9 @@ namespace SemWeb.Stores {
 			BeginTransaction();
 			
 			try {
-				tableIsLocked = true;
 				base.Import(parser);
 			} finally {
-				tableIsLocked = oldLockState;
-				if (!tableIsLocked) lockedIdCache = null;
+				lockedIdCache = oldLockedIdCache;
 				EndTransaction();
 			}
 		}
@@ -452,7 +633,7 @@ namespace SemWeb.Stores {
 		
 		protected int RunScalarInt(string sql, int def) {
 			object ret = RunScalar(sql);
-			if (ret == null) throw new InvalidOperationException("The SQL command did not return a value.");
+			if (ret == null) return def;
 			if (ret is int) return (int)ret;
 			try {
 				return int.Parse(ret.ToString());
@@ -470,19 +651,48 @@ namespace SemWeb.Stores {
 		}
 
 		protected virtual void CreateTable() {
-			RunCommand("CREATE TABLE " + table + 
-				"(subject int UNSIGNED NOT NULL, predicate int UNSIGNED NOT NULL, object int UNSIGNED NOT NULL, literal blob, meta int UNSIGNED NOT NULL)");
+			foreach (string cmd in GetCreateTableCommands(table)) {
+				try {
+					RunCommand(cmd);
+				} catch (Exception e) {
+				}
+			}
 		}
 		
 		protected virtual void CreateIndexes() {
-			RunCommand("CREATE INDEX subject_index ON " + table + "(subject)");
-			RunCommand("CREATE INDEX predicate_index ON " + table + "(predicate)");
-			RunCommand("CREATE INDEX object_index ON " + table + "(object)");
-			RunCommand("CREATE INDEX literal_index ON " + table + "(literal(128))");
+			foreach (string cmd in GetCreateIndexCommands(table)) {
+				try {
+					RunCommand(cmd);
+				} catch (Exception e) {
+				}
+			}
 		}
 		
 		protected virtual void BeginTransaction() { }
 		protected virtual void EndTransaction() { }
+		
+		internal static string[] GetCreateTableCommands(string table) {
+			return new string[] {
+				"CREATE TABLE " + table + "_statements" +
+				"(subject int UNSIGNED NOT NULL, predicate int UNSIGNED NOT NULL, objecttype int NOT NULL, object int UNSIGNED NOT NULL, meta int UNSIGNED NOT NULL);",
+				
+				"CREATE TABLE " + table + "_literals" +
+				"(id INT NOT NULL, value BLOB NOT NULL, language TEXT, datatype TEXT, PRIMARY KEY(id));"
+				};
+		}
+		
+		internal static string[] GetCreateIndexCommands(string table) {
+			return new string[] {
+				"CREATE INDEX subject_index ON " + table + "_statements(subject);",
+				"CREATE INDEX predicate_index ON " + table + "_statements(predicate);",
+				"CREATE INDEX object_index ON " + table + "_statements(objecttype, object);",
+			
+				"CREATE INDEX subject_predicate_index ON " + table + "_statements(subject,predicate);",
+				"CREATE INDEX predicate_object_index ON " + table + "_statements(predicate,objecttype,object);",
+			
+				"CREATE INDEX literal_index ON " + table + "_literals(value(128));"
+				};
+		}
 	}
 	
 }
@@ -510,17 +720,18 @@ namespace SemWeb.IO {
 			this.writer = writer;
 			this.table = tablename;
 			
-			writer.WriteLine("CREATE TABLE `" + table + "` (`subject` int UNSIGNED NOT NULL, `predicate` int UNSIGNED NOT NULL, `object` int UNSIGNED NOT NULL, `literal` blob, `meta` int UNSIGNED NOT NULL);");
+			foreach (string cmd in SQLStore.GetCreateTableCommands(table))
+				writer.WriteLine(cmd);
 		}
 		
 		public override NamespaceManager Namespaces { get { return m; } }
 		
 		public override void WriteStatement(string subj, string pred, string obj) {
-			writer.WriteLine("INSERT INTO {0} VALUES ({1}, {2}, {3}, NULL, 0);", table, ID(subj, 0), ID(pred, 1), ID(obj, 2)); 
+			writer.WriteLine("INSERT INTO {0}_statements VALUES ({1}, {2}, 0, {3}, 0);", table, ID(subj, 0), ID(pred, 1), ID(obj, 2)); 
 		}
 		
 		public override void WriteStatement(string subj, string pred, Literal literal) {
-			writer.WriteLine("INSERT INTO {0} VALUES ({1}, {2}, 0, {3}, 0);", table, ID(subj, 0), ID(pred, 1), SQLStore.Escape(literal.ToString())); 
+			writer.WriteLine("INSERT INTO {0}_statements VALUES ({1}, {2}, 1, {3}, 0);", table, ID(subj, 0), ID(pred, 1), ID(literal)); 
 		}
 		
 		public override string CreateAnonymousNode() {
@@ -530,10 +741,8 @@ namespace SemWeb.IO {
 		}
 		
 		public override void Dispose() {
-			writer.WriteLine("CREATE INDEX subject_index ON " + table + "(subject);");
-			writer.WriteLine("CREATE INDEX predicate_index ON " + table + "(predicate);");
-			writer.WriteLine("CREATE INDEX object_index ON " + table + "(object);");
-			writer.WriteLine("CREATE INDEX literal_index ON " + table + "(literal(128));");
+			foreach (string cmd in SQLStore.GetCreateIndexCommands(table))
+				writer.WriteLine(cmd);
 			Close();
 		}
 		
@@ -541,6 +750,15 @@ namespace SemWeb.IO {
 			writer.Close();
 		}
 
+		private string ID(Literal literal) {
+			string id = (string)resources[literal];
+			if (id == null) {
+				id = (++resourcecounter).ToString();
+				resources[literal] = id;
+				writer.WriteLine("INSERT INTO {0}_literals VALUES ({1}, {2}, {3}, {4});", table, id, SQLStore.Escape(literal.Value), SQLStore.Escape(literal.Language), SQLStore.Escape(literal.DataType));
+			}
+			return id;
+		}
 		
 		private string ID(string uri, int x) {
 			if (uri.StartsWith("_anon:")) return uri.Substring(6);
@@ -557,7 +775,9 @@ namespace SemWeb.IO {
 			} else {
 				id = (++resourcecounter).ToString();
 				resources[uri] = id;
-				writer.WriteLine("INSERT INTO {0} VALUES ({1}, 1, 0, {2}, 0);", table, id, SQLStore.Escape(uri));
+				
+				string literalid = ID(new Literal(uri));
+				writer.WriteLine("INSERT INTO {0}_statements VALUES ({1}, 0, 1, {2}, 0);", table, id, literalid);
 			}
 			
 			fastmap[x, 0] = uri;
