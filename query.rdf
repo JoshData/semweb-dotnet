@@ -1,0 +1,44 @@
+<?xml version="1.0"?>
+<rdf:RDF
+	xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+	xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+	
+	xmlns:dc="http://purl.org/dc/elements/1.1/"
+	xmlns:foaf="http://xmlns.com/foaf/0.1/"
+	xmlns:pol="urn://govshare.info/rdf/politico/"
+	xmlns:bill="urn://govshare.info/rdf/usbill/"
+	
+	xmlns:query="http://purl.oclc.org/NET/rsquary/"
+	>
+
+	<query:Query rdf:ID="query">
+		<query:select rdf:resource="#person1"/>
+		<query:select rdf:resource="#name1"/>
+		<query:select rdf:resource="#bill1"/>
+		<query:select rdf:resource="#title1"/>
+		<query:select rdf:resource="#birthday1"/>
+	</query:Query>
+	
+	<pol:Politician rdf:ID="person1">
+		<foaf:name rdf:resource="#name1"/>
+		<foaf:birthday rdf:resource="#birthday1"/>
+	</pol:Politician>
+	
+	<bill:Bill rdf:ID="bill1">
+		<bill:sponsor rdf:resource="#person1"/>
+		<dc:title rdf:resource="#title1"/>
+	</bill:Bill>
+
+	<rdf:Description rdf:ID="birthday1">
+		<query:lt rdf:datatype="http://www.w3.org/2001/XMLSchema#dateTime">1950</query:lt>
+	</rdf:Description>
+
+	<!--<rdf:Description rdf:ID="name1">
+		<strfilter:contains>Joseph</strfilter:contains>
+	</rdf:Description>
+	
+	<rdf:Description rdf:ID="title1">
+		<strfilter:contains>Act</strfilter:contains>
+	</rdf:Description>-->
+</rdf:RDF>
+

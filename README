@@ -1,0 +1,13 @@
+Semantic Web Library for C#/.NET
+================================
+
+By Joshua Tauberer <tauberer@for.net>
+http://taubz.for.net/code/semweb
+
+COPYRIGHTS:
+	Copyright 2005 Joshua Tauberer.  This package is released
+	under the terms of the GNU LGPL.
+
+	SemWeb uses the Drive RDF parser by Rahul Singh, which
+	is Copyright (c) 2002, 2003 by him.  The Drive RDF parser
+	was released under the GNU LGPL.
