@@ -2,7 +2,7 @@
   <TypeSignature Language="C#" Value="public abstract class Store : SemWeb.StatementSink" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
-    <AssemblyVersion>1.0.1899.17598</AssemblyVersion>
+    <AssemblyVersion>1.0.1902.15879</AssemblyVersion>
   </AssemblyInfo>
   <Base>
     <BaseTypeName>System.Object</BaseTypeName>
@@ -356,9 +356,35 @@
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
+  <Member MemberName="GetAllEntities">
+      <MemberSignature Language="C#" Value="public abstract SemWeb.Entity[] GetAllEntities ();" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>SemWeb.Entity[]</ReturnType>
+      </ReturnValue>
+      <Parameters />
+      <Docs>
+        <summary>To be added.</summary>
+        <returns>To be added.</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+  <Member MemberName="GetAllPredicates">
+      <MemberSignature Language="C#" Value="public abstract SemWeb.Entity[] GetAllPredicates ();" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>SemWeb.Entity[]</ReturnType>
+      </ReturnValue>
+      <Parameters />
+      <Docs>
+        <summary>To be added.</summary>
+        <returns>To be added.</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
   </Members>
   <Docs>
-    <summary>An RDF graph, which is a repository for <see cref="T:SemWeb.Statement" />s.</summary>
+    <summary>A repository for <see cref="T:SemWeb.Statement" />s.</summary>
     <remarks>This class is abstract.  The <see cref="T:SemWeb.Stores.MemoryStore" /> maintains an in-memory array of statements.</remarks>
   </Docs>
 </Type>

@@ -2,7 +2,7 @@
   <TypeSignature Language="C#" Value="public class NamespaceManager" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
-    <AssemblyVersion>1.0.1899.17598</AssemblyVersion>
+    <AssemblyVersion>1.0.1902.15879</AssemblyVersion>
   </AssemblyInfo>
   <Base>
     <BaseTypeName>System.Object</BaseTypeName>
@@ -14,8 +14,8 @@
       <MemberType>Constructor</MemberType>
       <Parameters />
       <Docs>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
+        <summary>Creates a new namespace manager.</summary>
+        <remarks>None.</remarks>
       </Docs>
     </Member>
     <Member MemberName=".ctor">
@@ -25,9 +25,9 @@
         <Parameter Name="parent" Type="SemWeb.NamespaceManager" />
       </Parameters>
       <Docs>
-        <param name="parent">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
+        <param name="parent">Another namespace manager.</param>
+        <summary>Creates a new namespace manager who will look in another namespace manager when it cannot find a matching prefix or URI.</summary>
+        <remarks>When the new namespace manager cannot find a prefix or URI in its own table, it will consult <paramref name="parent" />'s table.</remarks>
       </Docs>
     </Member>
     <Member MemberName="AddNamespace">
@@ -41,10 +41,10 @@
         <Parameter Name="prefix" Type="System.String" />
       </Parameters>
       <Docs>
-        <param name="uri">To be added.</param>
-        <param name="prefix">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
+        <param name="uri">A URI.</param>
+        <param name="prefix">A namespace prefix for the URI.</param>
+        <summary>Adds a prefix-URI mapping to the table.</summary>
+        <remarks>If <paramref name="prefix" /> was already used in a call to this method, the previous prefix-to-URI mapping will be overwritten.  Likewise, if <paramref name="uri" /> was used before, the previous uri-to-prefix mapping will be overwritten.</remarks>
       </Docs>
     </Member>
     <Member MemberName="GetNamespace">
@@ -57,10 +57,10 @@
         <Parameter Name="prefix" Type="System.String" />
       </Parameters>
       <Docs>
-        <param name="prefix">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
+        <param name="prefix">The prefix to look up.</param>
+        <summary>Returns the namespace associated with a prefix.</summary>
+        <returns>The corresponding namespace, or <see langword="null" /> if the prefix is not in the table.</returns>
+        <remarks>None.</remarks>
       </Docs>
     </Member>
     <Member MemberName="GetPrefix">
@@ -73,10 +73,10 @@
         <Parameter Name="uri" Type="System.String" />
       </Parameters>
       <Docs>
-        <param name="uri">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
+        <param name="uri">A URI.</param>
+        <summary>Gets the prefix associated with a namespace URI.</summary>
+        <returns>The prefix associated with this namespace, or <see langword="null" /> if the URI is not associated with a prefix.</returns>
+        <remarks>None.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Normalize">
@@ -91,12 +91,12 @@
         <Parameter Name="localname" Type="System.String&amp;" RefType="out" />
       </Parameters>
       <Docs>
-        <param name="uri">To be added.</param>
-        <param name="prefix">To be added.</param>
-        <param name="localname">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
+        <param name="uri">The URI to split.</param>
+        <param name="prefix">This parameter is set to a namespace prefix.</param>
+        <param name="localname">This parameter is set to a local name.</param>
+        <summary>Splits a URI into a prefix and local name.</summary>
+        <returns>True if the URI could be split into a prefix and local name, false otherwise.</returns>
+        <remarks>None.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Normalize">
@@ -109,10 +109,10 @@
         <Parameter Name="uri" Type="System.String" />
       </Parameters>
       <Docs>
-        <param name="uri">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
+        <param name="uri">A URI to normalize.</param>
+        <summary>Normalizes a URI in N3 format.</summary>
+        <returns>If a namespace matches part of this URI, a QName (prefix:localname) is returned.  Otherwise, the URI is returned in angled brackets (&lt;uri&gt;).</returns>
+        <remarks>A QName will only be returned if the localname consists only of valid characters for a QName.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Resolve">
@@ -125,10 +125,10 @@
         <Parameter Name="qname" Type="System.String" />
       </Parameters>
       <Docs>
-        <param name="qname">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
+        <param name="qname">A QName, e.g. "dc:title."</param>
+        <summary>Converts a QName into a full URI.</summary>
+        <returns>A URI equivalent to the QName.</returns>
+        <remarks>The QName is split on its colon.  The prefix and colon are replaced by the namespace corresponding to the prefix.  An exception is thrown if the prefix is not known to the namespace manager.</remarks>
       </Docs>
     </Member>
     <Member MemberName="GetNamespaces">
@@ -139,9 +139,9 @@
       </ReturnValue>
       <Parameters />
       <Docs>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
+        <summary>Gets all of the namespace URIs known to the namespace manager.</summary>
+        <returns>A collection of all namespace URIs known to this namespace manager.</returns>
+        <remarks>None.</remarks>
       </Docs>
     </Member>
     <Member MemberName="GetPrefixes">
@@ -152,14 +152,14 @@
       </ReturnValue>
       <Parameters />
       <Docs>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
+        <summary>Gets all of the prefixes known to the namespace manager.</summary>
+        <returns>A collection of all prefixes known to this namespace manager.</returns>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>
   <Docs>
-    <summary>To be added.</summary>
-    <remarks>To be added.</remarks>
+    <summary>A class that maintains a mapping between namespace prefixes and URIs.</summary>
+    <remarks>None.</remarks>
   </Docs>
 </Type>

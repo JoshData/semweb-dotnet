@@ -2,7 +2,7 @@
   <TypeSignature Language="C#" Value="public class Entity : SemWeb.Resource" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
-    <AssemblyVersion>1.0.1899.17598</AssemblyVersion>
+    <AssemblyVersion>1.0.1902.15879</AssemblyVersion>
   </AssemblyInfo>
   <Base>
     <BaseTypeName>SemWeb.Resource</BaseTypeName>
@@ -59,7 +59,7 @@
         <param name="uri">A URI.</param>
         <summary>Implicitly converts a string URI to an entity.</summary>
         <returns>An entity whose URI is <paramref name="uri" /> and whose <see cref="P:SemWeb.Resource.Model" /> is <see langword="null" />.</returns>
-        <remarks>None.</remarks>
+        <remarks>Because the returned resource is not assoicated with a KnowledgeModel, it does not support following arcs in a model using its indexer property.</remarks>
       </Docs>
     </Member>
     <Member MemberName="op_Equality">

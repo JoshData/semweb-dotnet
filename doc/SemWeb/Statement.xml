@@ -2,7 +2,7 @@
   <TypeSignature Language="C#" Value="public struct Statement" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
-    <AssemblyVersion>1.0.1899.17598</AssemblyVersion>
+    <AssemblyVersion>1.0.1902.15879</AssemblyVersion>
   </AssemblyInfo>
   <Base>
     <BaseTypeName>System.ValueType</BaseTypeName>
@@ -39,7 +39,7 @@
         <param name="predicate">The predicate of the statement.</param>
         <param name="object">The object of the statement.</param>
         <param name="meta">An entity with meta-information about the statement.  May be null.</param>
-        <summary>Creates a new Statement.</summary>
+        <summary>Creates a new Statement with a meta entity.</summary>
         <remarks>None.</remarks>
       </Docs>
     </Member>
@@ -62,9 +62,9 @@
       </ReturnValue>
       <Parameters />
       <Docs>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
+        <summary>Returns a new statement with the same predicate but with subject and object reversed.</summary>
+        <returns>The inverse of this statement.</returns>
+        <remarks>None.</remarks>
       </Docs>
     </Member>
     <Member MemberName="op_Equality">
@@ -110,9 +110,9 @@
         <ReturnType>SemWeb.Entity</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
+        <summary>The subject of the statement.</summary>
+        <value>The subject of the statement.</value>
+        <remarks>None.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Predicate">
@@ -122,9 +122,9 @@
         <ReturnType>SemWeb.Entity</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
+        <summary>The predicate (verb) of the statement.</summary>
+        <value>The predicate (verb) of the statement.</value>
+        <remarks>None.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Object">
@@ -134,9 +134,9 @@
         <ReturnType>SemWeb.Resource</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
+        <summary>The object of the statement.</summary>
+        <value>The object of the statement.</value>
+        <remarks>None.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Meta">
@@ -146,9 +146,9 @@
         <ReturnType>SemWeb.Entity</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
+        <summary>An entity that contains meta information about the statement.</summary>
+        <value>An entity that contains meta information about the statement, or <see langword="null" />.</value>
+        <remarks>The use of this property is up to the application.</remarks>
       </Docs>
     </Member>
   </Members>
