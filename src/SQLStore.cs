@@ -179,7 +179,7 @@ namespace SemWeb {
 			if (!(s == null || s is Entity) || !(p == null || p is Entity) || !(m == null || m is Entity)) return;
 			
 			Statement q = new Statement(
-				(v == 0 || vs) ? new MultiEntity(0, templates) : (Entity)s,
+				vs ? new MultiEntity(0, templates) : (Entity)s,
 				vp ? new MultiEntity(1, templates) : (Entity)p,
 				vo ? new MultiEntity(2, templates) : o,
 				vm ? new MultiEntity(3, templates) : (Entity)m);
@@ -209,7 +209,9 @@ namespace SemWeb {
 			
 			ArrayList items = new ArrayList();
 			
-			IDataReader reader = RunReader(cmd.ToString());
+			string cmdstr = cmd.ToString();
+			
+			IDataReader reader = RunReader(cmdstr);
 			try {
 				while (reader.Read()) {
 					int s = AsInt(reader[0]);

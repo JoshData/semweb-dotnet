@@ -5,6 +5,9 @@ using SemWeb;
 
 namespace SemWeb.Query {
 	public class QueryException : ApplicationException {
+		public QueryException(string message) : base(message) {
+		}
+			
 		public QueryException(string message, Exception cause) : base(message, cause) {
 		}
 	}
@@ -42,12 +45,21 @@ namespace SemWeb.Query {
 			
 			public VariableNode Parent = null;
 			public ArrayList Children = new ArrayList();
+
+			public Set parentAlternatives;
+			public Hashtable predicateFilterCache = new Hashtable();
 			
 			public bool Sees(VariableNode dependency) {
 				if (this == dependency) return true;
 				if (Parent == null || Parent == this) return false;
 				if (Parent == dependency) return true;
 				return Parent.Sees(dependency);
+			}
+			
+			public void CopyBindings(VariableBinding[] source, VariableBinding[] dest) {
+				dest[BindingIndex] = source[BindingIndex];
+				foreach (VariableNode child in Children)
+					child.CopyBindings(source, dest);
 			}
 		}
 		
@@ -56,11 +68,6 @@ namespace SemWeb.Query {
 			public Store target;
 			public QueryResultSink sink;
 			public VariableBinding[] bindings;
-			public Set[] alternatives;
-			public Hashtable predicateFilterCache;
-			public ArrayList[] predicateFilterCacheClear;
-			public int count = 0;
-			
 			public Hashtable targetQueryObject = new Hashtable();
 		}	
 		
@@ -91,11 +98,11 @@ namespace SemWeb.Query {
 			
 			ArrayList variables = new ArrayList();
 			foreach (Resource r in query[qSelect]) {
-				if (!(r is Entity)) throw new ArgumentException("Query variables cannot be literals.");
+				if (!(r is Entity)) throw new QueryException("Query variables cannot be literals.");
 				variables.Add(new VariableBinding((Entity)r, null, false));
 			}
 			foreach (Resource r in query[qVariable]) {
-				if (!(r is Entity)) throw new ArgumentException("Query variables cannot be literals.");
+				if (!(r is Entity)) throw new QueryException("Query variables cannot be literals.");
 				variables.Add(new VariableBinding((Entity)r, null, true));
 			}
 			initialBindings = (VariableBinding[])variables.ToArray(typeof(VariableBinding));
@@ -139,6 +146,10 @@ namespace SemWeb.Query {
 						}
 						
 						// Increment the count of filters based only on constants.
+						// TODO: Give (inverse) functional properties (in the right direction)
+						// an advantage, since they essentially turn a variable into a constant.
+						// TODO: Give a disadvantage to nodes that have functional properties
+						// going in the wrong direction.
 						if (!variableHash.ContainsKey(statement.Predicate) && (forward == 1 ? !variableHash.ContainsKey(statement.Object) : !variableHash.ContainsKey(statement.Subject)))
 							constantFilters[i]++;
 					}
@@ -178,6 +189,7 @@ namespace SemWeb.Query {
 			// ties going to selection variables.
 			
 			foreach (VariableNode v in variableNodes) {
+				if (constantFilters[v.BindingIndex] == 0) continue;
 				if (rootVariable == null) { rootVariable = v; continue; }
 				if (constantFilters[rootVariable.BindingIndex] < constantFilters[v.BindingIndex])
 					rootVariable = v;
@@ -185,6 +197,8 @@ namespace SemWeb.Query {
 					 && initialBindings[rootVariable.BindingIndex].var && !initialBindings[v.BindingIndex].var)
 					rootVariable = v;
 			}
+			if (rootVariable == null)
+				throw new QueryException("No variables have any relations to the target model.");
 			rootVariable.Parent = rootVariable;
 			
 			// Hook the remaining variables into the tree somewhere
@@ -194,6 +208,13 @@ namespace SemWeb.Query {
 				// It will be the variable with the most number of
 				// its dependencies already placed on the tree, with
 				// ties going to selection variables.
+				
+				// TODO: Prioritize variables that are determined
+				// through functional properties from variables on
+				// the tree, and deprioritize variables that could
+				// be determined that way but the dependency isn't
+				// on the tree yet.
+				
 				VariableNode node = null;
 				int dc = -1;
 				foreach (VariableNode n in variableNodes) {
@@ -251,7 +272,7 @@ namespace SemWeb.Query {
 				if (node.Parent != null) continue; // done with this one
 				
 				if (node.Parent == null)
-					throw new ArgumentException("Query variable " + node.Variable + " is not connected to the other entities in the query.");
+					throw new QueryException("Query variable " + node.Variable + " is not connected to the other entities in the query.");
 			}
 			
 			// Find the children of each variable
@@ -279,7 +300,7 @@ namespace SemWeb.Query {
 			}
 			
 			if (ent.Uri == null)
-				throw new ArgumentException("Anonymous nodes cannot appear in queries.");
+				throw new QueryException("Anonymous nodes cannot appear in queries.");
 
 			if (variableHash.ContainsKey(ent)) {
 				while (currentNode.Parent != currentNode) {
@@ -303,17 +324,18 @@ namespace SemWeb.Query {
 			return ret;
 		}
 
-		/*private Set GetAlternativesSet(Resource ent, int varIndex, SearchState state, SelectCacheKey key) {
+		private Set GetAlternativesSet(Resource ent, VariableNode var, SearchState state, SelectCacheKey key) {
 			if (!(ent is Entity)) return null;
+			if (var.Parent == var) return null;
 			
-			for (int i = 0; i < varIndex; i++)
-				if (state.bindings[i].Variable.Equals(ent)) {
-					state.predicateFilterCacheClear[i].Add(key);
-					return state.alternatives[i];
-				}
+			if (state.bindings[var.Parent.BindingIndex].Variable.Equals(ent)) {
+				if (var.Parent.parentAlternatives != null && var.Parent.parentAlternatives.Size() > 1)
+					return var.Parent.parentAlternatives;
+				return null;
+			}
 			
 			return null;
-		}*/
+		}
 
 		public void Query(Store target, QueryResultSink sink) {
 			if (start != -1 || limit != -1)
@@ -323,12 +345,6 @@ namespace SemWeb.Query {
 			state.target = target;
 			state.sink = sink;
 			state.bindings = (VariableBinding[])initialBindings.Clone();
-			state.alternatives = new Set[state.bindings.Length];
-			state.predicateFilterCache = new Hashtable();
-			
-			state.predicateFilterCacheClear = new ArrayList[state.bindings.Length];
-			for (int i = 0; i < state.bindings.Length; i++)
-				state.predicateFilterCacheClear[i] = new ArrayList();
 			
 			Recurse(state, rootVariable);
 		}
@@ -348,14 +364,15 @@ namespace SemWeb.Query {
 					Entity filterPredicate = (Entity)GetBinding(s.Predicate, node, true, state);
 					Resource filterObject = GetBinding(forward ? s.Object : s.Subject, node, !forward, state);
 
-					/*SelectCacheKey selectCacheKey = new SelectCacheKey(s, varIndex);
-					Store selectCache = (MemoryStore)state.predicateFilterCache[selectCacheKey];
+					Store selectCache = null;
+					/*SelectCacheKey selectCacheKey = new SelectCacheKey(s, node);
+					Store selectCache = (MemoryStore)node.Parent.predicateFilterCache[selectCacheKey];
 					
 					if (selectCache == null) {
 						// See if we want to precache results for other alternative
 						// choices of variables for previously selected variables.
-						Set altPred = GetAlternativesSet(s.Predicate, varIndex, state, selectCacheKey);
-						Set altObj = GetAlternativesSet(forward ? s.Object : s.Subject, varIndex, state, selectCacheKey);
+						Set altPred = GetAlternativesSet(s.Predicate, node, state, selectCacheKey);
+						Set altObj = GetAlternativesSet(forward ? s.Object : s.Subject, node, state, selectCacheKey);
 						
 						// There are alternatives to precache.
 						if (altPred != null || altObj != null) {
@@ -376,11 +393,10 @@ namespace SemWeb.Query {
 								}
 							}
 							
-							Console.WriteLine(s);
 							selectCache = new MemoryStore(null);
 							state.target.Select((Statement[])queries.ToArray(typeof(Statement)), selectCache);
 							
-							state.predicateFilterCache[selectCacheKey] = selectCache;
+							node.Parent.predicateFilterCache[selectCacheKey] = selectCache;
 						}
 					}*/
 					
@@ -389,7 +405,7 @@ namespace SemWeb.Query {
 					if (resources == null) {
 						// Select all resources that match this statement
 						// The selection will also apply any value filters for this variable
-						resources = SelectCache(q, forward, state, null, node).Clone();
+						resources = SelectCache(q, forward, state, selectCache, node).Clone();
 						
 						// Apply distinctFrom restrictions to make sure the value of this
 						// variable is not equal to the value of other variables, as specified.
@@ -410,7 +426,7 @@ namespace SemWeb.Query {
 							}
 						} else {
 							// Find all items that satisfy the filter, and then intersect the sets.
-							Set filter = SelectCache(q, forward, state, null, null);
+							Set filter = SelectCache(q, forward, state, selectCache, null);
 							
 							// Perform the loop on the items of the smaller set.
 							Set smaller = (filter.Size() < resources.Size()) ? filter : resources;
@@ -440,6 +456,8 @@ namespace SemWeb.Query {
 			
 			state.alternatives[varIndex] = resources;*/
 			
+			node.predicateFilterCache = new Hashtable();
+			
 			if (node.Children.Count == 0) {
 				// This is the end of a tree branch.
 				foreach (Resource r in resources.Items()) {
@@ -447,37 +465,104 @@ namespace SemWeb.Query {
 					if (!state.sink.Add(state.bindings)) return true;
 				}
 				return false;
-			
-			} else {
-				// Recurse on each possible value for this node for the first
-				// child.
 				
-				VariableNode firstchild = (VariableNode)node.Children[0];
-				QueryResultSink oldsink = state.sink;
-				
-				if (node.Children.Count > 1)
-					state.sink = new BufferSink();
-				
+			} if (node.Children.Count == 1) {
+				// The node has one child, so simply recurse into the child.
+				VariableNode child = (VariableNode)node.Children[0];
+				node.parentAlternatives = resources;
 				foreach (Resource r in resources.Items()) {
 					state.bindings[node.BindingIndex].Target = r;
-					if (Recurse(state, firstchild)) return true;
+					if (Recurse(state, child)) return true;
 				}
+				node.predicateFilterCache.Clear();
 				
-				// For subsequent children, except the last, permute on the
-				// buffered bindings.
-				foreach (VariableNode child in node.Children) {
-					if (child == firstchild) continue;
-					ArrayList bindings = (ArrayList)((BufferSink)state.sink).Bindings;
+			} else {
+				// Buffer the results of recursing into each child,
+				// and then find the permutations of the buffered results.
+				
+				QueryResultSink oldsink = state.sink;
+				
+				ArrayList resourceItems = new ArrayList(resources.Items());
+				
+				bool[] filteredOut = new bool[resourceItems.Count];
+				bool[] multipleResults = new bool[resourceItems.Count];
+				BufferSink[,] buffers = new BufferSink[resourceItems.Count,node.Children.Count];
+				
+				for (int i = 0; i < node.Children.Count; i++) {
+					VariableNode child = (VariableNode)node.Children[i];
+					node.parentAlternatives = resources;
 					
-					if (child == node.Children[node.Children.Count-1]) {
-						state.sink = oldsink;
-					} else {
-						state.sink = new BufferSink();
+					for (int r = 0; r < resourceItems.Count; r++) {
+						if (filteredOut[r]) continue;
+						
+						buffers[r,i] = new BufferSink();
+						state.sink = buffers[r,i];
+						
+						state.bindings[node.BindingIndex].Target = (Resource)resourceItems[r];
+						
+						// If this is the last child, and all previous children found
+						// only one binding for this resource, then we can short-circuit
+						// the permutation process and emit the recursion on this child directly.
+						if (i == node.Children.Count-1 && !multipleResults[r]) {
+							state.sink = oldsink;
+							
+							// Copy over the bindings for the individual variables
+							// set in the children of this node.
+							state.bindings = (VariableBinding[])buffers[r,0].Bindings[0];							
+							for (int c = 1; c < node.Children.Count-1; c++)
+								((VariableNode)node.Children[c]).CopyBindings((VariableBinding[])buffers[r,c].Bindings[0], state.bindings);
+							
+							filteredOut[r] = true; // requires no more processing later
+						}
+						
+						if (Recurse(state, child)) return true;
+						
+						// If no new bindings were found for this resource,
+						// the resource is filtered out for subsequent children.
+						if (buffers[r,i].Bindings.Count == 0) {
+							filteredOut[r] = true;
+							resources.Remove(resourceItems[r]);
+						}
+						if (buffers[r,i].Bindings.Count > 1)
+							multipleResults[r] = true;
 					}
 					
-					foreach (VariableBinding[] binding in bindings) {
-						state.bindings = binding;
-						if (Recurse(state, child)) return true;
+					node.predicateFilterCache.Clear();
+				}
+				
+				int[] counters = new int[node.Children.Count+1];
+				
+				for (int r = 0; r < resourceItems.Count; r++) {
+					if (filteredOut[r]) continue;
+					
+					// Permute through the combinations of variable bindings determined
+					// by each child.  In 'good' queries, all but one child produces
+					// only one variable binding per possible resource for this node.
+					
+					Array.Clear(counters, 0, counters.Length);
+					
+					while (counters[node.Children.Count] == 0) {
+						VariableBinding[] binding = (VariableBinding[])buffers[r,0].Bindings[counters[0]];
+						
+						for (int c = 1; c < node.Children.Count; c++) {
+							// Copy over the bindings for the individual variables
+							// set in the children of this node.
+							VariableNode child = (VariableNode)node.Children[c];
+							child.CopyBindings((VariableBinding[])buffers[r,c].Bindings[counters[c]], binding);
+						}
+
+						oldsink.Add(binding);
+						
+						// Increment the counters and carry.
+						counters[0]++;
+						for (int c = 0; c < node.Children.Count; c++) {
+							if (counters[c] == buffers[r,c].Bindings.Count) {
+								counters[c] = 0;
+								counters[c+1]++;
+							} else {
+								break;
+							}
+						}
 					}
 				}
 			}
@@ -510,6 +595,8 @@ namespace SemWeb.Query {
 		private Set SelectCache(Statement q, bool forward, SearchState state, Store queryTarget, VariableNode var) {
 			if (var != null && valueFilters[var.BindingIndex].Count == 0)
 				var = null;
+			
+			//Console.WriteLine((queryTarget == null ? "SQL" : "MEM") + " : " + q + " (" + (var == null ? "no var" : var.Variable.ToString()) + ")");
 			
 			if (queryTarget == null)
 				queryTarget = state.target;
@@ -647,7 +734,7 @@ namespace SemWeb.Query {
 	public class PrintQuerySink : QueryResultSink {
 		public override bool Add(VariableBinding[] result) {
 			foreach (VariableBinding var in result)
-				Console.WriteLine(var.Variable + " ==> " + var.Target);
+				Console.WriteLine(var.Variable + " ==> " + (var.Target == null ? "null" : var.Target.ToString()));
 			Console.WriteLine();
 			return true;
 		}
