@@ -210,6 +210,7 @@ namespace SemWeb {
 			ArrayList items = new ArrayList();
 			
 			string cmdstr = cmd.ToString();
+			//Console.WriteLine(cmdstr);
 			
 			IDataReader reader = RunReader(cmdstr);
 			try {

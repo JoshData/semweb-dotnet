@@ -181,16 +181,18 @@ namespace SemWeb {
 		}
 		
 		public Resource[] SelectObjects(Entity subject, Entity predicate) {
-			ArrayList resources = new ArrayList();
+			Hashtable resources = new Hashtable();
 			foreach (Statement s in Select(new Statement(subject, predicate, null)).Statements)
-				resources.Add(s.Object);
-			return (Resource[])resources.ToArray(typeof(Resource));
+				if (!resources.ContainsKey(s.Object))
+					resources[s.Object] = s.Object;
+			return (Entity[])new ArrayList(resources.Keys).ToArray(typeof(Entity));
 		}
 		public Entity[] SelectSubjects(Entity predicate, Entity @object) {
-			ArrayList resources = new ArrayList();
+			Hashtable resources = new Hashtable();
 			foreach (Statement s in Select(new Statement(null, predicate, @object)).Statements)
-				resources.Add(s.Subject);
-			return (Entity[])resources.ToArray(typeof(Entity));
+				if (!resources.ContainsKey(s.Subject))
+					resources[s.Subject] = s.Subject;
+			return (Entity[])new ArrayList(resources.Keys).ToArray(typeof(Entity));
 		}
 		
 		public void Write(RdfWriter writer) {

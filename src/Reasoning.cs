@@ -250,7 +250,6 @@ namespace SemWeb {
 					foreach (Entity type in getSubProperties(statement.Subject, source))
 						result.Add(new Statement(type, statement.Predicate, statement.Object));
 			}
-				
 		}
 		
 

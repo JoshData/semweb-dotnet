@@ -17,6 +17,7 @@ namespace SemWeb {
 		}
 		
 		public RdfXmlParser(XmlReader document) {
+			//XmlValidatingReader reader = new XmlValidatingReader(document);
 			doc = new XmlDocument();
 			doc.Load(document);
 		}

@@ -30,6 +30,7 @@ namespace SemWeb.Query {
 		Hashtable variableHash = new Hashtable();
 		VariableBinding[] initialBindings;
 		ArrayList[,] predicateFilters;
+		MemoryStore[,][] predicateFilterPreCache;
 		ArrayList[] valueFilters;
 		ArrayList[] variablesDistinct;
 		VariableNode rootVariable;			
@@ -115,6 +116,7 @@ namespace SemWeb.Query {
 			predicateFilters = new ArrayList[initialBindings.Length,2];
 			valueFilters = new ArrayList[initialBindings.Length];
 			variablesDistinct = new ArrayList[initialBindings.Length];
+			predicateFilterPreCache = new MemoryStore[initialBindings.Length,2][];			
 			
 			int[] constantFilters = new int[initialBindings.Length];
 			
@@ -360,11 +362,16 @@ namespace SemWeb.Query {
 			
 			bool forward = true;
 			while (true) {
-				foreach (Statement s in predicateFilters[node.BindingIndex, forward ? 1 : 0]) {
+				ArrayList filters = predicateFilters[node.BindingIndex, forward ? 1 : 0];
+				for (int si = 0; si < filters.Count; si++) {
+					Statement s = (Statement)filters[si];
+
 					Entity filterPredicate = (Entity)GetBinding(s.Predicate, node, true, state);
 					Resource filterObject = GetBinding(forward ? s.Object : s.Subject, node, !forward, state);
 
 					Store selectCache = null;
+					if (predicateFilterPreCache[node.BindingIndex, forward ? 1 : 0] != null)
+						selectCache = predicateFilterPreCache[node.BindingIndex, forward ? 1 : 0][si];
 					/*SelectCacheKey selectCacheKey = new SelectCacheKey(s, node);
 					Store selectCache = (MemoryStore)node.Parent.predicateFilterCache[selectCacheKey];
 					
@@ -418,12 +425,26 @@ namespace SemWeb.Query {
 						// Filter out resources that don't match the pattern
 						if (filterPredicate == null || filterObject == null) continue;
 						
-						if (filterObject is Literal || resources.Size() < 5) {
+						if (filterObject is Literal) {
+							Store localTarget = state.target;
+
+							// Run a combined select on all of the potential resources.
+							ArrayList queries = new ArrayList();
+							foreach (Resource r in resources.Items()) {
+								if (forward && !(r is Entity)) continue;
+								queries.Add(new Statement(forward ? (Entity)r : (Entity)filterObject, filterPredicate, forward ? filterObject : r));
+							}
+							
+							MemoryStore result = new MemoryStore(null);
+							state.target.Select((Statement[])queries.ToArray(typeof(Statement)), result);
+							localTarget = result;
+							
 							// Check that each resource matches the filter
 							foreach (Resource r in resources.Items()) {
-								if ((forward && !(r is Entity)) || !state.target.Contains(new Statement(forward ? (Entity)r : (Entity)filterObject, filterPredicate, forward ? filterObject : r)))
+								if ((forward && !(r is Entity)) || !localTarget.Contains(new Statement(forward ? (Entity)r : (Entity)filterObject, filterPredicate, forward ? filterObject : r)))
 									resources.Remove(r);
 							}
+							
 						} else {
 							// Find all items that satisfy the filter, and then intersect the sets.
 							Set filter = SelectCache(q, forward, state, selectCache, null);
@@ -456,8 +477,6 @@ namespace SemWeb.Query {
 			
 			state.alternatives[varIndex] = resources;*/
 			
-			node.predicateFilterCache = new Hashtable();
-			
 			if (node.Children.Count == 0) {
 				// This is the end of a tree branch.
 				foreach (Resource r in resources.Items()) {
@@ -469,12 +488,11 @@ namespace SemWeb.Query {
 			} if (node.Children.Count == 1) {
 				// The node has one child, so simply recurse into the child.
 				VariableNode child = (VariableNode)node.Children[0];
-				node.parentAlternatives = resources;
+				PrecacheSelect(node, resources, child, state);
 				foreach (Resource r in resources.Items()) {
 					state.bindings[node.BindingIndex].Target = r;
 					if (Recurse(state, child)) return true;
 				}
-				node.predicateFilterCache.Clear();
 				
 			} else {
 				// Buffer the results of recursing into each child,
@@ -490,7 +508,7 @@ namespace SemWeb.Query {
 				
 				for (int i = 0; i < node.Children.Count; i++) {
 					VariableNode child = (VariableNode)node.Children[i];
-					node.parentAlternatives = resources;
+					PrecacheSelect(node, resources, child, state);
 					
 					for (int r = 0; r < resourceItems.Count; r++) {
 						if (filteredOut[r]) continue;
@@ -526,8 +544,6 @@ namespace SemWeb.Query {
 						if (buffers[r,i].Bindings.Count > 1)
 							multipleResults[r] = true;
 					}
-					
-					node.predicateFilterCache.Clear();
 				}
 				
 				int[] counters = new int[node.Children.Count+1];
@@ -568,6 +584,36 @@ namespace SemWeb.Query {
 			}
 			
 			return false;
+		}
+		
+		private void PrecacheSelect(VariableNode node, Set resources, VariableNode child, SearchState state) {
+			for (int fwd = 0; fwd <= 1; fwd++) {
+				ArrayList filters = predicateFilters[child.BindingIndex, fwd];
+				predicateFilterPreCache[child.BindingIndex, fwd] = new MemoryStore[filters.Count];
+				for (int si = 0; si < filters.Count; si++) {
+					Statement s = (Statement)filters[si];
+					MemoryStore precache = null;
+					
+					if (s.Subject == node.Variable || s.Predicate == node.Variable || s.Object == node.Variable) {
+						precache = new MemoryStore(null);
+						
+						ArrayList queries = new ArrayList();
+						foreach (Resource p in resources.Items()) {
+							if (!(p is Entity) && (s.Subject == node.Variable || s.Predicate == node.Variable)) continue;
+							Statement qq = new Statement(
+								s.Subject == node.Variable ? (Entity)p : (Entity)GetBinding(s.Subject, child, true, state),
+								s.Predicate == node.Variable ? (Entity)p : (Entity)GetBinding(s.Predicate, child, true, state),
+								s.Object == node.Variable ? p : GetBinding(s.Object, child, false, state));
+							if (s.AnyNull) continue;
+							queries.Add(qq);
+						}
+						
+						state.target.Select((Statement[])queries.ToArray(typeof(Statement)), precache);
+					}
+
+					predicateFilterPreCache[child.BindingIndex, fwd][si] = precache;
+				}					
+			}
 		}
 		
 		private ArrayList SymmetricSelect(Entity e, Entity p, Store model) {
