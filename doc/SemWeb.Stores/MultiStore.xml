@@ -1,0 +1,76 @@
+<Type Name="MultiStore" FullName="SemWeb.Stores.MultiStore">
+  <TypeSignature Language="C#" Value="public class MultiStore : SemWeb.Store" />
+  <AssemblyInfo>
+    <AssemblyName>SemWeb</AssemblyName>
+    <AssemblyVersion>1.0.1898.26734</AssemblyVersion>
+  </AssemblyInfo>
+  <Base>
+    <BaseTypeName>SemWeb.Store</BaseTypeName>
+  </Base>
+  <Interfaces />
+  <Members>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public MultiStore (SemWeb.KnowledgeModel model);" />
+      <MemberType>Constructor</MemberType>
+      <Parameters>
+        <Parameter Name="model" Type="SemWeb.KnowledgeModel" />
+      </Parameters>
+      <Docs>
+        <param name="model">To be added.</param>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Add">
+      <MemberSignature Language="C#" Value="public void Add (SemWeb.Store store);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="store" Type="SemWeb.Store" />
+      </Parameters>
+      <Docs>
+        <param name="store">To be added.</param>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Add">
+      <MemberSignature Language="C#" Value="public void Add (SemWeb.Store store, SemWeb.RdfParser source);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="store" Type="SemWeb.Store" />
+        <Parameter Name="source" Type="SemWeb.RdfParser" />
+      </Parameters>
+      <Docs>
+        <param name="store">To be added.</param>
+        <param name="source">To be added.</param>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Remove">
+      <MemberSignature Language="C#" Value="public void Remove (SemWeb.Store store);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="store" Type="SemWeb.Store" />
+      </Parameters>
+      <Docs>
+        <param name="store">To be added.</param>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+  </Members>
+  <Docs>
+    <summary>To be added.</summary>
+    <remarks>To be added.</remarks>
+  </Docs>
+</Type>

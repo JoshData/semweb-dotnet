@@ -5,11 +5,11 @@ namespace SemWeb {
 	public abstract class Resource {
 		KnowledgeModel model;
 		
-		protected Resource() {
+		internal Resource() {
 			this.model = null;
 		}
 		
-		protected Resource(KnowledgeModel model) {
+		internal Resource(KnowledgeModel model) {
 			this.model = model;
 		}
 		
@@ -21,23 +21,12 @@ namespace SemWeb {
 		
 		public override string ToString() {
 			if (Uri != null) return Uri;
-			return "<anonymous>";
+			return "_";
 		}
 		
 		public Resource[] this[Entity relation] {
 			get {
 				return this[relation, true];
-			}
-		}
-		public Resource[] this[string relation] {
-			get {
-				return this[relation, true];
-			}
-		}
-		
-		public Resource[] this[string relation, bool forward] {
-			get {
-				return this[new Entity(relation, Model), forward];
 			}
 		}
 		
@@ -116,13 +105,6 @@ namespace SemWeb {
 		}
 	}
 	
-	public class AnonymousNode : Entity {
-		public AnonymousNode() : this(null) { }
-		public AnonymousNode(KnowledgeModel model) : base(null, model) { }
-		
-		public override string ToString() { return "_"; }
-	}
-
 	public class Literal : Resource { 
 		private string value, lang, type;
 		
@@ -171,7 +153,11 @@ namespace SemWeb {
 		public override string ToString() {
 			System.Text.StringBuilder ret = new System.Text.StringBuilder();
 			ret.Append('"');
-			ret.Append(Value);
+			foreach (char c in Value) {
+				if (c == '\\' || c == '"')
+					ret.Append('\\');
+				ret.Append(c);
+			}			
 			ret.Append('"');
 			
 			if (Language != null) {
@@ -194,6 +180,9 @@ namespace SemWeb {
 			string value = literal.Substring(1, quote-1);
 			literal = literal.Substring(quote+1);
 			
+			literal = literal.Replace("\\\"", "\"");
+			literal = literal.Replace("\\\\", "\\");
+			
 			string lang = null;
 			string datatype = null;
 			
@@ -214,6 +203,7 @@ namespace SemWeb {
 		}
 	}
 
+	/*
 	public abstract class LiteralFilter : Resource {
 		public LiteralFilter() : base(null) { }
 		
@@ -314,4 +304,5 @@ namespace SemWeb {
 			}
 		}
 	}
+	*/
 }

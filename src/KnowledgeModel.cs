@@ -7,11 +7,11 @@ namespace SemWeb {
 
 	public class KnowledgeModel : Store {
 		
-		MultiStore stores;
+		SemWeb.Stores.MultiStore stores;
 		Store mainstore;
 		
 		public KnowledgeModel() : base(null) {
-			stores = new MultiStore(this);
+			stores = new SemWeb.Stores.MultiStore(this);
 			mainstore = stores;
 		}
 		
@@ -25,7 +25,7 @@ namespace SemWeb {
 
 		public override KnowledgeModel Model { get { return this; } }
 		
-		public MultiStore Storage { get { return stores; } }
+		public SemWeb.Stores.MultiStore Storage { get { return stores; } }
 		
 		public void Add(Store storage) {
 			Storage.Add(storage);

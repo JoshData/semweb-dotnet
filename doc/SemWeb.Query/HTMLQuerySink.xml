@@ -1,0 +1,29 @@
+<Type Name="HTMLQuerySink" FullName="SemWeb.Query.HTMLQuerySink">
+  <TypeSignature Language="C#" Value="public class HTMLQuerySink : SemWeb.Query.QueryResultSink" />
+  <AssemblyInfo>
+    <AssemblyName>SemWeb</AssemblyName>
+    <AssemblyVersion>1.0.1898.26734</AssemblyVersion>
+  </AssemblyInfo>
+  <Base>
+    <BaseTypeName>SemWeb.Query.QueryResultSink</BaseTypeName>
+  </Base>
+  <Interfaces />
+  <Members>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public HTMLQuerySink (System.IO.TextWriter output);" />
+      <MemberType>Constructor</MemberType>
+      <Parameters>
+        <Parameter Name="output" Type="System.IO.TextWriter" />
+      </Parameters>
+      <Docs>
+        <param name="output">To be added.</param>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+  </Members>
+  <Docs>
+    <summary>To be added.</summary>
+    <remarks>To be added.</remarks>
+  </Docs>
+</Type>

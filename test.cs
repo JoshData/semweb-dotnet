@@ -2,6 +2,7 @@ using System;
 using System.IO;
 
 using SemWeb;
+using SemWeb.IO;
 using SemWeb.Stores;
 using SemWeb.Query;
 
@@ -20,19 +21,33 @@ public class Test {
 		return new SqliteStore("URI=file:SqliteTest.db", "rdf", model);
 	}
 	
+	private static void Recurse(XPathSemWebNavigator nav, string indent) {
+		nav = (XPathSemWebNavigator)nav.Clone();
+		Console.Write(indent);
+		Console.WriteLine(nav.NamespaceURI + nav.LocalName + " = " + nav.Value);
+		if (!nav.MoveToFirst()) return;
+		while (true) {
+			Recurse(nav, indent + " ");
+			if (!nav.MoveToNext()) break;
+		}
+	}
+	
 	public static void Main(string[] args) {
 		KnowledgeModel model = new KnowledgeModel();
 		Store storage = new MemoryStore(model); // new SqliteStore("URI=file:SqliteTest.db", "rdf", model); // new MemoryStore(model);
 		model.Storage.Add(storage);
 		storage.Import(new N3Parser("data.n3"));
-		storage.Import(new RdfXmlParser("../rdf/foaf.rdf"));
+		storage.Import(new RdfXmlParser("../rdf/schemas/foaf.rdf"));
 		//model.AddReasoning(new RDFSReasoning());
-
+		
 		MemoryStore queryfile = new MemoryStore(null);
 		RdfParser qp = new RdfXmlParser("query.rdf");
 		qp.BaseUri = "query://query/";
 		queryfile.Import(qp);
 		
+		XPathSemWebNavigator nav = new XPathSemWebNavigator(queryfile.GetResource("query://query/#query"), queryfile, null);
+		Recurse(nav, "");
+
 		RSquary query = new RSquary(queryfile, "query://query/#query");
 		
 		for (int i = 0; i < 3; i++) {

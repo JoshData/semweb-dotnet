@@ -6,7 +6,9 @@ using System.Xml;
 using Drive.Rdf;
 using D = Drive.Rdf.RdfXmlParser;
  
-namespace SemWeb {
+using SemWeb;
+
+namespace SemWeb.IO {
 	public class RdfXmlParser : RdfParser {
 		XmlDocument doc;
 		Hashtable resources = new Hashtable();
@@ -17,9 +19,10 @@ namespace SemWeb {
 		}
 		
 		public RdfXmlParser(XmlReader document) {
-			//XmlValidatingReader reader = new XmlValidatingReader(document);
+			XmlValidatingReader reader = new XmlValidatingReader(document);
+			reader.ValidationType = ValidationType.None;
 			doc = new XmlDocument();
-			doc.Load(document);
+			doc.Load(reader);
 		}
 		
 		public RdfXmlParser(TextReader document) : this(new XmlTextReader(document)) {
@@ -48,8 +51,10 @@ namespace SemWeb {
 			if (str.StartsWith("<") && str.EndsWith(">")) {
 				string uri = str.Substring(1, str.Length-2);
 				Resource ret = (Resource)resources[uri];
-				if (ret == null)
+				if (ret == null) {
 					ret = storage.GetResource(uri);
+					resources[uri] = ret;
+				}
 				return ret;
 			}
 			if (str.StartsWith("\""))

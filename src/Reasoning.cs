@@ -75,6 +75,7 @@ namespace SemWeb {
 			public ReasoningStatementSink(Statement template, StatementSink store, InferenceStore inference) { this.template = template; this.store = store; this.inference = inference; }
 			
 			public bool Add(Statement statement) {
+				inference.Engine.SelectFilter(ref statement, inference.Source);
 				store.Add(statement);
 				inference.Engine.FindEntailments(statement, template, store, inference.Source);
 				return true;
@@ -92,7 +93,14 @@ namespace SemWeb {
 
 		public virtual void Select(Statement statement, StatementSink result, Store source) {
 		}
+		
+		public virtual void SelectFilter(ref Statement statement, Store source) {
+		}
 	}
+}
+
+namespace SemWeb.Reasoning {
+	using SemWeb;
 	
 	public class RDFSReasoning : ReasoningEngine {
 		public static readonly Entity rdfType = new Entity("http://www.w3.org/1999/02/22-rdf-syntax-ns#type");
@@ -102,6 +110,7 @@ namespace SemWeb {
 		public static readonly Entity rdfsRange = new Entity("http://www.w3.org/2000/01/rdf-schema#range");
 		public static readonly Entity rdfsResource = new Entity("http://www.w3.org/2000/01/rdf-schema#Resource");
 		public static readonly Entity rdfsClass = new Entity("http://www.w3.org/2000/01/rdf-schema#Class");
+		public static readonly Entity rdfsLiteral = new Entity("http://www.w3.org/2000/01/rdf-schema#Literal");
 		
 		Hashtable closures = new Hashtable();
 		
@@ -252,7 +261,31 @@ namespace SemWeb {
 			}
 		}
 		
-
+		public override void SelectFilter(ref Statement statement, Store source) {
+			// When a literal without a datatype is selected, attempt to determine
+			// the data type from the rdfs:range of the predicate.
+			Literal lit = statement.Object as Literal;
+			if (lit != null && lit.DataType == null) {
+				ArrayList predrange = new ArrayList();
+				predrange.Add(statement.Predicate);
+				predrange.AddRange(getSuperProperties(statement.Predicate, source));
+				foreach (Entity predicate in predrange) {
+					string newtype = null;
+					foreach (Resource range in source.SelectObjects(predicate, rdfsRange)) {
+						if (range.Uri != null && range.Uri != rdfsLiteral) {
+							if (newtype == null)
+								newtype = range.Uri;
+							else // Multiple types match -- not sure which this value falls in
+								return;
+						}							
+					}
+					if (newtype != null) {
+						statement = new Statement(statement.Subject, statement.Predicate, new Literal(lit.Value, lit.Language, newtype), statement.Meta);
+						return;
+					}
+				}
+			}
+		}
 	}	
 	
 	public class OWLReasoning : ReasoningEngine {

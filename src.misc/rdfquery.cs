@@ -5,25 +5,54 @@ using System.Reflection;
 using SemWeb;
 using SemWeb.Query;
 
+[assembly: AssemblyTitle("RDFQuery - Query RDF Data")]
+[assembly: AssemblyCopyright("Copyright (c) 2005 Joshua Tauberer <tauberer@for.net>\nreleased under the GPL.")]
+[assembly: AssemblyDescription("A tool for querying RDF data.")]
+
+[assembly: Mono.UsageComplement("data1 data2 ... < query.rdf")]
+
 public class RDFQuery {
+	private class Opts : Mono.GetOptions.Options {
+		[Mono.GetOptions.Option("The {format} for query input: xml or n3.")]
+		public string @in = "xml";
+		
+		[Mono.GetOptions.Option("The {format} for variable binding output: simple, sql, or html")]
+		public string format = "simple";
+	}
+
 	public static void Main(string[] args) {
-		if (args.Length == 0) {
-			Console.Error.WriteLine("Specify sources as command-line arguments, and send the query on standard input.");
+		Opts opts = new Opts();
+		opts.ProcessArgs(args);
+
+		if (opts.RemainingArguments.Length == 0) {
+			opts.DoHelp();
 			return;
 		}
 		
-		RdfParser queryparser = new RdfXmlParser(Console.In);
-		queryparser.BaseUri = "query://query/";
+		QueryResultSink qs;
+		if (opts.format == "simple")
+			qs = new PrintQuerySink();
+		else if (opts.format == "sql")
+			qs = new SQLQuerySink(Console.Out, "rdf");
+		else if (opts.format == "html")
+			qs = new HTMLQuerySink(Console.Out);
+		else {
+			Console.Error.WriteLine("Invalid output format.");
+			return;
+		}
+
+		RdfParser queryparser = RdfParser.Create(opts.@in, "-");
+		queryparser.BaseUri = "query://query/#";
 		KnowledgeModel querymodel = new KnowledgeModel(queryparser);
 		
 		RSquary query = new RSquary(querymodel, "query://query/#query");
 		KnowledgeModel model = new KnowledgeModel();
-		foreach (string arg in args) {
+		foreach (string arg in opts.RemainingArguments) {
 			Store storage = Store.CreateForInput(arg, model);
 			model.Add(storage);
 		}
 		
-		query.Query(model, new PrintQuerySink());
+		query.Query(model, qs);
 	}
 }
 

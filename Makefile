@@ -1,4 +1,4 @@
-all: bin/test.exe bin/rdfs2cs.exe bin/SemWeb.MySQLStore.dll bin/SemWeb.SqliteStore.dll bin/SemWeb.dll bin/rdfstorage.exe bin/rdfquery.exe
+all: bin/test.exe bin/rdfs2cs.exe bin/SemWeb.MySQLStore.dll bin/SemWeb.SqliteStore.dll bin/SemWeb.dll bin/rdfstorage.exe bin/rdfquery.exe doc
 	
 bin/test.exe: test.cs bin/SemWeb.dll bin/SemWeb.SqliteStore.dll
 	mcs test.cs -out:bin/test.exe \
@@ -25,4 +25,9 @@ bin/SemWeb.dll: src/*.cs
 	cp lib/* bin
 	mcs -g src/*.cs -out:bin/SemWeb.dll -t:library \
 		-r:bin/Drive.dll -r:System.Data
+
+doc: bin/SemWeb.dll doc/* doc/*/*
+	mono /usr/lib/monodoc/monodocer.exe -assembly:bin/SemWeb.dll -path:doc
+	mkdir -p doc-html
+	mono /usr/lib/monodoc/monodocs2html.exe -source:doc -dest:doc-html -template:docstemplate.xsl
 

@@ -2,7 +2,9 @@ using System;
 using System.IO;
 using System.Xml;
 
-namespace SemWeb {
+using SemWeb;
+
+namespace SemWeb.IO {
 	public class RdfXmlWriter : RdfWriter {
 		XmlWriter writer;
 		NamespaceManager ns;
@@ -76,10 +78,11 @@ namespace SemWeb {
 			writer.WriteEndElement();
 		}
 		
-		public override void WriteStatementLiteral(string subj, string pred, string literal, string literalType, string literalLanguage) {
+		public override void WriteStatement(string subj, string pred, Literal literal) {
 			Open(subj, null);
 			writer.WriteStartElement(URI(pred));
-			writer.WriteString(literal);
+			// Should write language and datatype
+			writer.WriteString(literal.Value);
 			writer.WriteEndElement();
 		}
 		

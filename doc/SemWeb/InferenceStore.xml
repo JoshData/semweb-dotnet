@@ -1,0 +1,55 @@
+<Type Name="InferenceStore" FullName="SemWeb.InferenceStore">
+  <TypeSignature Language="C#" Value="public class InferenceStore : SemWeb.Store" />
+  <AssemblyInfo>
+    <AssemblyName>SemWeb</AssemblyName>
+    <AssemblyVersion>1.0.1898.26734</AssemblyVersion>
+  </AssemblyInfo>
+  <Base>
+    <BaseTypeName>SemWeb.Store</BaseTypeName>
+  </Base>
+  <Interfaces />
+  <Members>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public InferenceStore (SemWeb.Store store, SemWeb.ReasoningEngine engine);" />
+      <MemberType>Constructor</MemberType>
+      <Parameters>
+        <Parameter Name="store" Type="SemWeb.Store" />
+        <Parameter Name="engine" Type="SemWeb.ReasoningEngine" />
+      </Parameters>
+      <Docs>
+        <param name="store">To be added.</param>
+        <param name="engine">To be added.</param>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Source">
+      <MemberSignature Language="C#" Value="public SemWeb.Store Source { get; };" />
+      <MemberType>Property</MemberType>
+      <ReturnValue>
+        <ReturnType>SemWeb.Store</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+        <value>To be added.</value>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Engine">
+      <MemberSignature Language="C#" Value="public SemWeb.ReasoningEngine Engine { get; };" />
+      <MemberType>Property</MemberType>
+      <ReturnValue>
+        <ReturnType>SemWeb.ReasoningEngine</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+        <value>To be added.</value>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+  </Members>
+  <Docs>
+    <summary>To be added.</summary>
+    <remarks>To be added.</remarks>
+  </Docs>
+</Type>

@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.IO;
  
 namespace SemWeb {
@@ -6,7 +7,7 @@ namespace SemWeb {
 		public ParserException (string message) : base (message) {}
 	}
 
-	public abstract class RdfParser {
+	public abstract class RdfParser : IDisposable {
 		Entity meta = null;
 		string baseuri = null;
 		
@@ -30,12 +31,15 @@ namespace SemWeb {
 
 		public abstract void Parse(Store storage);
 		
+		public virtual void Dispose() {
+		}
+		
 		public static RdfParser Create(string type, string source) {
 			switch (type) {
 				case "xml":
-					return new RdfXmlParser(source);
+					return new SemWeb.IO.RdfXmlParser(source);
 				case "n3":
-					return new N3Parser(source);
+					return new SemWeb.IO.N3Parser(source);
 				default:
 					throw new ArgumentException("Unknown parser type: " + type);
 			}
@@ -44,6 +48,17 @@ namespace SemWeb {
 		protected static TextReader GetReader(string file) {
 			if (file == "-") return Console.In;
 			return new StreamReader(file);
+		}
+	}
+	
+	internal class MultiRdfParser : RdfParser {
+		private ArrayList parsers = new ArrayList();
+		
+		public ArrayList Parsers { get { return parsers; } }
+		
+		public override void Parse(Store storage) {
+			foreach (RdfParser p in Parsers)
+				p.Parse(storage);
 		}
 	}
 }

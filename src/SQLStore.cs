@@ -2,8 +2,9 @@ using System;
 using System.Collections;
 using System.Data;
 using System.IO;
+using System.Text;
 
-namespace SemWeb {
+namespace SemWeb.Stores {
 	// TODO: It's not safe to have two concurrent accesses to the same database
 	// because the creation of new entities will use the same IDs.
 	
@@ -15,6 +16,10 @@ namespace SemWeb {
 		
 		bool hasNextId = false;
 		int nextid = 2; // the next ID of a new resource
+		
+		bool tableIsLocked = false;
+		
+		Hashtable lockedIdCache;
 		
 		public SQLStore(string table, KnowledgeModel model) : base(model) {
 			this.table = table;
@@ -36,13 +41,16 @@ namespace SemWeb {
 		public override int StatementCount { get { Init(); return RunScalarInt("select count(subject) from " + table, 0); } }
 		
 		private void GetNextId() {
-			if (hasNextId) return;
-			hasNextId = true;
+			if (hasNextId && tableIsLocked) return;
 
 			foreach (string column in new string[] { "subject", "predicate", "object", "meta" }) {
 				int maxid = RunScalarInt("select max(" + column + ") from " + table, 0);
 				if (maxid >= nextid) nextid = maxid + 1;
 			}
+			
+			if (nextid <= 2) nextid = 2;
+			
+			if (tableIsLocked) hasNextId = true;
 		}
 		
 		public override void Clear() {
@@ -56,14 +64,32 @@ namespace SemWeb {
 			int subj = ID(statement.Subject);
 			int pred = ID(statement.Predicate);
 			int meta = statement.Meta == null ? 0 : ID(statement.Meta);
-			string cmd;
+			
+			StringBuilder cmd = new StringBuilder();
+			cmd.Append("INSERT INTO ");
+			cmd.Append(table);
+			cmd.Append(" VALUES (");
+
+			cmd.Append(subj);
+			cmd.Append(", ");
+			cmd.Append(pred);
+			cmd.Append(", ");
+			
 			if (statement.Object is Literal) {
-				cmd = "INSERT INTO " + table + " VALUES (" + subj + ", " + pred + ", 0, \"" + Escape( ((Literal)statement.Object).Value) + "\", " + meta + ")";
+				Literal lit = (Literal)statement.Object;
+				cmd.Append("0, ");
+				cmd.Append(Escape(lit.ToString()));
 			} else {
 				int obj = ID(statement.Object);
-				cmd = "INSERT INTO " + table + " VALUES (" + subj + ", " + pred + ", " + obj + ", \"\", " + meta + ")";
+				cmd.Append(obj);
+				cmd.Append(", NULL");
 			}
-			RunCommand(cmd);
+			
+			cmd.Append(", ");
+			cmd.Append(meta);
+			cmd.Append(")");
+			
+			RunCommand(cmd.ToString());
 		}
 		
 		public override void Remove(Statement statement) {
@@ -76,6 +102,8 @@ namespace SemWeb {
 		}
 		
 		public override Entity GetResource(string uri, bool create) {
+			if (uri == null) throw new ArgumentNullException();
+			
 			if (create)
 				return new DBResource(this, 0, uri, false);
 			
@@ -106,9 +134,9 @@ namespace SemWeb {
 				cmd.Append(")");
 				return;
 			} else if (r is Literal) {
-				cmd.Append(" (object = 0 and literal = \"");
-				cmd.Append(Escape(((Literal)r).Value));
-				cmd.Append("\")");
+				cmd.Append(" (object = 0 and literal = ");
+				cmd.Append(Escape(((Literal)r).ToString()));
+				cmd.Append(")");
 			} else {
 				cmd.Append("( ");
 				cmd.Append(col);
@@ -127,17 +155,22 @@ namespace SemWeb {
 			if (template.Subject != null) {
 				WhereItem("subject", template.Subject, cmd);
 			}
+			
 			if (template.Predicate != null) {
 				if (template.Subject != null)
 					cmd.Append(" and");
 				WhereItem("predicate", template.Predicate, cmd);
-			}
-			if (template.Object != null) {
-				if (template.Subject != null || template.Predicate != null)
+			} else {
+				if (template.Subject != null)
 					cmd.Append(" and");
-				
+				cmd.Append(" predicate != 1");
+			}
+			
+			if (template.Object != null) {
+				cmd.Append(" and");
 				WhereItem("object", template.Object, cmd);
 			}
+			
 			if (template.Meta != null) {
 				cmd.Append(" and");
 				WhereItem("meta", template.Meta, cmd);
@@ -146,8 +179,18 @@ namespace SemWeb {
 		
 		private int AsInt(object r) {
 			if (r is int) return (int)r;
+			if (r is uint) return (int)(uint)r;
 			if (r is string) return int.Parse((string)r);
 			throw new ArgumentException(r.ToString());
+		}
+		
+		private string AsString(object r) {
+			if (r is string)
+				return (string)r;
+			else if (r is byte[])
+				return System.Text.Encoding.UTF8.GetString((byte[])r);
+			else
+				throw new FormatException("SQL store returned a literal value as " + r);
 		}
 		
 		private struct SPOLM {
@@ -156,6 +199,8 @@ namespace SemWeb {
 		}
 		
 		public override void Select(Statement[] templates, StatementSink result) {
+			if (templates == null) throw new ArgumentNullException();
+			if (result == null) throw new ArgumentNullException();
 			if (templates.Length == 0) return;
 			
 			// See how many columns vary.
@@ -201,6 +246,8 @@ namespace SemWeb {
 		}
 		
 		public override void Select(Statement template, StatementSink result) {
+			if (result == null) throw new ArgumentNullException();
+	
 			Init();
 			
 			System.Text.StringBuilder cmd = new System.Text.StringBuilder("SELECT subject, predicate, object, literal, meta FROM ");
@@ -227,14 +274,8 @@ namespace SemWeb {
 					d.M = m;
 					
 					string literal = null;
-					if (o == 0) {
-						if (reader[3] is string)
-							literal = (string)reader[3];
-						else if (reader[3] is byte[])
-							literal = System.Text.Encoding.UTF8.GetString((byte[])reader[3]);
-						else
-							throw new FormatException("SQL store returned a literal value as " + reader[3]);
-					}
+					if (o == 0)
+						literal = AsString(reader[3]);
 					d.L = literal;
 				
 					items.Add(d);
@@ -247,7 +288,7 @@ namespace SemWeb {
 				bool ret = result.Add(new Statement(
 					new DBResource(this, item.S, null, false),
 					new DBResource(this, item.P, null, false),
-					item.O == 0 ? (Resource)new Literal(item.L, Model) : new DBResource(this, item.O, null, false),
+					item.O == 0 ? (Resource)Literal.Parse(item.L, Model) : new DBResource(this, item.O, null, false),
 					item.M == 0 ? null : new DBResource(this, item.M, null, false)
 					));
 				if (!ret) break;
@@ -267,20 +308,32 @@ namespace SemWeb {
 		}
 		
 		private int GetId(string uri, bool create) {
+			if (lockedIdCache != null && lockedIdCache.ContainsKey(uri))
+				return (int)lockedIdCache[uri];
+			
 			Init();
 			
-			object ret = RunScalar("SELECT subject FROM " + table + " WHERE predicate = 1 and literal = \"" + Escape(uri) + "\"");
-			if (ret == null && !create) return 0;
+			object ret = null;
+			
+			if (lockedIdCache == null) {
+				ret = RunScalar("SELECT subject FROM " + table + " WHERE predicate = 1 and literal = " + Escape(uri) + "");
+				if (ret == null && !create) return 0;
+			}
+			
+			int id;
 			
 			if (ret == null) {				
 				GetNextId();
-				RunCommand("INSERT INTO " + table + " VALUES (" + nextid + ", 1, 0, \"" + Escape(uri) + "\", 0)");
-				return nextid++;
+				RunCommand("INSERT INTO " + table + " VALUES (" + nextid + ", 1, 0, " + Escape(uri) + ", 0)");
+				id = nextid++;
 			} else {
-				int id;
 				if (ret is int) id = (int)ret; else id = int.Parse(ret.ToString());
-				return id;
 			}
+			
+			if (lockedIdCache != null)
+				lockedIdCache[uri] = id;
+			
+			return id;
 		}
 		
 		internal static string Escape(string str) {
@@ -288,7 +341,7 @@ namespace SemWeb {
 			b.Replace("\\", "\\\\");
 			b.Replace("\"", "\\\"");
 			b.Replace("\n", "\\n");
-			return b.ToString();
+			return "\"" + b.ToString() + "\"";
 		}
 
 		class DBResource : Entity {
@@ -322,7 +375,7 @@ namespace SemWeb {
 			}
 			
 			public override bool Equals(object o) {
-				if (o is Literal || o is AnonymousNode) return false;
+				if (o is Literal) return false;
 				if (!(o is DBResource)) return base.Equals(o);
 				DBResource r = (DBResource)o;
 				return GetId() == r.GetId();
@@ -330,11 +383,36 @@ namespace SemWeb {
 		}
 
 		public override void Import(RdfParser parser) {
+			if (parser == null) throw new ArgumentNullException();
+			
 			Init();
 			
+			bool oldLockState = tableIsLocked;
+			
+			if (lockedIdCache == null) {
+				lockedIdCache = new Hashtable();
+				IDataReader reader = RunReader("SELECT subject, literal FROM " + table + " where predicate = 1 and object = 0");
+				try {
+					while (reader.Read()) {
+						int id = AsInt(reader[0]);
+						string uri = AsString(reader[1]);
+						lockedIdCache[uri] = id;
+					}
+				} finally {
+					reader.Close();
+				}
+			}
+
 			BeginTransaction();
-			base.Import(parser);
-			EndTransaction();
+			
+			try {
+				tableIsLocked = true;
+				base.Import(parser);
+			} finally {
+				tableIsLocked = oldLockState;
+				if (!tableIsLocked) lockedIdCache = null;
+				EndTransaction();
+			}
 		}
 		
 		protected abstract void RunCommand(string sql);
@@ -362,21 +440,25 @@ namespace SemWeb {
 
 		protected virtual void CreateTable() {
 			RunCommand("CREATE TABLE " + table + 
-				"(subject int, predicate int, object int, literal blob, meta int)");
+				"(subject int UNSIGNED NOT NULL, predicate int UNSIGNED NOT NULL, object int UNSIGNED NOT NULL, literal blob, meta int UNSIGNED NOT NULL)");
 		}
 		
 		protected virtual void CreateIndexes() {
 			RunCommand("CREATE INDEX subject_index ON " + table + "(subject)");
 			RunCommand("CREATE INDEX predicate_index ON " + table + "(predicate)");
 			RunCommand("CREATE INDEX object_index ON " + table + "(object)");
+			RunCommand("CREATE INDEX literal_index ON " + table + "(literal(128))");
 		}
 		
 		protected virtual void BeginTransaction() { }
 		protected virtual void EndTransaction() { }
-		
-		protected virtual void LockTable() { }
-		protected virtual void UnlockTable() { }		
 	}
+	
+}
+
+namespace SemWeb.IO {
+	using SemWeb;
+	using SemWeb.Stores;
 	
 	public class SQLWriter : RdfWriter {
 		TextWriter writer;
@@ -397,7 +479,7 @@ namespace SemWeb {
 			this.writer = writer;
 			this.table = tablename;
 			
-			writer.WriteLine("CREATE TABLE `" + table + "` (`subject` int NOT NULL, `predicate` int NOT NULL, `object` int NOT NULL, `literal` blob, `meta` int NOT NULL);");
+			writer.WriteLine("CREATE TABLE `" + table + "` (`subject` int UNSIGNED NOT NULL, `predicate` int UNSIGNED NOT NULL, `object` int UNSIGNED NOT NULL, `literal` blob, `meta` int UNSIGNED NOT NULL);");
 		}
 		
 		public override NamespaceManager Namespaces { get { return m; } }
@@ -406,8 +488,8 @@ namespace SemWeb {
 			writer.WriteLine("INSERT INTO {0} VALUES ({1}, {2}, {3}, NULL, 0);", table, ID(subj, 0), ID(pred, 1), ID(obj, 2)); 
 		}
 		
-		public override void WriteStatementLiteral(string subj, string pred, string literal, string literalType, string literalLanguage) {
-			writer.WriteLine("INSERT INTO {0} VALUES ({1}, {2}, 0, \"{3}\", 0);", table, ID(subj, 0), ID(pred, 1), SQLStore.Escape(literal)); 
+		public override void WriteStatement(string subj, string pred, Literal literal) {
+			writer.WriteLine("INSERT INTO {0} VALUES ({1}, {2}, 0, {3}, 0);", table, ID(subj, 0), ID(pred, 1), SQLStore.Escape(literal.ToString())); 
 		}
 		
 		public override string CreateAnonymousNode() {
@@ -420,6 +502,7 @@ namespace SemWeb {
 			writer.WriteLine("CREATE INDEX subject_index ON " + table + "(subject);");
 			writer.WriteLine("CREATE INDEX predicate_index ON " + table + "(predicate);");
 			writer.WriteLine("CREATE INDEX object_index ON " + table + "(object);");
+			writer.WriteLine("CREATE INDEX literal_index ON " + table + "(literal(128));");
 			Close();
 		}
 		
@@ -443,7 +526,7 @@ namespace SemWeb {
 			} else {
 				id = (++resourcecounter).ToString();
 				resources[uri] = id;
-				writer.WriteLine("INSERT INTO {0} VALUES ({1}, 1, 0, \"{2}\", 0);", table, id, SQLStore.Escape(uri));
+				writer.WriteLine("INSERT INTO {0} VALUES ({1}, 1, 0, {2}, 0);", table, id, SQLStore.Escape(uri));
 			}
 			
 			fastmap[x, 0] = uri;

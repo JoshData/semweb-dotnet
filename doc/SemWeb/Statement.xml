@@ -1,0 +1,161 @@
+<Type Name="Statement" FullName="SemWeb.Statement">
+  <TypeSignature Language="C#" Value="public struct Statement" />
+  <AssemblyInfo>
+    <AssemblyName>SemWeb</AssemblyName>
+    <AssemblyVersion>1.0.1898.26734</AssemblyVersion>
+  </AssemblyInfo>
+  <Base>
+    <BaseTypeName>System.ValueType</BaseTypeName>
+  </Base>
+  <Interfaces />
+  <Members>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public Statement (SemWeb.Entity subject, SemWeb.Entity predicate, SemWeb.Resource object);" />
+      <MemberType>Constructor</MemberType>
+      <Parameters>
+        <Parameter Name="subject" Type="SemWeb.Entity" />
+        <Parameter Name="predicate" Type="SemWeb.Entity" />
+        <Parameter Name="object" Type="SemWeb.Resource" />
+      </Parameters>
+      <Docs>
+        <param name="subject">The subject of the statement.</param>
+        <param name="predicate">The predicate of the statement.</param>
+        <param name="object">The object of the statement.</param>
+        <summary>Creates a new Statement.</summary>
+        <remarks>None.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public Statement (SemWeb.Entity subject, SemWeb.Entity predicate, SemWeb.Resource object, SemWeb.Entity meta);" />
+      <MemberType>Constructor</MemberType>
+      <Parameters>
+        <Parameter Name="subject" Type="SemWeb.Entity" />
+        <Parameter Name="predicate" Type="SemWeb.Entity" />
+        <Parameter Name="object" Type="SemWeb.Resource" />
+        <Parameter Name="meta" Type="SemWeb.Entity" />
+      </Parameters>
+      <Docs>
+        <param name="subject">The subject of the statement.</param>
+        <param name="predicate">The predicate of the statement.</param>
+        <param name="object">The object of the statement.</param>
+        <param name="meta">An entity with meta-information about the statement.  May be null.</param>
+        <summary>Creates a new Statement.</summary>
+        <remarks>None.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Empty">
+      <MemberSignature Language="C#" Value="public static readonly SemWeb.Statement Empty;" />
+      <MemberType>Field</MemberType>
+      <ReturnValue>
+        <ReturnType>SemWeb.Statement</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>A statement with null subject, predicate, object, and meta.</summary>
+        <remarks>This is useful for accessing all statements in a store with the <see cref="M:SemWeb.Store.Select(SemWeb.Statement,SemWeb.StatementSink)" /> method.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Invert">
+      <MemberSignature Language="C#" Value="public SemWeb.Statement Invert ();" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>SemWeb.Statement</ReturnType>
+      </ReturnValue>
+      <Parameters />
+      <Docs>
+        <summary>To be added.</summary>
+        <returns>To be added.</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="op_Equality">
+      <MemberSignature Language="C#" Value="public static bool op_Equality (SemWeb.Statement a, SemWeb.Statement b);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Boolean</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="a" Type="SemWeb.Statement" />
+        <Parameter Name="b" Type="SemWeb.Statement" />
+      </Parameters>
+      <Docs>
+        <param name="a">To be added.</param>
+        <param name="b">To be added.</param>
+        <summary>To be added.</summary>
+        <returns>To be added.</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="op_Inequality">
+      <MemberSignature Language="C#" Value="public static bool op_Inequality (SemWeb.Statement a, SemWeb.Statement b);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Boolean</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="a" Type="SemWeb.Statement" />
+        <Parameter Name="b" Type="SemWeb.Statement" />
+      </Parameters>
+      <Docs>
+        <param name="a">To be added.</param>
+        <param name="b">To be added.</param>
+        <summary>To be added.</summary>
+        <returns>To be added.</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Subject">
+      <MemberSignature Language="C#" Value="public SemWeb.Entity Subject { get; };" />
+      <MemberType>Property</MemberType>
+      <ReturnValue>
+        <ReturnType>SemWeb.Entity</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+        <value>To be added.</value>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Predicate">
+      <MemberSignature Language="C#" Value="public SemWeb.Entity Predicate { get; };" />
+      <MemberType>Property</MemberType>
+      <ReturnValue>
+        <ReturnType>SemWeb.Entity</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+        <value>To be added.</value>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Object">
+      <MemberSignature Language="C#" Value="public SemWeb.Resource Object { get; };" />
+      <MemberType>Property</MemberType>
+      <ReturnValue>
+        <ReturnType>SemWeb.Resource</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+        <value>To be added.</value>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Meta">
+      <MemberSignature Language="C#" Value="public SemWeb.Entity Meta { get; };" />
+      <MemberType>Property</MemberType>
+      <ReturnValue>
+        <ReturnType>SemWeb.Entity</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+        <value>To be added.</value>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+  </Members>
+  <Docs>
+    <summary>A statement, comprising a subject, predicate, and object.</summary>
+    <remarks>
+      <para>RDF requires that subjects and predicates be entities (non-literals).</para>
+<para>The <see cref="P:SemWeb.Statement.Meta" /> property optionally contains an entity that has meta-information about the statement.  The use of the Meta property is left up to application writers.</para></remarks>
+  </Docs>
+</Type>

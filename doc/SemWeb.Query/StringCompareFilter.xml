@@ -1,0 +1,49 @@
+<Type Name="StringCompareFilter" FullName="SemWeb.Query.StringCompareFilter">
+  <TypeSignature Language="C#" Value="public class StringCompareFilter : SemWeb.Query.StringFilter" />
+  <AssemblyInfo>
+    <AssemblyName>SemWeb</AssemblyName>
+    <AssemblyVersion>1.0.1898.26734</AssemblyVersion>
+  </AssemblyInfo>
+  <Base>
+    <BaseTypeName>SemWeb.Query.StringFilter</BaseTypeName>
+  </Base>
+  <Interfaces />
+  <Members>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public StringCompareFilter (SemWeb.Literal res, int compareResult, bool orEqual);" />
+      <MemberType>Constructor</MemberType>
+      <Parameters>
+        <Parameter Name="res" Type="SemWeb.Literal" />
+        <Parameter Name="compareResult" Type="System.Int32" />
+        <Parameter Name="orEqual" Type="System.Boolean" />
+      </Parameters>
+      <Docs>
+        <param name="res">To be added.</param>
+        <param name="compareResult">To be added.</param>
+        <param name="orEqual">To be added.</param>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public StringCompareFilter (string pattern, int compareResult, bool orEqual);" />
+      <MemberType>Constructor</MemberType>
+      <Parameters>
+        <Parameter Name="pattern" Type="System.String" />
+        <Parameter Name="compareResult" Type="System.Int32" />
+        <Parameter Name="orEqual" Type="System.Boolean" />
+      </Parameters>
+      <Docs>
+        <param name="pattern">To be added.</param>
+        <param name="compareResult">To be added.</param>
+        <param name="orEqual">To be added.</param>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+  </Members>
+  <Docs>
+    <summary>To be added.</summary>
+    <remarks>To be added.</remarks>
+  </Docs>
+</Type>

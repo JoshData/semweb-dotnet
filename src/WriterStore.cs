@@ -8,6 +8,8 @@ namespace SemWeb {
 		
 		int ctr = 0;
 		
+		Entity currentMeta;
+		
 		public WriterStore(RdfWriter writer, KnowledgeModel model) : base(model) { this.writer = writer; }
 		
 		public override int StatementCount { get { return ctr; } }
@@ -18,6 +20,8 @@ namespace SemWeb {
 		
 		public override void Import(RdfParser parser) {
 			base.Import(parser);
+			if (currentMeta != null)
+				writer.PopMetaScope();
 			writer.Close();
 		}
 		
@@ -25,28 +29,32 @@ namespace SemWeb {
 			writer.Dispose();
 		}
 		
+		private string GetURI(Entity entity) {
+			if (entity is MyAnonymousNode)
+				return ((MyAnonymousNode)entity).writerURI;
+			if (entity.Uri == null) throw new ArgumentException("Cannot add a statement with an anonymous resource not created from this store.");
+			return entity.Uri;
+		}
+		
 		public override void Add(Statement statement) {
 			ctr++;
 			
-			string subj = statement.Subject.Uri;
-			if (statement.Subject is MyAnonymousNode)
-				subj = ((MyAnonymousNode)statement.Subject).writerURI;
-			if (subj == null) throw new ArgumentException("Cannot add a statement with an anonymous subject not created from this store.");
-
-			string pred = statement.Predicate.Uri;
-			if (statement.Predicate is MyAnonymousNode)
-				pred = ((MyAnonymousNode)statement.Predicate).writerURI;
-			if (pred == null) throw new ArgumentException("Cannot add a statement with an anonymous predicate not created from this store.");
+			if (statement.Meta != currentMeta) {
+				if (currentMeta != null)
+					writer.PopMetaScope();
+				if (statement.Meta != null)
+					writer.PushMetaScope(GetURI(statement.Meta));
+				currentMeta = statement.Meta;
+			}
+			
+			string subj = GetURI(statement.Subject);
+			string pred = GetURI(statement.Predicate);
 
 			if (statement.Object is Literal) {
 				Literal lit = (Literal)statement.Object;
-				writer.WriteStatementLiteral(subj, pred, lit.Value, lit.Language, lit.DataType);
-			} else if (statement.Object.Uri != null) {
-				writer.WriteStatement(subj, pred, statement.Object.Uri);
-			} else if (statement.Object is MyAnonymousNode) {
-				writer.WriteStatement(subj, pred, ((MyAnonymousNode)statement.Object).writerURI);
+				writer.WriteStatement(subj, pred, lit);
 			} else {
-				throw new ArgumentException("Cannot add a statement with an anonymous object not created from this store.");
+				writer.WriteStatement(subj, pred, GetURI((Entity)statement.Object));
 			}
 		}
 		
@@ -70,9 +78,9 @@ namespace SemWeb {
 			return new MyAnonymousNode(writer.CreateAnonymousNode(), Model);
 		}
 		
-		private class MyAnonymousNode : AnonymousNode {
+		private class MyAnonymousNode : Entity {
 			public readonly string writerURI;
-			public MyAnonymousNode(string uri, KnowledgeModel model) : base(model) { this.writerURI = uri; } 
+			public MyAnonymousNode(string uri, KnowledgeModel model) : base(null, model) { this.writerURI = uri; } 
 		}
 	}
 	

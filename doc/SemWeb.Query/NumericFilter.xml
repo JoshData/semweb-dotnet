@@ -1,0 +1,52 @@
+<Type Name="NumericFilter" FullName="SemWeb.Query.NumericFilter">
+  <TypeSignature Language="C#" Value="public abstract class NumericFilter : SemWeb.Query.LiteralValueFilter" />
+  <AssemblyInfo>
+    <AssemblyName>SemWeb</AssemblyName>
+    <AssemblyVersion>1.0.1898.26734</AssemblyVersion>
+  </AssemblyInfo>
+  <Base>
+    <BaseTypeName>SemWeb.Query.LiteralValueFilter</BaseTypeName>
+  </Base>
+  <Interfaces />
+  <Members>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public NumericFilter (SemWeb.Literal res);" />
+      <MemberType>Constructor</MemberType>
+      <Parameters>
+        <Parameter Name="res" Type="SemWeb.Literal" />
+      </Parameters>
+      <Docs>
+        <param name="res">To be added.</param>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public NumericFilter (decimal number);" />
+      <MemberType>Constructor</MemberType>
+      <Parameters>
+        <Parameter Name="number" Type="System.Decimal" />
+      </Parameters>
+      <Docs>
+        <param name="number">To be added.</param>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="number">
+      <MemberSignature Language="C#" Value="protected readonly decimal number;" />
+      <MemberType>Field</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Decimal</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+  </Members>
+  <Docs>
+    <summary>To be added.</summary>
+    <remarks>To be added.</remarks>
+  </Docs>
+</Type>

@@ -1,0 +1,83 @@
+<Type Name="Resource" FullName="SemWeb.Resource">
+  <TypeSignature Language="C#" Value="public abstract class Resource" />
+  <AssemblyInfo>
+    <AssemblyName>SemWeb</AssemblyName>
+    <AssemblyVersion>1.0.1898.26734</AssemblyVersion>
+  </AssemblyInfo>
+  <Base>
+    <BaseTypeName>System.Object</BaseTypeName>
+  </Base>
+  <Interfaces />
+  <Attributes>
+    <Attribute>
+      <AttributeName>System.Reflection.DefaultMember(MemberName="Item")</AttributeName>
+    </Attribute>
+  </Attributes>
+  <Members>
+    
+    
+    <Member MemberName="Uri">
+      <MemberSignature Language="C#" Value="public abstract string Uri { get; };" />
+      <MemberType>Property</MemberType>
+      <ReturnValue>
+        <ReturnType>System.String</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>The URI of this resource.</summary>
+        <value>The URI of the resource, or null of the resource is anonymous or a literal.</value>
+        <remarks>None.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Model">
+      <MemberSignature Language="C#" Value="public SemWeb.KnowledgeModel Model { get; };" />
+      <MemberType>Property</MemberType>
+      <ReturnValue>
+        <ReturnType>SemWeb.KnowledgeModel</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>The KnowledgeModel that created this resource.</summary>
+        <value>The KnowledgeModel that created this resource, or null if this resource is not associated with a KnowledgeModel.</value>
+        <remarks>This is the source of the graph that the <see cref="P:SemWeb.Resource.Item" /> properties use.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Item">
+      <MemberSignature Language="C#" Value="public SemWeb.Resource[] Item[SemWeb.Entity relation] { get; };" />
+      <MemberType>Property</MemberType>
+      <ReturnValue>
+        <ReturnType>SemWeb.Resource[]</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="relation" Type="SemWeb.Entity" />
+      </Parameters>
+      <Docs>
+        <param name="relation">The predicate to follow.</param>
+        <summary>Follows an arc in the RDF graph.</summary>
+        <value>All resources that are objects of statements for which this resource is the subject and <paramref name="relation" /> is the predicate.</value>
+        <remarks>The model searched is the same one returned by the <see cref="P:SemWeb.Resource.Model" /> property.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Item">
+      <MemberSignature Language="C#" Value="public SemWeb.Resource[] Item[SemWeb.Entity relation, bool forward] { get; };" />
+      <MemberType>Property</MemberType>
+      <ReturnValue>
+        <ReturnType>SemWeb.Resource[]</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="relation" Type="SemWeb.Entity" />
+        <Parameter Name="forward" Type="System.Boolean" />
+      </Parameters>
+      <Docs>
+        <param name="relation">The predicate to follow.</param>
+        <param name="forward">
+          <see langword="true" /> to follow the relation forward, <see langword="false" /> to follow the relation in reverse.</param>
+        <summary>Follows an arc in the RDF graph forward or backward.</summary>
+        <value>If <paramref name="forward" /> is <see langword="true" />, this property results all resources that are objects of statements for which this resource is the subject and <paramref name="relation" /> is the predicate.  Otherwise, this property results all resources that are subjects of statements for which this resource is the object and <paramref name="relation" /> is the predicate.</value>
+        <remarks>The model searched is the same one returned by the <see cref="P:SemWeb.Resource.Model" /> property.</remarks>
+      </Docs>
+    </Member>
+  </Members>
+  <Docs>
+    <summary>The base class for all resources that statements can express relations between.</summary>
+    <remarks>This class cannot be inherited.  You can only inherit from the <see cref="T:SemWeb.Entity" /> class.</remarks>
+  </Docs>
+</Type>

@@ -1,0 +1,90 @@
+<Overview>
+  <Assembly Version="1.0.1898.20865">SemWeb</Assembly>
+  <Remarks>To be added.</Remarks>
+  <Copyright>To be added.</Copyright>
+  <Types>
+    <Namespace Name="SemWeb">
+      <Type Name="StatementSink" />
+      <Type Name="Store" />
+      <Type Name="KnowledgeModel" />
+      <Type Name="MemoryStore" />
+      <Type Name="RdfParser" />
+      <Type Name="RdfWriter" />
+      <Type Name="NamespaceManager" />
+      <Type Name="ParserException" />
+      <Type Name="InferenceStore" />
+      <Type Name="ReasoningEngine" />
+      <Type Name="Resource" />
+      <Type Name="Entity" />
+      <Type Name="Literal" />
+      <Type Name="Statement" />
+      <Type Name="WriterStore" />
+      <Type Name="XPathSemWebNavigator" />
+    </Namespace>
+    <Namespace Name="SemWeb.Query">
+      <Type Name="QueryException" />
+      <Type Name="RSquary" />
+      <Type Name="QueryResultSink" />
+      <Type Name="PrintQuerySink" />
+      <Type Name="HTMLQuerySink" />
+      <Type Name="SQLQuerySink" />
+      <Type Name="VariableBinding" />
+      <Type Name="ValueFilter" />
+      <Type Name="LiteralValueFilter" />
+      <Type Name="StringFilter" />
+      <Type Name="StringCompareFilter" />
+      <Type Name="StringContainsFilter" />
+      <Type Name="NumericFilter" />
+      <Type Name="NumericCompareFilter" />
+      <Type Name="DateTimeFilter" />
+      <Type Name="DateTimeCompareFilter" />
+      <Type Name="TimeSpanFilter" />
+      <Type Name="TimeSpanCompareFilter" />
+    </Namespace>
+    <Namespace Name="SemWeb.Stores">
+      <Type Name="MultiStore" />
+      <Type Name="SQLStore" />
+    </Namespace>
+    <Namespace Name="SemWeb.IO">
+      <Type Name="N3Parser" />
+      <Type Name="N3Writer" />
+      <Type Name="SQLWriter" />
+      <Type Name="RdfXmlParser" />
+      <Type Name="RdfXmlWriter" />
+      <Type Name="AutoPrefixNamespaceManager" />
+    </Namespace>
+    <Namespace Name="SemWeb.Reasoning">
+      <Type Name="RDFSReasoning" />
+      <Type Name="OWLReasoning" />
+    </Namespace>
+  </Types>
+  <Attributes>
+    <Attribute>
+      <AttributeName>System.Reflection.AssemblyKeyName(KeyName="")</AttributeName>
+    </Attribute>
+    <Attribute>
+      <AttributeName>System.Reflection.AssemblyCulture(Culture="")</AttributeName>
+    </Attribute>
+    <Attribute>
+      <AttributeName>System.Reflection.AssemblyTrademark(Trademark="")</AttributeName>
+    </Attribute>
+    <Attribute>
+      <AttributeName>System.Reflection.AssemblyCopyright(Copyright="Copyright (c) 2005 Joshua Tauberer &lt;tauberer@for.net&gt;")</AttributeName>
+    </Attribute>
+    <Attribute>
+      <AttributeName>System.Reflection.AssemblyProduct(Product="")</AttributeName>
+    </Attribute>
+    <Attribute>
+      <AttributeName>System.Reflection.AssemblyCompany(Company="")</AttributeName>
+    </Attribute>
+    <Attribute>
+      <AttributeName>System.Reflection.AssemblyConfiguration(Configuration="")</AttributeName>
+    </Attribute>
+    <Attribute>
+      <AttributeName>System.Reflection.AssemblyDescription(Description="A library for applications using the semantic web.")</AttributeName>
+    </Attribute>
+    <Attribute>
+      <AttributeName>System.Reflection.AssemblyTitle(Title="SemWeb")</AttributeName>
+    </Attribute>
+  </Attributes>
+</Overview>

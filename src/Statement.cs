@@ -7,6 +7,8 @@ namespace SemWeb {
 		private Resource o;
 		private Entity m;
 		
+		public static readonly Statement Empty = new Statement(null, null, null, null);
+		
 		public Statement(Entity subject, Entity predicate, Resource @object)
 		: this(subject, predicate, @object, null) {
 		}
@@ -28,6 +30,11 @@ namespace SemWeb {
 			get {
 				return Subject == null || Predicate == null || Object == null;
 			}
+		}
+		
+		public Statement Invert() {
+			if (!(Object is Entity)) throw new ArgumentException("The object of the statement must be an entity.");
+			return new Statement((Entity)Object, Predicate, Subject, Meta);
 		}
 		
 		public override string ToString() {

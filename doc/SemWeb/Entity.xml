@@ -1,0 +1,110 @@
+<Type Name="Entity" FullName="SemWeb.Entity">
+  <TypeSignature Language="C#" Value="public class Entity : SemWeb.Resource" />
+  <AssemblyInfo>
+    <AssemblyName>SemWeb</AssemblyName>
+    <AssemblyVersion>1.0.1898.26734</AssemblyVersion>
+  </AssemblyInfo>
+  <Base>
+    <BaseTypeName>SemWeb.Resource</BaseTypeName>
+  </Base>
+  <Interfaces />
+  <Members>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public Entity (string uri);" />
+      <MemberType>Constructor</MemberType>
+      <Parameters>
+        <Parameter Name="uri" Type="System.String" />
+      </Parameters>
+      <Docs>
+        <param name="uri">The URI of the entity, or <see langword="null" /> if the entity is anonymous.</param>
+        <summary>Constructs a new entity with the given URI.</summary>
+        <remarks>None.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public Entity (string uri, SemWeb.KnowledgeModel model);" />
+      <MemberType>Constructor</MemberType>
+      <Parameters>
+        <Parameter Name="uri" Type="System.String" />
+        <Parameter Name="model" Type="SemWeb.KnowledgeModel" />
+      </Parameters>
+      <Docs>
+        <param name="uri">The URI of the entity, or <see langword="null" /> if the entity is anonymous.</param>
+        <param name="model">The <see cref="T:SemWeb.KnowledgeModel" /> to associate with this entity, or <see langword="null" /> to not associate this entity with a KnowledgeModel.</param>
+        <summary>Constructs a new entity with the given URI and source KnowledgeModel.</summary>
+        <remarks>None.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="uri">
+      <MemberSignature Language="C#" Value="protected string uri;" />
+      <MemberType>Field</MemberType>
+      <ReturnValue>
+        <ReturnType>System.String</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>This field is supported for stores that support lazy-loading of URIs.</summary>
+        <remarks>Use this field with caution.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="op_Implicit">
+      <MemberSignature Language="C#" Value="public static SemWeb.Entity op_Implicit (string uri);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>SemWeb.Entity</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="uri" Type="System.String" />
+      </Parameters>
+      <Docs>
+        <param name="uri">A URI.</param>
+        <summary>Implicitly converts a string URI to an entity.</summary>
+        <returns>An entity whose URI is <paramref name="uri" /> and whose <see cref="P:SemWeb.Resource.Model" /> is <see langword="null" />.</returns>
+        <remarks>None.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="op_Equality">
+      <MemberSignature Language="C#" Value="public static bool op_Equality (SemWeb.Entity a, SemWeb.Entity b);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Boolean</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="a" Type="SemWeb.Entity" />
+        <Parameter Name="b" Type="SemWeb.Entity" />
+      </Parameters>
+      <Docs>
+        <param name="a">An entity.</param>
+        <param name="b">An entity.</param>
+        <summary>Tests whether two entities are equal.</summary>
+        <returns>
+          <para>If both parameters are <see langword="null" />, the operator returns true.</para>
+<para>Otherwise, the operator returns true if the two entities are the same instance, or if their URIs are equal.</para></returns>
+        <remarks>
+          <para>Two anonymous entities are never equal unless they are the same instance.</para>
+<para>Note that the <see cref="T:SemWeb.Resource" /> class does not have an equality operator, so you must be comparing two variables typed as Entity to use this operator.</para></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="op_Inequality">
+      <MemberSignature Language="C#" Value="public static bool op_Inequality (SemWeb.Entity a, SemWeb.Entity b);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Boolean</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="a" Type="SemWeb.Entity" />
+        <Parameter Name="b" Type="SemWeb.Entity" />
+      </Parameters>
+      <Docs>
+        <param name="a">An entity.</param>
+        <param name="b">An entity.</param>
+        <summary>Tests whether two entities are not equal.</summary>
+        <returns>The negation of the result of applying the equality operator.</returns>
+        <remarks>See the equality operator.</remarks>
+      </Docs>
+    </Member>
+  </Members>
+  <Docs>
+    <summary>An entity resource in a graph, which is any node but a literal.</summary>
+    <remarks>Entities can have URIs, or they can be anonymous.</remarks>
+  </Docs>
+</Type>

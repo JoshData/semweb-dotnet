@@ -1,0 +1,30 @@
+<Type Name="StatementSink" FullName="SemWeb.StatementSink">
+  <TypeSignature Language="C#" Value="public interface StatementSink" />
+  <AssemblyInfo>
+    <AssemblyName>SemWeb</AssemblyName>
+    <AssemblyVersion>1.0.1898.26734</AssemblyVersion>
+  </AssemblyInfo>
+  <Interfaces />
+  <Members>
+    <Member MemberName="Add">
+      <MemberSignature Language="C#" Value="public bool Add (SemWeb.Statement statement);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Boolean</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="statement" Type="SemWeb.Statement" />
+      </Parameters>
+      <Docs>
+        <param name="statement">A statement.</param>
+        <summary>Called to stream a new statement.</summary>
+        <returns>Return true to signal the caller to discontinue streaming.</returns>
+        <remarks>None.</remarks>
+      </Docs>
+    </Member>
+  </Members>
+  <Docs>
+    <summary>A sink for statements.</summary>
+    <remarks>Inherit from the class to create an object that can receive streaming statements from a call to <see cref="M:SemWeb.Store.Select(SemWeb.Statement,SemWeb.StatementSink)" />.</remarks>
+  </Docs>
+</Type>

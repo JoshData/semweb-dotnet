@@ -1,0 +1,33 @@
+<Type Name="XPathSemWebNavigator" FullName="SemWeb.XPathSemWebNavigator">
+  <TypeSignature Language="C#" Value="public class XPathSemWebNavigator : System.Xml.XPath.XPathNavigator" />
+  <AssemblyInfo>
+    <AssemblyName>SemWeb</AssemblyName>
+    <AssemblyVersion>1.0.1898.26734</AssemblyVersion>
+  </AssemblyInfo>
+  <Base>
+    <BaseTypeName>System.Xml.XPath.XPathNavigator</BaseTypeName>
+  </Base>
+  <Interfaces />
+  <Members>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public XPathSemWebNavigator (SemWeb.Entity root, SemWeb.Store model, SemWeb.NamespaceManager namespaces);" />
+      <MemberType>Constructor</MemberType>
+      <Parameters>
+        <Parameter Name="root" Type="SemWeb.Entity" />
+        <Parameter Name="model" Type="SemWeb.Store" />
+        <Parameter Name="namespaces" Type="SemWeb.NamespaceManager" />
+      </Parameters>
+      <Docs>
+        <param name="root">To be added.</param>
+        <param name="model">To be added.</param>
+        <param name="namespaces">To be added.</param>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+  </Members>
+  <Docs>
+    <summary>To be added.</summary>
+    <remarks>To be added.</remarks>
+  </Docs>
+</Type>

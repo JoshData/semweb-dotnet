@@ -4,10 +4,11 @@ using System.Collections;
 namespace SemWeb {
 	public class MemoryStore : Store, IEnumerable {
 		Hashtable uriToResource = new Hashtable();
+		
 		ArrayList statements = new ArrayList();
 		
-		Hashtable statementsAboutSubject = null;
-		Hashtable statementsAboutObject = null;
+		Hashtable statementsAboutSubject = new Hashtable();
+		Hashtable statementsAboutObject = new Hashtable();
 		
 		public MemoryStore(KnowledgeModel model) : base(model) {
 		}
@@ -16,7 +17,7 @@ namespace SemWeb {
 			Import(parser);
 		}
 
-		public ArrayList Statements { get { return statements; } }
+		public IList Statements { get { return ArrayList.ReadOnly(statements); } }
 		  
 		public override int StatementCount { get { return statements.Count; } }
 		
@@ -27,15 +28,24 @@ namespace SemWeb {
 		public override void Clear() {
 			uriToResource.Clear();
 			statements.Clear();
-			statementsAboutSubject = null;
-			statementsAboutObject = null;
+			statementsAboutSubject.Clear();
+			statementsAboutObject.Clear();
+		}
+		
+		private ArrayList GetIndexArray(Hashtable from, Resource entity) {
+			ArrayList ret = (ArrayList)from[entity];
+			if (ret == null) {
+				ret = new ArrayList();
+				from[entity] = ret;
+			}
+			return ret;
 		}
 		
 		public override void Add(Statement statement) {
 			if (statement.AnyNull) throw new ArgumentNullException();
 			statements.Add(statement);
-			statementsAboutSubject = null;
-			statementsAboutObject = null;
+			GetIndexArray(statementsAboutSubject, statement.Subject).Add(statement);
+			GetIndexArray(statementsAboutObject, statement.Object).Add(statement);
 		}
 		
 		public override bool Contains(Statement statement) {
@@ -48,8 +58,8 @@ namespace SemWeb {
 		
 		public override void Remove(Statement statement) {
 			statements.Remove(statement);
-			statementsAboutSubject = null;
-			statementsAboutObject = null;
+			GetIndexArray(statementsAboutSubject, statement.Subject).Remove(statement);
+			GetIndexArray(statementsAboutObject, statement.Object).Remove(statement);
 		}
 		
 		public override Entity GetResource(string uri, bool create) {
@@ -62,47 +72,25 @@ namespace SemWeb {
 		}
 		
 		public override Entity CreateAnonymousResource() {
-			return new AnonymousNode(Model);
+			return new Entity(null, Model);
+		}
+		
+		private void ShorterList(ref IList list1, IList list2) {
+			if (list2.Count < list1.Count)
+				list1 = list2;
 		}
 		
 		public override void Select(Statement template, StatementSink result) {
-			if (statementsAboutSubject == null) {
-				statementsAboutSubject = new Hashtable();
-				foreach (Statement statement in statements) {
-					ArrayList a = (ArrayList)statementsAboutSubject[statement.Subject];
-					if (a == null) a = new ArrayList();
-					a.Add(statement);
-					statementsAboutSubject[statement.Subject] = a;
-				}
-
-				statementsAboutObject = new Hashtable();
-				foreach (Statement statement in statements) {
-					ArrayList a = (ArrayList)statementsAboutObject[statement.Object];
-					if (a == null) a = new ArrayList();
-					a.Add(statement);
-					statementsAboutObject[statement.Object] = a;
-				}
-			}
-			
 			IList source = statements;
-			if (template.Subject != null) source = (ArrayList)statementsAboutSubject[template.Subject];
-			else if (template.Object != null) source = (ArrayList)statementsAboutObject[template.Object];
+			if (template.Subject != null) ShorterList(ref source, GetIndexArray(statementsAboutSubject, template.Subject));
+			else if (template.Object != null) ShorterList(ref source, GetIndexArray(statementsAboutObject, template.Object));
 			
 			if (source == null) return;
 			
 			foreach (Statement statement in source) {
 				if (template.Subject != null && !template.Subject.Equals(statement.Subject)) continue;
 				if (template.Predicate != null && !template.Predicate.Equals(statement.Predicate)) continue;
-				if (template.Object != null) {
-					if (template.Object is LiteralFilter) {
-						if (!(statement.Object is Literal)) continue;
-						LiteralFilter filter = (LiteralFilter)template.Object;
-						if (!filter.Matches((Literal)statement.Object)) continue;
-					} else {
-						if (!template.Object.Equals(statement.Object)) continue;
-					}
-				}
-				
+				if (template.Object != null && !template.Object.Equals(statement.Object)) continue;
 				if (!result.Add(statement)) return;
 			}
 		}

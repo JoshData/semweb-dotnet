@@ -1,0 +1,101 @@
+<Type Name="ReasoningEngine" FullName="SemWeb.ReasoningEngine">
+  <TypeSignature Language="C#" Value="public abstract class ReasoningEngine" />
+  <AssemblyInfo>
+    <AssemblyName>SemWeb</AssemblyName>
+    <AssemblyVersion>1.0.1898.26734</AssemblyVersion>
+  </AssemblyInfo>
+  <Base>
+    <BaseTypeName>System.Object</BaseTypeName>
+  </Base>
+  <Interfaces />
+  <Members>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="protected ReasoningEngine ();" />
+      <MemberType>Constructor</MemberType>
+      <Parameters />
+      <Docs>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="IsAsserted">
+      <MemberSignature Language="C#" Value="public virtual bool IsAsserted (SemWeb.Statement statement, SemWeb.Store source);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Boolean</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="statement" Type="SemWeb.Statement" />
+        <Parameter Name="source" Type="SemWeb.Store" />
+      </Parameters>
+      <Docs>
+        <param name="statement">To be added.</param>
+        <param name="source">To be added.</param>
+        <summary>To be added.</summary>
+        <returns>To be added.</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="FindEntailments">
+      <MemberSignature Language="C#" Value="public virtual void FindEntailments (SemWeb.Statement statement, SemWeb.Statement template, SemWeb.StatementSink result, SemWeb.Store source);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="statement" Type="SemWeb.Statement" />
+        <Parameter Name="template" Type="SemWeb.Statement" />
+        <Parameter Name="result" Type="SemWeb.StatementSink" />
+        <Parameter Name="source" Type="SemWeb.Store" />
+      </Parameters>
+      <Docs>
+        <param name="statement">To be added.</param>
+        <param name="template">To be added.</param>
+        <param name="result">To be added.</param>
+        <param name="source">To be added.</param>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Select">
+      <MemberSignature Language="C#" Value="public virtual void Select (SemWeb.Statement statement, SemWeb.StatementSink result, SemWeb.Store source);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="statement" Type="SemWeb.Statement" />
+        <Parameter Name="result" Type="SemWeb.StatementSink" />
+        <Parameter Name="source" Type="SemWeb.Store" />
+      </Parameters>
+      <Docs>
+        <param name="statement">To be added.</param>
+        <param name="result">To be added.</param>
+        <param name="source">To be added.</param>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="SelectFilter">
+      <MemberSignature Language="C#" Value="public virtual void SelectFilter (ref SemWeb.Statement statement, SemWeb.Store source);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="statement" Type="SemWeb.Statement&amp;" RefType="ref" />
+        <Parameter Name="source" Type="SemWeb.Store" />
+      </Parameters>
+      <Docs>
+        <param name="statement">To be added.</param>
+        <param name="source">To be added.</param>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+  </Members>
+  <Docs>
+    <summary>To be added.</summary>
+    <remarks>To be added.</remarks>
+  </Docs>
+</Type>

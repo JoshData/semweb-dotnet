@@ -1,0 +1,77 @@
+<Type Name="RdfXmlParser" FullName="SemWeb.IO.RdfXmlParser">
+  <TypeSignature Language="C#" Value="public class RdfXmlParser : SemWeb.RdfParser" />
+  <AssemblyInfo>
+    <AssemblyName>SemWeb</AssemblyName>
+    <AssemblyVersion>1.0.1898.26734</AssemblyVersion>
+  </AssemblyInfo>
+  <Base>
+    <BaseTypeName>SemWeb.RdfParser</BaseTypeName>
+  </Base>
+  <Interfaces />
+  <Members>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public RdfXmlParser (System.Xml.XmlDocument document);" />
+      <MemberType>Constructor</MemberType>
+      <Parameters>
+        <Parameter Name="document" Type="System.Xml.XmlDocument" />
+      </Parameters>
+      <Docs>
+        <param name="document">To be added.</param>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public RdfXmlParser (System.Xml.XmlReader document);" />
+      <MemberType>Constructor</MemberType>
+      <Parameters>
+        <Parameter Name="document" Type="System.Xml.XmlReader" />
+      </Parameters>
+      <Docs>
+        <param name="document">To be added.</param>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public RdfXmlParser (System.IO.TextReader document);" />
+      <MemberType>Constructor</MemberType>
+      <Parameters>
+        <Parameter Name="document" Type="System.IO.TextReader" />
+      </Parameters>
+      <Docs>
+        <param name="document">To be added.</param>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public RdfXmlParser (System.IO.Stream document);" />
+      <MemberType>Constructor</MemberType>
+      <Parameters>
+        <Parameter Name="document" Type="System.IO.Stream" />
+      </Parameters>
+      <Docs>
+        <param name="document">To be added.</param>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public RdfXmlParser (string file);" />
+      <MemberType>Constructor</MemberType>
+      <Parameters>
+        <Parameter Name="file" Type="System.String" />
+      </Parameters>
+      <Docs>
+        <param name="file">To be added.</param>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+  </Members>
+  <Docs>
+    <summary>To be added.</summary>
+    <remarks>To be added.</remarks>
+  </Docs>
+</Type>

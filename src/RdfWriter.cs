@@ -23,7 +23,7 @@ namespace SemWeb {
 			
 			if (statement.Object is Literal) {
 				Literal lit = (Literal)statement.Object;
-				WriteStatementLiteral(s, p, lit.Value, lit.DataType, lit.Language);
+				WriteStatement(s, p, lit);
 			} else {
 				string o = getUri((Entity)statement.Object);
 				WriteStatement(s, p, o);
@@ -40,21 +40,17 @@ namespace SemWeb {
 			return uri;
 		}
 		
+		public virtual void PushMetaScope(string uri) { }
+		
+		public virtual void PopMetaScope() { }
+		
 		public abstract void WriteStatement(string subj, string pred, string obj);
 		
-		public abstract void WriteStatementLiteral(string subj, string pred, string literal, string literalType, string literalLanguage);
+		public abstract void WriteStatement(string subj, string pred, Literal literal);
 		
 		public abstract string CreateAnonymousNode();
 		
 		public abstract void Close();
-		
-		public void WriteStatementLiteral(string subj, string pred, string literal) {
-			WriteStatementLiteral(subj, pred, literal, null);
-		}
-		
-		public void WriteStatementLiteral(string subj, string pred, string literal, string literalType) {
-			WriteStatementLiteral(subj, pred, literal, literalType, null);
-		}
 		
 		public virtual void Dispose() {
 		}

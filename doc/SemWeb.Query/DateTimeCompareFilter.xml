@@ -1,0 +1,49 @@
+<Type Name="DateTimeCompareFilter" FullName="SemWeb.Query.DateTimeCompareFilter">
+  <TypeSignature Language="C#" Value="public class DateTimeCompareFilter : SemWeb.Query.DateTimeFilter" />
+  <AssemblyInfo>
+    <AssemblyName>SemWeb</AssemblyName>
+    <AssemblyVersion>1.0.1898.26734</AssemblyVersion>
+  </AssemblyInfo>
+  <Base>
+    <BaseTypeName>SemWeb.Query.DateTimeFilter</BaseTypeName>
+  </Base>
+  <Interfaces />
+  <Members>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public DateTimeCompareFilter (SemWeb.Literal res, int compareResult, bool orEqual);" />
+      <MemberType>Constructor</MemberType>
+      <Parameters>
+        <Parameter Name="res" Type="SemWeb.Literal" />
+        <Parameter Name="compareResult" Type="System.Int32" />
+        <Parameter Name="orEqual" Type="System.Boolean" />
+      </Parameters>
+      <Docs>
+        <param name="res">To be added.</param>
+        <param name="compareResult">To be added.</param>
+        <param name="orEqual">To be added.</param>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public DateTimeCompareFilter (DateTime datetime, int compareResult, bool orEqual);" />
+      <MemberType>Constructor</MemberType>
+      <Parameters>
+        <Parameter Name="datetime" Type="System.DateTime" />
+        <Parameter Name="compareResult" Type="System.Int32" />
+        <Parameter Name="orEqual" Type="System.Boolean" />
+      </Parameters>
+      <Docs>
+        <param name="datetime">To be added.</param>
+        <param name="compareResult">To be added.</param>
+        <param name="orEqual">To be added.</param>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+  </Members>
+  <Docs>
+    <summary>To be added.</summary>
+    <remarks>To be added.</remarks>
+  </Docs>
+</Type>

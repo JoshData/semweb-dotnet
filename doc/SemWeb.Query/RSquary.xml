@@ -1,0 +1,135 @@
+<Type Name="RSquary" FullName="SemWeb.Query.RSquary">
+  <TypeSignature Language="C#" Value="public class RSquary" />
+  <AssemblyInfo>
+    <AssemblyName>SemWeb</AssemblyName>
+    <AssemblyVersion>1.0.1898.26734</AssemblyVersion>
+  </AssemblyInfo>
+  <Base>
+    <BaseTypeName>System.Object</BaseTypeName>
+  </Base>
+  <Interfaces />
+  <Members>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public RSquary (SemWeb.Store queryModel, string queryUri);" />
+      <MemberType>Constructor</MemberType>
+      <Parameters>
+        <Parameter Name="queryModel" Type="SemWeb.Store" />
+        <Parameter Name="queryUri" Type="System.String" />
+      </Parameters>
+      <Docs>
+        <param name="queryModel">To be added.</param>
+        <param name="queryUri">To be added.</param>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public RSquary (SemWeb.Store queryModel, string queryUri, System.Collections.Hashtable extraValueFilters);" />
+      <MemberType>Constructor</MemberType>
+      <Parameters>
+        <Parameter Name="queryModel" Type="SemWeb.Store" />
+        <Parameter Name="queryUri" Type="System.String" />
+        <Parameter Name="extraValueFilters" Type="System.Collections.Hashtable" />
+      </Parameters>
+      <Docs>
+        <param name="queryModel">To be added.</param>
+        <param name="queryUri">To be added.</param>
+        <param name="extraValueFilters">To be added.</param>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="qSelect">
+      <MemberSignature Language="C#" Value="public static SemWeb.Entity qSelect;" />
+      <MemberType>Field</MemberType>
+      <ReturnValue>
+        <ReturnType>SemWeb.Entity</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="qVariable">
+      <MemberSignature Language="C#" Value="public static SemWeb.Entity qVariable;" />
+      <MemberType>Field</MemberType>
+      <ReturnValue>
+        <ReturnType>SemWeb.Entity</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="qLimit">
+      <MemberSignature Language="C#" Value="public static SemWeb.Entity qLimit;" />
+      <MemberType>Field</MemberType>
+      <ReturnValue>
+        <ReturnType>SemWeb.Entity</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="qStart">
+      <MemberSignature Language="C#" Value="public static SemWeb.Entity qStart;" />
+      <MemberType>Field</MemberType>
+      <ReturnValue>
+        <ReturnType>SemWeb.Entity</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="qDistinctFrom">
+      <MemberSignature Language="C#" Value="public static SemWeb.Entity qDistinctFrom;" />
+      <MemberType>Field</MemberType>
+      <ReturnValue>
+        <ReturnType>SemWeb.Entity</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Query">
+      <MemberSignature Language="C#" Value="public void Query (SemWeb.Store target, SemWeb.Query.QueryResultSink sink);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="target" Type="SemWeb.Store" />
+        <Parameter Name="sink" Type="SemWeb.Query.QueryResultSink" />
+      </Parameters>
+      <Docs>
+        <param name="target">To be added.</param>
+        <param name="sink">To be added.</param>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Test">
+      <MemberSignature Language="C#" Value="public bool Test (SemWeb.Store target);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Boolean</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="target" Type="SemWeb.Store" />
+      </Parameters>
+      <Docs>
+        <param name="target">To be added.</param>
+        <summary>To be added.</summary>
+        <returns>To be added.</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+  </Members>
+  <Docs>
+    <summary>To be added.</summary>
+    <remarks>To be added.</remarks>
+  </Docs>
+</Type>

@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.IO;
 
 using SemWeb;
 
@@ -18,7 +19,7 @@ namespace SemWeb.Query {
 		// TODO: Grouping and disjunctions
 		
 		public static Entity qSelect = "http://purl.oclc.org/NET/rsquary/select";
-		public static Entity qVariable = "http://purl.oclc.org/NET/rsquary/variable";
+		public static Entity qVariable = "http://purl.oclc.org/NET/rsquary/selectfirst";
 		public static Entity qLimit = "http://purl.oclc.org/NET/rsquary/returnLimit";
 		public static Entity qStart = "http://purl.oclc.org/NET/rsquary/returnStart";
 		public static Entity qDistinctFrom = "http://purl.oclc.org/NET/rsquary/distinctFrom";
@@ -29,7 +30,7 @@ namespace SemWeb.Query {
 		
 		Hashtable variableHash = new Hashtable();
 		VariableBinding[] initialBindings;
-		ArrayList[,] predicateFilters;
+		IList[,] predicateFilters;
 		MemoryStore[,][] predicateFilterPreCache;
 		ArrayList[] valueFilters;
 		ArrayList[] variablesDistinct;
@@ -50,6 +51,9 @@ namespace SemWeb.Query {
 			public Set parentAlternatives;
 			public Hashtable predicateFilterCache = new Hashtable();
 			
+			public bool NoSelect;
+			public int Depth;
+			
 			public bool Sees(VariableNode dependency) {
 				if (this == dependency) return true;
 				if (Parent == null || Parent == this) return false;
@@ -61,6 +65,50 @@ namespace SemWeb.Query {
 				dest[BindingIndex] = source[BindingIndex];
 				foreach (VariableNode child in Children)
 					child.CopyBindings(source, dest);
+			}
+			
+			public void SetNoSelectAndDepth() {
+				Depth = 0;
+				
+				// If any of the children of this node are selections,
+				// then this node must be a selection.
+				foreach (VariableNode child in Children) {
+					child.SetNoSelectAndDepth();
+					if (!child.NoSelect) NoSelect = false;
+					if (child.Depth > Depth) Depth = child.Depth;
+				}
+				
+				Depth++;
+			}
+			
+			public void SortChildren() {
+				// Sort the children of this node to put non-selections first,
+				// since they are "purmutatively" simple, and then shorter
+				// trees first.
+				Children.Sort(new ChildComparer());
+				foreach (VariableNode child in Children)
+					child.SortChildren();
+			}
+			
+			private class ChildComparer : IComparer {
+				public int Compare(object a, object b) {
+					bool an = ((VariableNode)a).NoSelect;
+					bool bn = ((VariableNode)b).NoSelect;
+					if (an && !bn) return -1;
+					if (!an && bn) return 1;
+					
+					return ((VariableNode)a).Depth.CompareTo(((VariableNode)b).Depth);
+				}
+			}
+			
+			public void Dump() { Dump(""); }
+			public void Dump(string indent) {
+				Console.Write(indent + Variable);
+				if (NoSelect)
+					Console.Write(" NoSelect");
+				Console.WriteLine();
+				foreach (VariableNode child in Children)
+					child.Dump(indent + " ");
 			}
 		}
 		
@@ -106,6 +154,17 @@ namespace SemWeb.Query {
 				if (!(r is Entity)) throw new QueryException("Query variables cannot be literals.");
 				variables.Add(new VariableBinding((Entity)r, null, true));
 			}
+			
+			// And all anonymous nodes in the graph (is this a good idea?)
+			Hashtable seenAnonNodes = new Hashtable();
+			foreach (Statement s in queryModel.Select(Statement.Empty)) {
+				foreach (Resource r in new Resource[] { s.Subject, s.Predicate, s.Object }) {
+					if (r.Uri != null || !(r is Entity) || seenAnonNodes.ContainsKey(r)) continue;
+					seenAnonNodes[r] = r;
+					variables.Add(new VariableBinding((Entity)r, null, true));
+				}
+			}
+			
 			initialBindings = (VariableBinding[])variables.ToArray(typeof(VariableBinding));
 			
 			foreach (VariableBinding b in initialBindings)
@@ -168,6 +227,7 @@ namespace SemWeb.Query {
 				variableNodes[v] = new VariableNode();
 				variableNodes[v].Variable = initialBindings[v].Variable;
 				variableNodes[v].BindingIndex = v;
+				variableNodes[v].NoSelect = initialBindings[v].var;
 				variableHash[variableNodes[v].Variable] = variableNodes[v];
 			}
 			
@@ -281,6 +341,9 @@ namespace SemWeb.Query {
 			foreach (VariableNode v in variableNodes)
 				if (v.Parent != v)
 					v.Parent.Children.Add(v);
+				
+			rootVariable.SetNoSelectAndDepth();
+			rootVariable.SortChildren();
 		}
 		
 		private int GetIntOption(Entity predicate) {
@@ -301,9 +364,6 @@ namespace SemWeb.Query {
 				return ent;
 			}
 			
-			if (ent.Uri == null)
-				throw new QueryException("Anonymous nodes cannot appear in queries.");
-
 			if (variableHash.ContainsKey(ent)) {
 				while (currentNode.Parent != currentNode) {
 					currentNode = currentNode.Parent;
@@ -317,6 +377,9 @@ namespace SemWeb.Query {
 				return null;
 			}
 			
+			if (ent.Uri == null)
+				throw new QueryException("An anonymous node in the query was not a variable.");
+
 			Resource ret = (Resource)state.targetQueryObject[ent.Uri];
 			if (ret == null) {
 				ret = state.target.GetResource(ent.Uri);
@@ -348,7 +411,8 @@ namespace SemWeb.Query {
 			state.sink = sink;
 			state.bindings = (VariableBinding[])initialBindings.Clone();
 			
-			Recurse(state, rootVariable);
+			bool emittedBinding;			
+			Recurse(state, rootVariable, out emittedBinding);
 		}
 		
 		public bool Test(Store target) {
@@ -357,12 +421,12 @@ namespace SemWeb.Query {
 			return sink.Found;
 		}		
 		
-		private bool Recurse(SearchState state, VariableNode node) {
+		private bool Recurse(SearchState state, VariableNode node, out bool emittedBinding) {
 			Set resources = null;
 			
 			bool forward = true;
 			while (true) {
-				ArrayList filters = predicateFilters[node.BindingIndex, forward ? 1 : 0];
+				IList filters = predicateFilters[node.BindingIndex, forward ? 1 : 0];
 				for (int si = 0; si < filters.Count; si++) {
 					Statement s = (Statement)filters[si];
 
@@ -468,7 +532,7 @@ namespace SemWeb.Query {
 				// There were no statements about this variable.  Set it
 				// to an anonymous node, since it may have any value at all.
 				resources = new Set();
-				resources.Add(new AnonymousNode());
+				resources.Add(new Entity(null));
 			}
 			
 			/*foreach (SelectCacheKey predicateFilterCacheKey in state.predicateFilterCacheClear[varIndex])
@@ -477,11 +541,17 @@ namespace SemWeb.Query {
 			
 			state.alternatives[varIndex] = resources;*/
 			
+			emittedBinding = false;
+			
 			if (node.Children.Count == 0) {
 				// This is the end of a tree branch.
 				foreach (Resource r in resources.Items()) {
+					emittedBinding = true;
+					
 					state.bindings[node.BindingIndex].Target = r;
 					if (!state.sink.Add(state.bindings)) return true;
+					
+					if (node.NoSelect) break; // report only one binding for non-selective variables
 				}
 				return false;
 				
@@ -491,7 +561,12 @@ namespace SemWeb.Query {
 				PrecacheSelect(node, resources, child, state);
 				foreach (Resource r in resources.Items()) {
 					state.bindings[node.BindingIndex].Target = r;
-					if (Recurse(state, child)) return true;
+					
+					bool eb;
+					if (Recurse(state, child, out eb)) return true;
+					emittedBinding |= eb;
+					
+					if (node.NoSelect && eb) break; // report only one binding for non-selective variables
 				}
 				
 			} else {
@@ -533,7 +608,13 @@ namespace SemWeb.Query {
 							filteredOut[r] = true; // requires no more processing later
 						}
 						
-						if (Recurse(state, child)) return true;
+						bool eb;
+						if (Recurse(state, child, out eb)) return true;
+						
+						if (state.sink == oldsink) {
+							emittedBinding |= eb;
+							if (node.NoSelect && eb) return false; // report only one binding for non-selective variables
+						}
 						
 						// If no new bindings were found for this resource,
 						// the resource is filtered out for subsequent children.
@@ -550,6 +631,8 @@ namespace SemWeb.Query {
 				
 				for (int r = 0; r < resourceItems.Count; r++) {
 					if (filteredOut[r]) continue;
+					
+					emittedBinding = true;
 					
 					// Permute through the combinations of variable bindings determined
 					// by each child.  In 'good' queries, all but one child produces
@@ -568,6 +651,8 @@ namespace SemWeb.Query {
 						}
 
 						oldsink.Add(binding);
+						
+						if (node.NoSelect) break; // report only one binding for non-selective variables
 						
 						// Increment the counters and carry.
 						counters[0]++;
@@ -588,7 +673,7 @@ namespace SemWeb.Query {
 		
 		private void PrecacheSelect(VariableNode node, Set resources, VariableNode child, SearchState state) {
 			for (int fwd = 0; fwd <= 1; fwd++) {
-				ArrayList filters = predicateFilters[child.BindingIndex, fwd];
+				IList filters = predicateFilters[child.BindingIndex, fwd];
 				predicateFilterPreCache[child.BindingIndex, fwd] = new MemoryStore[filters.Count];
 				for (int si = 0; si < filters.Count; si++) {
 					Statement s = (Statement)filters[si];
@@ -780,12 +865,149 @@ namespace SemWeb.Query {
 	public class PrintQuerySink : QueryResultSink {
 		public override bool Add(VariableBinding[] result) {
 			foreach (VariableBinding var in result)
-				Console.WriteLine(var.Variable + " ==> " + (var.Target == null ? "null" : var.Target.ToString()));
+				Console.WriteLine(var.Variable + " ==> " + var.Target.ToString());
 			Console.WriteLine();
 			return true;
 		}
 	}
 	
+	public class HTMLQuerySink : QueryResultSink {
+		TextWriter output;
+		bool first = true;
+		
+		public HTMLQuerySink(TextWriter output) { this.output = output; }
+		
+		public override bool Add(VariableBinding[] result) {
+			if (first) {
+				first = false;
+				output.WriteLine("<tr>");
+				foreach (VariableBinding var in result)
+					if (var.Variable.Uri != null)
+						output.WriteLine("<th>" + var.Variable + "</th>");
+				output.WriteLine("</tr>");
+			}
+			
+			output.WriteLine("<tr>");
+			foreach (VariableBinding var in result) {
+				if (var.Variable.Uri == null) continue;
+				string t = var.Target.ToString();
+				if (var.Target is Literal) t = ((Literal)var.Target).Value;
+				output.WriteLine("<td>" + t + "</td>");
+			}
+			output.WriteLine("</tr>");
+			
+			return true;
+		}
+	}
+
+	public class SQLQuerySink : QueryResultSink {
+		TextWriter output;
+		string table;
+		bool first = true;
+		
+		public SQLQuerySink(TextWriter output, string table) { this.output = output; this.table = table; }
+		
+		private string GetFieldType(string datatype) {
+			switch (datatype) {
+				case "http://www.w3.org/2001/XMLSchema#string":
+				case "http://www.w3.org/2001/XMLSchema#normalizedString":
+					return "TEXT";
+
+				case "http://www.w3.org/2001/XMLSchema#float":
+					return "FLOAT";
+				
+				case "http://www.w3.org/2001/XMLSchema#double":
+					return "DOUBLE PRECISION";
+				
+				case "http://www.w3.org/2001/XMLSchema#decimal":
+					return "DECIMAL";
+				
+				case "http://www.w3.org/2001/XMLSchema#integer":
+				case "http://www.w3.org/2001/XMLSchema#nonPositiveInteger":
+				case "http://www.w3.org/2001/XMLSchema#negativeInteger":
+				case "http://www.w3.org/2001/XMLSchema#int":
+				case "http://www.w3.org/2001/XMLSchema#short":
+					return "INT";
+				
+				case "http://www.w3.org/2001/XMLSchema#long":
+					return "BIGINT";
+				
+				
+				case "http://www.w3.org/2001/XMLSchema#boolean":
+				case "http://www.w3.org/2001/XMLSchema#byte":
+				case "http://www.w3.org/2001/XMLSchema#unsignedByte":
+					return "SMALLINT";
+				
+				case "http://www.w3.org/2001/XMLSchema#nonNegativeInteger":
+				case "http://www.w3.org/2001/XMLSchema#unsignedInt":
+				case "http://www.w3.org/2001/XMLSchema#unsignedShort":
+				case "http://www.w3.org/2001/XMLSchema#positiveInteger":
+					return "UNSIGNED INT";
+				
+				case "http://www.w3.org/2001/XMLSchema#unsignedLong":
+					return "UNSIGNED BIGINT";
+					
+				case "http://www.w3.org/2001/XMLSchema#dateTime":
+					return "DATETIME";
+					
+				case "http://www.w3.org/2001/XMLSchema#date":
+					return "DATE";
+				
+				case "http://www.w3.org/2001/XMLSchema#time":
+				case "http://www.w3.org/2001/XMLSchema#duration":
+					return "TIME";
+
+				case "http://www.w3.org/2001/XMLSchema#base64Binary":
+				case "http://www.w3.org/2001/XMLSchema#anyURI":
+					return "BLOB";
+			}
+			
+			return "TEXT";
+		}
+		
+		public override bool Add(VariableBinding[] result) {
+			if (first) {
+				first = false;
+				output.Write("CREATE TABLE " + table + " (");
+				
+				bool f = true;
+				foreach (VariableBinding var in result) {
+					if (var.Variable.Uri == null) continue;
+					string name;
+					int hash = var.Variable.Uri.LastIndexOf("#");
+					if (hash == -1) name = "`" + var.Variable.Uri + "`";
+					else name = var.Variable.Uri.Substring(hash+1);
+					
+					string type = "BLOB";
+					if (var.Target is Literal && ((Literal)var.Target).DataType != null)
+						type = GetFieldType(((Literal)var.Target).DataType);
+
+					if (!f)  { output.Write(", "); } f = false; 
+					output.Write(name + " " + type);
+				}
+				
+				output.WriteLine(");");
+			}
+			
+			output.Write("INSERT INTO " + table + " VALUES (");
+			bool first = true;
+			foreach (VariableBinding var in result) {
+				if (var.Variable.Uri == null) continue;
+				
+				if (!first)  { output.Write(", "); } first = false;
+				if (var.Target is Literal)
+					output.Write(SemWeb.Stores.SQLStore.Escape(((Literal)var.Target).Value));
+				else if (var.Target.Uri != null)
+					output.Write("\"" + var.Target.Uri + "\"");
+				else
+					output.Write("\"\"");
+			}
+			output.WriteLine(");");
+			
+			return true;
+		}
+	}
+
 	public abstract class QueryResultSink {
 		public abstract bool Add(VariableBinding[] result);
 	}

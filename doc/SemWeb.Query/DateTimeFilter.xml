@@ -1,0 +1,52 @@
+<Type Name="DateTimeFilter" FullName="SemWeb.Query.DateTimeFilter">
+  <TypeSignature Language="C#" Value="public abstract class DateTimeFilter : SemWeb.Query.LiteralValueFilter" />
+  <AssemblyInfo>
+    <AssemblyName>SemWeb</AssemblyName>
+    <AssemblyVersion>1.0.1898.26734</AssemblyVersion>
+  </AssemblyInfo>
+  <Base>
+    <BaseTypeName>SemWeb.Query.LiteralValueFilter</BaseTypeName>
+  </Base>
+  <Interfaces />
+  <Members>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public DateTimeFilter (SemWeb.Literal res);" />
+      <MemberType>Constructor</MemberType>
+      <Parameters>
+        <Parameter Name="res" Type="SemWeb.Literal" />
+      </Parameters>
+      <Docs>
+        <param name="res">To be added.</param>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public DateTimeFilter (DateTime datetime);" />
+      <MemberType>Constructor</MemberType>
+      <Parameters>
+        <Parameter Name="datetime" Type="System.DateTime" />
+      </Parameters>
+      <Docs>
+        <param name="datetime">To be added.</param>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="datetime">
+      <MemberSignature Language="C#" Value="protected readonly DateTime datetime;" />
+      <MemberType>Field</MemberType>
+      <ReturnValue>
+        <ReturnType>System.DateTime</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+  </Members>
+  <Docs>
+    <summary>To be added.</summary>
+    <remarks>To be added.</remarks>
+  </Docs>
+</Type>

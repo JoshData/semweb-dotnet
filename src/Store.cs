@@ -8,7 +8,7 @@ namespace SemWeb {
 		bool Add(Statement statement);
 	}
 
-	public class StatementCounterSink : StatementSink {
+	internal class StatementCounterSink : StatementSink {
 		int counter = 0;
 		
 		public int StatementCount { get { return counter; } }
@@ -19,7 +19,7 @@ namespace SemWeb {
 		}
 	}
 
-	public class StatementExistsSink : StatementSink {
+	internal class StatementExistsSink : StatementSink {
 		bool exists = false;
 		
 		public bool Exists { get { return exists; } }
@@ -72,21 +72,21 @@ namespace SemWeb {
 				case "xml":
 					if (spec == "") throw new ArgumentException("Use: xml:filename");
 					if (output) {
-						return new WriterStore(new RdfXmlWriter(spec), model);
+						return new WriterStore(new SemWeb.IO.RdfXmlWriter(spec), model);
 					} else {
-						return new MemoryStore(new RdfXmlParser(spec), model);
+						return new MemoryStore(new SemWeb.IO.RdfXmlParser(spec), model);
 					}
 				case "n3":
 					if (spec == "") throw new ArgumentException("Use: n3:filename");
 					if (output) {
-						return new WriterStore(new N3Writer(spec), model);
+						return new WriterStore(new SemWeb.IO.N3Writer(spec), model);
 					} else {
-						return new MemoryStore(new N3Parser(spec), model);
+						return new MemoryStore(new SemWeb.IO.N3Parser(spec), model);
 					}
 				case "sql":
 					if (spec == "") throw new ArgumentException("Use: sql:tablename");
 					if (output)
-						return new WriterStore(new SQLWriter(spec), model);
+						return new WriterStore(new SemWeb.IO.SQLWriter(spec), model);
 					else
 						throw new InvalidOperationException("sql output does not support input.");
 				case "sqlite":
@@ -128,10 +128,6 @@ namespace SemWeb {
 
 		public Entity GetResource(string uri) {
 			return GetResource(uri, true);
-		}
-		
-		public Entity[] GetEntitiesOfType(string type) {
-			return GetEntitiesOfType(new Entity(type, Model));
 		}
 		
 		public Entity[] GetEntitiesOfType(Entity type) {
@@ -200,15 +196,15 @@ namespace SemWeb {
 		}
 		
 		public void Write(System.IO.TextWriter writer) {
-			Write(writer, new NamespaceManager());
-		}
-		public void Write(System.IO.TextWriter writer, NamespaceManager ns) {
-			using (RdfWriter w = new N3Writer(writer, ns)) {
+			using (RdfWriter w = new SemWeb.IO.N3Writer(writer)) {
 				Write(w);
 			}
 		}
 
 	}
+}
+
+namespace SemWeb.Stores {
 
 	public class MultiStore : Store {
 		ArrayList stores = new ArrayList();

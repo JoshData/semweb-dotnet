@@ -34,21 +34,35 @@ namespace SemWeb {
 			return null;
 		}
 		
-		public string Normalize(string uri) {
+		public bool Normalize(string uri, out string prefix, out string localname) {
 			int hash = uri.LastIndexOf('#');
 			if (hash > 0) {
-				string prefix = GetPrefix(uri.Substring(0, hash+1));
-				if (prefix != null)
-					return prefix + ":" + uri.Substring(hash+1);
+				prefix = GetPrefix(uri.Substring(0, hash+1));
+				if (prefix != null) {
+					localname = uri.Substring(hash+1);
+					return true;
+				}
 			}
 			
 			hash = uri.LastIndexOf('/');
 			if (hash > 0) {
-				string prefix = GetPrefix(uri.Substring(0, hash+1));
-				if (prefix != null)
-					return prefix + ":" + uri.Substring(hash+1);
+				prefix = GetPrefix(uri.Substring(0, hash+1));
+				if (prefix != null) {
+					localname = uri.Substring(hash+1);
+					return true;
+				}
 			}
 			
+			prefix = null;
+			localname = null;
+			
+			return false;
+		}
+		
+		public string Normalize(string uri) {
+			string prefix, localname;
+			if (Normalize(uri, out prefix, out localname))
+				return prefix + ":" + localname;
 			return "<" + uri + ">";
 		}
 		
@@ -66,6 +80,10 @@ namespace SemWeb {
 			return atob.Values;
 		}
 	}
+}
+
+namespace SemWeb.IO {
+	using SemWeb;
 	
 	public class AutoPrefixNamespaceManager : NamespaceManager {
 		int counter = 0;

@@ -1,7 +1,9 @@
 using System;
 using System.IO;
 
-namespace SemWeb {
+using SemWeb;
+
+namespace SemWeb.IO {
 	public class N3Writer : RdfWriter {
 		TextWriter writer;
 		NamespaceManager ns;
@@ -26,20 +28,28 @@ namespace SemWeb {
 		
 		public override NamespaceManager Namespaces { get { return ns; } }
 		
+		public override void PushMetaScope(string uri) {
+			Close();
+			WriteThing(URI(uri));
+			writer.Write(" = { ");
+			lastSubject = null;
+			lastPredicate = null;
+		}
+		
+		public override void PopMetaScope() {
+			Close();
+			WriteThing(" }\n");
+			lastSubject = null;
+			lastPredicate = null;
+		}
+		
 		public override void WriteStatement(string subj, string pred, string obj) {
 			WriteStatement2(URI(subj), URI(pred), URI(obj));
 		}
 		
-		public override void WriteStatementLiteral(string subj, string pred, string literal, string literalType, string literalLanguage) {
-			WriteStatement2(URI(subj), URI(pred), "\"" + Escape(literal) + "\"" + lang(literalLanguage) + type(literalType));
+		public override void WriteStatement(string subj, string pred, Literal literal) {
+			WriteStatement2(URI(subj), URI(pred), literal.ToString());
 		}
-		
-		private string Escape(string str) {
-			return str.Replace("\\", "\\\\").Replace("\"", "\\\"").Replace("\n", "\\n");
-		}
-		
-		private string lang(string lang) { if (lang == null) return null; return "@" + lang; }
-		private string type(string type) { if (type == null) return null; return "^^" + URI(type); }
 		
 		public override string CreateAnonymousNode() {
 			return "_:anon" + (anonCounter++);
