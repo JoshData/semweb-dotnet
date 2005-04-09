@@ -2,7 +2,7 @@
   <TypeSignature Language="C#" Value="public sealed class Entity : SemWeb.Resource" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
-    <AssemblyVersion>1.0.1915.28028</AssemblyVersion>
+    <AssemblyVersion>1.0.1925.13972</AssemblyVersion>
   </AssemblyInfo>
   <Base>
     <BaseTypeName>SemWeb.Resource</BaseTypeName>
@@ -115,6 +115,22 @@
         <param name="model">The <see cref="T:SemWeb.KnowledgeModel" /> to associate with this entity, or <see langword="null" /> to not associate this entity with a KnowledgeModel.</param>
         <summary>Creates an entity that does not yet know its URI.</summary>
         <remarks>This constructor is provided for developers creating specialized stores for which determining an entity's URI is a costly operation.</remarks>
+      </Docs>
+    </Member>
+  <Member MemberName="LazyResolve">
+      <MemberSignature Language="C#" Value="public static SemWeb.Entity LazyResolve (SemWeb.Entity+LazyUriLoader uriLoader);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>SemWeb.Entity</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="uriLoader" Type="SemWeb.Entity+LazyUriLoader" />
+      </Parameters>
+      <Docs>
+        <param name="uriLoader">To be added.</param>
+        <summary>To be added.</summary>
+        <returns>To be added.</returns>
+        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

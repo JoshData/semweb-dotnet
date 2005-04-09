@@ -25,6 +25,7 @@
       <Type Name="Statement" />
       <Type Name="Entity+LazyUriLoader" />
       <Type Name="SelectPartialFilter" />
+      <Type Name="StatementSinkEx" />
     </Namespace>
     <Namespace Name="SemWeb.Query">
       <Type Name="QueryException" />
@@ -39,12 +40,13 @@
       <Type Name="QueryEngine" />
       <Type Name="SparqlXmlQuerySink" />
       <Type Name="ValueFilterFactory" />
+      <Type Name="SparqlParser" />
+      <Type Name="SparqlParser+SparqlQuestion" />
     </Namespace>
     <Namespace Name="SemWeb.Stores">
       <Type Name="MultiStore" />
       <Type Name="SQLStore" />
       <Type Name="MemoryStore" />
-      <Type Name="WriterStore" />
     </Namespace>
     <Namespace Name="SemWeb.IO">
       <Type Name="N3Parser" />

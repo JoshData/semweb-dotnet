@@ -1,15 +1,15 @@
 <Type Name="RdfWriter" FullName="SemWeb.RdfWriter">
-  <TypeSignature Language="C#" Value="public abstract class RdfWriter : SemWeb.StatementSink, System.IDisposable" />
+  <TypeSignature Language="C#" Value="public abstract class RdfWriter : SemWeb.StatementSinkEx, System.IDisposable" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
-    <AssemblyVersion>1.0.1915.28028</AssemblyVersion>
+    <AssemblyVersion>1.0.1925.13972</AssemblyVersion>
   </AssemblyInfo>
   <Base>
     <BaseTypeName>System.Object</BaseTypeName>
   </Base>
   <Interfaces>
     <Interface>
-      <InterfaceName>SemWeb.StatementSink</InterfaceName>
+      <InterfaceName>SemWeb.StatementSinkEx</InterfaceName>
     </Interface>
     <Interface>
       <InterfaceName>System.IDisposable</InterfaceName>
@@ -41,33 +41,8 @@
         <remarks>None.</remarks>
       </Docs>
     </Member>
-    <Member MemberName="PushMetaScope">
-      <MemberSignature Language="C#" Value="public virtual void PushMetaScope (string uri);" />
-      <MemberType>Method</MemberType>
-      <ReturnValue>
-        <ReturnType>System.Void</ReturnType>
-      </ReturnValue>
-      <Parameters>
-        <Parameter Name="uri" Type="System.String" />
-      </Parameters>
-      <Docs>
-        <param name="uri">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
-      </Docs>
-    </Member>
-    <Member MemberName="PopMetaScope">
-      <MemberSignature Language="C#" Value="public virtual void PopMetaScope ();" />
-      <MemberType>Method</MemberType>
-      <ReturnValue>
-        <ReturnType>System.Void</ReturnType>
-      </ReturnValue>
-      <Parameters />
-      <Docs>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
-      </Docs>
-    </Member>
+    
+    
     <Member MemberName="WriteStatement">
       <MemberSignature Language="C#" Value="public abstract void WriteStatement (string subj, string pred, string obj);" />
       <MemberType>Method</MemberType>
@@ -120,7 +95,7 @@
       </Docs>
     </Member>
     <Member MemberName="Close">
-      <MemberSignature Language="C#" Value="public abstract void Close ();" />
+      <MemberSignature Language="C#" Value="public virtual void Close ();" />
       <MemberType>Method</MemberType>
       <ReturnValue>
         <ReturnType>System.Void</ReturnType>
@@ -164,6 +139,67 @@
       <Docs>
         <summary>To be added.</summary>
         <value>To be added.</value>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+  <Member MemberName="GetResourceKey">
+      <MemberSignature Language="C#" Value="protected object GetResourceKey (SemWeb.Resource resource);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Object</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="resource" Type="SemWeb.Resource" />
+      </Parameters>
+      <Docs>
+        <param name="resource">To be added.</param>
+        <summary>To be added.</summary>
+        <returns>To be added.</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+  <Member MemberName="SetResourceKey">
+      <MemberSignature Language="C#" Value="protected void SetResourceKey (SemWeb.Resource resource, object value);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="resource" Type="SemWeb.Resource" />
+        <Parameter Name="value" Type="System.Object" />
+      </Parameters>
+      <Docs>
+        <param name="resource">To be added.</param>
+        <param name="value">To be added.</param>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+  <Member MemberName="Import">
+      <MemberSignature Language="C#" Value="public virtual void Import (SemWeb.RdfParser parser);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="parser" Type="SemWeb.RdfParser" />
+      </Parameters>
+      <Docs>
+        <param name="parser">To be added.</param>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+  <Member MemberName="CreateAnonymousEntity">
+      <MemberSignature Language="C#" Value="public abstract string CreateAnonymousEntity ();" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>System.String</ReturnType>
+      </ReturnValue>
+      <Parameters />
+      <Docs>
+        <summary>To be added.</summary>
+        <returns>To be added.</returns>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>

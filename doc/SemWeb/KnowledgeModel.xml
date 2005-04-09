@@ -2,17 +2,12 @@
   <TypeSignature Language="C#" Value="public class KnowledgeModel : SemWeb.Store" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
-    <AssemblyVersion>1.0.1915.28028</AssemblyVersion>
+    <AssemblyVersion>1.0.1925.13972</AssemblyVersion>
   </AssemblyInfo>
   <Base>
     <BaseTypeName>SemWeb.Store</BaseTypeName>
   </Base>
   <Interfaces />
-  <Attributes>
-    <Attribute>
-      <AttributeName>System.Reflection.DefaultMember(MemberName="Item")</AttributeName>
-    </Attribute>
-  </Attributes>
   <Members>
     <Member MemberName=".ctor">
       <MemberSignature Language="C#" Value="public KnowledgeModel ();" />

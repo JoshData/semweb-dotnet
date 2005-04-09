@@ -2,7 +2,7 @@
   <TypeSignature Language="C#" Value="public sealed class Literal : SemWeb.Resource" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
-    <AssemblyVersion>1.0.1915.28028</AssemblyVersion>
+    <AssemblyVersion>1.0.1925.13972</AssemblyVersion>
   </AssemblyInfo>
   <Base>
     <BaseTypeName>SemWeb.Resource</BaseTypeName>
@@ -125,6 +125,24 @@
         <summary>The datatype URI of the literal.</summary>
         <value>The datatype URI of the literal, or <see langword="null" />.</value>
         <remarks>None.</remarks>
+      </Docs>
+    </Member>
+  <Member MemberName="Parse">
+      <MemberSignature Language="C#" Value="public static SemWeb.Literal Parse (string literal, SemWeb.NamespaceManager namespaces);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>SemWeb.Literal</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="literal" Type="System.String" />
+        <Parameter Name="namespaces" Type="SemWeb.NamespaceManager" />
+      </Parameters>
+      <Docs>
+        <param name="literal">To be added.</param>
+        <param name="namespaces">To be added.</param>
+        <summary>To be added.</summary>
+        <returns>To be added.</returns>
+        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

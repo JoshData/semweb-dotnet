@@ -2,7 +2,7 @@
   <TypeSignature Language="C#" Value="public abstract class RdfParser : System.IDisposable" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
-    <AssemblyVersion>1.0.1915.28028</AssemblyVersion>
+    <AssemblyVersion>1.0.1925.13972</AssemblyVersion>
   </AssemblyInfo>
   <Base>
     <BaseTypeName>System.Object</BaseTypeName>
@@ -149,6 +149,21 @@
       <Docs>
         <summary>To be added.</summary>
         <value>To be added.</value>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+  <Member MemberName="Parse">
+      <MemberSignature Language="C#" Value="public abstract void Parse (SemWeb.StatementSinkEx storage);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="storage" Type="SemWeb.StatementSinkEx" />
+      </Parameters>
+      <Docs>
+        <param name="storage">To be added.</param>
+        <summary>To be added.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>

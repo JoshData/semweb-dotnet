@@ -2,17 +2,12 @@
   <TypeSignature Language="C#" Value="public abstract class Resource" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
-    <AssemblyVersion>1.0.1915.28028</AssemblyVersion>
+    <AssemblyVersion>1.0.1925.13972</AssemblyVersion>
   </AssemblyInfo>
   <Base>
     <BaseTypeName>System.Object</BaseTypeName>
   </Base>
   <Interfaces />
-  <Attributes>
-    <Attribute>
-      <AttributeName>System.Reflection.DefaultMember(MemberName="Item")</AttributeName>
-    </Attribute>
-  </Attributes>
   <Members>
     
     
@@ -73,6 +68,15 @@
         <summary>Follows an arc in the RDF graph forward or backward.</summary>
         <value>If <paramref name="forward" /> is <see langword="true" />, this property results all resources that are objects of statements for which this resource is the subject and <paramref name="relation" /> is the predicate.  Otherwise, this property results all resources that are subjects of statements for which this resource is the object and <paramref name="relation" /> is the predicate.</value>
         <remarks>The model searched is the same one returned by the <see cref="P:SemWeb.Resource.Model" /> property.</remarks>
+      </Docs>
+    </Member>
+  <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="protected Resource ();" />
+      <MemberType>Constructor</MemberType>
+      <Parameters />
+      <Docs>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

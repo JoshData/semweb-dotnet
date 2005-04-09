@@ -1,66 +1,21 @@
 <Type Name="Store" FullName="SemWeb.Store">
-  <TypeSignature Language="C#" Value="public abstract class Store : SemWeb.StatementSink" />
+  <TypeSignature Language="C#" Value="public abstract class Store : SemWeb.StatementSinkEx" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
-    <AssemblyVersion>1.0.1915.28028</AssemblyVersion>
+    <AssemblyVersion>1.0.1925.13972</AssemblyVersion>
   </AssemblyInfo>
   <Base>
     <BaseTypeName>System.Object</BaseTypeName>
   </Base>
   <Interfaces>
     <Interface>
-      <InterfaceName>SemWeb.StatementSink</InterfaceName>
+      <InterfaceName>SemWeb.StatementSinkEx</InterfaceName>
     </Interface>
   </Interfaces>
   <Members>
-    <Member MemberName=".ctor">
-      <MemberSignature Language="C#" Value="public Store (SemWeb.KnowledgeModel model);" />
-      <MemberType>Constructor</MemberType>
-      <Parameters>
-        <Parameter Name="model" Type="SemWeb.KnowledgeModel" />
-      </Parameters>
-      <Docs>
-        <param name="model">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
-      </Docs>
-    </Member>
-    <Member MemberName="CreateForInput">
-      <MemberSignature Language="C#" Value="public static SemWeb.Store CreateForInput (string spec, SemWeb.KnowledgeModel model);" />
-      <MemberType>Method</MemberType>
-      <ReturnValue>
-        <ReturnType>SemWeb.Store</ReturnType>
-      </ReturnValue>
-      <Parameters>
-        <Parameter Name="spec" Type="System.String" />
-        <Parameter Name="model" Type="SemWeb.KnowledgeModel" />
-      </Parameters>
-      <Docs>
-        <param name="spec">To be added.</param>
-        <param name="model">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
-      </Docs>
-    </Member>
-    <Member MemberName="CreateForOutput">
-      <MemberSignature Language="C#" Value="public static SemWeb.Store CreateForOutput (string spec, SemWeb.KnowledgeModel model);" />
-      <MemberType>Method</MemberType>
-      <ReturnValue>
-        <ReturnType>SemWeb.Store</ReturnType>
-      </ReturnValue>
-      <Parameters>
-        <Parameter Name="spec" Type="System.String" />
-        <Parameter Name="model" Type="SemWeb.KnowledgeModel" />
-      </Parameters>
-      <Docs>
-        <param name="spec">To be added.</param>
-        <param name="model">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
-      </Docs>
-    </Member>
+    
+    
+    
     <Member MemberName="Clear">
       <MemberSignature Language="C#" Value="public abstract void Clear ();" />
       <MemberType>Method</MemberType>
@@ -73,53 +28,9 @@
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
-    <Member MemberName="GetResource">
-      <MemberSignature Language="C#" Value="public abstract SemWeb.Entity GetResource (string uri, bool create);" />
-      <MemberType>Method</MemberType>
-      <ReturnValue>
-        <ReturnType>SemWeb.Entity</ReturnType>
-      </ReturnValue>
-      <Parameters>
-        <Parameter Name="uri" Type="System.String" />
-        <Parameter Name="create" Type="System.Boolean" />
-      </Parameters>
-      <Docs>
-        <param name="uri">To be added.</param>
-        <param name="create">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
-      </Docs>
-    </Member>
-    <Member MemberName="CreateAnonymousResource">
-      <MemberSignature Language="C#" Value="public abstract SemWeb.Entity CreateAnonymousResource ();" />
-      <MemberType>Method</MemberType>
-      <ReturnValue>
-        <ReturnType>SemWeb.Entity</ReturnType>
-      </ReturnValue>
-      <Parameters />
-      <Docs>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
-      </Docs>
-    </Member>
-    <Member MemberName="GetResource">
-      <MemberSignature Language="C#" Value="public SemWeb.Entity GetResource (string uri);" />
-      <MemberType>Method</MemberType>
-      <ReturnValue>
-        <ReturnType>SemWeb.Entity</ReturnType>
-      </ReturnValue>
-      <Parameters>
-        <Parameter Name="uri" Type="System.String" />
-      </Parameters>
-      <Docs>
-        <param name="uri">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
-      </Docs>
-    </Member>
+    
+    
+    
     
     <Member MemberName="GetEntitiesOfType">
       <MemberSignature Language="C#" Value="public SemWeb.Entity[] GetEntitiesOfType (SemWeb.Entity type);" />
@@ -301,18 +212,7 @@
     </Member>
     
     
-    <Member MemberName="Model">
-      <MemberSignature Language="C#" Value="public virtual SemWeb.KnowledgeModel Model { get; };" />
-      <MemberType>Property</MemberType>
-      <ReturnValue>
-        <ReturnType>SemWeb.KnowledgeModel</ReturnType>
-      </ReturnValue>
-      <Docs>
-        <summary>To be added.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
-      </Docs>
-    </Member>
+    
     <Member MemberName="StatementCount">
       <MemberSignature Language="C#" Value="public abstract int StatementCount { get; };" />
       <MemberType>Property</MemberType>
@@ -485,6 +385,60 @@
         <param name="a">To be added.</param>
         <param name="b">To be added.</param>
         <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+  <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public Store ();" />
+      <MemberType>Constructor</MemberType>
+      <Parameters />
+      <Docs>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+  <Member MemberName="CreateForInput">
+      <MemberSignature Language="C#" Value="public static SemWeb.Store CreateForInput (string spec);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>SemWeb.Store</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="spec" Type="System.String" />
+      </Parameters>
+      <Docs>
+        <param name="spec">To be added.</param>
+        <summary>To be added.</summary>
+        <returns>To be added.</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+  <Member MemberName="CreateForOutput">
+      <MemberSignature Language="C#" Value="public static SemWeb.StatementSinkEx CreateForOutput (string spec);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>SemWeb.StatementSinkEx</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="spec" Type="System.String" />
+      </Parameters>
+      <Docs>
+        <param name="spec">To be added.</param>
+        <summary>To be added.</summary>
+        <returns>To be added.</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+  <Member MemberName="CreateAnonymousEntity">
+      <MemberSignature Language="C#" Value="public abstract SemWeb.Entity CreateAnonymousEntity ();" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>SemWeb.Entity</ReturnType>
+      </ReturnValue>
+      <Parameters />
+      <Docs>
+        <summary>To be added.</summary>
+        <returns>To be added.</returns>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>

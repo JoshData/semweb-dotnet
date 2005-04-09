@@ -2,7 +2,7 @@
   <TypeSignature Language="C#" Value="public abstract class SQLStore : SemWeb.Store, SemWeb.Entity+LazyUriLoader" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
-    <AssemblyVersion>1.0.1915.28028</AssemblyVersion>
+    <AssemblyVersion>1.0.1925.13972</AssemblyVersion>
   </AssemblyInfo>
   <Base>
     <BaseTypeName>SemWeb.Store</BaseTypeName>
@@ -13,20 +13,7 @@
     </Interface>
   </Interfaces>
   <Members>
-    <Member MemberName=".ctor">
-      <MemberSignature Language="C#" Value="public SQLStore (string table, SemWeb.KnowledgeModel model);" />
-      <MemberType>Constructor</MemberType>
-      <Parameters>
-        <Parameter Name="table" Type="System.String" />
-        <Parameter Name="model" Type="SemWeb.KnowledgeModel" />
-      </Parameters>
-      <Docs>
-        <param name="table">To be added.</param>
-        <param name="model">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
-      </Docs>
-    </Member>
+    
     <Member MemberName="RunCommand">
       <MemberSignature Language="C#" Value="protected abstract void RunCommand (string sql);" />
       <MemberType>Method</MemberType>
@@ -165,6 +152,18 @@
       <Docs>
         <summary>To be added.</summary>
         <value>To be added.</value>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+  <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public SQLStore (string table);" />
+      <MemberType>Constructor</MemberType>
+      <Parameters>
+        <Parameter Name="table" Type="System.String" />
+      </Parameters>
+      <Docs>
+        <param name="table">To be added.</param>
+        <summary>To be added.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
