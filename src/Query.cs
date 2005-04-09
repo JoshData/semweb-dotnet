@@ -196,7 +196,6 @@ namespace SemWeb.Query {
 			public Store target;
 			public QueryResultSink sink;
 			public VariableBinding[] bindings;
-			public Hashtable targetQueryObject = new Hashtable();
 		}	
 		
 
@@ -444,13 +443,7 @@ namespace SemWeb.Query {
 			if (ent.Uri == null)
 				throw new QueryException("An anonymous node in the query was not a variable.");
 
-			Resource ret = (Resource)state.targetQueryObject[ent.Uri];
-			if (ret == null) {
-				ret = state.target.GetResource(ent.Uri);
-				state.targetQueryObject[ent.Uri] = ret;
-			}
-			if (reqEntity && !(ret is Entity)) return null;
-			return ret;
+			return ent;
 		}
 
 		private bool GetAlternativesSet(Resource ent, VariableNode currentNode, out VariableNode outNode, out Set outSet) {
@@ -612,7 +605,7 @@ namespace SemWeb.Query {
 				// This is important because this will be invoked when
 				// an anonymous variable node has no children.
 				resources = new Set();
-				resources.Add(new Entity(state.target.Model));
+				resources.Add(new Entity((string)null));
 			}
 			
 			node.Alternatives = resources;
@@ -970,8 +963,8 @@ namespace SemWeb.Query {
 			var = isvar;
 		}
 		
-		public Entity Variable { get { return v; } set { v = value; } }
-		public Resource Target { get { return t; } set { t = value; } }
+		public Entity Variable { get { return v; } }
+		public Resource Target { get { return t; } internal set { t = value; } }
 	}
 }	
 

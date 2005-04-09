@@ -1,7 +1,13 @@
 <Overview>
   <Assembly Version="1.0.1898.20865">SemWeb</Assembly>
-  <Remarks>To be added.</Remarks>
-  <Copyright>To be added.</Copyright>
+  <Remarks>
+    <para>SemWeb is a C#/.NET library for manipulating RDF data and interacting with the semantic web.
+	SemWeb was written by Joshua Tauberer (tauberer@for.net) and has its home at <a href="http://taubz.for.net/code/semweb">http://taubz.for.net/code/semweb</a>.  It is developed
+	and tested under Mono, but it should run on Windows fine, in principle.</para>
+    <para>The goals of SemWeb are to have a straightforward interface, pluggable backends, and streaming data.</para>
+    <para>Brief feature summary: Storage backends exist for holding statements in memory or in Sqlite/MySQL databases.  RDF parsers exist for RDF/XML (based on Drive) and most of N3 (but all of Turtle and NTriples).  RDF serializers exist for just N3 at the moment.  There is an experimental query engine, but no RDQL/SPARQL support yet.  And there are experimental reasoning engines based on RDFS and OWL.</para>
+  </Remarks>
+  <Copyright>Updated March 2005.  See <a href="http://taubz.for.net/code/semweb">http://taubz.for.net/code/semweb</a>.</Copyright>
   <Types>
     <Namespace Name="SemWeb">
       <Type Name="StatementSink" />
@@ -18,6 +24,7 @@
       <Type Name="Literal" />
       <Type Name="Statement" />
       <Type Name="Entity+LazyUriLoader" />
+      <Type Name="SelectPartialFilter" />
     </Namespace>
     <Namespace Name="SemWeb.Query">
       <Type Name="QueryException" />
@@ -29,7 +36,9 @@
       <Type Name="VariableBinding" />
       <Type Name="ValueFilter" />
       <Type Name="LiteralValueFilter" />
-      <Type Name="XMLQuerySink" />
+      <Type Name="QueryEngine" />
+      <Type Name="SparqlXmlQuerySink" />
+      <Type Name="ValueFilterFactory" />
     </Namespace>
     <Namespace Name="SemWeb.Stores">
       <Type Name="MultiStore" />

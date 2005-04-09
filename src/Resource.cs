@@ -4,20 +4,14 @@ using System.Collections;
 namespace SemWeb {
 	
 	public abstract class Resource {
-		KnowledgeModel model;
-		internal Hashtable extraKeys = new Hashtable();
+		internal ArrayList extraKeys = new ArrayList();
 		
-		internal Resource() {
-			this.model = null;
-		}
-		
-		internal Resource(KnowledgeModel model) {
-			this.model = model;
+		internal class ExtraKey {
+			public object Key;
+			public object Value; 
 		}
 		
 		public abstract string Uri { get; }
-		
-		public KnowledgeModel Model { get { return model; } }
 		
 		//public static explicit operator Resource(string uri) { return new Entity(uri); }
 		
@@ -26,58 +20,39 @@ namespace SemWeb {
 			return "_";
 		}
 		
-		public Resource[] this[Entity relation] {
-			get {
-				return this[relation, true];
+		internal object GetResourceKey(object key) {
+			for (int i = 0; i < extraKeys.Count; i++) {
+				Resource.ExtraKey ekey = (Resource.ExtraKey)extraKeys[i];
+				if (ekey.Key == key)
+					return ekey.Value;
 			}
+			return null;
+		}
+		internal void SetResourceKey(object key, object value) {
+			foreach (Resource.ExtraKey ekey in extraKeys)
+				if (ekey.Key == key) { extraKeys.Remove(ekey); break; }
+			
+			Resource.ExtraKey k = new Resource.ExtraKey();
+			k.Key = key;
+			k.Value = value;
+			
+			extraKeys.Add(k);
 		}
 		
-		public Resource[] this[Entity relation, bool forward] {
-			get {
-				if (Model == null)
-					throw new InvalidOperationException("This resource is not associated with a model.");
-				
-				ArrayList entities = new ArrayList();
-				Hashtable seen = new Hashtable();
-				
-				Statement template;
-				if (forward) {
-					if (!(this is Entity))
-						throw new ArgumentException("Literals cannot be the subjects of statements.");
-					template = new Statement((Entity)this, relation, null);
-				} else
-					template = new Statement(null, relation, this);
-				
-				SemWeb.Stores.MemoryStore result = model.Select(template);
-				foreach (Statement s in result.Statements) {
-					Resource obj;
-					if (forward)
-						obj = s.Object;
-					else
-						obj = s.Subject;
-					
-					if (seen.ContainsKey(obj)) continue;
-					seen[obj] = seen;
-					
-					entities.Add(obj);
-				}
-				
-				return (Resource[])entities.ToArray(typeof(Resource));
-			}
-		}		
 	}
 	
 	public sealed class Entity : Resource {
 		private string uri;
 		private LazyUriLoader lazyLoader;
+		int cachedHashCode = -1;
 		
-		public Entity(string uri) : this(uri, null) { }
+		public Entity(string uri) { this.uri = uri; }
 		
-		public Entity(KnowledgeModel model) : base(model) { this.uri = null; }
+		private Entity(LazyUriLoader uriLoader) { this.lazyLoader = uriLoader; }
 		
-		public Entity(string uri, KnowledgeModel model) : base(model) { this.uri = uri; }
-		
-		public Entity(LazyUriLoader uriLoader, KnowledgeModel model) : base(model) { this.lazyLoader = uriLoader; }
+		public static Entity LazyResolve(LazyUriLoader uriLoader) {
+			return new Entity(uriLoader);
+		}
 
 		public override string Uri {
 			get {
@@ -92,12 +67,16 @@ namespace SemWeb {
 		public static implicit operator Entity(string uri) { return new Entity(uri); }
 		
 		public override int GetHashCode() {
+			if (cachedHashCode != -1) return cachedHashCode;
 			if (lazyLoader != null || Uri == null) {
-				foreach (DictionaryEntry v in extraKeys)
-					return unchecked(v.Key.GetHashCode() + v.Value.GetHashCode());
-				return 0;
+				foreach (ExtraKey v in extraKeys) {
+					cachedHashCode = unchecked(v.Key.GetHashCode() + v.Value.GetHashCode());
+					break;
+				}
+				cachedHashCode = 0;
 			}
-			return Uri.GetHashCode();
+			cachedHashCode = Uri.GetHashCode();
+			return cachedHashCode;
 		}
 			
 		public override bool Equals(object other) {
@@ -108,10 +87,14 @@ namespace SemWeb {
 			// the URI of this resource, then go for the extra keys too.
 			// Test the lazLoader first so that the Uri property isn't called!
 			if (lazyLoader != null || (Uri == null && ((Resource)other).Uri == null)) {
-				foreach (DictionaryEntry v in extraKeys) {
-					object v2 = ((Resource)other).extraKeys[v.Key];
-					if (v2 != null)
-						return v.Value.Equals(v2);
+				ArrayList otherkeys = ((Resource)other).extraKeys;
+				for (int vi1 = 0; vi1 < extraKeys.Count; vi1++) {
+					ExtraKey v1 = (ExtraKey)extraKeys[vi1];
+					for (int vi2 = 0; vi2 < otherkeys.Count; vi2++) {
+						ExtraKey v2 = (ExtraKey)otherkeys[vi2];
+						if (v1.Key == v2.Key)
+							return v1.Value.Equals(v2.Value);
+					}
 				}
 				
 				// If anonymous and no match, false.  If LazyLoading, go on to test the URIs.
@@ -144,15 +127,10 @@ namespace SemWeb {
 	public sealed class Literal : Resource { 
 		private string value, lang, type;
 		
-		public Literal(string value) : this(value, null) { }
-		
-		public Literal(string value, KnowledgeModel model) : this(value, null, null, model) {
+		public Literal(string value) : this(value, null, null) {
 		}
 		
-		public Literal(string value, string language, string dataType) : this(value, language, dataType, null) {
-		}
-		
-		public Literal(string value, string language, string dataType, KnowledgeModel model) : base(model) {
+		public Literal(string value, string language, string dataType) {
 		  this.value = value;
 		  this.lang = language;
 		  this.type = dataType;
@@ -209,7 +187,7 @@ namespace SemWeb {
 			return ret.ToString();
 		}
 		
-		public static Literal Parse(string literal, KnowledgeModel model, NamespaceManager namespaces) {
+		public static Literal Parse(string literal, NamespaceManager namespaces) {
 			if (!literal.StartsWith("\"")) throw new FormatException("Literal value must start with a quote.");
 			int quote = literal.LastIndexOf('"');
 			if (quote <= 0) throw new FormatException("Literal value must have an end quote (" + literal + ")");
@@ -241,7 +219,7 @@ namespace SemWeb {
 				}
 			}
 			
-			return new Literal(value, lang, datatype, model);
+			return new Literal(value, lang, datatype);
 		}
 	}
 

@@ -3,8 +3,10 @@ using System.Collections;
 using System.IO;
 
 namespace SemWeb {
-	public abstract class RdfWriter : IDisposable, StatementSink {
-		private string baseuri;
+	public abstract class RdfWriter : IDisposable, StatementSinkEx {
+		string baseuri;
+		bool closed;
+		Entity currentMeta;
 		
 		public abstract NamespaceManager Namespaces { get; }
 		
@@ -17,7 +19,13 @@ namespace SemWeb {
 			}
 		}
 
-		Hashtable anonymousNodes = new Hashtable();
+		protected object GetResourceKey(Resource resource) {
+			return resource.GetResourceKey(this);
+		}
+
+		protected void SetResourceKey(Resource resource, object value) {
+			resource.SetResourceKey(this, value);
+		}
 		
 		internal static TextWriter GetWriter(string dest) {
 			if (dest == "-")
@@ -29,11 +37,15 @@ namespace SemWeb {
 			Add(statement);
 			return true;
 		}
+
+		public virtual void Import(RdfParser parser) {
+			parser.Parse(this);
+		}
 		
 		public void Add(Statement statement) {
 			if (statement.AnyNull)
 				throw new ArgumentNullException();
-			
+
 			string s = getUri(statement.Subject);
 			string p = getUri(statement.Predicate);
 			
@@ -48,25 +60,32 @@ namespace SemWeb {
 		
 		private string getUri(Entity e) {
 			if (e.Uri != null) return e.Uri;
-			if (anonymousNodes.ContainsKey(e)) return (string)anonymousNodes[e];
-			string uri = CreateAnonymousNode();
-			anonymousNodes[e] = uri;
+			string uri = (string)GetResourceKey(e);
+			if (uri != null) return uri;
+			uri = CreateAnonymousEntity();
+			SetResourceKey(e, uri);
 			return uri;
 		}
 		
-		public virtual void PushMetaScope(string uri) { }
-		
-		public virtual void PopMetaScope() { }
+		Entity StatementSinkEx.CreateAnonymousEntity() {
+			Entity ent = new Entity(null);
+			SetResourceKey(ent, CreateAnonymousEntity());
+			return ent;
+		}
 		
 		public abstract void WriteStatement(string subj, string pred, string obj);
 		
 		public abstract void WriteStatement(string subj, string pred, Literal literal);
 		
-		public abstract string CreateAnonymousNode();
+		public abstract string CreateAnonymousEntity();
 		
-		public abstract void Close();
+		public virtual void Close() {
+			if (closed) return;
+			closed = true;
+		}
 		
-		public virtual void Dispose() {
+		void IDisposable.Dispose() {
+			Close();
 		}
 	}
 }

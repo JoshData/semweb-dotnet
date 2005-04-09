@@ -10,17 +10,15 @@ namespace SemWeb {
 		SemWeb.Stores.MultiStore stores;
 		Store mainstore;
 		
-		public KnowledgeModel() : base(null) {
-			stores = new SemWeb.Stores.MultiStore(this);
+		public KnowledgeModel() {
+			stores = new SemWeb.Stores.MultiStore();
 			mainstore = stores;
 		}
 		
 		public KnowledgeModel(RdfParser parser) : this() {
-			stores.Add(new SemWeb.Stores.MemoryStore(parser, this));
+			stores.Add(new SemWeb.Stores.MemoryStore(parser));
 		}
 
-		public override KnowledgeModel Model { get { return this; } }
-		
 		public SemWeb.Stores.MultiStore Storage { get { return stores; } }
 		
 		public void Add(Store storage) {
@@ -31,16 +29,6 @@ namespace SemWeb {
 			mainstore = new InferenceStore(mainstore, engine);
 		}
 		
-		public Entity this[string uri] {
-			get {
-				return GetResource(uri);
-			}
-		}
-		
-		public override Entity GetResource(string uri, bool create) {
-			return stores.GetResource(uri, create);
-		}
-
 		public override Entity[] GetAllEntities() { return stores.GetAllEntities(); }
 		
 		public override Entity[] GetAllPredicates() { return stores.GetAllPredicates(); }
@@ -60,7 +48,7 @@ namespace SemWeb {
 		public override int StatementCount { get { return stores.StatementCount; } }
 
 		public override void Clear() { throw new InvalidOperationException(); }
-		public override Entity CreateAnonymousResource() { throw new InvalidOperationException(); }
+		public override Entity CreateAnonymousEntity() { throw new InvalidOperationException(); }
 		public override void Add(Statement statement) { throw new InvalidOperationException(); }
 		public override void Remove(Statement statement) { throw new InvalidOperationException(); }
 		

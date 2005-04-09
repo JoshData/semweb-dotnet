@@ -8,7 +8,7 @@ using SemWeb;
 namespace SemWeb.IO {
 
 	public class N3Parser : RdfParser {
-		Resource PrefixResource = new Literal("@prefix", null);
+		Resource PrefixResource = new Literal("@prefix");
 		
 		TextReader sourcestream;
 		NamespaceManager namespaces = new NamespaceManager();
@@ -22,71 +22,23 @@ namespace SemWeb.IO {
 			BaseUri = sourcefile + "#";
 		}
 
-		private class MyReader {
-			TextReader r;
-			public MyReader(TextReader reader) { r = reader; }
-			
-			public int Line = 1;
-			public int Col = 0;
-			
-			int[] peeked = new int[2];
-			int peekCount = 0;
-			
-			public int Peek() {
-				if (peekCount == 0) {
-					peeked[0] = r.Read();
-					peekCount = 1;
-				}
-				return peeked[0];
-			}
-			
-			public int Peek2() {
-				Peek();
-				if (peekCount == 1) {
-					peeked[1] = r.Read();
-					peekCount = 2;
-				}
-				return peeked[1];
-			}
-
-			public int Read() {
-				int c;
-				
-				if (peekCount > 0) {
-					c = peeked[0];
-					peeked[0] = peeked[1];
-					peekCount--;
-				} else {
-					c = r.Read();
-				}
-				
-				if (c == '\n') { Line++; Col = 0; }
-				else { Col++; }
-				
-				return c;
-			}
-		}
-		
-		private struct Location {
-			public readonly int Line, Col;
-			public Location(int line, int col) { Line = line; Col = col; }
-		}
-		
 		private struct ParseContext {
 			public MyReader source;
-			public Store store;
+			public StatementSinkEx store;
 			public NamespaceManager namespaces;
+			public Hashtable namedNode;
 			public Hashtable anonymous;
 			public Entity meta;
 			
 			public Location Location { get { return new Location(source.Line, source.Col); } }
 		}
 		
-		public override void Parse(Store store) {
+		public override void Parse(StatementSinkEx store) {
 			ParseContext context = new ParseContext();
 			context.source = new MyReader(sourcestream);
 			context.store = store;
 			context.namespaces = namespaces;
+			context.namedNode = new Hashtable();
 			context.anonymous = new Hashtable();
 			context.meta = Meta;
 			
@@ -362,7 +314,7 @@ namespace SemWeb.IO {
 				if (reverse || reverse2) OnError("is...of is not allowed in path expressions", loc);
 				if (!(path is Entity)) OnError("A path expression cannot be a literal", loc);
 				
-				Entity anon = context.store.CreateAnonymousResource();
+				Entity anon = context.store.CreateAnonymousEntity();
 				
 				Statement s;
 				if (pathType == '!' || pathType == '.') {
@@ -381,6 +333,14 @@ namespace SemWeb.IO {
 				
 			return res;
 		}			
+		
+		private Entity GetResource(ParseContext context, string uri) {
+			if (context.namedNode.ContainsKey(uri))
+				return (Entity)context.namedNode[uri];
+			Entity ret = new Entity(uri);
+			context.namedNode[uri] = ret;
+			return ret;
+		}
 
 		private Resource ReadResource2(ParseContext context, out bool reverse) {
 			reverse = false;
@@ -403,11 +363,11 @@ namespace SemWeb.IO {
 			// TODO: Turn these off with @keywords
 			
 			if (str == "a")
-				return context.store.GetResource( "http://www.w3.org/1999/02/22-rdf-syntax-ns#type" );
+				return GetResource(context, "http://www.w3.org/1999/02/22-rdf-syntax-ns#type");
 			if (str == "=") // ?
-				return context.store.GetResource( "http://www.w3.org/2002/07/owl#sameAs" );
+				return GetResource(context, "http://www.w3.org/2002/07/owl#sameAs");
 			if (str == "=>") // ?
-				return context.store.GetResource( "http://www.w3.org/2000/10/swap/log#implies" );
+				return GetResource(context, "http://www.w3.org/2000/10/swap/log#implies");
 			if (str == "<=") // ?
 				OnError("The <= predicate is not supported (because I don't know what it translates to)", loc);
 
@@ -432,13 +392,13 @@ namespace SemWeb.IO {
 					uri = BaseUri + uri;
 				}
 				// relativize it
-				return context.store.GetResource(uri);
+				return GetResource(context, uri);
 			}
 			
 			// STRING LITERAL
 			
 			if (str.StartsWith("\"")) {
-				return Literal.Parse(str, context.store.Model, context.namespaces);
+				return Literal.Parse(str, context.namespaces);
 			}
 			
 			// NUMERIC LITERAL
@@ -446,14 +406,14 @@ namespace SemWeb.IO {
 			// In Turtle, numbers are restricted to [0-9]+, and are datatyped xsd:integer.
 			double numval;
 			if (double.TryParse(str, System.Globalization.NumberStyles.Any, null, out numval))
-				return new Literal(numval.ToString(), context.store.Model);
+				return new Literal(numval.ToString());
 			
 			// VARIABLE
 			
 			if (str[0] == '?') {
 				if (BaseUri == null)
 					OnError("Variables require that a BaseUri be specified for the document", loc);
-				Entity var = context.store.GetResource( BaseUri + str.Substring(1) );
+				Entity var = GetResource(context, BaseUri + str.Substring(1));
 				variables.Add(var);
 				return var;
 			}
@@ -466,26 +426,26 @@ namespace SemWeb.IO {
 				if (prefix == "_") {
 					Resource ret = (Resource)context.anonymous[str];
 					if (ret == null) {
-						ret = context.store.CreateAnonymousResource();
+						ret = context.store.CreateAnonymousEntity();
 						context.anonymous[str] = ret;
 					}
 					return ret;
 				} else if (prefix == "") {
 					if (BaseUri == null)
 						OnError("The document contains a relative URI but no BaseUri was specified", loc);
-					return context.store.GetResource( BaseUri + str.Substring(colon+1) );
+					return GetResource(context, BaseUri + str.Substring(colon+1));
 				} else {
 					string ns = context.namespaces.GetNamespace(prefix);
 					if (ns == null)
 						OnError("Prefix is undefined: " + str, loc);
-					return context.store.GetResource( ns + str.Substring(colon+1) );
+					return GetResource(context, ns + str.Substring(colon+1));
 				}
 			}
 			
 			// ANONYMOUS
 			
 			if (str == "[") {
-				Entity ret = context.store.CreateAnonymousResource();
+				Entity ret = context.store.CreateAnonymousEntity();
 				ReadWhitespace(context.source);
 				if (context.source.Peek() != ']') {
 					char bracket = ReadPredicates(ret, context);
@@ -509,19 +469,19 @@ namespace SemWeb.IO {
 						break;
 					
 					if (ent == null) {
-						ent = context.store.CreateAnonymousResource();
+						ent = context.store.CreateAnonymousEntity();
 					} else {
-						Entity sub = context.store.CreateAnonymousResource();
-						context.store.Add(new Statement(ent, "http://www.w3.org/1999/02/22-rdf-syntax-ns#rest", sub, context.meta));
+						Entity sub = context.store.CreateAnonymousEntity();
+						context.store.Add(new Statement(ent, GetResource(context, "http://www.w3.org/1999/02/22-rdf-syntax-ns#rest"), sub, context.meta));
 						ent = sub;
 					}
 					
-					context.store.Add(new Statement(ent, "http://www.w3.org/1999/02/22-rdf-syntax-ns#first", res, context.meta));					
+					context.store.Add(new Statement(ent, GetResource(context, "http://www.w3.org/1999/02/22-rdf-syntax-ns#first"), res, context.meta));					
 				}
 				if (ent == null) // No list items.
-					ent = context.store.GetResource("http://www.w3.org/1999/02/22-rdf-syntax-ns#nil"); // according to Turtle spec
+					ent = GetResource(context, "http://www.w3.org/1999/02/22-rdf-syntax-ns#nil"); // according to Turtle spec
 				else
-					context.store.Add(new Statement(ent, "http://www.w3.org/1999/02/22-rdf-syntax-ns#rest", (Entity)"http://www.w3.org/1999/02/22-rdf-syntax-ns#nil", context.meta));
+					context.store.Add(new Statement(ent, GetResource(context, "http://www.w3.org/1999/02/22-rdf-syntax-ns#rest"), GetResource(context, "http://www.w3.org/1999/02/22-rdf-syntax-ns#nil"), context.meta));
 				return ent;
 			}
 			
@@ -533,7 +493,7 @@ namespace SemWeb.IO {
 			if (str == "{") {
 				// Embedded resource
 				ParseContext newcontext = context;
-				newcontext.meta = context.store.CreateAnonymousResource();
+				newcontext.meta = context.store.CreateAnonymousEntity();
 				while (ReadStatement(newcontext)) { }
 				ReadWhitespace(context.source);
 				if (context.source.Peek() == '}') context.source.Read();
@@ -551,4 +511,57 @@ namespace SemWeb.IO {
 		}
 	
 	}
+
+	internal class MyReader {
+		TextReader r;
+		public MyReader(TextReader reader) { r = reader; }
+		
+		public int Line = 1;
+		public int Col = 0;
+		
+		int[] peeked = new int[2];
+		int peekCount = 0;
+		
+		public Location Location { get { return new Location(Line, Col); } }
+		
+		public int Peek() {
+			if (peekCount == 0) {
+				peeked[0] = r.Read();
+				peekCount = 1;
+			}
+			return peeked[0];
+		}
+		
+		public int Peek2() {
+			Peek();
+			if (peekCount == 1) {
+				peeked[1] = r.Read();
+				peekCount = 2;
+			}
+			return peeked[1];
+		}
+
+		public int Read() {
+			int c;
+			
+			if (peekCount > 0) {
+				c = peeked[0];
+				peeked[0] = peeked[1];
+				peekCount--;
+			} else {
+				c = r.Read();
+			}
+			
+			if (c == '\n') { Line++; Col = 0; }
+			else { Col++; }
+			
+			return c;
+		}
+	}
+
+	internal struct Location {
+		public readonly int Line, Col;
+		public Location(int line, int col) { Line = line; Col = col; }
+	}
+		
 }

@@ -2,7 +2,7 @@
   <TypeSignature Language="C#" Value="public class ParserException : System.ApplicationException" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
-    <AssemblyVersion>1.0.1909.16213</AssemblyVersion>
+    <AssemblyVersion>1.0.1915.28028</AssemblyVersion>
   </AssemblyInfo>
   <Base>
     <BaseTypeName>System.ApplicationException</BaseTypeName>
@@ -17,13 +17,13 @@
       </Parameters>
       <Docs>
         <param name="message">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
+        <summary>Creates a new ParserException.</summary>
+        <remarks>None.</remarks>
       </Docs>
     </Member>
   </Members>
   <Docs>
-    <summary>To be added.</summary>
-    <remarks>To be added.</remarks>
+    <summary>An exception thrown when an error occurs parsing an RDF document.</summary>
+    <remarks>None.</remarks>
   </Docs>
 </Type>

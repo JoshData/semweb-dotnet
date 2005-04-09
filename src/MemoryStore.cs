@@ -12,10 +12,10 @@ namespace SemWeb.Stores {
 		Hashtable statementsAboutSubject = new Hashtable();
 		Hashtable statementsAboutObject = new Hashtable();
 		
-		public MemoryStore(KnowledgeModel model) : base(model) {
+		public MemoryStore() {
 		}
 		
-		public MemoryStore(RdfParser parser, KnowledgeModel model) : this(model) {
+		public MemoryStore(RdfParser parser) {
 			Import(parser);
 		}
 
@@ -82,17 +82,8 @@ namespace SemWeb.Stores {
 			return (Entity[])new ArrayList(h.Keys).ToArray(typeof(Entity));
 		}
 
-		public override Entity GetResource(string uri, bool create) {
-			Entity ret = (Entity)uriToResource[uri];
-			if (ret == null && create) {
-				ret = new Entity(uri, Model);
-				uriToResource[uri] = ret;
-			}
-			return ret;
-		}
-		
-		public override Entity CreateAnonymousResource() {
-			return new Entity(Model);
+		public override Entity CreateAnonymousEntity() {
+			return new Entity((string)null);
 		}
 		
 		private void ShorterList(ref IList list1, IList list2) {

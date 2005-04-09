@@ -20,6 +20,10 @@ namespace SemWeb.Stores {
 		
 		bool Debug = false;
 		
+		StringBuilder addBuffer = new StringBuilder();
+		StringBuilder cmdBuffer = new StringBuilder();
+		Hashtable addLiteralCache = null;
+		
 		private class ResourceKey {
 			public int ResId;
 			
@@ -32,7 +36,7 @@ namespace SemWeb.Stores {
 		private static readonly string[] fourcols = new string[] { "subject", "predicate", "object", "meta" };
 		private static readonly string[] predcol = new string[] { "predicate" };
 
-		public SQLStore(string table, KnowledgeModel model) : base(model) {
+		public SQLStore(string table) {
 			this.table = table;
 		}
 		
@@ -46,11 +50,13 @@ namespace SemWeb.Stores {
 			CreateIndexes();
 		}
 		
-		public override int StatementCount { get { Init(); return RunScalarInt("select count(subject) from " + table + "_statements", 0); } }
+		public override int StatementCount { get { Init(); RunAddBuffer(); return RunScalarInt("select count(subject) from " + table + "_statements", 0); } }
 		
 		private int NextId() {
 			if (lockedIdCache != null && cachedNextId != -1)
 				return ++cachedNextId;
+				
+			RunAddBuffer();
 			
 			// the 0 id is reserved for linking resources to their URIs,
 			// and for indicating a resource/literal is not present in the tables
@@ -74,62 +80,75 @@ namespace SemWeb.Stores {
 		
 		public override void Clear() {
 			Init();
+			addBuffer.Length = 0;
 			RunCommand("DELETE FROM " + table + "_statements");
 			RunCommand("DELETE FROM " + table + "_literals");
 		}
 		
-		private int GetLiteralId(Literal literal, bool create) {
+		private int GetLiteralId(string value, string language, string datatype, bool create) {
 			// Returns the literal ID associated with the literal.  If a literal
 			// doesn't exist and create is true, a new literal is created,
 			// otherwise 0 is returned.
+			
+			if (addLiteralCache != null && addLiteralCache.Count > 0) {
+				Literal lit = new Literal(value, language, datatype);
+				object ret = addLiteralCache[lit];
+				if (ret != null) return (int)ret;
+			}
 
-			StringBuilder b = new StringBuilder();
+			StringBuilder b = cmdBuffer; cmdBuffer.Length = 0;
 			b.Append("SELECT id FROM ");
 			b.Append(table);
 			b.Append("_literals WHERE value = ");
-			b.Append(Escape(literal.Value));
-			if (literal.Language != null) {
+			b.Append(Escape(value));
+			if (language != null) {
 				b.Append(" and language = ");
-				b.Append(Escape(literal.Language));
+				b.Append(Escape(language));
 			}
-			if (literal.DataType != null) {
+			if (datatype != null) {
 				b.Append(" and datatype = ");
-				b.Append(Escape(literal.DataType));
+				b.Append(Escape(datatype));
 			}
 			b.Append(" LIMIT 1");
 			
 			object id = RunScalar(b.ToString());
 			if (id == null) {
-				if (create) return AddLiteral(literal);
+				if (create) return AddLiteral(value, language, datatype);
 				return 0;
 			}
 			
 			return AsInt(id);
 		}
 		
-		private int AddLiteral(Literal literal) {
+		private int AddLiteral(string value, string language, string datatype) {
 			int id = NextId();
 			
-			StringBuilder b = new StringBuilder();
+			StringBuilder b = cmdBuffer; cmdBuffer.Length = 0;
 			b.Append("INSERT INTO ");
 			b.Append(table);
 			b.Append("_literals VALUES(");
 			b.Append(id);
 			b.Append(",");
-			b.Append(Escape(literal.Value));
+			b.Append(Escape(value));
 			b.Append(",");
-			if (literal.Language != null)
-				b.Append(Escape(literal.Language));
+			if (language != null)
+				b.Append(Escape(language));
 			else
 				b.Append("NULL");
 			b.Append(",");
-			if (literal.DataType != null)
-				b.Append(Escape(literal.DataType));
+			if (datatype != null)
+				b.Append(Escape(datatype));
 			else
 				b.Append("NULL");
-			b.Append(")");			
+			b.Append("); ");
 			
-			RunCommand(b.ToString());
+			if (addLiteralCache != null) {
+				addLiteralCache[new Literal(value, language, datatype)] = id;
+				addBuffer.Append(b.ToString());
+				RunAddBufferIfLarge();
+			} else {
+				RunCommand(b.ToString());
+			}
 			
 			return id;
 		}
@@ -143,52 +162,39 @@ namespace SemWeb.Stores {
 				object idobj = lockedIdCache[uri];
 				if (idobj == null && !create) return 0;
 				if (idobj != null) return (int)idobj;
+			} else {
+				StringBuilder cmd = cmdBuffer; cmdBuffer.Length = 0;
+				cmd.Append("SELECT subject FROM ");
+				cmd.Append(table);
+				cmd.Append("_statements, ");
+				cmd.Append(table);
+				cmd.Append("_literals WHERE predicate = 0 and objecttype = 1 and object = id and value =");
+				cmd.Append(Escape(uri));
+				cmd.Append(" LIMIT 1");
+				int id = RunScalarInt(cmd.ToString(), 0);
+				if (id != 0 || !create) return id;
 			}
 			
-			// First try a complex SQL statement.
-			StringBuilder cmd = new StringBuilder();
-			cmd.Append("SELECT subject FROM ");
-			cmd.Append(table);
-			cmd.Append("_statements, ");
-			cmd.Append(table);
-			cmd.Append("_literals WHERE predicate = 0 and objecttype = 1 and object = id and value =");
-			cmd.Append(Escape(uri));
-			cmd.Append(" LIMIT 1");
-			int id = RunScalarInt(cmd.ToString(), 0);
-			if (id != 0 || !create) return id;
-			
-			// Fall back to first getting the literal ID, then getting the resource id.
-			int literalId = GetLiteralId(new Literal(uri), create);
+			// If we got here, no such resource exists and
+			// create is true.  Get the literal ID and then
+			// add the resource.
+			int literalId = GetLiteralId(uri, null, null, create);
 			if (literalId == 0) return 0; // only happens if !create
-			return GetEntityId(literalId, uri, create);
-		}
-		
-		private int GetEntityId(int uriId, string uri, bool create) {
-			StringBuilder b = new StringBuilder();
-			b.Append("SELECT subject FROM ");
-			b.Append(table);
-			b.Append("_statements WHERE predicate = 0 AND object = ");
-			b.Append(uriId);
-			b.Append(" LIMIT 1");
-			object id = RunScalar(b.ToString());
 			
-			if (id == null) {
-				if (create) return AddEntity(uriId, uri);
-				return 0;
-			}
-			
-			return AsInt(id);
+			return AddEntity(literalId, uri);
 		}
 		
 		private int GetResourceId(Resource resource, bool create) {
 			if (resource == null) return 0;
 			
+			if (resource is Literal) {
+				Literal lit = (Literal)resource;
+				return GetLiteralId(lit.Value, lit.Language, lit.DataType, create);
+			}
+				
 			ResourceKey key = (ResourceKey)GetResourceKey(resource);
 			if (key != null) return key.ResId;
 			
-			if (resource is Literal)
-				return GetLiteralId((Literal)resource, create);
-
 			if (resource.Uri == null) throw new ArgumentException("An anonymous resource created by another store cannot be used in this store.");
 
 			int id = GetEntityId(resource.Uri, create);
@@ -199,18 +205,23 @@ namespace SemWeb.Stores {
 		
 		private int AddEntity(int uriId, string uri) {
 			int id = NextId();
-			StringBuilder b = new StringBuilder();
+			
+			StringBuilder b = cmdBuffer; cmdBuffer.Length = 0;
 			b.Append("INSERT INTO ");
 			b.Append(table);
 			b.Append("_statements VALUES(");
 			b.Append(id);
 			b.Append(",0,1,");
 			b.Append(uriId);
-			b.Append(",0)");
-			RunCommand(b.ToString());
+			b.Append(",0); ");
 			
-			if (lockedIdCache != null && uri != null)
-				lockedIdCache[uri] = uriId;
+			if (lockedIdCache != null && uri != null) {
+				lockedIdCache[uri] = id;
+				addBuffer.Append(b.ToString());
+				RunAddBufferIfLarge();
+			} else {
+				RunCommand(b.ToString());
+			}
 			
 			return id;
 		}
@@ -221,6 +232,9 @@ namespace SemWeb.Stores {
 		}
 		
 		private Literal GetLiteral(int literalId, Hashtable cache) {
+			// This is only called from Select, which means
+			// we've just run the add buffer.
+		
 			if (cache != null && cache.ContainsKey(literalId))
 				return (Literal)cache[literalId];
 			
@@ -230,7 +244,7 @@ namespace SemWeb.Stores {
 					string value = AsString(reader[0]);
 					string lang = AsString(reader[1]);
 					string datatype = AsString(reader[2]);
-					Literal lit = new Literal(value, lang, datatype, Model);
+					Literal lit = new Literal(value, lang, datatype);
 					if (cache != null)
 						cache[literalId] = lit;
 					return lit;
@@ -242,7 +256,8 @@ namespace SemWeb.Stores {
 		}		
 		
 		private string GetEntityUri(int resourceId) {
-			StringBuilder cmd = new StringBuilder();
+			RunAddBuffer();
+			StringBuilder cmd = cmdBuffer; cmdBuffer.Length = 0;
 			cmd.Append("SELECT value FROM ");
 			cmd.Append(table);
 			cmd.Append("_statements, ");
@@ -251,21 +266,6 @@ namespace SemWeb.Stores {
 			cmd.Append(resourceId);
 			cmd.Append(" LIMIT 1");
 			return RunScalarString(cmd.ToString());
-			
-			/*
-			StringBuilder b = new StringBuilder();
-			b.Append("SELECT object FROM ");
-			b.Append(table);
-			b.Append("_statements WHERE subject = ");
-			b.Append(resourceId);
-			b.Append(" and predicate = 0");
-			b.Append(" LIMIT 1");
-			object id = RunScalar(b.ToString());
-			if (id == null) return null;
-			int literalId = AsInt(id);
-			if (literalId == 0) return null; // reserved anonymous node
-			return GetLiteral(literalId, null).Value;
-			*/
 		}
 
 		private Entity GetEntity(int resourceId, string uri, bool anon, Hashtable cache) {
@@ -285,11 +285,11 @@ namespace SemWeb.Stores {
 			
 			Entity ent;
 			if (anon)
-				ent = new Entity(Model);
+				ent = new Entity(null);
 			else if (uri == null)
-				ent = new Entity(this, Model);
+				ent = Entity.LazyResolve(this);
 			else
-				ent = new Entity(uri, Model);
+				ent = new Entity(uri);
 			SetResourceKey(ent, rk);
 			
 			if (cache != null)
@@ -326,31 +326,49 @@ namespace SemWeb.Stores {
 			int obj = GetResourceId(statement.Object, true);
 			int meta = GetResourceId(statement.Meta, true);
 			
-			StringBuilder cmd = new StringBuilder();
-			cmd.Append("INSERT INTO ");
-			cmd.Append(table);
-			cmd.Append("_statements VALUES (");
+			addBuffer.Append("INSERT INTO ");
+			addBuffer.Append(table);
+			addBuffer.Append("_statements VALUES (");
 
-			cmd.Append(subj);
-			cmd.Append(", ");
-			cmd.Append(pred);
-			cmd.Append(", ");
-			cmd.Append(objtype);
-			cmd.Append(", ");
-			cmd.Append(obj);
-			cmd.Append(", ");
-			cmd.Append(meta);
-			cmd.Append(")");
+			addBuffer.Append(subj);
+			addBuffer.Append(", ");
+			addBuffer.Append(pred);
+			addBuffer.Append(", ");
+			addBuffer.Append(objtype);
+			addBuffer.Append(", ");
+			addBuffer.Append(obj);
+			addBuffer.Append(", ");
+			addBuffer.Append(meta);
+			addBuffer.Append("); ");
 			
-			RunCommand(cmd.ToString());
+			if (lockedIdCache == null) {
+				RunCommand(addBuffer.ToString());
+				addBuffer.Length = 0;
+			} else {				
+				RunAddBufferIfLarge();
+			}
 		}
 		
-		public override void Remove(Statement statement) {
+		private void RunAddBufferIfLarge() {
+			if (addBuffer.Length > 50000)
+				RunAddBuffer();
+		}
+		
+		private void RunAddBuffer() {
+			if (addBuffer.Length == 0) return;
+			RunCommand(addBuffer.ToString());
+			addBuffer.Length = 0;
+			addLiteralCache.Clear();
+		}
+		
+		public override void Remove(Statement template) {
 			Init();
+			RunAddBuffer();
 
-			System.Text.StringBuilder cmd = new System.Text.StringBuilder("REMOVE FROM ");
+			System.Text.StringBuilder cmd = new System.Text.StringBuilder("DELETE FROM ");
 			cmd.Append(table);
-			if (!WhereClause(statement, cmd)) return;
+			cmd.Append("_statements ");
+			if (!WhereClause(template, cmd)) return;
 			RunCommand(cmd.ToString());
 		}
 		
@@ -363,29 +381,27 @@ namespace SemWeb.Stores {
 		}
 		
 		private Entity[] GetAllEntities(string[] cols) {
+			RunAddBuffer();
 			Hashtable h = new Hashtable();
 			foreach (string col in cols) {
+				ArrayList ids = new ArrayList();
 				IDataReader reader = RunReader("SELECT DISTINCT " + col + " FROM " + table + (col == "object" ? " WHERE objecttype=0" : ""));
 				try {
 					while (reader.Read()) {
-						int id = AsInt(reader[0]);
-						if (id != 0 && !h.ContainsKey(id))
-							h[id] = GetEntity(id, null, false, null);
+						ids.Add( AsInt(reader[0]) );
 					}
 				} finally {
 					reader.Close();
+				}
+				foreach (int id in ids) {
+					if (id != 0 && !h.ContainsKey(id))
+						h[id] = GetEntity(id, null, false, null);
 				}
 			}
 			return (Entity[])new ArrayList(h.Keys).ToArray(typeof(Entity));
 		}
 		
-		public override Entity GetResource(string uri, bool create) {
-			int resId = GetEntityId(uri, create);
-			if (resId == 0) return null;
-			return GetEntity(resId, uri, false, null);
-		}
-		
-		public override Entity CreateAnonymousResource() {
+		public override Entity CreateAnonymousEntity() {
 			int resId;
 			if (lockedIdCache != null) {
 				// Can just increment the counter.
@@ -403,7 +419,8 @@ namespace SemWeb.Stores {
 			
 			if (col == "object") {
 				if (r is Literal) {
-					int id = GetLiteralId((Literal)r, false);
+					Literal lit = (Literal)r;
+					int id = GetLiteralId(lit.Value, lit.Language, lit.DataType, false);
 					if (id == 0) return false;
 					cmd.Append(" (objecttype = 1 and object = ");
 					cmd.Append(id);
@@ -500,6 +517,7 @@ namespace SemWeb.Stores {
 			if (templates.Length == 0) return;
 	
 			Init();
+			RunAddBuffer();
 			
 			System.Text.StringBuilder cmd = new System.Text.StringBuilder("SELECT ");
 			SelectFilter(partialFilter, cmd);
@@ -582,6 +600,7 @@ namespace SemWeb.Stores {
 			if (result == null) throw new ArgumentNullException();
 	
 			Init();
+			RunAddBuffer();
 			
 			bool limitOne = partialFilter.SelectFirst;
 			
@@ -697,18 +716,20 @@ namespace SemWeb.Stores {
 			if (parser == null) throw new ArgumentNullException();
 			
 			Init();
+			RunAddBuffer();
 			
 			Hashtable oldLockedIdCache = lockedIdCache;
+			Hashtable oldAddLiteralCache = addLiteralCache;
 			
 			if (lockedIdCache == null) {
 				cachedNextId = -1;
 				lockedIdCache = new Hashtable();
-				IDataReader reader = RunReader("SELECT subject, object FROM " + table + "_statements WHERE predicate = 0");
+				addLiteralCache = new Hashtable();
+				IDataReader reader = RunReader("SELECT subject, value FROM " + table + "_statements, " + table + "_literals WHERE predicate = 0 AND id = object");
 				try {
 					while (reader.Read()) {
 						int resourceid = AsInt(reader[0]);
-						int literalid = AsInt(reader[1]);
-						string uri = RunScalarString("SELECT value FROM " + table + "_literals WHERE id = " + literalid);
+						string uri = AsString(reader[1]);
 						lockedIdCache[uri] = resourceid;
 					}
 				} finally {
@@ -721,12 +742,19 @@ namespace SemWeb.Stores {
 			try {
 				base.Import(parser);
 			} finally {
+				RunAddBuffer();
+				
 				lockedIdCache = oldLockedIdCache;
+				addLiteralCache = oldAddLiteralCache;
 				EndTransaction();
 			}
 		}
 
 		public override void Replace(Entity a, Entity b) {
+			Init();
+			RunAddBuffer();
+			int id = GetResourceId(b, true);
+			
 			foreach (string col in fourcols) {
 				StringBuilder cmd = new StringBuilder();
 				cmd.Append("UPDATE ");
@@ -734,7 +762,7 @@ namespace SemWeb.Stores {
 				cmd.Append("_statements SET ");
 				cmd.Append(col);
 				cmd.Append("=");
-				cmd.Append(GetResourceId(b, true));
+				cmd.Append(id);
 				if (!WhereItem(col, a, cmd, false)) return;
 				RunCommand(cmd.ToString());
 			}			
@@ -847,19 +875,16 @@ namespace SemWeb.IO {
 			writer.WriteLine("INSERT INTO {0}_statements VALUES ({1}, {2}, 1, {3}, 0);", table, ID(subj, 0), ID(pred, 1), ID(literal)); 
 		}
 		
-		public override string CreateAnonymousNode() {
+		public override string CreateAnonymousEntity() {
 			int id = ++resourcecounter;
 			string uri = "_anon:" + id;
 			return uri;
 		}
 		
-		public override void Dispose() {
+		public override void Close() {
+			base.Close();
 			foreach (string cmd in SQLStore.GetCreateIndexCommands(table))
 				writer.WriteLine(cmd);
-			Close();
-		}
-		
-		public override void Close() {
 			writer.Close();
 		}
 

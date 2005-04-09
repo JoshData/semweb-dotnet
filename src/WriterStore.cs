@@ -12,7 +12,7 @@ namespace SemWeb.Stores {
 		
 		Entity currentMeta;
 		
-		public WriterStore(RdfWriter writer, KnowledgeModel model) : base(model) { this.writer = writer; }
+		public WriterStore(RdfWriter writer) { this.writer = writer; }
 		
 		public override int StatementCount { get { return ctr; } }
 		
@@ -32,11 +32,11 @@ namespace SemWeb.Stores {
 		}
 		
 		private string GetURI(Entity entity) {
+			if (entity.Uri != null) return entity.Uri;
 			object key = GetResourceKey(entity);
 			if (key != null)
 				return (string)key;
-			if (entity.Uri == null) throw new ArgumentException("Cannot add a statement with an anonymous resource not created from this store.");
-			return entity.Uri;
+			throw new ArgumentException("Cannot add a statement with an anonymous resource not created from this store.");
 		}
 		
 		public override void Add(Statement statement) {
@@ -85,13 +85,9 @@ namespace SemWeb.Stores {
 			throw new InvalidOperationException();
 		}
 
-		public override Entity GetResource(string uri, bool create) {
-			return new Entity(uri, Model);
-		}
-		
-		public override Entity CreateAnonymousResource() {
-			Entity e = new Entity(Model);
-			SetResourceKey(e, writer.CreateAnonymousNode());
+		public override Entity CreateAnonymousEntity() {
+			Entity e = new Entity((string)null);
+			SetResourceKey(e, writer.CreateAnonymousEntity());
 			return e;
 		}
 

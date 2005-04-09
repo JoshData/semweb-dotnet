@@ -7,7 +7,7 @@ namespace SemWeb {
 		Store store;
 		ReasoningEngine engine;
 		
-		public InferenceStore(Store store, ReasoningEngine engine) : base(store.Model) {
+		public InferenceStore(Store store, ReasoningEngine engine) {
 			this.store = store;
 			this.engine = engine;
 		}
@@ -27,12 +27,8 @@ namespace SemWeb {
 			return store.GetAllPredicates();
 		}
 			
-		public override Entity GetResource(string uri, bool create) {
-			return store.GetResource(uri, create);
-		}
-		
-		public override Entity CreateAnonymousResource() {
-			return store.CreateAnonymousResource();
+		public override Entity CreateAnonymousEntity() {
+			return store.CreateAnonymousEntity();
 		}
 
 		public override void Add(Statement statement) {

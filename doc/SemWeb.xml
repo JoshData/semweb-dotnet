@@ -7,7 +7,6 @@
 
 <para>The <see cref="T:SemWeb.KnowledgeModel" /> is the starting point for any RDF application.</para>
 
-<para>The homepage of this library is at <a href="http://taubz.for.net/code/semweb">http://taubz.for.net/code/semweb</a>.</para>
 </remarks>
   </Docs>
 </Namespace>

@@ -2,7 +2,7 @@
   <TypeSignature Language="C#" Value="public sealed class Entity : SemWeb.Resource" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
-    <AssemblyVersion>1.0.1909.16213</AssemblyVersion>
+    <AssemblyVersion>1.0.1915.28028</AssemblyVersion>
   </AssemblyInfo>
   <Base>
     <BaseTypeName>SemWeb.Resource</BaseTypeName>
@@ -33,17 +33,6 @@
         <param name="model">The <see cref="T:SemWeb.KnowledgeModel" /> to associate with this entity, or <see langword="null" /> to not associate this entity with a KnowledgeModel.</param>
         <summary>Constructs a new entity with the given URI and source KnowledgeModel.</summary>
         <remarks>None.</remarks>
-      </Docs>
-    </Member>
-    <Member MemberName="uri">
-      <MemberSignature Language="C#" Value="protected string uri;" />
-      <MemberType>Field</MemberType>
-      <ReturnValue>
-        <ReturnType>System.String</ReturnType>
-      </ReturnValue>
-      <Docs>
-        <summary>This field is supported for stores that support lazy-loading of URIs.</summary>
-        <remarks>Use this field with caution.</remarks>
       </Docs>
     </Member>
     <Member MemberName="op_Implicit">
@@ -80,7 +69,7 @@
           <para>If both parameters are <see langword="null" />, the operator returns true.</para>
 <para>Otherwise, the operator returns true if the two entities are the same instance, or if their URIs are equal.</para></returns>
         <remarks>
-          <para>Two anonymous entities are never equal unless they are the same instance.</para>
+          <para>Two anonymous entities are not equal unless they are the same instance, or if they represent the same resource and were created by the same store.</para>
 <para>Note that the <see cref="T:SemWeb.Resource" /> class does not have an equality operator, so you must be comparing two variables typed as Entity to use this operator.</para></remarks>
       </Docs>
     </Member>
@@ -109,9 +98,9 @@
         <Parameter Name="model" Type="SemWeb.KnowledgeModel" />
       </Parameters>
       <Docs>
-        <param name="model">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
+        <param name="model">The <see cref="T:SemWeb.KnowledgeModel" /> to associate with this entity, or <see langword="null" /> to not associate this entity with a KnowledgeModel.</param>
+        <summary>Creates a new anonymous node.</summary>
+        <remarks>An anonymous entity is created.</remarks>
       </Docs>
     </Member>
   <Member MemberName=".ctor">
@@ -122,10 +111,10 @@
         <Parameter Name="model" Type="SemWeb.KnowledgeModel" />
       </Parameters>
       <Docs>
-        <param name="uriLoader">To be added.</param>
-        <param name="model">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
+        <param name="uriLoader">The object responsible for finding the URI of the entity the first time it is requested.</param>
+        <param name="model">The <see cref="T:SemWeb.KnowledgeModel" /> to associate with this entity, or <see langword="null" /> to not associate this entity with a KnowledgeModel.</param>
+        <summary>Creates an entity that does not yet know its URI.</summary>
+        <remarks>This constructor is provided for developers creating specialized stores for which determining an entity's URI is a costly operation.</remarks>
       </Docs>
     </Member>
   </Members>
@@ -134,7 +123,7 @@
     <remarks>
       <para>Entities can have URIs, or they can be anonymous, in which case their URI is <see langword="null" />.</para>
 
-<para>Specialized stores will derive their own Entity subclasses that cache mapping information between the Entity object and the store itself to make interaction with the store faster.  It is therefore better to always use an Entity returned by <see cref="M:SemWeb.Store.GetResource(string)" /> for the store you are using rather than creating your own through <see cref="C:SemWeb.Entity(string)" /></para>
+<para>Specialized stores will attach caching information to Entity objects to make interaction with the store faster.  It is therefore better to reusing existing Entity objects where possible, or use an Entity returned by <see cref="M:SemWeb.Store.GetResource(string)" /> for the store you are using rather than creating your own through <see cref="C:SemWeb.Entity(string)" /></para>
 </remarks>
   </Docs>
 </Type>

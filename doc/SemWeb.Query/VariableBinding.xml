@@ -2,7 +2,7 @@
   <TypeSignature Language="C#" Value="public struct VariableBinding" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
-    <AssemblyVersion>1.0.1909.16213</AssemblyVersion>
+    <AssemblyVersion>1.0.1915.28028</AssemblyVersion>
   </AssemblyInfo>
   <Base>
     <BaseTypeName>System.ValueType</BaseTypeName>
@@ -10,7 +10,7 @@
   <Interfaces />
   <Members>
     <Member MemberName="Variable">
-      <MemberSignature Language="C#" Value="public SemWeb.Entity Variable { set; get; };" />
+      <MemberSignature Language="C#" Value="public SemWeb.Entity Variable { get; };" />
       <MemberType>Property</MemberType>
       <ReturnValue>
         <ReturnType>SemWeb.Entity</ReturnType>
@@ -21,8 +21,9 @@
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
-    <Member MemberName="Target">
-      <MemberSignature Language="C#" Value="public SemWeb.Resource Target { set; get; };" />
+    
+  <Member MemberName="Target">
+      <MemberSignature Language="C#" Value="public SemWeb.Resource Target { get; };" />
       <MemberType>Property</MemberType>
       <ReturnValue>
         <ReturnType>SemWeb.Resource</ReturnType>

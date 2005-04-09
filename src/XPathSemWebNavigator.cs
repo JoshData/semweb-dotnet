@@ -4,9 +4,10 @@ using System.Xml;
 using System.Xml.XPath;
 
 namespace SemWeb {
-	internal class XPathSemWebNavigator : XPathNavigator {
+	public class XPathSemWebNavigator : XPathNavigator {
 		Store model;
 		NamespaceManager nsmgr;
+		NSWrap nswrap;
 		
 		ArrayList stack = new ArrayList();
 		Position current;
@@ -20,17 +21,41 @@ namespace SemWeb {
 			
 			public Position[] Children;
 		}
+		
+		private class NSWrap : XmlNamespaceManager {
+			NamespaceManager nsmgr;
+			
+			public NSWrap(NamespaceManager nsmgr) : base(new NameTable()) { this.nsmgr = nsmgr; }
+			
+			public override bool HasNamespace (string prefix) {
+				return LookupNamespace(prefix) != null;
+			}
+			
+			public override string LookupNamespace (string prefix) {
+				return nsmgr.GetNamespace(prefix);
+			}
+			public override string LookupPrefix (string uri) {
+				return nsmgr.GetPrefix(uri);
+			}
+		}
 
-		public XPathSemWebNavigator(Entity root, Store model, NamespaceManager namespaces) {
-			this.model = model;
-			nsmgr = new SemWeb.IO.AutoPrefixNamespaceManager(namespaces);
+		public XPathSemWebNavigator(Entity root, NamespaceManager namespaces) : this(root, namespaces, null) { }
+		
+		private XPathSemWebNavigator(Entity root, NamespaceManager namespaces, string exapandThisPredicate) {
+			this.model = root.Model;
+			
+			if (!(namespaces is SemWeb.IO.AutoPrefixNamespaceManager))
+				namespaces = new SemWeb.IO.AutoPrefixNamespaceManager(namespaces);
+			this.nsmgr = namespaces;
+			nswrap = new NSWrap(nsmgr);
 			
 			Position start = new Position();
 			start.FirstChild = true;
 			start.LastChild = true;
 			start.Predicate = root; // a trick to make sure the URI info for the root reflects the root
 			start.Object = root;
-			Expand(start);
+			if (exapandThisPredicate != null)
+				Expand(start, exapandThisPredicate);
 			current = start;
 		}
 		
@@ -39,6 +64,10 @@ namespace SemWeb {
 		}
 		
 		private void Expand(Position p) {
+			Expand(p, null);
+		}
+		
+		private void Expand(Position p, string expandOnlyThisPredicate) {
 			if (!(p.Object is Entity)) {
 				p.Children = new Position[0];
 				return;
@@ -46,12 +75,35 @@ namespace SemWeb {
 			
 			ArrayList children = new ArrayList();
 			int ctr = 0;
-			foreach (Statement s in model.Select(new Statement((Entity)p.Object, null, null))) {
-				Position c = new Position();
-				c.Index = ctr++;
-				c.Predicate = s.Predicate;
-				c.Object = s.Object;
-				children.Add(c);
+
+			if (expandOnlyThisPredicate == null || !expandOnlyThisPredicate.StartsWith("!")) {
+				Statement q = new Statement(
+					(Entity)p.Object,
+					expandOnlyThisPredicate == null ? (Entity)null : (Entity)expandOnlyThisPredicate,
+					null);
+				
+				foreach (Statement s in model.Select(q)) {
+					Position c = new Position();
+					c.Index = ctr++;
+					c.Predicate = s.Predicate;
+					c.Object = s.Object;
+					children.Add(c);
+				}
+			}
+			
+			if (expandOnlyThisPredicate == null || expandOnlyThisPredicate.StartsWith("!")) {
+				Statement q = new Statement(
+					null,
+					expandOnlyThisPredicate == null ? (Entity)null : (Entity)expandOnlyThisPredicate.Substring(1),
+					p.Object);
+				
+				foreach (Statement s in model.Select(q)) {
+					Position c = new Position();
+					c.Index = ctr++;
+					c.Predicate = "!" + s.Predicate;
+					c.Object = s.Subject;
+					children.Add(c);
+				}
 			}
 			
 			p.Children = (Position[])children.ToArray(typeof(Position));
@@ -156,6 +208,7 @@ namespace SemWeb {
 			if (clone == null) return false;
 			this.model = clone.model;
 			this.nsmgr = clone.nsmgr;
+			this.nswrap = clone.nswrap;
 			this.stack = (ArrayList)clone.stack.Clone();
 			this.current = clone.current;
 			return true;
@@ -210,6 +263,26 @@ namespace SemWeb {
 			if (current.FirstChild) return false;
 			current = ((Position)stack[stack.Count-1]).Children[current.Index-1];
 			return true;
+		}
+		
+		public override XPathNodeIterator SelectChildren (string name, string namespaceURI) {
+			if (current.Object is Literal) throw new InvalidOperationException("The navigator is positioned on a literal element.");
+			return new XPathSemWebNavigator((Entity)current.Object, nsmgr, namespaceURI + name).SelectChildren(XPathNodeType.All);
+		}
+		
+		public override XPathNodeIterator Select (XPathExpression expr) {
+			expr.SetContext(nswrap);
+			return base.Select(expr);
+		}
+		
+		public override object Evaluate (XPathExpression expr) {
+			expr.SetContext(nswrap);
+			return base.Evaluate(expr);
+		}
+		
+		public override object Evaluate (XPathExpression expr, XPathNodeIterator context) {
+			expr.SetContext(nswrap);
+			return base.Evaluate(expr, context);
 		}
 	}
 }

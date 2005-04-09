@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.IO;
 
 using SemWeb;
@@ -21,19 +22,7 @@ public class Test {
 		return new SqliteStore("URI=file:SqliteTest.db", "rdf", model);
 	}
 	
-	/*private static void Recurse(XPathSemWebNavigator nav, string indent) {
-		nav = (XPathSemWebNavigator)nav.Clone();
-		Console.Write(indent);
-		Console.WriteLine(nav.NamespaceURI + nav.LocalName + " = " + nav.Value);
-		if (!nav.MoveToFirst()) return;
-		while (true) {
-			Recurse(nav, indent + " ");
-			if (!nav.MoveToNext()) break;
-		}
-	}*/
-	
-	public static void Main(string[] args) {
-		
+	public static void Main2(string[] args) {
 		KnowledgeModel model = new KnowledgeModel();
 		Store storage = new MemoryStore(model); // new SqliteStore("URI=file:SqliteTest.db", "rdf", model); // new MemoryStore(model);
 		model.Storage.Add(storage);
@@ -50,9 +39,6 @@ public class Test {
 		qp.BaseUri = "query://query/";
 		queryfile.Import(qp);
 		
-		//XPathSemWebNavigator nav = new XPathSemWebNavigator(queryfile.GetResource("query://query/#query"), queryfile, null);
-		//Recurse(nav, "");
-
 		RSquary query = new RSquary(queryfile, "query://query/#query");
 		
 		for (int i = 0; i < 3; i++) {
@@ -62,19 +48,19 @@ public class Test {
 		}
 	}
 	
-	public static void Main2(string[] args) {
+	public static void Main(string[] args) {
 		KnowledgeModel model = new KnowledgeModel();
 
 		MemoryStore storage = new MemoryStore(model);
 		model.Storage.Add(storage);
-		storage.Import(new N3Parser(new StreamReader("../rdf/people.tri")));
+		storage.Import(new RdfXmlParser(new StreamReader("../rdf/data/people.rdf")));
 		
-		RdfXmlWriter w = new RdfXmlWriter(Console.Out);
-		w.Namespaces.AddNamespace("http://www.w3.org/2000/01/rdf-schema#", "rdfs");
-		w.Namespaces.AddNamespace("http://www.agfa.com/w3c/euler/graph.axiom#", "graph");
-		w.Namespaces.AddNamespace("http://xmlns.com/foaf/0.1/", "foaf");
-		w.Namespaces.AddNamespace("urn:govshare.info/rdf/politico/", "pol");
-		storage.Write(w);
-		w.Close();
+		XPathSemWebNavigator nav = new XPathSemWebNavigator(storage.GetResource("urn://govshare.info/data/us/congress/people/1995/akaka"), GetNSMgr());
+		
+		//System.Xml.XPath.XPathNodeIterator iter = nav.SelectChildren("type", "http://www.w3.org/1999/02/22-rdf-syntax-ns#");
+		System.Xml.XPath.XPathNodeIterator iter = nav.Select("rdf:type");
+		while (iter.MoveNext())
+			Console.WriteLine(iter.Current);
+
 	}	
 }

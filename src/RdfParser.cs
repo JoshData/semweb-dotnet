@@ -33,7 +33,7 @@ namespace SemWeb {
 		
 		public ICollection Variables { get { return ArrayList.ReadOnly(variables); } }
 
-		public abstract void Parse(Store storage);
+		public abstract void Parse(StatementSinkEx storage);
 		
 		public virtual void Dispose() {
 		}
@@ -66,7 +66,7 @@ namespace SemWeb {
 		
 		public ArrayList Parsers { get { return parsers; } }
 		
-		public override void Parse(Store storage) {
+		public override void Parse(StatementSinkEx storage) {
 			foreach (RdfParser p in Parsers)
 				p.Parse(storage);
 		}

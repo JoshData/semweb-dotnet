@@ -86,15 +86,12 @@ namespace SemWeb.IO {
 			writer.WriteEndElement();
 		}
 		
-		public override string CreateAnonymousNode() {
+		public override string CreateAnonymousEntity() {
 			return "_:anon" + (anonCounter++);
 		}
 		
-		public override void Dispose() {
-			Close();
-		}
-		
 		public override void Close() {
+			base.Close();
 			if (currentSubject != null) {
 				writer.WriteEndElement();
 				writer.WriteEndElement();

@@ -12,8 +12,8 @@ namespace SemWeb.Stores {
 		
 		bool Debug = false;
 		
-		public MySQLStore(string connectionString, string table, KnowledgeModel model)
-			: base(table, model) {
+		public MySQLStore(string connectionString, string table)
+			: base(table) {
 			this.connectionString = connectionString;
 			RefreshConnection();
 		}

@@ -2,7 +2,7 @@
   <TypeSignature Language="C#" Value="public class HTMLQuerySink : SemWeb.Query.QueryResultSink" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
-    <AssemblyVersion>1.0.1909.16213</AssemblyVersion>
+    <AssemblyVersion>1.0.1915.28028</AssemblyVersion>
   </AssemblyInfo>
   <Base>
     <BaseTypeName>SemWeb.Query.QueryResultSink</BaseTypeName>

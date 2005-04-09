@@ -34,7 +34,7 @@ namespace SemWeb.IO {
 		public RdfXmlParser(string file) : this(GetReader(file)) {
 		}
 
-		public override void Parse(Store storage) {
+		public override void Parse(StatementSinkEx storage) {
 			IRdfGraph graph = new D().ParseRdf(doc, BaseUri);
 			
 			IRdfNTripleCollection triples = graph.GetNTriples();
@@ -47,23 +47,23 @@ namespace SemWeb.IO {
 			}
 		}
 		
-		private Resource Resolve(string str, Store storage) {
+		private Resource Resolve(string str, StatementSinkEx storage) {
 			if (str.StartsWith("<") && str.EndsWith(">")) {
 				string uri = str.Substring(1, str.Length-2);
 				Resource ret = (Resource)resources[uri];
 				if (ret == null) {
-					ret = storage.GetResource(uri);
+					ret = new Entity(uri);
 					resources[uri] = ret;
 				}
 				return ret;
 			}
 			if (str.StartsWith("\""))
-				return Literal.Parse(str, storage.Model, null);
+				return Literal.Parse(str, null);
 			
 			if (str.StartsWith("_:")) {
 				if (anons.ContainsKey(str))
 					return (Resource)anons[str];
-				Resource r = storage.CreateAnonymousResource();
+				Resource r = storage.CreateAnonymousEntity();
 				anons[str] = r;
 				return r;
 			}

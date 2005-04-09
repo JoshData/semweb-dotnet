@@ -21,7 +21,7 @@ namespace SemWeb.Query {
 		}
 		
 		public RSquary(Store queryModel, string queryUri, Hashtable extraValueFilters) {
-			Entity query = queryModel.GetResource(queryUri);
+			Entity query = new Entity(queryUri);
 			
 			// Find the query options
 			ReturnStart = GetIntOption(queryModel, query, qStart);

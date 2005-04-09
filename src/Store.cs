@@ -8,6 +8,11 @@ namespace SemWeb {
 		bool Add(Statement statement);
 	}
 
+	public interface StatementSinkEx : StatementSink {
+		Entity CreateAnonymousEntity();
+		void Import(RdfParser parser);
+	}
+	
 	internal class StatementCounterSink : StatementSink {
 		int counter = 0;
 		
@@ -41,21 +46,21 @@ namespace SemWeb {
 		}
 	}
 	
-	public abstract class Store : StatementSink {
+	public abstract class Store : StatementSinkEx {
 		
 		KnowledgeModel model;
 
 		Entity rdfType;
 		
-		public static Store CreateForInput(string spec, KnowledgeModel model) {
-			return Create(spec, model, false);
+		public static Store CreateForInput(string spec) {
+			return (Store)Create(spec, false);
 		}		
 		
-		public static Store CreateForOutput(string spec, KnowledgeModel model) {
-			return Create(spec, model, true);
+		public static StatementSinkEx CreateForOutput(string spec) {
+			return (StatementSinkEx)Create(spec, true);
 		}
 		
-		private static Store Create(string spec, KnowledgeModel model, bool output) {
+		private static object Create(string spec, bool output) {
 			string type = spec;
 			
 			int c = spec.IndexOf(':');
@@ -68,25 +73,25 @@ namespace SemWeb {
 			
 			switch (type) {
 				case "mem":
-					return new SemWeb.Stores.MemoryStore(model);
+					return new SemWeb.Stores.MemoryStore();
 				case "xml":
 					if (spec == "") throw new ArgumentException("Use: xml:filename");
 					if (output) {
-						return new SemWeb.Stores.WriterStore(new SemWeb.IO.RdfXmlWriter(spec), model);
+						return new SemWeb.IO.RdfXmlWriter(spec);
 					} else {
-						return new SemWeb.Stores.MemoryStore(new SemWeb.IO.RdfXmlParser(spec), model);
+						return new SemWeb.Stores.MemoryStore(new SemWeb.IO.RdfXmlParser(spec));
 					}
 				case "n3":
 					if (spec == "") throw new ArgumentException("Use: n3:filename");
 					if (output) {
-						return new SemWeb.Stores.WriterStore(new SemWeb.IO.N3Writer(spec), model);
+						return new SemWeb.IO.N3Writer(spec);
 					} else {
-						return new SemWeb.Stores.MemoryStore(new SemWeb.IO.N3Parser(spec), model);
+						return new SemWeb.Stores.MemoryStore(new SemWeb.IO.N3Parser(spec));
 					}
 				case "sql":
 					if (spec == "") throw new ArgumentException("Use: sql:tablename");
 					if (output)
-						return new SemWeb.Stores.WriterStore(new SemWeb.IO.SQLWriter(spec), model);
+						return new SemWeb.IO.SQLWriter(spec);
 					else
 						throw new InvalidOperationException("sql output does not support input.");
 				case "sqlite":
@@ -106,30 +111,22 @@ namespace SemWeb {
 					Type ttype = Type.GetType(classtype);
 					if (ttype == null)
 						throw new NotSupportedException("The storage type in <" + classtype + "> could not be found.");
-					return (Store)Activator.CreateInstance(ttype, new object[] { spec, table, model });
+					return (Store)Activator.CreateInstance(ttype, new object[] { spec, table });
 				default:
 					throw new ArgumentException("Unknown parser type: " + type);
 			}
 		}
 		
-		public Store(KnowledgeModel model) {
-			this.model = model;
-			rdfType = new Entity("http://www.w3.org/1999/02/22-rdf-syntax-ns#type", model);
+		public Store() {
+			rdfType = new Entity("http://www.w3.org/1999/02/22-rdf-syntax-ns#type");
 		}
-		
-		public virtual KnowledgeModel Model { get { return model; } }
 		
 		public abstract int StatementCount { get; }
 
 		public abstract void Clear();
 		
-		public abstract Entity GetResource(string uri, bool create);
-		public abstract Entity CreateAnonymousResource();
+		public abstract Entity CreateAnonymousEntity();
 
-		public Entity GetResource(string uri) {
-			return GetResource(uri, true);
-		}
-		
 		public Entity[] GetEntitiesOfType(Entity type) {
 			ArrayList entities = new ArrayList();
 			
@@ -184,7 +181,7 @@ namespace SemWeb {
 		}
 		
 		public SemWeb.Stores.MemoryStore Select(Statement template, SelectPartialFilter partialFilter) {
-			SemWeb.Stores.MemoryStore ms = new SemWeb.Stores.MemoryStore(Model);
+			SemWeb.Stores.MemoryStore ms = new SemWeb.Stores.MemoryStore();
 			Select(template, partialFilter, ms);
 			return ms;
 		}
@@ -215,13 +212,15 @@ namespace SemWeb {
 				Write(w);
 			}
 		}
-
+		
 		protected object GetResourceKey(Resource resource) {
-			return resource.extraKeys[this];
+			return resource.GetResourceKey(this);
 		}
+
 		protected void SetResourceKey(Resource resource, object value) {
-			resource.extraKeys[this] = value;
+			resource.SetResourceKey(this, value);
 		}
+		
 	}
 }
 
@@ -230,12 +229,9 @@ namespace SemWeb.Stores {
 	public class MultiStore : Store {
 		ArrayList stores = new ArrayList();
 		
-		public MultiStore(KnowledgeModel model) : base(model) { }
+		public MultiStore() { }
 		
 		public void Add(Store store) {
-			if (store.Model != Model)
-				throw new ArgumentException("The store must be in the same KnowledgeModel as this MultiStore.");
-				
 			stores.Add(store);
 		}
 		
@@ -261,15 +257,6 @@ namespace SemWeb.Stores {
 			throw new InvalidOperationException("Clear is not a valid operation on a MultiStore.");
 		}
 		
-		public override Entity GetResource(string uri, bool create) {
-			foreach (Store s in stores) {
-				Entity r = s.GetResource(uri, false);
-				if (r != null) return r;
-			}
-			if (!create) return null;
-			return new Entity(uri, Model);
-		}
-		
 		public override Entity[] GetAllEntities() {
 			Hashtable h = new Hashtable();
 			foreach (Store s in stores)
@@ -286,7 +273,7 @@ namespace SemWeb.Stores {
 			return (Entity[])new ArrayList(h.Keys).ToArray(typeof(Entity));
 		}
 
-		public override Entity CreateAnonymousResource() {
+		public override Entity CreateAnonymousEntity() {
 			throw new InvalidOperationException("CreateAnonymousResource is not a valid operation on a MultiStore.");
 		}
 

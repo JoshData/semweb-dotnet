@@ -35,16 +35,23 @@ public class RDFStorage {
 			return;
 		}
 		
-		KnowledgeModel model = new KnowledgeModel();
-		Store storage = Store.CreateForOutput(opts.@out, model);
-		model.Add(storage);
-		
-		if (opts.clear)
-			storage.Clear();
+		StatementSinkEx storage = Store.CreateForOutput(opts.@out);
 		
 		Entity meta = null;
 		if (opts.meta != null)
-			meta = model.GetResource(opts.meta);
+			meta = new Entity(opts.meta);
+		
+		if (opts.clear) {
+			if (!(storage is Store)) {
+				Console.Error.WriteLine("The --clear option cannot be used with this type of output storage.");
+				return;
+			}
+			
+			if (meta == null)
+				((Store)storage).Clear();
+			else
+				((Store)storage).Remove(new Statement(null, null, null, meta));
+		}
 		
 		MyMultiRdfParser multiparser = new MyMultiRdfParser(opts.RemainingArguments, opts.@in, meta);
 		storage.Import(multiparser);
@@ -62,7 +69,7 @@ public class RDFStorage {
 			this.meta = meta;
 		}
 		
-		public override void Parse(Store storage) {
+		public override void Parse(StatementSinkEx storage) {
 			foreach (string infile in files) {
 				Console.Error.WriteLine(infile);
 				

@@ -28,21 +28,6 @@ namespace SemWeb.IO {
 		
 		public override NamespaceManager Namespaces { get { return ns; } }
 		
-		public override void PushMetaScope(string uri) {
-			Close();
-			WriteThing(URI(uri));
-			writer.Write(" = { ");
-			lastSubject = null;
-			lastPredicate = null;
-		}
-		
-		public override void PopMetaScope() {
-			Close();
-			WriteThing(" }\n");
-			lastSubject = null;
-			lastPredicate = null;
-		}
-		
 		public override void WriteStatement(string subj, string pred, string obj) {
 			WriteStatement2(URI(subj), URI(pred), URI(obj));
 		}
@@ -51,15 +36,12 @@ namespace SemWeb.IO {
 			WriteStatement2(URI(subj), URI(pred), literal.ToString());
 		}
 		
-		public override string CreateAnonymousNode() {
+		public override string CreateAnonymousEntity() {
 			return "_:anon" + (anonCounter++);
 		}
-		
-		public override void Dispose() {
-			Close();
-		}
-		
+			
 		public override void Close() {
+			base.Close();
 			if (closed) return;
 			if (hasWritten)
 				writer.WriteLine(".");
