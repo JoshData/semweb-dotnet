@@ -4,6 +4,8 @@ using System.Data;
 using System.IO;
 using System.Text;
 
+using SemWeb.Util;
+
 namespace SemWeb.Stores {
 	// TODO: It's not safe to have two concurrent accesses to the same database
 	// because the creation of new entities will use the same IDs.
@@ -12,7 +14,7 @@ namespace SemWeb.Stores {
 		string table;
 		
 		bool firstUse = true;
-		Hashtable lockedIdCache = null;
+		UriMap lockedIdCache = null;
 		int cachedNextId = -1;
 		
 		Hashtable entityMap = new Hashtable();
@@ -369,6 +371,7 @@ namespace SemWeb.Stores {
 			cmd.Append(table);
 			cmd.Append("_statements ");
 			if (!WhereClause(template, cmd)) return;
+			
 			RunCommand(cmd.ToString());
 		}
 		
@@ -448,7 +451,7 @@ namespace SemWeb.Stores {
 		}
 		
 		private bool WhereClause(Statement template, System.Text.StringBuilder cmd) {
-			if (template.Subject == null && template.Predicate == null && template.Object == null)
+			if (template.Subject == null && template.Predicate == null && template.Object == null && template.Meta == null)
 				return true;
 			
 			cmd.Append(" WHERE ");
@@ -718,12 +721,12 @@ namespace SemWeb.Stores {
 			Init();
 			RunAddBuffer();
 			
-			Hashtable oldLockedIdCache = lockedIdCache;
+			UriMap oldLockedIdCache = lockedIdCache;
 			Hashtable oldAddLiteralCache = addLiteralCache;
 			
 			if (lockedIdCache == null) {
 				cachedNextId = -1;
-				lockedIdCache = new Hashtable();
+				lockedIdCache = new UriMap();
 				addLiteralCache = new Hashtable();
 				IDataReader reader = RunReader("SELECT subject, value FROM " + table + "_statements, " + table + "_literals WHERE predicate = 0 AND id = object");
 				try {
@@ -828,9 +831,6 @@ namespace SemWeb.Stores {
 				"CREATE INDEX predicate_index ON " + table + "_statements(predicate);",
 				"CREATE INDEX object_index ON " + table + "_statements(objecttype, object);",
 			
-				"CREATE INDEX subject_predicate_index ON " + table + "_statements(subject,predicate);",
-				"CREATE INDEX predicate_object_index ON " + table + "_statements(predicate,objecttype,object);",
-			
 				"CREATE INDEX literal_index ON " + table + "_literals(value(128));"
 				};
 		}
@@ -925,4 +925,5 @@ namespace SemWeb.IO {
 		}
 
 	}
+	
 }

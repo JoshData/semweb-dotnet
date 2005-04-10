@@ -1,4 +1,4 @@
-all: bin/SemWeb.dll bin/test.exe bin/SemWeb.MySQLStore.dll bin/SemWeb.SqliteStore.dll bin/SemWeb.dll bin/rdfstorage.exe bin/rdfquery.exe 
+all: bin/SemWeb.dll bin/SemWeb.MySQLStore.dll bin/SemWeb.SqliteStore.dll bin/SemWeb.dll bin/rdfstorage.exe bin/rdfquery.exe bin/test.exe
 #bin/rdfshmush.exe bin/rdfs2cs.exe 
 	
 bin/test.exe: test.cs bin/SemWeb.dll bin/SemWeb.SqliteStore.dll

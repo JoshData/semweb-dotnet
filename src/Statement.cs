@@ -49,6 +49,7 @@ namespace SemWeb {
 			} else {
 				ret += "?";
 			}
+			if (Meta != null) ret += " <== <" + Meta + ">";
 			return ret + ".";
 		}
 		

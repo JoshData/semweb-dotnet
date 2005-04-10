@@ -10,6 +10,9 @@ namespace SemWeb.Stores {
 		MySqlConnection connection;
 		string connectionString;
 		
+		bool locked = false;
+		int locker = 0;
+		
 		bool Debug = false;
 		
 		public MySQLStore(string connectionString, string table)
@@ -30,6 +33,7 @@ namespace SemWeb.Stores {
 		}
 		
 		protected override void RunCommand(string sql) {
+			Yield();
 			if (Debug) Console.Error.WriteLine(sql);
 			MySqlCommand cmd = new MySqlCommand(sql, connection);
 			cmd.ExecuteNonQuery();
@@ -37,6 +41,7 @@ namespace SemWeb.Stores {
 		}
 		
 		protected override object RunScalar(string sql) {
+			Yield();
 			MySqlCommand cmd = new MySqlCommand(sql, connection);
 			IDataReader reader = cmd.ExecuteReader();
 			object ret = null;
@@ -50,6 +55,7 @@ namespace SemWeb.Stores {
 		}
 
 		protected override IDataReader RunReader(string sql) {
+			Yield();
 			if (Debug) Console.Error.WriteLine(sql);
 			MySqlCommand cmd = new MySqlCommand(sql, connection);
 			IDataReader reader = cmd.ExecuteReader();
@@ -58,26 +64,23 @@ namespace SemWeb.Stores {
 		}
 
 		protected override void BeginTransaction() {
-			RefreshConnection();
-			
-			try {
-				RunCommand("DROP INDEX subject_index on " + TableName);
-				RunCommand("DROP INDEX predicate_index on " + TableName);
-				RunCommand("DROP INDEX object_index on " + TableName);
-				RunCommand("DROP INDEX subject_predicate_index on " + TableName);
-				RunCommand("DROP INDEX predicate_object_index on " + TableName);
-			} catch (Exception e) {
-			}
-			
-			RunCommand("BEGIN");
-			//RunCommand("LOCK TABLES " + TableName + " WRITE");
+			//RunCommand("BEGIN");
+			RunCommand("LOCK TABLES " + TableName + "_statements WRITE, " + TableName + "_literals WRITE");
+			locked = true;
 		}
 		
 		protected override void EndTransaction() {
-			RunCommand("COMMIT");
-			//RunCommand("UNLOCK TABLES");
-			
-			CreateIndexes();
+			//RunCommand("COMMIT");
+			RunCommand("UNLOCK TABLES");
+			locked = false;
+		}
+		
+		private void Yield() {
+			if (!locked) return;
+			if (locker++ == 50000) {
+				locker = 0;
+				RunCommand("UNLOCK TABLES; LOCK TABLES " + TableName + "_statements WRITE, " + TableName + "_literals WRITE;");
+			}
 		}
 	}
 }

@@ -39,10 +39,10 @@ namespace SemWeb {
 			}
 		}
 
-		public XPathSemWebNavigator(Entity root, NamespaceManager namespaces) : this(root, namespaces, null) { }
+		public XPathSemWebNavigator(Entity root, Store model, NamespaceManager namespaces) : this(root, model, namespaces, null) { }
 		
-		private XPathSemWebNavigator(Entity root, NamespaceManager namespaces, string exapandThisPredicate) {
-			this.model = root.Model;
+		private XPathSemWebNavigator(Entity root, Store model, NamespaceManager namespaces, string exapandThisPredicate) {
+			this.model = model;
 			
 			if (!(namespaces is SemWeb.IO.AutoPrefixNamespaceManager))
 				namespaces = new SemWeb.IO.AutoPrefixNamespaceManager(namespaces);
@@ -267,7 +267,7 @@ namespace SemWeb {
 		
 		public override XPathNodeIterator SelectChildren (string name, string namespaceURI) {
 			if (current.Object is Literal) throw new InvalidOperationException("The navigator is positioned on a literal element.");
-			return new XPathSemWebNavigator((Entity)current.Object, nsmgr, namespaceURI + name).SelectChildren(XPathNodeType.All);
+			return new XPathSemWebNavigator((Entity)current.Object, model, nsmgr, namespaceURI + name).SelectChildren(XPathNodeType.All);
 		}
 		
 		public override XPathNodeIterator Select (XPathExpression expr) {

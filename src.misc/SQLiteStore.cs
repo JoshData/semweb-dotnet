@@ -11,8 +11,8 @@ namespace SemWeb.Stores {
 		
 		bool debug = false;
 		
-		public SqliteStore(string connectionString, string table, KnowledgeModel model)
-			: base(table, model) {
+		public SqliteStore(string connectionString, string table)
+			: base(table) {
 			dbcon = new SqliteConnection(connectionString);
 			dbcon.Open();
 		}

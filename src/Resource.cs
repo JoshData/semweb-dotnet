@@ -68,14 +68,18 @@ namespace SemWeb {
 		
 		public override int GetHashCode() {
 			if (cachedHashCode != -1) return cachedHashCode;
-			if (lazyLoader != null || Uri == null) {
-				foreach (ExtraKey v in extraKeys) {
-					cachedHashCode = unchecked(v.Key.GetHashCode() + v.Value.GetHashCode());
-					break;
-				}
-				cachedHashCode = 0;
+			
+			if (lazyLoader == null && Uri != null) {
+				cachedHashCode = Uri.GetHashCode();
+			} else if (extraKeys.Count == 1) {
+				ExtraKey v = (ExtraKey)extraKeys[0];
+				cachedHashCode = unchecked(v.Key.GetHashCode() + v.Value.GetHashCode());
+			} else if (Uri != null) {
+				cachedHashCode = Uri.GetHashCode();
 			}
-			cachedHashCode = Uri.GetHashCode();
+			
+			if (cachedHashCode == -1) cachedHashCode = 0;
+			
 			return cachedHashCode;
 		}
 			
@@ -188,7 +192,7 @@ namespace SemWeb {
 		}
 		
 		public static Literal Parse(string literal, NamespaceManager namespaces) {
-			if (!literal.StartsWith("\"")) throw new FormatException("Literal value must start with a quote.");
+			if (literal.Length <= 2 || literal[0] != '\"') throw new FormatException("Literal value must start with a quote.");
 			int quote = literal.LastIndexOf('"');
 			if (quote <= 0) throw new FormatException("Literal value must have an end quote (" + literal + ")");
 			string value = literal.Substring(1, quote-1);
@@ -200,7 +204,7 @@ namespace SemWeb {
 			string lang = null;
 			string datatype = null;
 			
-			if (literal.StartsWith("@")) {
+			if (literal.Length >= 2 && literal[0] == '@') {
 				int type = literal.IndexOf("^^");
 				if (type == -1) lang = literal.Substring(1);
 				else {

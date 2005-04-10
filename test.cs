@@ -18,49 +18,14 @@ public class Test {
 		return ns;		
 	}
 	
-	private static SqliteStore GetSqliteStore(KnowledgeModel model) {
-		return new SqliteStore("URI=file:SqliteTest.db", "rdf", model);
-	}
-	
-	public static void Main2(string[] args) {
-		KnowledgeModel model = new KnowledgeModel();
-		Store storage = new MemoryStore(model); // new SqliteStore("URI=file:SqliteTest.db", "rdf", model); // new MemoryStore(model);
-		model.Storage.Add(storage);
-		//storage.Import(new N3Parser("data.n3"));
-		storage.Import(new RdfXmlParser("../rdf/schemas/foaf.rdf"));
-		//model.AddReasoning(new RDFSReasoning());
-
-		RdfCompactWriter writer = new RdfCompactWriter(Console.Out);
-		storage.Write(writer);
-		return;
-		
-		MemoryStore queryfile = new MemoryStore(null);
-		RdfParser qp = new RdfXmlParser("query.rdf");
-		qp.BaseUri = "query://query/";
-		queryfile.Import(qp);
-		
-		RSquary query = new RSquary(queryfile, "query://query/#query");
-		
-		for (int i = 0; i < 3; i++) {
-			DateTime start = DateTime.Now;
-			query.Query(model, new PrintQuerySink());
-			Console.Error.WriteLine(DateTime.Now - start);
-		}
+	private static SqliteStore GetSqliteStore() {
+		return new SqliteStore("URI=file:SqliteTest.db", "rdf");
 	}
 	
 	public static void Main(string[] args) {
-		KnowledgeModel model = new KnowledgeModel();
-
-		MemoryStore storage = new MemoryStore(model);
-		model.Storage.Add(storage);
-		storage.Import(new RdfXmlParser(new StreamReader("../rdf/data/people.rdf")));
+		MemoryStore storage = new MemoryStore();
+		storage.Import(new N3Parser(new StreamReader("people.n3")));
 		
-		XPathSemWebNavigator nav = new XPathSemWebNavigator(storage.GetResource("urn://govshare.info/data/us/congress/people/1995/akaka"), GetNSMgr());
-		
-		//System.Xml.XPath.XPathNodeIterator iter = nav.SelectChildren("type", "http://www.w3.org/1999/02/22-rdf-syntax-ns#");
-		System.Xml.XPath.XPathNodeIterator iter = nav.Select("rdf:type");
-		while (iter.MoveNext())
-			Console.WriteLine(iter.Current);
 
 	}	
 }

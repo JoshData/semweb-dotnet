@@ -5,8 +5,6 @@ using SemWeb;
 
 namespace SemWeb.Stores {
 	public class MemoryStore : Store, IEnumerable {
-		Hashtable uriToResource = new Hashtable();
-		
 		ArrayList statements = new ArrayList();
 		
 		Hashtable statementsAboutSubject = new Hashtable();
@@ -28,7 +26,6 @@ namespace SemWeb.Stores {
 		}
 		
 		public override void Clear() {
-			uriToResource.Clear();
 			statements.Clear();
 			statementsAboutSubject.Clear();
 			statementsAboutObject.Clear();

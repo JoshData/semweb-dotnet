@@ -71,13 +71,21 @@ public class RDFStorage {
 		
 		public override void Parse(StatementSinkEx storage) {
 			foreach (string infile in files) {
-				Console.Error.WriteLine(infile);
+				Console.Error.Write(infile);
 				
 				try {
+					DateTime start = DateTime.Now;
+				
+					StatementFilterSink filter = new StatementFilterSink(storage);
+				
 					RdfParser parser = RdfParser.Create(format, infile);
 					parser.Meta = meta;				
-					parser.Parse(storage);					
+					parser.Parse(filter);
 					parser.Dispose();
+					
+					TimeSpan time = DateTime.Now - start;
+					
+					Console.Error.WriteLine(" {0}m{1}s, {2} statements, {3} st/sec", (int)time.TotalMinutes, (int)time.Seconds, filter.StatementCount, time.TotalSeconds == 0 ? "?" : ((int)(filter.StatementCount/time.TotalSeconds)).ToString());
 				} catch (ParserException e) {
 					Console.Error.WriteLine(e.Message);
 				} catch (Exception e) {

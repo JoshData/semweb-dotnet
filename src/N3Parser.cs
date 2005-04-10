@@ -4,6 +4,7 @@ using System.IO;
 using System.Text;
 
 using SemWeb;
+using SemWeb.Util;
 
 namespace SemWeb.IO {
 
@@ -12,6 +13,13 @@ namespace SemWeb.IO {
 		
 		TextReader sourcestream;
 		NamespaceManager namespaces = new NamespaceManager();
+
+		Entity entRDFTYPE = "http://www.w3.org/1999/02/22-rdf-syntax-ns#type";
+		Entity entRDFFIRST = "http://www.w3.org/1999/02/22-rdf-syntax-ns#first";
+		Entity entRDFREST = "http://www.w3.org/1999/02/22-rdf-syntax-ns#rest";
+		Entity entRDFNIL = "http://www.w3.org/1999/02/22-rdf-syntax-ns#nil";
+		Entity entOWLSAMEAS = "http://www.w3.org/2002/07/owl#sameAs";
+		Entity entLOGIMPLIES = "http://www.w3.org/2000/10/swap/log#implies";
 		
 		public N3Parser(TextReader source) {
 			this.sourcestream = source;
@@ -147,6 +155,8 @@ namespace SemWeb.IO {
 			return (char)c;
 		}
 		
+		private StringBuilder readTokenBuffer = new StringBuilder();
+		
 		private string ReadToken(MyReader source) {
 			ReadWhitespace(source);
 			
@@ -156,7 +166,7 @@ namespace SemWeb.IO {
 			if (firstchar == -1)
 				return "";
 			
-			StringBuilder b = new StringBuilder();
+			StringBuilder b = readTokenBuffer; readTokenBuffer.Length = 0;
 			b.Append((char)firstchar);
 
 			if (firstchar == '<') {
@@ -335,9 +345,9 @@ namespace SemWeb.IO {
 		}			
 		
 		private Entity GetResource(ParseContext context, string uri) {
-			if (context.namedNode.ContainsKey(uri))
-				return (Entity)context.namedNode[uri];
-			Entity ret = new Entity(uri);
+			Entity ret = (Entity)context.namedNode[uri];
+			if (ret != null) return ret;
+			ret = new Entity(uri);
 			context.namedNode[uri] = ret;
 			return ret;
 		}
@@ -363,11 +373,11 @@ namespace SemWeb.IO {
 			// TODO: Turn these off with @keywords
 			
 			if (str == "a")
-				return GetResource(context, "http://www.w3.org/1999/02/22-rdf-syntax-ns#type");
+				return entRDFTYPE;
 			if (str == "=") // ?
-				return GetResource(context, "http://www.w3.org/2002/07/owl#sameAs");
+				return entOWLSAMEAS;
 			if (str == "=>") // ?
-				return GetResource(context, "http://www.w3.org/2000/10/swap/log#implies");
+				return entLOGIMPLIES;
 			if (str == "<=") // ?
 				OnError("The <= predicate is not supported (because I don't know what it translates to)", loc);
 
@@ -400,13 +410,6 @@ namespace SemWeb.IO {
 			if (str.StartsWith("\"")) {
 				return Literal.Parse(str, context.namespaces);
 			}
-			
-			// NUMERIC LITERAL
-			
-			// In Turtle, numbers are restricted to [0-9]+, and are datatyped xsd:integer.
-			double numval;
-			if (double.TryParse(str, System.Globalization.NumberStyles.Any, null, out numval))
-				return new Literal(numval.ToString());
 			
 			// VARIABLE
 			
@@ -472,16 +475,16 @@ namespace SemWeb.IO {
 						ent = context.store.CreateAnonymousEntity();
 					} else {
 						Entity sub = context.store.CreateAnonymousEntity();
-						context.store.Add(new Statement(ent, GetResource(context, "http://www.w3.org/1999/02/22-rdf-syntax-ns#rest"), sub, context.meta));
+						context.store.Add(new Statement(ent, entRDFREST, sub, context.meta));
 						ent = sub;
 					}
 					
-					context.store.Add(new Statement(ent, GetResource(context, "http://www.w3.org/1999/02/22-rdf-syntax-ns#first"), res, context.meta));					
+					context.store.Add(new Statement(ent, entRDFFIRST, res, context.meta));					
 				}
 				if (ent == null) // No list items.
-					ent = GetResource(context, "http://www.w3.org/1999/02/22-rdf-syntax-ns#nil"); // according to Turtle spec
+					ent = entRDFNIL; // according to Turtle spec
 				else
-					context.store.Add(new Statement(ent, GetResource(context, "http://www.w3.org/1999/02/22-rdf-syntax-ns#rest"), GetResource(context, "http://www.w3.org/1999/02/22-rdf-syntax-ns#nil"), context.meta));
+					context.store.Add(new Statement(ent, entRDFREST, entRDFNIL, context.meta));
 				return ent;
 			}
 			
@@ -499,6 +502,13 @@ namespace SemWeb.IO {
 				if (context.source.Peek() == '}') context.source.Read();
 				return newcontext.meta;
 			}
+			
+			// NUMERIC LITERAL
+			
+			// In Turtle, numbers are restricted to [0-9]+, and are datatyped xsd:integer.
+			double numval;
+			if (double.TryParse(str, System.Globalization.NumberStyles.Any, null, out numval))
+				return new Literal(numval.ToString());
 			
 			// NOTHING MATCHED
 			

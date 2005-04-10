@@ -65,7 +65,7 @@ public class RDFQuery {
 		
 		KnowledgeModel model = new KnowledgeModel();
 		foreach (string arg in opts.RemainingArguments) {
-			Store storage = Store.CreateForInput(arg, model);
+			Store storage = Store.CreateForInput(arg);
 			model.Add(storage);
 		}
 		
