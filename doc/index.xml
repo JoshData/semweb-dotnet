@@ -26,6 +26,8 @@
       <Type Name="Entity+LazyUriLoader" />
       <Type Name="SelectPartialFilter" />
       <Type Name="StatementSinkEx" />
+      <Type Name="StatementFilterSink" />
+      <Type Name="XPathSemWebNavigator" />
     </Namespace>
     <Namespace Name="SemWeb.Query">
       <Type Name="QueryException" />

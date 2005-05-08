@@ -2,7 +2,7 @@
   <TypeSignature Language="C#" Value="public class KnowledgeModel : SemWeb.Store" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
-    <AssemblyVersion>1.0.1925.13972</AssemblyVersion>
+    <AssemblyVersion>1.0.1953.17509</AssemblyVersion>
   </AssemblyInfo>
   <Base>
     <BaseTypeName>SemWeb.Store</BaseTypeName>
@@ -80,22 +80,7 @@
 <para>Calls to Contains and Select on the MultiStore reflect the contents of the stores contained in it without the application of the KnowledgeModel's inference engines.</para></remarks>
       </Docs>
     </Member>
-    <Member MemberName="Item">
-      <MemberSignature Language="C#" Value="public SemWeb.Entity Item[string uri] { get; };" />
-      <MemberType>Property</MemberType>
-      <ReturnValue>
-        <ReturnType>SemWeb.Entity</ReturnType>
-      </ReturnValue>
-      <Parameters>
-        <Parameter Name="uri" Type="System.String" />
-      </Parameters>
-      <Docs>
-        <param name="uri">A URI.</param>
-        <summary>Gets the <see cref="T:SemWeb.Entity" /> with the given URI.</summary>
-        <value>The entity from the first store that contains an entity with the given URI.</value>
-        <remarks>None.</remarks>
-      </Docs>
-    </Member>
+    
   </Members>
   <Docs>
     <summary>A store for combining multiple stores and inference engines.</summary>

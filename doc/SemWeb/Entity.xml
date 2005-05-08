@@ -2,7 +2,7 @@
   <TypeSignature Language="C#" Value="public sealed class Entity : SemWeb.Resource" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
-    <AssemblyVersion>1.0.1925.13972</AssemblyVersion>
+    <AssemblyVersion>1.0.1953.17509</AssemblyVersion>
   </AssemblyInfo>
   <Base>
     <BaseTypeName>SemWeb.Resource</BaseTypeName>
@@ -21,20 +21,7 @@
         <remarks>None.</remarks>
       </Docs>
     </Member>
-    <Member MemberName=".ctor">
-      <MemberSignature Language="C#" Value="public Entity (string uri, SemWeb.KnowledgeModel model);" />
-      <MemberType>Constructor</MemberType>
-      <Parameters>
-        <Parameter Name="uri" Type="System.String" />
-        <Parameter Name="model" Type="SemWeb.KnowledgeModel" />
-      </Parameters>
-      <Docs>
-        <param name="uri">The URI of the entity, or <see langword="null" /> if the entity is anonymous.</param>
-        <param name="model">The <see cref="T:SemWeb.KnowledgeModel" /> to associate with this entity, or <see langword="null" /> to not associate this entity with a KnowledgeModel.</param>
-        <summary>Constructs a new entity with the given URI and source KnowledgeModel.</summary>
-        <remarks>None.</remarks>
-      </Docs>
-    </Member>
+    
     <Member MemberName="op_Implicit">
       <MemberSignature Language="C#" Value="public static SemWeb.Entity op_Implicit (string uri);" />
       <MemberType>Method</MemberType>
@@ -91,32 +78,8 @@
         <remarks>See the equality operator.</remarks>
       </Docs>
     </Member>
-  <Member MemberName=".ctor">
-      <MemberSignature Language="C#" Value="public Entity (SemWeb.KnowledgeModel model);" />
-      <MemberType>Constructor</MemberType>
-      <Parameters>
-        <Parameter Name="model" Type="SemWeb.KnowledgeModel" />
-      </Parameters>
-      <Docs>
-        <param name="model">The <see cref="T:SemWeb.KnowledgeModel" /> to associate with this entity, or <see langword="null" /> to not associate this entity with a KnowledgeModel.</param>
-        <summary>Creates a new anonymous node.</summary>
-        <remarks>An anonymous entity is created.</remarks>
-      </Docs>
-    </Member>
-  <Member MemberName=".ctor">
-      <MemberSignature Language="C#" Value="public Entity (SemWeb.Entity+LazyUriLoader uriLoader, SemWeb.KnowledgeModel model);" />
-      <MemberType>Constructor</MemberType>
-      <Parameters>
-        <Parameter Name="uriLoader" Type="SemWeb.Entity+LazyUriLoader" />
-        <Parameter Name="model" Type="SemWeb.KnowledgeModel" />
-      </Parameters>
-      <Docs>
-        <param name="uriLoader">The object responsible for finding the URI of the entity the first time it is requested.</param>
-        <param name="model">The <see cref="T:SemWeb.KnowledgeModel" /> to associate with this entity, or <see langword="null" /> to not associate this entity with a KnowledgeModel.</param>
-        <summary>Creates an entity that does not yet know its URI.</summary>
-        <remarks>This constructor is provided for developers creating specialized stores for which determining an entity's URI is a costly operation.</remarks>
-      </Docs>
-    </Member>
+  
+  
   <Member MemberName="LazyResolve">
       <MemberSignature Language="C#" Value="public static SemWeb.Entity LazyResolve (SemWeb.Entity+LazyUriLoader uriLoader);" />
       <MemberType>Method</MemberType>

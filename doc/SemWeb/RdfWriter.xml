@@ -2,7 +2,7 @@
   <TypeSignature Language="C#" Value="public abstract class RdfWriter : SemWeb.StatementSinkEx, System.IDisposable" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
-    <AssemblyVersion>1.0.1925.13972</AssemblyVersion>
+    <AssemblyVersion>1.0.1953.17509</AssemblyVersion>
   </AssemblyInfo>
   <Base>
     <BaseTypeName>System.Object</BaseTypeName>
@@ -81,19 +81,7 @@
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
-    <Member MemberName="CreateAnonymousNode">
-      <MemberSignature Language="C#" Value="public abstract string CreateAnonymousNode ();" />
-      <MemberType>Method</MemberType>
-      <ReturnValue>
-        <ReturnType>System.String</ReturnType>
-      </ReturnValue>
-      <Parameters />
-      <Docs>
-        <summary>Creates an internal key for an anonymous node to be written to the stream.</summary>
-        <returns>An internal key.</returns>
-        <remarks>Pass this key back as an argument to one of the WriteStatement methods to include an anonymous node in the statement.</remarks>
-      </Docs>
-    </Member>
+    
     <Member MemberName="Close">
       <MemberSignature Language="C#" Value="public virtual void Close ();" />
       <MemberType>Method</MemberType>
@@ -106,18 +94,7 @@
         <remarks>None.</remarks>
       </Docs>
     </Member>
-    <Member MemberName="Dispose">
-      <MemberSignature Language="C#" Value="public virtual void Dispose ();" />
-      <MemberType>Method</MemberType>
-      <ReturnValue>
-        <ReturnType>System.Void</ReturnType>
-      </ReturnValue>
-      <Parameters />
-      <Docs>
-        <summary>Closes the writer and disposes of resources.</summary>
-        <remarks>This method can be overridden to implement Dipose semantics.</remarks>
-      </Docs>
-    </Member>
+    
     <Member MemberName="Namespaces">
       <MemberSignature Language="C#" Value="public abstract SemWeb.NamespaceManager Namespaces { get; };" />
       <MemberType>Property</MemberType>

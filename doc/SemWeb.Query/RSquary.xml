@@ -2,7 +2,7 @@
   <TypeSignature Language="C#" Value="public class RSquary : SemWeb.Query.QueryEngine" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
-    <AssemblyVersion>1.0.1925.13972</AssemblyVersion>
+    <AssemblyVersion>1.0.1953.17509</AssemblyVersion>
   </AssemblyInfo>
   <Base>
     <BaseTypeName>SemWeb.Query.QueryEngine</BaseTypeName>

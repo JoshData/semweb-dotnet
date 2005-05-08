@@ -2,7 +2,7 @@
   <TypeSignature Language="C#" Value="public abstract class RdfParser : System.IDisposable" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
-    <AssemblyVersion>1.0.1925.13972</AssemblyVersion>
+    <AssemblyVersion>1.0.1953.17509</AssemblyVersion>
   </AssemblyInfo>
   <Base>
     <BaseTypeName>System.Object</BaseTypeName>
@@ -22,21 +22,7 @@
         <remarks>None.</remarks>
       </Docs>
     </Member>
-    <Member MemberName="Parse">
-      <MemberSignature Language="C#" Value="public abstract void Parse (SemWeb.Store storage);" />
-      <MemberType>Method</MemberType>
-      <ReturnValue>
-        <ReturnType>System.Void</ReturnType>
-      </ReturnValue>
-      <Parameters>
-        <Parameter Name="storage" Type="SemWeb.Store" />
-      </Parameters>
-      <Docs>
-        <param name="storage">The store into which statements will be added.</param>
-        <summary>Parses the stream into a store.</summary>
-        <remarks>Though this method may be called directly, it is more efficient to use <see cref="M:SemWeb.Store.Import(SemWeb.RdfParser)" /> which prepares the store for receiving many statements at once.</remarks>
-      </Docs>
-    </Member>
+    
     <Member MemberName="Dispose">
       <MemberSignature Language="C#" Value="public virtual void Dispose ();" />
       <MemberType>Method</MemberType>
