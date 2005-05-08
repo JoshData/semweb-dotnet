@@ -2,7 +2,7 @@
   <TypeSignature Language="C#" Value="public abstract class RdfParser : System.IDisposable" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
-    <AssemblyVersion>1.0.1953.17509</AssemblyVersion>
+    <AssemblyVersion>1.0.1954.18463</AssemblyVersion>
   </AssemblyInfo>
   <Base>
     <BaseTypeName>System.Object</BaseTypeName>
@@ -110,9 +110,9 @@
         <Parameter Name="message" Type="System.String" />
       </Parameters>
       <Docs>
-        <param name="message">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
+        <param name="message">A warning message.</param>
+        <summary>Implementors of RdfParser may call this method to indicate a parsing warning.</summary>
+        <remarks>This is not currently used for anything.</remarks>
       </Docs>
     </Member>
   <Member MemberName="variables">
@@ -122,7 +122,7 @@
         <ReturnType>System.Collections.ArrayList</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
+        <summary>This field is used by implementors to list entity variables found in the stream.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -133,9 +133,9 @@
         <ReturnType>System.Collections.ICollection</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
+        <summary>A list of <see cref="T:SemWeb.Entity" /> objects found in the strem that were marked as being variables (e.g. for queries).</summary>
+        <value>A list of <see cref="T:SemWeb.Entity" /> objects found in the strem that were marked as being variables (e.g. for queries).</value>
+        <remarks>The list of variables is set by the parser implementation.  Not all parsers support variables.  (N3-formatted RDF does, but XML formatted RDF doesn't.)</remarks>
       </Docs>
     </Member>
   <Member MemberName="Parse">
@@ -148,9 +148,24 @@
         <Parameter Name="storage" Type="SemWeb.StatementSinkEx" />
       </Parameters>
       <Docs>
-        <param name="storage">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
+        <param name="storage">Each statement found in the stream is added to the statement sink via <see cref="M:SemWeb.StatementSink.Add(SemWeb.Statement)" />.</param>
+        <summary>Parses the stream into the statement sink.</summary>
+        <remarks>User code should call <see cref="M:SemWeb.Store.Import(SemWeb.RdfParser)" /> rather than calling this method directly.</remarks>
+      </Docs>
+    </Member>
+  <Member MemberName="AddVariable">
+      <MemberSignature Language="C#" Value="protected void AddVariable (SemWeb.Entity variable);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="variable" Type="SemWeb.Entity" />
+      </Parameters>
+      <Docs>
+        <param name="variable">An entity that was marked as being a variable.</param>
+        <summary>Called by parser implementations to indicate that the entity was marked in the stream as being a variable for a query.</summary>
+        <remarks>None.</remarks>
       </Docs>
     </Member>
   </Members>

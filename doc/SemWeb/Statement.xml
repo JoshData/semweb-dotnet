@@ -2,7 +2,7 @@
   <TypeSignature Language="C#" Value="public struct Statement" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
-    <AssemblyVersion>1.0.1953.17509</AssemblyVersion>
+    <AssemblyVersion>1.0.1954.18463</AssemblyVersion>
   </AssemblyInfo>
   <Base>
     <BaseTypeName>System.ValueType</BaseTypeName>
@@ -156,6 +156,8 @@
     <summary>A statement, comprising a subject, predicate, and object.</summary>
     <remarks>
       <para>RDF requires that subjects and predicates be entities (non-literals).</para>
-<para>The <see cref="P:SemWeb.Statement.Meta" /> property optionally contains an entity that has meta-information about the statement.  The use of the Meta property is left up to application writers.</para></remarks>
+<para>The <see cref="P:SemWeb.Statement.Meta" /> property optionally contains an entity that has meta-information about the statement.  The use of the Meta property is left up to application writers.</para>
+
+<para>The subject, predicate, and object fields should not normally be <see langword="null" />.  They may be <see langword="null" /> when the Statement is returned from a call to <see cref="M:SemWeb.Store.Select" /> when a <see cref="T:SemWeb.SelectPartialFilter" /> is used.  They must not be <see langword="null" /> in a call to <see cref="M:SemWeb.Store.Add(SemWeb.Statement)" /></para></remarks>
   </Docs>
 </Type>

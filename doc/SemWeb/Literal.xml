@@ -2,7 +2,7 @@
   <TypeSignature Language="C#" Value="public sealed class Literal : SemWeb.Resource" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
-    <AssemblyVersion>1.0.1953.17509</AssemblyVersion>
+    <AssemblyVersion>1.0.1954.18463</AssemblyVersion>
   </AssemblyInfo>
   <Base>
     <BaseTypeName>SemWeb.Resource</BaseTypeName>
@@ -87,16 +87,16 @@
         <Parameter Name="namespaces" Type="SemWeb.NamespaceManager" />
       </Parameters>
       <Docs>
-        <param name="literal">To be added.</param>
-        <param name="namespaces">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
+        <param name="literal">An N3-encoded form of a literal.</param>
+        <param name="namespaces">A namespace manager used to resolve the literal's datatype, if present.</param>
+        <summary>Parses a literal value.</summary>
+        <returns>A Literal object.</returns>
+        <remarks>The encoded literal is in the form of:   "value"[^^datatypeURI|@langcode].</remarks>
       </Docs>
     </Member>
   </Members>
   <Docs>
-    <summary>A literal node in an RDF graph.</summary>
+    <summary>A literal (text string) node in an RDF graph.</summary>
     <remarks>Literals are string values optionally with a language string or datatype URI.</remarks>
   </Docs>
 </Type>

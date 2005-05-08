@@ -2,7 +2,7 @@
   <TypeSignature Language="C#" Value="public abstract class Resource" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
-    <AssemblyVersion>1.0.1953.17509</AssemblyVersion>
+    <AssemblyVersion>1.0.1954.18463</AssemblyVersion>
   </AssemblyInfo>
   <Base>
     <BaseTypeName>System.Object</BaseTypeName>
@@ -26,18 +26,10 @@
     
     
     
-  <Member MemberName=".ctor">
-      <MemberSignature Language="C#" Value="protected Resource ();" />
-      <MemberType>Constructor</MemberType>
-      <Parameters />
-      <Docs>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
-      </Docs>
-    </Member>
+  
   </Members>
   <Docs>
     <summary>The base class for all resources that statements can express relations between.</summary>
-    <remarks>This class cannot be inherited.  You can only inherit from the <see cref="T:SemWeb.Entity" /> class.</remarks>
+    <remarks>The <see cref="T:SemWeb.Entity" /> and <see cref="T:SemWeb.Literal" /> classes inherit from this class.  This class cannot be inherited in user code.</remarks>
   </Docs>
 </Type>

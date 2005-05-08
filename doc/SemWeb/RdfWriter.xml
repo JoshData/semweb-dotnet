@@ -2,7 +2,7 @@
   <TypeSignature Language="C#" Value="public abstract class RdfWriter : SemWeb.StatementSinkEx, System.IDisposable" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
-    <AssemblyVersion>1.0.1953.17509</AssemblyVersion>
+    <AssemblyVersion>1.0.1954.18463</AssemblyVersion>
   </AssemblyInfo>
   <Base>
     <BaseTypeName>System.Object</BaseTypeName>
@@ -114,9 +114,9 @@
         <ReturnType>System.String</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
+        <summary>Gets or sets the base URI for the output document.</summary>
+        <value>A string containing the base URI of the output document, or <see langword="null" /> if the output document base URI is unknown or not applicable.</value>
+        <remarks>A writer may choose to abbreviate URIs in the output according to the base URI.</remarks>
       </Docs>
     </Member>
   <Member MemberName="GetResourceKey">
@@ -185,6 +185,6 @@
     <summary>The base class of types that write statements to a stream.</summary>
     <remarks>
       <para>This is an abstract class. See the classes in <see cref="N:SemWeb.IO" /> for implementations of writers.</para>
-<para>This class is a <see cref="T:SemWeb.StatementSink" /> which allows the output of calls to Select on stores to be written directly to a stream.</para></remarks>
+<para>This class is a <see cref="T:SemWeb.StatementSinkEx" /> which allows the output of calls to Select on stores to be written directly to a stream.</para></remarks>
   </Docs>
 </Type>

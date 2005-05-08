@@ -4,9 +4,6 @@
 
 </summary>
     <remarks><para>Classes that inherit from <see cref="T:SemWeb.Store" /> are repositories of <see cref="T:SemWeb.Statement" />s about <see cref="T:SemWeb.Resource" />s (<see cref="T:SemWeb.Entity" />s and <see cref="T:SemWeb.Literal" />s).</para>
-
-<para>The <see cref="T:SemWeb.KnowledgeModel" /> is the starting point for any RDF application.</para>
-
 </remarks>
   </Docs>
 </Namespace>

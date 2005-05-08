@@ -2,7 +2,7 @@
   <TypeSignature Language="C#" Value="public sealed class Entity : SemWeb.Resource" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
-    <AssemblyVersion>1.0.1953.17509</AssemblyVersion>
+    <AssemblyVersion>1.0.1954.18463</AssemblyVersion>
   </AssemblyInfo>
   <Base>
     <BaseTypeName>SemWeb.Resource</BaseTypeName>
@@ -34,8 +34,8 @@
       <Docs>
         <param name="uri">A URI.</param>
         <summary>Implicitly converts a string URI to an entity.</summary>
-        <returns>An entity whose URI is <paramref name="uri" /> and whose <see cref="P:SemWeb.Resource.Model" /> is <see langword="null" />.</returns>
-        <remarks>Because the returned resource is not assoicated with a KnowledgeModel, it does not support following arcs in a model using its indexer property.</remarks>
+        <returns>An entity whose URI is <paramref name="uri" />.</returns>
+        <remarks>None.</remarks>
       </Docs>
     </Member>
     <Member MemberName="op_Equality">
@@ -102,7 +102,6 @@
     <remarks>
       <para>Entities can have URIs, or they can be anonymous, in which case their URI is <see langword="null" />.</para>
 
-<para>Specialized stores will attach caching information to Entity objects to make interaction with the store faster.  It is therefore better to reusing existing Entity objects where possible, or use an Entity returned by <see cref="M:SemWeb.Store.GetResource(string)" /> for the store you are using rather than creating your own through <see cref="C:SemWeb.Entity(string)" /></para>
-</remarks>
+<para>Specialized stores will attach caching information to Entity objects to make interaction with the store faster.  It is therefore better to reusing existing Entity objects where possible.</para></remarks>
   </Docs>
 </Type>

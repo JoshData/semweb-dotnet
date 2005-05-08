@@ -12,13 +12,10 @@
     <Namespace Name="SemWeb">
       <Type Name="StatementSink" />
       <Type Name="Store" />
-      <Type Name="KnowledgeModel" />
       <Type Name="RdfParser" />
       <Type Name="RdfWriter" />
       <Type Name="NamespaceManager" />
       <Type Name="ParserException" />
-      <Type Name="InferenceStore" />
-      <Type Name="ReasoningEngine" />
       <Type Name="Resource" />
       <Type Name="Entity" />
       <Type Name="Literal" />
@@ -26,8 +23,7 @@
       <Type Name="Entity+LazyUriLoader" />
       <Type Name="SelectPartialFilter" />
       <Type Name="StatementSinkEx" />
-      <Type Name="StatementFilterSink" />
-      <Type Name="XPathSemWebNavigator" />
+      <Type Name="MemoryStore" />
     </Namespace>
     <Namespace Name="SemWeb.Query">
       <Type Name="QueryException" />
@@ -48,7 +44,7 @@
     <Namespace Name="SemWeb.Stores">
       <Type Name="MultiStore" />
       <Type Name="SQLStore" />
-      <Type Name="MemoryStore" />
+      <Type Name="KnowledgeModel" />
     </Namespace>
     <Namespace Name="SemWeb.IO">
       <Type Name="N3Parser" />
@@ -62,6 +58,11 @@
     <Namespace Name="SemWeb.Reasoning">
       <Type Name="RDFSReasoning" />
       <Type Name="OWLReasoning" />
+      <Type Name="InferenceStore" />
+      <Type Name="ReasoningEngine" />
+    </Namespace>
+    <Namespace Name="SemWeb.Util">
+      <Type Name="XPathSemWebNavigator" />
     </Namespace>
   </Types>
   <Attributes>

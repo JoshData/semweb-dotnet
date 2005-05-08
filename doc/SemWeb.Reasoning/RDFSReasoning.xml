@@ -1,11 +1,11 @@
 <Type Name="RDFSReasoning" FullName="SemWeb.Reasoning.RDFSReasoning">
-  <TypeSignature Language="C#" Value="public class RDFSReasoning : SemWeb.ReasoningEngine" />
+  <TypeSignature Language="C#" Value="public class RDFSReasoning : SemWeb.Reasoning.ReasoningEngine" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
-    <AssemblyVersion>1.0.1953.17509</AssemblyVersion>
+    <AssemblyVersion>1.0.1954.18463</AssemblyVersion>
   </AssemblyInfo>
   <Base>
-    <BaseTypeName>SemWeb.ReasoningEngine</BaseTypeName>
+    <BaseTypeName>SemWeb.Reasoning.ReasoningEngine</BaseTypeName>
   </Base>
   <Interfaces />
   <Members>

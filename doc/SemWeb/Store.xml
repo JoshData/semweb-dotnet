@@ -2,7 +2,7 @@
   <TypeSignature Language="C#" Value="public abstract class Store : SemWeb.StatementSinkEx" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
-    <AssemblyVersion>1.0.1953.17509</AssemblyVersion>
+    <AssemblyVersion>1.0.1954.18463</AssemblyVersion>
   </AssemblyInfo>
   <Base>
     <BaseTypeName>System.Object</BaseTypeName>
@@ -24,8 +24,8 @@
       </ReturnValue>
       <Parameters />
       <Docs>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
+        <summary>Clears the contents of the store.</summary>
+        <remarks>The store is empty after a call to Clear.</remarks>
       </Docs>
     </Member>
     
@@ -42,10 +42,10 @@
         <Parameter Name="type" Type="SemWeb.Entity" />
       </Parameters>
       <Docs>
-        <param name="type">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
+        <param name="type">The type of entities to return.</param>
+        <summary>Returns an array of all entities in the store whose type is known to be the given type.</summary>
+        <returns>An array of all entities in the store whose type is known to be the given type.</returns>
+        <remarks>Types are indicated using the rdf:type predicate.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Add">
@@ -58,9 +58,9 @@
         <Parameter Name="statement" Type="SemWeb.Statement" />
       </Parameters>
       <Docs>
-        <param name="statement">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
+        <param name="statement">The statement to add.</param>
+        <summary>Adds a statement to the store.</summary>
+        <remarks>The Subject, Predicate, and Object fields of the statement must not be <see langword="null" />.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Remove">
@@ -118,10 +118,10 @@
         <Parameter Name="statement" Type="SemWeb.Statement" />
       </Parameters>
       <Docs>
-        <param name="statement">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
+        <param name="statement">The statement to search for.</param>
+        <summary>Returns whether the store contains a statement.</summary>
+        <returns><see langword="true" /> if the store contains the statement.</returns>
+        <remarks>None.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Select">
@@ -220,9 +220,9 @@
         <ReturnType>System.Int32</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
+        <summary>Gets the number of statements in the store.</summary>
+        <value>The number of statements in the store.</value>
+        <remarks>None.</remarks>
       </Docs>
     </Member>
   <Member MemberName="Write">
@@ -240,22 +240,7 @@
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
-  <Member MemberName="Select">
-      <MemberSignature Language="C#" Value="public SemWeb.Stores.MemoryStore Select (SemWeb.Statement template);" />
-      <MemberType>Method</MemberType>
-      <ReturnValue>
-        <ReturnType>SemWeb.Stores.MemoryStore</ReturnType>
-      </ReturnValue>
-      <Parameters>
-        <Parameter Name="template" Type="SemWeb.Statement" />
-      </Parameters>
-      <Docs>
-        <param name="template">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
-      </Docs>
-    </Member>
+  
   <Member MemberName="GetAllEntities">
       <MemberSignature Language="C#" Value="public abstract SemWeb.Entity[] GetAllEntities ();" />
       <MemberType>Method</MemberType>
@@ -264,9 +249,9 @@
       </ReturnValue>
       <Parameters />
       <Docs>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
+        <summary>Returns an array of all entities mentioned in the store.</summary>
+        <returns>An array of all entities mentioned in the store.</returns>
+        <remarks>None.</remarks>
       </Docs>
     </Member>
   <Member MemberName="GetAllPredicates">
@@ -277,9 +262,9 @@
       </ReturnValue>
       <Parameters />
       <Docs>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
+        <summary>Returns an array of all predicates mentioned in the store.</summary>
+        <returns>An array of all predicates mentioned in the store.</returns>
+        <remarks>None.</remarks>
       </Docs>
     </Member>
   <Member MemberName="GetResourceKey">
@@ -353,24 +338,7 @@
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
-  <Member MemberName="Select">
-      <MemberSignature Language="C#" Value="public SemWeb.Stores.MemoryStore Select (SemWeb.Statement template, SemWeb.SelectPartialFilter partialFilter);" />
-      <MemberType>Method</MemberType>
-      <ReturnValue>
-        <ReturnType>SemWeb.Stores.MemoryStore</ReturnType>
-      </ReturnValue>
-      <Parameters>
-        <Parameter Name="template" Type="SemWeb.Statement" />
-        <Parameter Name="partialFilter" Type="SemWeb.SelectPartialFilter" />
-      </Parameters>
-      <Docs>
-        <param name="template">To be added.</param>
-        <param name="partialFilter">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
-      </Docs>
-    </Member>
+  
   <Member MemberName="Replace">
       <MemberSignature Language="C#" Value="public abstract void Replace (SemWeb.Entity a, SemWeb.Entity b);" />
       <MemberType>Method</MemberType>
@@ -389,12 +357,12 @@
       </Docs>
     </Member>
   <Member MemberName=".ctor">
-      <MemberSignature Language="C#" Value="public Store ();" />
+      <MemberSignature Language="C#" Value="protected Store ();" />
       <MemberType>Constructor</MemberType>
       <Parameters />
       <Docs>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
+        <summary>The constructor used by inherited classes.</summary>
+        <remarks>None.</remarks>
       </Docs>
     </Member>
   <Member MemberName="CreateForInput">
@@ -407,10 +375,37 @@
         <Parameter Name="spec" Type="System.String" />
       </Parameters>
       <Docs>
-        <param name="spec">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
+        <param name="spec">A specifier string, whose format is given below.</param>
+        <summary>Creates a store from which statements will be read.</summary>
+        <returns>A store.</returns>
+        <remarks><para>The specifier string is in one of the following formats.  When a filename is expected, a dash can be used to indicate standard input.</para>
+
+<list type="table">
+  <listheader>
+    <term><paramref name="spec" /></term>
+    <description>Meaning</description>
+  </listheader>
+  <item>
+    <term>mem</term>
+    <description>A new <see cref="T:SemWeb.MemoryStore" />.</description>
+  </item>
+  <item>
+    <term>xml:[filename]</term>
+    <description>A <see cref="T:SemWeb.MemoryStore" /> whose contents have been parsed from the RDF/XML file.</description>
+  </item>
+  <item>
+    <term>n3:[filename]</term>
+    <description>A <see cref="T:SemWeb.MemoryStore" /> whose contents have been parsed from the N3 file.</description>
+  </item>
+  <item>
+    <term>sqlite:[table]:[connection string]</term>
+    <description>A <see cref="T:SemWeb.Stores.SQLStore" /> connected to the SQLite database given in the connection string, using the tables prefixed by the table parameter.</description>
+  </item>
+  <item>
+    <term>mysql:[table]:[connection string]</term>
+    <description>A <see cref="T:SemWeb.Stores.SQLStore" /> connected to the MySQL database given in the connection string, using the tables prefixed by the table parameter.</description>
+  </item>
+</list></remarks>
       </Docs>
     </Member>
   <Member MemberName="CreateForOutput">
@@ -423,10 +418,41 @@
         <Parameter Name="spec" Type="System.String" />
       </Parameters>
       <Docs>
-        <param name="spec">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
+        <param name="spec">A specification string whose format is given below.</param>
+        <summary>Creates a <see cref="T:SemWeb.StatementSinkEx" /> into which statements will be added.</summary>
+        <returns>A StatementSinkEx.</returns>
+        <remarks><para>The specifier string is in one of the following formats.  When a filename is expected, a dash can be used to indicate standard output.</para>
+
+<list type="table">
+  <listheader>
+    <term><paramref name="spec" /></term>
+    <description>Meaning</description>
+  </listheader>
+  <item>
+    <term>mem</term>
+    <description>A new <see cref="T:SemWeb.MemoryStore" />.</description>
+  </item>
+  <item>
+    <term>xml:[filename]</term>
+    <description>A <see cref="T:SemWeb.IO.RdfXmlWriter" /> opened on the given file.</description>
+  </item>
+  <item>
+    <term>n3:[filename]</term>
+    <description>A <see cref="T:SemWeb.IO.N3Writer" /> opened on the given file.</description>
+  </item>
+  <item>
+    <term>sql:[table]</term>
+    <description>A <see cref="T:SemWeb.IO.SQLWriter" /> writing to standard output, using the given table prefix.  SQL writers write SQL statements which can be loaded into a database that can be used by the <see cref="T:SemWeb.Stores.SQLStore" />.</description>
+  </item>
+  <item>
+    <term>sqlite:[table]:[connection string]</term>
+    <description>A <see cref="T:SemWeb.Stores.SQLStore" /> connected to the SQLite database given in the connection string, using the tables prefixed by the table parameter.</description>
+  </item>
+  <item>
+    <term>mysql:[table]:[connection string]</term>
+    <description>A <see cref="T:SemWeb.Stores.SQLStore" /> connected to the MySQL database given in the connection string, using the tables prefixed by the table parameter.</description>
+  </item>
+</list></remarks>
       </Docs>
     </Member>
   <Member MemberName="CreateAnonymousEntity">
@@ -437,6 +463,40 @@
       </ReturnValue>
       <Parameters />
       <Docs>
+        <summary>Creates an anonymous entity in the store.</summary>
+        <returns>A new anonymous entity.</returns>
+        <remarks>None.</remarks>
+      </Docs>
+    </Member>
+  <Member MemberName="Select">
+      <MemberSignature Language="C#" Value="public SemWeb.MemoryStore Select (SemWeb.Statement template);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>SemWeb.MemoryStore</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="template" Type="SemWeb.Statement" />
+      </Parameters>
+      <Docs>
+        <param name="template">To be added.</param>
+        <summary>To be added.</summary>
+        <returns>To be added.</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+  <Member MemberName="Select">
+      <MemberSignature Language="C#" Value="public SemWeb.MemoryStore Select (SemWeb.Statement template, SemWeb.SelectPartialFilter partialFilter);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>SemWeb.MemoryStore</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="template" Type="SemWeb.Statement" />
+        <Parameter Name="partialFilter" Type="SemWeb.SelectPartialFilter" />
+      </Parameters>
+      <Docs>
+        <param name="template">To be added.</param>
+        <param name="partialFilter">To be added.</param>
         <summary>To be added.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
@@ -445,6 +505,6 @@
   </Members>
   <Docs>
     <summary>A repository for <see cref="T:SemWeb.Statement" />s.</summary>
-    <remarks>This class is abstract.  The <see cref="T:SemWeb.Stores.MemoryStore" /> maintains an in-memory array of statements.</remarks>
+    <remarks>This class is abstract.  The <see cref="T:SemWeb.MemoryStore" /> maintains an in-memory array of statements.</remarks>
   </Docs>
 </Type>
