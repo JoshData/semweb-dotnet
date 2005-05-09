@@ -29,7 +29,7 @@
   
   </Members>
   <Docs>
-    <summary>The base class for all resources that statements can express relations between.</summary>
+    <summary>The base class of <see cref="T:SemWeb.Entity" /> and <see cref="T:SemWeb.Literal" /> -- the nodes in an RDF graph.</summary>
     <remarks>The <see cref="T:SemWeb.Entity" /> and <see cref="T:SemWeb.Literal" /> classes inherit from this class.  This class cannot be inherited in user code.</remarks>
   </Docs>
 </Type>

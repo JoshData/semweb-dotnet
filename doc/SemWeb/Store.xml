@@ -73,9 +73,9 @@
         <Parameter Name="statement" Type="SemWeb.Statement" />
       </Parameters>
       <Docs>
-        <param name="statement">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
+        <param name="statement">A statement or statement template to remove from the store.</param>
+        <summary>Removes statements from the store.</summary>
+        <remarks>All statements in the store that match <paramref name="statement" /> are removed.  The <paramref name="statement" /> argument is a template.  The non-<see langword="null" /> fields of <paramref name="statement" /> are used as a filter on the statements in the store.  Statements that match the filter are removed.  <see langword="null" /> fields of <paramref name="statement" /> are ignored during filtering.  Any field in <paramref name="statement" /> (Subject, Predicate, Object, and Meta) may be <see langword="null" />.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Import">
@@ -88,9 +88,9 @@
         <Parameter Name="other" Type="SemWeb.Store" />
       </Parameters>
       <Docs>
-        <param name="other">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
+        <param name="other">The store whose contents are to be imported.</param>
+        <summary>Loads the contents of another store into this store.</summary>
+        <remarks>Stores may choose to lock their underlying data source during this operation.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Import">
@@ -135,10 +135,10 @@
         <Parameter Name="result" Type="SemWeb.StatementSink" />
       </Parameters>
       <Docs>
-        <param name="template">To be added.</param>
-        <param name="result">To be added.</param>
-        <summary>Queries the story for all matching statements, and writes the statements to a <see cref="T:SemWeb.StatementSink" />.</summary>
-        <remarks>To be added.</remarks>
+        <param name="template">A statement template.  Use <see cref="F:SemWeb.Statement.Empty" /> to select all statements in the store, or a statement with <see langword="null" /> fields to select statements that match the non-<see langword="null" /> parts of the statement.</param>
+        <param name="result">A StatementSink to which each matching statement will be added.</param>
+        <summary>Queries the story for matching statements, and writes the statements to a <see cref="T:SemWeb.StatementSink" />.</summary>
+        <remarks>This method calls <see cref="M:SemWeb.Store.Select(SemWeb.Statement,SemWeb.SelectPartialFilter,SemWeb.StatementSink)" /> with <see cref="F:SemWeb.SelectPartialFilter.All" />.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Select">
@@ -152,10 +152,10 @@
         <Parameter Name="result" Type="SemWeb.StatementSink" />
       </Parameters>
       <Docs>
-        <param name="templates">To be added.</param>
-        <param name="result">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
+        <param name="templates">An array of statement templates.  Statements matching any of the templates are returned to <paramref name="result" />.</param>
+        <param name="result">A StatementSink to which each matching statement will be added.</param>
+        <summary>Queries the story for statements matching one of many templates, and writes the statements to a <see cref="T:SemWeb.StatementSink" />.</summary>
+        <remarks>This method calls <see cref="M:SemWeb.Store.Select(SemWeb.Statement[],SemWeb.SelectPartialFilter,SemWeb.StatementSink)" /> with <see cref="F:SemWeb.SelectPartialFilter.All" />.</remarks>
       </Docs>
     </Member>
     
@@ -170,11 +170,13 @@
         <Parameter Name="predicate" Type="SemWeb.Entity" />
       </Parameters>
       <Docs>
-        <param name="subject">To be added.</param>
-        <param name="predicate">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
+        <param name="subject">The subject of the statements to query.</param>
+        <param name="predicate">The predicate of the statements to query.</param>
+        <summary>Finds all objects in statements with the given subject and predicate.</summary>
+        <returns>An array of the entities found as the object of the matching statements, excluding literal values.  An entity occurs in the array at most once.</returns>
+        <remarks><block subset="none" type="note">
+  <para>This method is not recommended when the store can contain a large number of statements, as every matching entity must be loaded into memory before this method returns.</para>
+</block></remarks>
       </Docs>
     </Member>
     <Member MemberName="SelectSubjects">
@@ -188,11 +190,13 @@
         <Parameter Name="object" Type="SemWeb.Entity" />
       </Parameters>
       <Docs>
-        <param name="predicate">To be added.</param>
-        <param name="object">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
+        <param name="predicate">The predicate of the statements to query.</param>
+        <param name="object">The object of the statements to query.</param>
+        <summary>Finds all subjects in statements with the given predicate and object.</summary>
+        <returns>An array of the entities found as the subject of the matching statements.  An entity occurs in the array at most once.</returns>
+        <remarks><block subset="none" type="note">
+  <para>This method is not recommended when the store can contain a large number of statements, as every matching entity must be loaded into memory before this method returns.</para>
+</block></remarks>
       </Docs>
     </Member>
     <Member MemberName="Write">
@@ -205,9 +209,9 @@
         <Parameter Name="writer" Type="SemWeb.RdfWriter" />
       </Parameters>
       <Docs>
-        <param name="writer">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
+        <param name="writer">The writer to which the statements of the store are sent.</param>
+        <summary>Writes the contents of the store to a <see cref="T:SemWeb.RdfWriter" />.</summary>
+        <remarks>None.</remarks>
       </Docs>
     </Member>
     
@@ -235,9 +239,9 @@
         <Parameter Name="writer" Type="System.IO.TextWriter" />
       </Parameters>
       <Docs>
-        <param name="writer">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
+        <param name="writer">The stream to which statements are sent.</param>
+        <summary>Writes the contents of the store to a stream in N3 format.</summary>
+        <remarks>None.</remarks>
       </Docs>
     </Member>
   
@@ -277,10 +281,10 @@
         <Parameter Name="resource" Type="SemWeb.Resource" />
       </Parameters>
       <Docs>
-        <param name="resource">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
+        <param name="resource">The resource from which the cached information is retrieved.</param>
+        <summary>Used by Store implementations to retrieve cached information in an entity.</summary>
+        <returns>The object previously cached with <paramref name="resource" /> by a call to <see cref="M:SemWeb.Store.SetResourceKey(SemWeb.Resource,System.Object)" />, or <see langword="null" /> if no resource key was set.</returns>
+        <remarks>None.</remarks>
       </Docs>
     </Member>
   <Member MemberName="SetResourceKey">
@@ -294,10 +298,10 @@
         <Parameter Name="value" Type="System.Object" />
       </Parameters>
       <Docs>
-        <param name="resource">To be added.</param>
-        <param name="value">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
+        <param name="resource">The resource onto which the data is kept.</param>
+        <param name="value">Data to be associated with the resource.</param>
+        <summary>Used by Store implementations to cache information with the entity.</summary>
+        <remarks><paramref name="value" /> is stored in a Hashtable within <paramref name="resource" />.  To retreive the value later, use <see cref="M:SemWeb.Store.GetResourceKey" />.</remarks>
       </Docs>
     </Member>
   <Member MemberName="Select">
@@ -312,11 +316,17 @@
         <Parameter Name="result" Type="SemWeb.StatementSink" />
       </Parameters>
       <Docs>
-        <param name="template">To be added.</param>
-        <param name="partialFilter">To be added.</param>
-        <param name="result">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
+        <param name="template">A statement template.  Use <see cref="F:SemWeb.Statement.Empty" /> to select all statements in the store, or a statement with <see langword="null" /> fields to select statements that match the non-<see langword="null" /> parts of the statement.</param>
+        <param name="partialFilter">A partial filter, indicating which fields in the resulting statements are of interest. Use <see cref="F:SemWeb.SelectPartialFilter.All" /> when all fields are of interest.</param>
+        <param name="result">A StatementSink to which each matching statement will be added.</param>
+        <summary>Queries the story for matching statements, according to a partial filter, and writes the statements to a <see cref="T:SemWeb.StatementSink" />.</summary>
+        <remarks><para>Each statement in the store matching <paramref name="template" /> is added to <paramref name="result" /> with a call to <see cref="M:SemWeb.StatementSink.Add(SemWeb.Statement)" />.  If the call to Add returns <see langword="false" />, the select operation is aborted and returns immediately.</para>
+
+<para><paramref name="template" /> is a statement template, which means any field in <paramref name="template" /> may be <see langword="null" />, and those fields are excluded from the statement filter. For example, setting the Subject and Predicate fields but leaving the Object and Meta fields <see langword="null" /> will match all statements in the store that have the given Subject and Predicate, and anything in their Object and Meta fields.</para>
+
+<para><paramref name="partialFilter" /> indicates which fields in the matching statements are of interest.  Normally <see cref="F:SemWeb.SelectPartialFilter.All" /> is used, indicating full statements should be returned.  Setting fields in <paramref name="partialFilter" /> to <see langword="false" /> indicates that those fields are not important, and the matching statements will have their corresponding fields set to <see langword="null" />.  For example, if <paramref name="partialFilter" />.Predicate == <see langword="false" />, then the Predicate fields in the statements sent to <paramref name="result" /> will all be <see langword="null" />.  If <see cref="F:SemWeb.SelectPartialFilter.All" /> is used, the Subject, Predicate, and Object fields of resulting statements are guaranteed to never be <see langword="null" />.</para>
+
+<para>The partial filter is used to increase the speed of select operations when only partial information is desired. The benefit of using a partial filter depends on the store implementation.</para></remarks>
       </Docs>
     </Member>
   <Member MemberName="Select">
@@ -331,11 +341,12 @@
         <Parameter Name="result" Type="SemWeb.StatementSink" />
       </Parameters>
       <Docs>
-        <param name="templates">To be added.</param>
-        <param name="partialFilter">To be added.</param>
-        <param name="result">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
+        <param name="templates">An array of statement templates.  Statements matching any of the templates are returned to <paramref name="result" />.</param>
+        <param name="partialFilter">A partial filter, indicating which fields in the resulting statements are of interest. Use <see cref="F:SemWeb.SelectPartialFilter.All" /> when all fields are of interest.</param>
+        <param name="result">A StatementSink to which each matching statement will be added.</param>
+        <summary>Queries the story for statements matching one of many templates, according to a partial filter, and writes the statements to a <see cref="T:SemWeb.StatementSink" />.</summary>
+        <remarks><para>This method performs the same task as <see cref="M:SemWeb.Store.Select(SemWeb.Statement,SemWeb.SelectPartialFilter,SemWeb.StatementSink)" />, but with an array of templates that are applied in one call.  See <see cref="M:SemWeb.Store.Select(SemWeb.Statement,SemWeb.SelectPartialFilter,SemWeb.StatementSink)" /> for more information.</para>
+</remarks>
       </Docs>
     </Member>
   
@@ -350,10 +361,10 @@
         <Parameter Name="b" Type="SemWeb.Entity" />
       </Parameters>
       <Docs>
-        <param name="a">To be added.</param>
-        <param name="b">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
+        <param name="a">The Entity to search for in the store.</param>
+        <param name="b">The Entity to replace <paramref name="a" />.</param>
+        <summary>Replaces all occurences of one Entity with another Entity.</summary>
+        <remarks>All occurences of <paramref name="a" /> in statements in the store are replaced with references to <paramref name="b" />.</remarks>
       </Docs>
     </Member>
   <Member MemberName=".ctor">
@@ -478,10 +489,17 @@
         <Parameter Name="template" Type="SemWeb.Statement" />
       </Parameters>
       <Docs>
-        <param name="template">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
+        <param name="template">A statement template.  Use <see cref="F:SemWeb.Statement.Empty" /> to select all statements in the store, or a statement with <see langword="null" /> fields to select statements that match the non-<see langword="null" /> parts of the statement.</param>
+        <summary>Queries the store for matching statements and holds the resulting statements in memory.</summary>
+        <returns>A <see cref="T:SemWeb.MemoryStore" /> cotnaining the matching statements.</returns>
+        <remarks><para>Each statement in the store matching <paramref name="template" /> is added to the <see cref="T:SemWeb.MemoryStore" /> that is returned.</para>
+
+<para><paramref name="template" /> is a statement template, which means any field in <paramref name="template" /> may be <see langword="null" />, and those fields are excluded from the statement filter. For example, setting the Subject and Predicate fields but leaving the Object and Meta fields <see langword="null" /> will match all statements in the store that have the given Subject and Predicate, and anything in their Object and Meta fields.</para>
+
+
+<block subset="none" type="note">
+  <para>This method is not advised when the store may contain a large number of statements, as the entire result of the query must be loaded into memory before the method returns.</para>
+</block></remarks>
       </Docs>
     </Member>
   <Member MemberName="Select">
@@ -495,16 +513,20 @@
         <Parameter Name="partialFilter" Type="SemWeb.SelectPartialFilter" />
       </Parameters>
       <Docs>
-        <param name="template">To be added.</param>
-        <param name="partialFilter">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
+        <param name="template">A statement template.  Use <see cref="F:SemWeb.Statement.Empty" /> to select all statements in the store, or a statement with <see langword="null" /> fields to select statements that match the non-<see langword="null" /> parts of the statement.</param>
+        <param name="partialFilter">A partial filter, indicating which fields in the resulting statements are of interest. Use <see cref="F:SemWeb.SelectPartialFilter.All" /> when all fields are of interest.</param>
+        <summary>Queries the store for matching statements according to a partial filter and holds the resulting statements in memory.</summary>
+        <returns>A <see cref="T:SemWeb.MemoryStore" /> cotnaining the matching statements.</returns>
+        <remarks><para>See <see cref="M:SemWeb.Store.Select(SemWeb.Statement,SemWeb.SelectPartialFilter,SemWeb.StatementSink)" /> for more information on the use of partial filters. </para>
+
+<block subset="none" type="note">
+  <para>This method is not advised when the store may contain a large number of statements, as the entire result of the query must be loaded into memory before the method returns.</para>
+</block></remarks>
       </Docs>
     </Member>
   </Members>
   <Docs>
     <summary>A repository for <see cref="T:SemWeb.Statement" />s.</summary>
-    <remarks>This class is abstract.  The <see cref="T:SemWeb.MemoryStore" /> maintains an in-memory array of statements.</remarks>
+    <remarks>This class is abstract.  The <see cref="T:SemWeb.MemoryStore" /> maintains an in-memory array of statements.  Other stores are available in the <see cref="N:SemWeb.Stores" /> namespace.</remarks>
   </Docs>
 </Type>
