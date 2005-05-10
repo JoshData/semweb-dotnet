@@ -3,12 +3,14 @@ using System.Collections;
 
 using SemWeb;
 
-namespace SemWeb.Stores {
+namespace SemWeb {
 	public class MemoryStore : Store, IEnumerable {
 		ArrayList statements = new ArrayList();
 		
 		Hashtable statementsAboutSubject = new Hashtable();
 		Hashtable statementsAboutObject = new Hashtable();
+		
+		bool isIndexed = false;
 		
 		public MemoryStore() {
 		}
@@ -43,8 +45,10 @@ namespace SemWeb.Stores {
 		public override void Add(Statement statement) {
 			if (statement.AnyNull) throw new ArgumentNullException();
 			statements.Add(statement);
-			GetIndexArray(statementsAboutSubject, statement.Subject).Add(statement);
-			GetIndexArray(statementsAboutObject, statement.Object).Add(statement);
+			if (isIndexed) {
+				if (statement.Subject != null) GetIndexArray(statementsAboutSubject, statement.Subject).Add(statement);
+				if (statement.Object != null) GetIndexArray(statementsAboutObject, statement.Object).Add(statement);
+			}
 		}
 		
 		public override bool Contains(Statement statement) {
@@ -57,16 +61,18 @@ namespace SemWeb.Stores {
 		
 		public override void Remove(Statement statement) {
 			statements.Remove(statement);
-			GetIndexArray(statementsAboutSubject, statement.Subject).Remove(statement);
-			GetIndexArray(statementsAboutObject, statement.Object).Remove(statement);
+			if (isIndexed) {
+				if (statement.Subject != null) GetIndexArray(statementsAboutSubject, statement.Subject).Remove(statement);
+				if (statement.Object != null) GetIndexArray(statementsAboutObject, statement.Object).Remove(statement);
+			}
 		}
 		
 		public override Entity[] GetAllEntities() {
 			Hashtable h = new Hashtable();
 			foreach (Statement s in Statements) {
-				h[s.Subject] = h;
-				h[s.Predicate] = h;
-				if (s.Object is Entity) h[s.Object] = h;
+				if (s.Subject != null) h[s.Subject] = h;
+				if (s.Predicate != null) h[s.Predicate] = h;
+				if (s.Object != null && s.Object is Entity) h[s.Object] = h;
 				if (s.Meta != null) h[s.Meta] = h;
 			}
 			return (Entity[])new ArrayList(h.Keys).ToArray(typeof(Entity));
@@ -90,15 +96,30 @@ namespace SemWeb.Stores {
 		
 		public override void Select(Statement template, SelectPartialFilter partialFilter, StatementSink result) {
 			IList source = statements;
+			
+			// The first time select is called, turn indexing on for the store.
+			// TODO: Perform this index in a background thread if there are a lot
+			// of statements.
+			if (!isIndexed) {
+				isIndexed = true;
+				foreach (Statement statement in statements) {
+					if (statement.Subject != null)
+						GetIndexArray(statementsAboutSubject, statement.Subject).Add(statement);
+					if (statement.Object != null)
+						GetIndexArray(statementsAboutObject, statement.Object).Add(statement);
+				}
+			}
+			
 			if (template.Subject != null) ShorterList(ref source, GetIndexArray(statementsAboutSubject, template.Subject));
 			else if (template.Object != null) ShorterList(ref source, GetIndexArray(statementsAboutObject, template.Object));
 			
 			if (source == null) return;
 			
 			foreach (Statement statement in source) {
-				if (template.Subject != null && !template.Subject.Equals(statement.Subject)) continue;
-				if (template.Predicate != null && !template.Predicate.Equals(statement.Predicate)) continue;
-				if (template.Object != null && !template.Object.Equals(statement.Object)) continue;
+				if (template.Subject != null && statement.Subject != null && !template.Subject.Equals(statement.Subject)) continue;
+				if (template.Predicate != null && statement.Predicate != null && !template.Predicate.Equals(statement.Predicate)) continue;
+				if (template.Object != null && statement.Object != null && !template.Object.Equals(statement.Object)) continue;
+				if (template.Meta != null && statement.Meta != null && !template.Meta.Equals(statement.Meta)) continue;
 				if (!result.Add(statement)) return;
 			}
 		}
@@ -110,7 +131,7 @@ namespace SemWeb.Stores {
 
 		public override void Replace(Entity a, Entity b) {
 			foreach (Statement statement in statements) {
-				if (statement.Subject == a || statement.Predicate == a || statement.Object == a || statement.Meta == a) {
+				if ((statement.Subject != null && statement.Subject == a) || (statement.Predicate != null && statement.Predicate == a) || (statement.Object != null && statement.Object == a) || (statement.Meta != null && statement.Meta == a)) {
 					Remove(statement);
 					Add(new Statement(
 						statement.Subject == a ? b : a,

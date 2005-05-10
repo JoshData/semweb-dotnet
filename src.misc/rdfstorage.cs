@@ -96,3 +96,28 @@ public class RDFStorage {
 	}
 }
 
+internal class StatementFilterSink : StatementSinkEx {
+	StatementSink sink;
+	int counter = 0;
+	
+	public int StatementCount { get { return counter; } }
+	
+	public StatementFilterSink(StatementSink sink) { this.sink = sink; }
+	
+	public bool Add(Statement statement) {
+		counter++;
+		sink.Add(statement);
+		return true;
+	}
+	
+	public Entity CreateAnonymousEntity() {
+		if (!(sink is StatementSinkEx)) throw new InvalidOperationException();
+		return ((StatementSinkEx)sink).CreateAnonymousEntity();
+	}
+	
+	public void Import(RdfParser parser) {
+		if (!(sink is StatementSinkEx)) throw new InvalidOperationException();
+		((StatementSinkEx)sink).Import(parser);
+	}
+}
+

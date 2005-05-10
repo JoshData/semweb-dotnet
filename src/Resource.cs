@@ -13,6 +13,9 @@ namespace SemWeb {
 		
 		public abstract string Uri { get; }
 		
+		internal Resource() {
+		}
+		
 		//public static explicit operator Resource(string uri) { return new Entity(uri); }
 		
 		public override string ToString() {

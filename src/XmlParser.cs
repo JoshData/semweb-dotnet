@@ -57,8 +57,10 @@ namespace SemWeb.IO {
 				}
 				return ret;
 			}
-			if (str.StartsWith("\""))
+			if (str.StartsWith("\"")) {
+				str = str.Replace("\\n", "\n");
 				return Literal.Parse(str, null);
+			}
 			
 			if (str.StartsWith("_:")) {
 				if (anons.ContainsKey(str))

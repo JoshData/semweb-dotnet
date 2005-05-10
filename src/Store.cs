@@ -35,7 +35,7 @@ namespace SemWeb {
 		}
 	}
 
-	public class StatementFilterSink : StatementSinkEx {
+	internal class StatementFilterSink : StatementSinkEx {
 		StatementSink sink;
 		int counter = 0;
 		
@@ -62,8 +62,6 @@ namespace SemWeb {
 	
 	public abstract class Store : StatementSinkEx {
 		
-		KnowledgeModel model;
-
 		Entity rdfType;
 		
 		public static Store CreateForInput(string spec) {
@@ -87,20 +85,20 @@ namespace SemWeb {
 			
 			switch (type) {
 				case "mem":
-					return new SemWeb.Stores.MemoryStore();
+					return new MemoryStore();
 				case "xml":
 					if (spec == "") throw new ArgumentException("Use: xml:filename");
 					if (output) {
 						return new SemWeb.IO.RdfXmlWriter(spec);
 					} else {
-						return new SemWeb.Stores.MemoryStore(new SemWeb.IO.RdfXmlParser(spec));
+						return new MemoryStore(new SemWeb.IO.RdfXmlParser(spec));
 					}
 				case "n3":
 					if (spec == "") throw new ArgumentException("Use: n3:filename");
 					if (output) {
 						return new SemWeb.IO.N3Writer(spec);
 					} else {
-						return new SemWeb.Stores.MemoryStore(new SemWeb.IO.N3Parser(spec));
+						return new MemoryStore(new SemWeb.IO.N3Parser(spec));
 					}
 				case "sql":
 					if (spec == "") throw new ArgumentException("Use: sql:tablename");
@@ -131,7 +129,7 @@ namespace SemWeb {
 			}
 		}
 		
-		public Store() {
+		protected Store() {
 			rdfType = new Entity("http://www.w3.org/1999/02/22-rdf-syntax-ns#type");
 		}
 		
@@ -144,7 +142,7 @@ namespace SemWeb {
 		public Entity[] GetEntitiesOfType(Entity type) {
 			ArrayList entities = new ArrayList();
 			
-			SemWeb.Stores.MemoryStore result = Select(new Statement(null, rdfType, type));
+			MemoryStore result = Select(new Statement(null, rdfType, type));
 			foreach (Statement s in result.Statements) {
 				entities.Add(s.Subject);
 			}
@@ -190,12 +188,12 @@ namespace SemWeb {
 		
 		public abstract void Select(Statement[] templates, SelectPartialFilter partialFilter, StatementSink result);
 		
-		public SemWeb.Stores.MemoryStore Select(Statement template) {
+		public MemoryStore Select(Statement template) {
 			return Select(template, SelectPartialFilter.All);
 		}
 		
-		public SemWeb.Stores.MemoryStore Select(Statement template, SelectPartialFilter partialFilter) {
-			SemWeb.Stores.MemoryStore ms = new SemWeb.Stores.MemoryStore();
+		public MemoryStore Select(Statement template, SelectPartialFilter partialFilter) {
+			MemoryStore ms = new MemoryStore();
 			Select(template, partialFilter, ms);
 			return ms;
 		}

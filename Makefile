@@ -35,3 +35,8 @@ doc: Makefile
 	mkdir -p doc-html
 	mono /usr/lib/monodoc/monodocs2html.exe -source:doc -dest:doc-html -template:docstemplate.xsl
 
+semweb.zip: bin/SemWeb.dll Makefile
+	rm semweb.zip
+	zip -r semweb.zip bin/SemWeb.dll src/*.cs src.misc/*.cs Makefile README ChangeLog
+	
+

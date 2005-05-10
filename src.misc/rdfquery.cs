@@ -3,6 +3,7 @@ using System.IO;
 using System.Reflection;
 
 using SemWeb;
+using SemWeb.Stores;
 using SemWeb.Query;
 
 [assembly: AssemblyTitle("RDFQuery - Query RDF Data")]

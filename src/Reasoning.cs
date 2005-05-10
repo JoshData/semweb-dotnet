@@ -1,7 +1,7 @@
 using System;
 using System.Collections;
 
-namespace SemWeb {
+namespace SemWeb.Reasoning {
 	public class InferenceStore : Store {
 		
 		Store store;
@@ -109,10 +109,6 @@ namespace SemWeb {
 		public virtual void SelectFilter(ref Statement statement, Store source) {
 		}
 	}
-}
-
-namespace SemWeb.Reasoning {
-	using SemWeb;
 	
 	public class RDFSReasoning : ReasoningEngine {
 		public static readonly Entity rdfType = new Entity("http://www.w3.org/1999/02/22-rdf-syntax-ns#type");

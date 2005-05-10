@@ -66,7 +66,7 @@ namespace SemWeb {
 				if (localname.Length == 0) ok = false;
 				else if (!char.IsLetter(localname[0])) ok = false;
 				foreach (char c in localname)
-					if (!char.IsLetterOrDigit(c))
+					if (!char.IsLetterOrDigit(c) && c != '-' && c != '_')
 						ok = false;
 				if (ok)
 					return prefix + ":" + localname;

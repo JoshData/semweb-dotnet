@@ -3,7 +3,10 @@ using System.Collections;
 using System.IO;
 using System.Text;
 
-namespace SemWeb {
+using SemWeb;
+using SemWeb.Reasoning;
+
+namespace SemWeb.Stores {
 
 	public class KnowledgeModel : Store {
 		
@@ -16,7 +19,7 @@ namespace SemWeb {
 		}
 		
 		public KnowledgeModel(RdfParser parser) : this() {
-			stores.Add(new SemWeb.Stores.MemoryStore(parser));
+			stores.Add(new MemoryStore(parser));
 		}
 
 		public SemWeb.Stores.MultiStore Storage { get { return stores; } }

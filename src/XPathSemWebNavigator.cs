@@ -3,7 +3,9 @@ using System.Collections;
 using System.Xml;
 using System.Xml.XPath;
 
-namespace SemWeb {
+using SemWeb;
+
+namespace SemWeb.Util {
 	public class XPathSemWebNavigator : XPathNavigator {
 		Store model;
 		NamespaceManager nsmgr;
@@ -125,6 +127,8 @@ namespace SemWeb {
 		public override string LocalName {
 			get {
 				string p, l;
+				if (current.Predicate.Uri == null)
+					return "anonymous";
 				if (nsmgr.Normalize(current.Predicate.Uri, out p, out l))
 					return l;
 				throw new InvalidOperationException("The local name of " + current.Predicate.Uri + " could not be determined.");
@@ -133,6 +137,8 @@ namespace SemWeb {
 
 		public override string Name {
 			get {
+				if (current.Predicate.Uri == null)
+					return "anonymous";
 				return nsmgr.Normalize(current.Predicate.Uri);
 			}
 		}
@@ -140,6 +146,8 @@ namespace SemWeb {
 		public override string NamespaceURI {
 			get {
 				string p, l;
+				if (current.Predicate.Uri == null)
+					return "anonymous";
 				if (nsmgr.Normalize(current.Predicate.Uri, out p, out l))
 					return nsmgr.GetNamespace(p);
 				throw new InvalidOperationException("The namespace URI of " + current.Predicate.Uri + " could not be determined.");
@@ -156,8 +164,6 @@ namespace SemWeb {
 			get {
 				if (stack.Count == 0)
 					return XPathNodeType.Root;
-				if (current.Object is Literal)
-					return XPathNodeType.Text;
 				return XPathNodeType.Element;
 			}
 		}

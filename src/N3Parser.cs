@@ -417,7 +417,7 @@ namespace SemWeb.IO {
 				if (BaseUri == null)
 					OnError("Variables require that a BaseUri be specified for the document", loc);
 				Entity var = GetResource(context, BaseUri + str.Substring(1));
-				variables.Add(var);
+				AddVariable(var);
 				return var;
 			}
 			

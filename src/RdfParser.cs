@@ -11,7 +11,7 @@ namespace SemWeb {
 		Entity meta = null;
 		string baseuri = null;
 		ArrayList warnings = new ArrayList();
-		protected ArrayList variables = new ArrayList();
+		ArrayList variables = new ArrayList();
 		
 		public Entity Meta {
 			get {
@@ -32,6 +32,10 @@ namespace SemWeb {
 		}
 		
 		public ICollection Variables { get { return ArrayList.ReadOnly(variables); } }
+		
+		protected void AddVariable(Entity variable) {
+			variables.Add(variable);
+		}
 
 		public abstract void Parse(StatementSinkEx storage);
 		
