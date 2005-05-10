@@ -2,7 +2,7 @@
   <TypeSignature Language="C#" Value="public class KnowledgeModel : SemWeb.Store" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
-    <AssemblyVersion>1.0.1953.17509</AssemblyVersion>
+    <AssemblyVersion>1.0.1954.18463</AssemblyVersion>
   </AssemblyInfo>
   <Base>
     <BaseTypeName>SemWeb.Store</BaseTypeName>
@@ -81,6 +81,21 @@
       </Docs>
     </Member>
     
+  <Member MemberName="AddReasoning">
+      <MemberSignature Language="C#" Value="public void AddReasoning (SemWeb.Reasoning.ReasoningEngine engine);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="engine" Type="SemWeb.Reasoning.ReasoningEngine" />
+      </Parameters>
+      <Docs>
+        <param name="engine">To be added.</param>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
   </Members>
   <Docs>
     <summary>A store for combining multiple stores and inference engines.</summary>

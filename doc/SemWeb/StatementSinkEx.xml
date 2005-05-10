@@ -1,0 +1,46 @@
+<Type Name="StatementSinkEx" FullName="SemWeb.StatementSinkEx">
+  <TypeSignature Language="C#" Value="public interface StatementSinkEx : SemWeb.StatementSink" />
+  <AssemblyInfo>
+    <AssemblyName>SemWeb</AssemblyName>
+    <AssemblyVersion>1.0.1954.18463</AssemblyVersion>
+  </AssemblyInfo>
+  <Interfaces>
+    <Interface>
+      <InterfaceName>SemWeb.StatementSink</InterfaceName>
+    </Interface>
+  </Interfaces>
+  <Members>
+    <Member MemberName="CreateAnonymousEntity">
+      <MemberSignature Language="C#" Value="public SemWeb.Entity CreateAnonymousEntity ();" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>SemWeb.Entity</ReturnType>
+      </ReturnValue>
+      <Parameters />
+      <Docs>
+        <summary>Creates a new anonymous entity tracked by this StatementSinkEx.</summary>
+        <returns>A new anonymous entity.</returns>
+        <remarks>None.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Import">
+      <MemberSignature Language="C#" Value="public void Import (SemWeb.RdfParser parser);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="parser" Type="SemWeb.RdfParser" />
+      </Parameters>
+      <Docs>
+        <param name="parser">The parser whose contents should be imported.</param>
+        <summary>Imports the contents of a RdfParser.</summary>
+        <remarks>See <see cref="M:SemWeb.Store.Import(SemWeb.RdfParser)" />.</remarks>
+      </Docs>
+    </Member>
+  </Members>
+  <Docs>
+    <summary>An extended StatementSink with extra support for creating new anonymous nodes.</summary>
+    <remarks>None.</remarks>
+  </Docs>
+</Type>

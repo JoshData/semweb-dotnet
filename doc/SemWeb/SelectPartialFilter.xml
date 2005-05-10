@@ -1,0 +1,139 @@
+<Type Name="SelectPartialFilter" FullName="SemWeb.SelectPartialFilter">
+  <TypeSignature Language="C#" Value="public struct SelectPartialFilter" />
+  <AssemblyInfo>
+    <AssemblyName>SemWeb</AssemblyName>
+    <AssemblyVersion>1.0.1954.18463</AssemblyVersion>
+  </AssemblyInfo>
+  <Base>
+    <BaseTypeName>System.ValueType</BaseTypeName>
+  </Base>
+  <Interfaces />
+  <Members>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public SelectPartialFilter (bool subject, bool predicate, bool object, bool meta);" />
+      <MemberType>Constructor</MemberType>
+      <Parameters>
+        <Parameter Name="subject" Type="System.Boolean" />
+        <Parameter Name="predicate" Type="System.Boolean" />
+        <Parameter Name="object" Type="System.Boolean" />
+        <Parameter Name="meta" Type="System.Boolean" />
+      </Parameters>
+      <Docs>
+        <param name="subject">
+          <see langword="true" /> to fill in the Subject field of statements, <see langword="false" /> to leave the field blank.</param>
+        <param name="predicate">
+          <see langword="true" /> to fill in the Predicate field of statements, <see langword="false" /> to leave the field blank.</param>
+        <param name="object">
+          <see langword="true" /> to fill in the Object field of statements, <see langword="false" /> to leave the field blank.</param>
+        <param name="meta">
+          <see langword="true" /> to fill in the Meta field of statements, <see langword="false" /> to leave the field blank.</param>
+        <summary>Constructs a new SelectPartialFilter.</summary>
+        <remarks>None.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="All">
+      <MemberSignature Language="C#" Value="public static readonly SemWeb.SelectPartialFilter All;" />
+      <MemberType>Field</MemberType>
+      <ReturnValue>
+        <ReturnType>SemWeb.SelectPartialFilter</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>A SelectPartialFilter which has all of its properties set to <see langword="true" /></summary>
+        <remarks>This is the default filter used in Select calls without a SelectPartialFilter parameter.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Subject">
+      <MemberSignature Language="C#" Value="public bool Subject { get; };" />
+      <MemberType>Property</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Boolean</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Whether the Subject field of statements should be filled in.</summary>
+        <value>
+          <see langword="true" /> to fill in the Subject field of statements, <see langword="false" /> to leave the field blank.</value>
+        <remarks>None.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Predicate">
+      <MemberSignature Language="C#" Value="public bool Predicate { get; };" />
+      <MemberType>Property</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Boolean</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Whether the Predicate field of statements should be filled in.</summary>
+        <value>
+          <see langword="true" /> to fill in the Predicate field of statements, <see langword="false" /> to leave the field blank.</value>
+        <remarks>None.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Object">
+      <MemberSignature Language="C#" Value="public bool Object { get; };" />
+      <MemberType>Property</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Boolean</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Whether the Object field of statements should be filled in.</summary>
+        <value>
+          <see langword="true" /> to fill in the Object field of statements, <see langword="false" /> to leave the field blank.</value>
+        <remarks>None.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Meta">
+      <MemberSignature Language="C#" Value="public bool Meta { get; };" />
+      <MemberType>Property</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Boolean</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Whether the Meta field of statements should be filled in.</summary>
+        <value>
+          <see langword="true" /> to fill in the Meta field of statements, <see langword="false" /> to leave the field blank.</value>
+        <remarks>None.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="SelectAll">
+      <MemberSignature Language="C#" Value="public bool SelectAll { get; };" />
+      <MemberType>Property</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Boolean</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Returns whether the Subject, Predicate, Object, and Meta properties are all <see langword="true" />.</summary>
+        <value>Returns whether the Subject, Predicate, Object, and Meta properties are all true.</value>
+        <remarks>None.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="SelectNone">
+      <MemberSignature Language="C#" Value="public bool SelectNone { get; };" />
+      <MemberType>Property</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Boolean</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Returns whether the Subject, Predicate, Object, and Meta properties are all <see langword="false" />.</summary>
+        <value>Returns whether the Subject, Predicate, Object, and Meta properties are all <see langword="false" />.</value>
+        <remarks>None.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="SelectFirst">
+      <MemberSignature Language="C#" Value="public bool SelectFirst { set; get; };" />
+      <MemberType>Property</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Boolean</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Indicates whether only the first matching result in a Select call is needed.</summary>
+        <value>
+          <see langword="true" /> if only the first matching result in a Select call should be returned.  <see langword="false" /> to return all matching statements.</value>
+        <remarks>The default is <see langword="false" />.</remarks>
+      </Docs>
+    </Member>
+  </Members>
+  <Docs>
+    <summary>Indicates which fields of a statement are to be returned in a call to <see cref="M:SemWeb.Store.Select" />.</summary>
+    <remarks>None.</remarks>
+  </Docs>
+</Type>

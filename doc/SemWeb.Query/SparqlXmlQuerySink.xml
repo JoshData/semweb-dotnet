@@ -1,0 +1,31 @@
+<Type Name="SparqlXmlQuerySink" FullName="SemWeb.Query.SparqlXmlQuerySink">
+  <TypeSignature Language="C#" Value="public class SparqlXmlQuerySink : SemWeb.Query.QueryResultSink" />
+  <AssemblyInfo>
+    <AssemblyName>SemWeb</AssemblyName>
+    <AssemblyVersion>1.0.1954.18463</AssemblyVersion>
+  </AssemblyInfo>
+  <Base>
+    <BaseTypeName>SemWeb.Query.QueryResultSink</BaseTypeName>
+  </Base>
+  <Interfaces />
+  <Members>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public SparqlXmlQuerySink (System.Xml.XmlWriter output, string variableNamespace);" />
+      <MemberType>Constructor</MemberType>
+      <Parameters>
+        <Parameter Name="output" Type="System.Xml.XmlWriter" />
+        <Parameter Name="variableNamespace" Type="System.String" />
+      </Parameters>
+      <Docs>
+        <param name="output">To be added.</param>
+        <param name="variableNamespace">To be added.</param>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+  </Members>
+  <Docs>
+    <summary>To be added.</summary>
+    <remarks>To be added.</remarks>
+  </Docs>
+</Type>

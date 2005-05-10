@@ -2,7 +2,7 @@
   <TypeSignature Language="C#" Value="public class MemoryStore : SemWeb.Store, System.Collections.IEnumerable" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
-    <AssemblyVersion>1.0.1953.17509</AssemblyVersion>
+    <AssemblyVersion>1.0.1954.18463</AssemblyVersion>
   </AssemblyInfo>
   <Base>
     <BaseTypeName>SemWeb.Store</BaseTypeName>
@@ -22,9 +22,20 @@
         <ReturnType>System.Collections.IList</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
+        <summary>A list of statements in the MemoryStore.</summary>
+        <value>A list of the <see cref="T:SemWeb.Statement" />s in the store.</value>
+        <remarks>
+          <example>
+The contents of this property can also be accessed by looping over the MemoryStore object itself, since it implements IEnumerable:
+<code lang="C#">
+foreach (Statement s in memoryStore.Statements)
+  Console.WriteLine(s);
+// equivalent to:
+foreach (Statement s in memoryStore)
+  Console.WriteLine(s);
+</code>
+</example>
+        </remarks>
       </Docs>
     </Member>
   <Member MemberName=".ctor">
@@ -32,8 +43,8 @@
       <MemberType>Constructor</MemberType>
       <Parameters />
       <Docs>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
+        <summary>Creates a new empty MemoryStore.</summary>
+        <remarks>None.</remarks>
       </Docs>
     </Member>
   <Member MemberName=".ctor">
@@ -43,9 +54,9 @@
         <Parameter Name="parser" Type="SemWeb.RdfParser" />
       </Parameters>
       <Docs>
-        <param name="parser">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
+        <param name="parser">A RdfParser, the contents of which are read into the memory store.</param>
+        <summary>Creates a new MemoryStore and imports data from a parser.</summary>
+        <remarks>None.</remarks>
       </Docs>
     </Member>
   </Members>

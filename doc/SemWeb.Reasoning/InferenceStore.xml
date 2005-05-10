@@ -2,7 +2,7 @@
   <TypeSignature Language="C#" Value="public class InferenceStore : SemWeb.Store" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
-    <AssemblyVersion>1.0.1953.17509</AssemblyVersion>
+    <AssemblyVersion>1.0.1954.18463</AssemblyVersion>
   </AssemblyInfo>
   <Base>
     <BaseTypeName>SemWeb.Store</BaseTypeName>
@@ -36,15 +36,29 @@
       </Docs>
     </Member>
     <Member MemberName="Engine">
-      <MemberSignature Language="C#" Value="public SemWeb.ReasoningEngine Engine { get; };" />
+      <MemberSignature Language="C#" Value="public SemWeb.Reasoning.ReasoningEngine Engine { get; };" />
       <MemberType>Property</MemberType>
       <ReturnValue>
-        <ReturnType>SemWeb.ReasoningEngine</ReturnType>
+        <ReturnType>SemWeb.Reasoning.ReasoningEngine</ReturnType>
       </ReturnValue>
       <Docs>
         <summary>The reasoning engine passed to the constructor.</summary>
         <value>The reasoning engine passed to the constructor.</value>
         <remarks>None.</remarks>
+      </Docs>
+    </Member>
+  <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public InferenceStore (SemWeb.Store store, SemWeb.Reasoning.ReasoningEngine engine);" />
+      <MemberType>Constructor</MemberType>
+      <Parameters>
+        <Parameter Name="store" Type="SemWeb.Store" />
+        <Parameter Name="engine" Type="SemWeb.Reasoning.ReasoningEngine" />
+      </Parameters>
+      <Docs>
+        <param name="store">To be added.</param>
+        <param name="engine">To be added.</param>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>
