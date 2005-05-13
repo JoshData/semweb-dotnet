@@ -3,6 +3,17 @@ using System.Collections;
 
 namespace SemWeb {
 	
+	public class NS {
+		public const string RDF = "http://www.w3.org/1999/02/22-rdf-syntax-ns#";
+	
+		/*Entity entRDFTYPE = "http://www.w3.org/1999/02/22-rdf-syntax-ns#type";
+		Entity entRDFFIRST = "http://www.w3.org/1999/02/22-rdf-syntax-ns#first";
+		Entity entRDFREST = "http://www.w3.org/1999/02/22-rdf-syntax-ns#rest";
+		Entity entRDFNIL = "http://www.w3.org/1999/02/22-rdf-syntax-ns#nil";
+		Entity entOWLSAMEAS = "http://www.w3.org/2002/07/owl#sameAs";
+		Entity entLOGIMPLIES = "http://www.w3.org/2000/10/swap/log#implies";*/
+	}
+	
 	public class NamespaceManager {
 		NamespaceManager parent;
 		Hashtable atob = new Hashtable();
@@ -84,11 +95,21 @@ namespace SemWeb {
 		}
 		
 		public ICollection GetNamespaces() {
-			return atob.Keys;
+			if (parent == null) return atob.Keys;
+			ArrayList items = new ArrayList(atob.Keys);
+			foreach (string ns in parent.GetNamespaces())
+				if (!items.Contains(ns))
+					items.Add(ns);
+			return items;
 		}
 
 		public ICollection GetPrefixes() {
-			return atob.Values;
+			if (parent == null) return atob.Values;
+			ArrayList items = new ArrayList(atob.Values);
+			foreach (string ns in parent.GetPrefixes())
+				if (!items.Contains(ns))
+					items.Add(ns);
+			return items;
 		}
 	}
 }
