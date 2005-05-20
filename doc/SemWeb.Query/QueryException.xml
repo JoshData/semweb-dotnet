@@ -2,7 +2,7 @@
   <TypeSignature Language="C#" Value="public class QueryException : System.ApplicationException" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
-    <AssemblyVersion>0.9.1960.25689</AssemblyVersion>
+    <AssemblyVersion>0.9.1966.18518</AssemblyVersion>
   </AssemblyInfo>
   <Base>
     <BaseTypeName>System.ApplicationException</BaseTypeName>

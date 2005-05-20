@@ -2,7 +2,7 @@
   <TypeSignature Language="C#" Value="public class MemoryStore : SemWeb.Store, System.Collections.IEnumerable" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
-    <AssemblyVersion>0.9.1960.25689</AssemblyVersion>
+    <AssemblyVersion>0.9.1966.18518</AssemblyVersion>
   </AssemblyInfo>
   <Base>
     <BaseTypeName>SemWeb.Store</BaseTypeName>
@@ -48,13 +48,13 @@ foreach (Statement s in memoryStore)
       </Docs>
     </Member>
   <Member MemberName=".ctor">
-      <MemberSignature Language="C#" Value="public MemoryStore (SemWeb.RdfParser parser);" />
+      <MemberSignature Language="C#" Value="public MemoryStore (SemWeb.RdfReader parser);" />
       <MemberType>Constructor</MemberType>
       <Parameters>
-        <Parameter Name="parser" Type="SemWeb.RdfParser" />
+        <Parameter Name="parser" Type="SemWeb.RdfReader" />
       </Parameters>
       <Docs>
-        <param name="parser">A RdfParser, the contents of which are read into the memory store.</param>
+        <param name="parser">A RdfReader, the contents of which are read into the memory store.</param>
         <summary>Creates a new MemoryStore and imports data from a parser.</summary>
         <remarks>None.</remarks>
       </Docs>

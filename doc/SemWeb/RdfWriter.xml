@@ -2,7 +2,7 @@
   <TypeSignature Language="C#" Value="public abstract class RdfWriter : SemWeb.StatementSinkEx, System.IDisposable" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
-    <AssemblyVersion>0.9.1960.25689</AssemblyVersion>
+    <AssemblyVersion>0.9.1966.18518</AssemblyVersion>
   </AssemblyInfo>
   <Base>
     <BaseTypeName>System.Object</BaseTypeName>
@@ -153,13 +153,13 @@
       </Docs>
     </Member>
   <Member MemberName="Import">
-      <MemberSignature Language="C#" Value="public virtual void Import (SemWeb.RdfParser parser);" />
+      <MemberSignature Language="C#" Value="public virtual void Import (SemWeb.RdfReader parser);" />
       <MemberType>Method</MemberType>
       <ReturnValue>
         <ReturnType>System.Void</ReturnType>
       </ReturnValue>
       <Parameters>
-        <Parameter Name="parser" Type="SemWeb.RdfParser" />
+        <Parameter Name="parser" Type="SemWeb.RdfReader" />
       </Parameters>
       <Docs>
         <param name="parser">To be added.</param>

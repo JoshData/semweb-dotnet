@@ -2,7 +2,7 @@
   <TypeSignature Language="C#" Value="public interface StatementSinkEx : SemWeb.StatementSink" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
-    <AssemblyVersion>0.9.1960.25689</AssemblyVersion>
+    <AssemblyVersion>0.9.1966.18518</AssemblyVersion>
   </AssemblyInfo>
   <Interfaces>
     <Interface>
@@ -24,18 +24,18 @@
       </Docs>
     </Member>
     <Member MemberName="Import">
-      <MemberSignature Language="C#" Value="public void Import (SemWeb.RdfParser parser);" />
+      <MemberSignature Language="C#" Value="public void Import (SemWeb.RdfReader parser);" />
       <MemberType>Method</MemberType>
       <ReturnValue>
         <ReturnType>System.Void</ReturnType>
       </ReturnValue>
       <Parameters>
-        <Parameter Name="parser" Type="SemWeb.RdfParser" />
+        <Parameter Name="parser" Type="SemWeb.RdfReader" />
       </Parameters>
       <Docs>
         <param name="parser">The parser whose contents should be imported.</param>
-        <summary>Imports the contents of a RdfParser.</summary>
-        <remarks>See <see cref="M:SemWeb.Store.Import(SemWeb.RdfParser)" />.</remarks>
+        <summary>Imports the contents of a RdfReader.</summary>
+        <remarks>See <see cref="M:SemWeb.Store.Import(SemWeb.RdfReader)" />.</remarks>
       </Docs>
     </Member>
   </Members>

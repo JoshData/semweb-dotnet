@@ -1,8 +1,8 @@
-<Type Name="RdfParser" FullName="SemWeb.RdfParser">
-  <TypeSignature Language="C#" Value="public abstract class RdfParser : System.IDisposable" />
+<Type Name="RdfReader" FullName="SemWeb.RdfReader">
+  <TypeSignature Language="C#" Value="public abstract class RdfReader : System.IDisposable" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
-    <AssemblyVersion>0.9.1960.25689</AssemblyVersion>
+    <AssemblyVersion>0.9.1966.18518</AssemblyVersion>
   </AssemblyInfo>
   <Base>
     <BaseTypeName>System.Object</BaseTypeName>
@@ -14,7 +14,7 @@
   </Interfaces>
   <Members>
     <Member MemberName=".ctor">
-      <MemberSignature Language="C#" Value="protected RdfParser ();" />
+      <MemberSignature Language="C#" Value="protected RdfReader ();" />
       <MemberType>Constructor</MemberType>
       <Parameters />
       <Docs>
@@ -36,10 +36,10 @@
       </Docs>
     </Member>
     <Member MemberName="Create">
-      <MemberSignature Language="C#" Value="public static SemWeb.RdfParser Create (string type, string source);" />
+      <MemberSignature Language="C#" Value="public static SemWeb.RdfReader Create (string type, string source);" />
       <MemberType>Method</MemberType>
       <ReturnValue>
-        <ReturnType>SemWeb.RdfParser</ReturnType>
+        <ReturnType>SemWeb.RdfReader</ReturnType>
       </ReturnValue>
       <Parameters>
         <Parameter Name="type" Type="System.String" />
@@ -57,18 +57,18 @@
     <term>
                 <paramref name="type" />
               </term>
-    <description>Parser</description>
+    <description>Reader</description>
   </listheader>
   <item>
     <term>"xml" or "text/xml"</term>
     <description>
-                <see cref="T:SemWeb.IO.RdfXmlParser" />
+                <see cref="T:SemWeb.IO.RdfXmlReader" />
               </description>
   </item>
   <item>
     <term>"n3" or "text/n3"</term>
     <description>
-                <see cref="T:SemWeb.IO.N3Parser" />
+                <see cref="T:SemWeb.IO.N3Reader" />
               </description>
   </item>
 </list></returns>
@@ -111,7 +111,7 @@
       </Parameters>
       <Docs>
         <param name="message">A warning message.</param>
-        <summary>Implementors of RdfParser may call this method to indicate a parsing warning.</summary>
+        <summary>Implementors of RdfReader may call this method to indicate a parsing warning.</summary>
         <remarks>This is not currently used for anything.</remarks>
       </Docs>
     </Member>
@@ -140,7 +140,7 @@
       <Docs>
         <param name="storage">Each statement found in the stream is added to the statement sink via <see cref="M:SemWeb.StatementSink.Add(SemWeb.Statement)" />.</param>
         <summary>Parses the stream into the statement sink.</summary>
-        <remarks>User code should call <see cref="M:SemWeb.Store.Import(SemWeb.RdfParser)" /> rather than calling this method directly.</remarks>
+        <remarks>User code should call <see cref="M:SemWeb.Store.Import(SemWeb.RdfReader)" /> rather than calling this method directly.</remarks>
       </Docs>
     </Member>
   <Member MemberName="AddVariable">

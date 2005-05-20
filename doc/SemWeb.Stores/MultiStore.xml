@@ -2,7 +2,7 @@
   <TypeSignature Language="C#" Value="public class MultiStore : SemWeb.Store" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
-    <AssemblyVersion>0.9.1960.25689</AssemblyVersion>
+    <AssemblyVersion>0.9.1966.18518</AssemblyVersion>
   </AssemblyInfo>
   <Base>
     <BaseTypeName>SemWeb.Store</BaseTypeName>
@@ -26,14 +26,14 @@
       </Docs>
     </Member>
     <Member MemberName="Add">
-      <MemberSignature Language="C#" Value="public void Add (SemWeb.Store store, SemWeb.RdfParser source);" />
+      <MemberSignature Language="C#" Value="public void Add (SemWeb.Store store, SemWeb.RdfReader source);" />
       <MemberType>Method</MemberType>
       <ReturnValue>
         <ReturnType>System.Void</ReturnType>
       </ReturnValue>
       <Parameters>
         <Parameter Name="store" Type="SemWeb.Store" />
-        <Parameter Name="source" Type="SemWeb.RdfParser" />
+        <Parameter Name="source" Type="SemWeb.RdfReader" />
       </Parameters>
       <Docs>
         <param name="store">The store to add into the group.</param>

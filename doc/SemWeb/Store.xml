@@ -2,7 +2,7 @@
   <TypeSignature Language="C#" Value="public abstract class Store : SemWeb.StatementSinkEx" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
-    <AssemblyVersion>0.9.1960.25689</AssemblyVersion>
+    <AssemblyVersion>0.9.1966.18518</AssemblyVersion>
   </AssemblyInfo>
   <Base>
     <BaseTypeName>System.Object</BaseTypeName>
@@ -94,18 +94,18 @@
       </Docs>
     </Member>
     <Member MemberName="Import">
-      <MemberSignature Language="C#" Value="public virtual void Import (SemWeb.RdfParser parser);" />
+      <MemberSignature Language="C#" Value="public virtual void Import (SemWeb.RdfReader parser);" />
       <MemberType>Method</MemberType>
       <ReturnValue>
         <ReturnType>System.Void</ReturnType>
       </ReturnValue>
       <Parameters>
-        <Parameter Name="parser" Type="SemWeb.RdfParser" />
+        <Parameter Name="parser" Type="SemWeb.RdfReader" />
       </Parameters>
       <Docs>
         <param name="parser">The parser whose statements will be added into the store.</param>
         <summary>Loads the contents of a parser into the store.</summary>
-        <remarks>This method wraps a call to <see cref="M:SemWeb.RdfParser.Parse(SemWeb.Store)" /> in store-specific code that prepares the store for receiving many statements.  The store may make itself locked for access by other processes to make the parsing faster.  To avoid this, call <see cref="M:SemWeb.RdfParser.Parse(SemWeb.Store)" /> directly.</remarks>
+        <remarks>This method wraps a call to <see cref="M:SemWeb.RdfReader.Parse(SemWeb.Store)" /> in store-specific code that prepares the store for receiving many statements.  The store may make itself locked for access by other processes to make the parsing faster.  To avoid this, call <see cref="M:SemWeb.RdfReader.Parse(SemWeb.Store)" /> directly.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Contains">

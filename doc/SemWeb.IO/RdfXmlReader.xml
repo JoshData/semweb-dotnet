@@ -1,16 +1,16 @@
-<Type Name="RdfXmlParser" FullName="SemWeb.IO.RdfXmlParser">
-  <TypeSignature Language="C#" Value="public class RdfXmlParser : SemWeb.RdfParser" />
+<Type Name="RdfXmlReader" FullName="SemWeb.IO.RdfXmlReader">
+  <TypeSignature Language="C#" Value="public class RdfXmlReader : SemWeb.RdfReader" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
-    <AssemblyVersion>0.9.1960.25689</AssemblyVersion>
+    <AssemblyVersion>0.9.1966.18518</AssemblyVersion>
   </AssemblyInfo>
   <Base>
-    <BaseTypeName>SemWeb.RdfParser</BaseTypeName>
+    <BaseTypeName>SemWeb.RdfReader</BaseTypeName>
   </Base>
   <Interfaces />
   <Members>
     <Member MemberName=".ctor">
-      <MemberSignature Language="C#" Value="public RdfXmlParser (System.Xml.XmlDocument document);" />
+      <MemberSignature Language="C#" Value="public RdfXmlReader (System.Xml.XmlDocument document);" />
       <MemberType>Constructor</MemberType>
       <Parameters>
         <Parameter Name="document" Type="System.Xml.XmlDocument" />
@@ -22,7 +22,7 @@
       </Docs>
     </Member>
     <Member MemberName=".ctor">
-      <MemberSignature Language="C#" Value="public RdfXmlParser (System.Xml.XmlReader document);" />
+      <MemberSignature Language="C#" Value="public RdfXmlReader (System.Xml.XmlReader document);" />
       <MemberType>Constructor</MemberType>
       <Parameters>
         <Parameter Name="document" Type="System.Xml.XmlReader" />
@@ -34,7 +34,7 @@
       </Docs>
     </Member>
     <Member MemberName=".ctor">
-      <MemberSignature Language="C#" Value="public RdfXmlParser (System.IO.TextReader document);" />
+      <MemberSignature Language="C#" Value="public RdfXmlReader (System.IO.TextReader document);" />
       <MemberType>Constructor</MemberType>
       <Parameters>
         <Parameter Name="document" Type="System.IO.TextReader" />
@@ -46,7 +46,7 @@
       </Docs>
     </Member>
     <Member MemberName=".ctor">
-      <MemberSignature Language="C#" Value="public RdfXmlParser (System.IO.Stream document);" />
+      <MemberSignature Language="C#" Value="public RdfXmlReader (System.IO.Stream document);" />
       <MemberType>Constructor</MemberType>
       <Parameters>
         <Parameter Name="document" Type="System.IO.Stream" />
@@ -58,7 +58,7 @@
       </Docs>
     </Member>
     <Member MemberName=".ctor">
-      <MemberSignature Language="C#" Value="public RdfXmlParser (string file);" />
+      <MemberSignature Language="C#" Value="public RdfXmlReader (string file);" />
       <MemberType>Constructor</MemberType>
       <Parameters>
         <Parameter Name="file" Type="System.String" />
@@ -73,7 +73,7 @@
   <Docs>
     <summary>Reads RDF statements from an RDF/XML file.</summary>
     <remarks>
-      <para>The RdfXmlParser loads the complete XML document into memory before any statements are made available.</para>
+      <para>The RdfXmlReader loads the complete XML document into memory before any statements are made available.</para>
     </remarks>
   </Docs>
 </Type>

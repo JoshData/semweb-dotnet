@@ -1,8 +1,8 @@
-<Type Name="ParserException" FullName="SemWeb.ParserException">
+<Type Name="ReaderException" FullName="SemWeb.ReaderException">
   <TypeSignature Language="C#" Value="public class ParserException : System.ApplicationException" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
-    <AssemblyVersion>0.9.1960.25689</AssemblyVersion>
+    <AssemblyVersion>0.9.1966.18518</AssemblyVersion>
   </AssemblyInfo>
   <Base>
     <BaseTypeName>System.ApplicationException</BaseTypeName>
@@ -17,7 +17,7 @@
       </Parameters>
       <Docs>
         <param name="message">To be added.</param>
-        <summary>Creates a new ParserException.</summary>
+        <summary>Creates a new ReaderException.</summary>
         <remarks>None.</remarks>
       </Docs>
     </Member>

@@ -12,7 +12,6 @@
     <Namespace Name="SemWeb">
       <Type Name="StatementSink" />
       <Type Name="Store" />
-      <Type Name="RdfParser" />
       <Type Name="RdfWriter" />
       <Type Name="NamespaceManager" />
       <Type Name="ParserException" />
@@ -24,6 +23,7 @@
       <Type Name="SelectPartialFilter" />
       <Type Name="StatementSinkEx" />
       <Type Name="MemoryStore" />
+      <Type Name="RdfReader" />
     </Namespace>
     <Namespace Name="SemWeb.Query">
       <Type Name="QueryException" />
@@ -47,12 +47,12 @@
       <Type Name="KnowledgeModel" />
     </Namespace>
     <Namespace Name="SemWeb.IO">
-      <Type Name="N3Parser" />
       <Type Name="N3Writer" />
       <Type Name="SQLWriter" />
-      <Type Name="RdfXmlParser" />
       <Type Name="RdfXmlWriter" />
       <Type Name="RdfCompactWriter" />
+      <Type Name="N3Reader" />
+      <Type Name="RdfXmlReader" />
     </Namespace>
     <Namespace Name="SemWeb.Reasoning">
       <Type Name="RDFSReasoning" />

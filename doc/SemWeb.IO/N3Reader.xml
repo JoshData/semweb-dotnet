@@ -1,16 +1,16 @@
-<Type Name="N3Parser" FullName="SemWeb.IO.N3Parser">
-  <TypeSignature Language="C#" Value="public class N3Parser : SemWeb.RdfParser" />
+<Type Name="N3Reader" FullName="SemWeb.IO.N3Reader">
+  <TypeSignature Language="C#" Value="public class N3Reader : SemWeb.RdfReader" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
-    <AssemblyVersion>0.9.1960.25689</AssemblyVersion>
+    <AssemblyVersion>0.9.1966.18518</AssemblyVersion>
   </AssemblyInfo>
   <Base>
-    <BaseTypeName>SemWeb.RdfParser</BaseTypeName>
+    <BaseTypeName>SemWeb.RdfReader</BaseTypeName>
   </Base>
   <Interfaces />
   <Members>
     <Member MemberName=".ctor">
-      <MemberSignature Language="C#" Value="public N3Parser (System.IO.TextReader source);" />
+      <MemberSignature Language="C#" Value="public N3Reader (System.IO.TextReader source);" />
       <MemberType>Constructor</MemberType>
       <Parameters>
         <Parameter Name="source" Type="System.IO.TextReader" />
@@ -22,7 +22,7 @@
       </Docs>
     </Member>
     <Member MemberName=".ctor">
-      <MemberSignature Language="C#" Value="public N3Parser (string sourcefile);" />
+      <MemberSignature Language="C#" Value="public N3Reader (string sourcefile);" />
       <MemberType>Constructor</MemberType>
       <Parameters>
         <Parameter Name="sourcefile" Type="System.String" />
