@@ -1,8 +1,8 @@
-<Type Name="N3Reader" FullName="SemWeb.IO.N3Reader">
+<Type Name="N3Reader" FullName="SemWeb.N3Reader">
   <TypeSignature Language="C#" Value="public class N3Reader : SemWeb.RdfReader" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
-    <AssemblyVersion>0.9.1966.18518</AssemblyVersion>
+    <AssemblyVersion>0.9.1966.19251</AssemblyVersion>
   </AssemblyInfo>
   <Base>
     <BaseTypeName>SemWeb.RdfReader</BaseTypeName>

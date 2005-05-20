@@ -2,7 +2,7 @@
   <TypeSignature Language="C#" Value="public abstract class RdfReader : System.IDisposable" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
-    <AssemblyVersion>0.9.1966.18518</AssemblyVersion>
+    <AssemblyVersion>0.9.1966.19251</AssemblyVersion>
   </AssemblyInfo>
   <Base>
     <BaseTypeName>System.Object</BaseTypeName>
@@ -62,13 +62,13 @@
   <item>
     <term>"xml" or "text/xml"</term>
     <description>
-                <see cref="T:SemWeb.IO.RdfXmlReader" />
+                <see cref="T:SemWeb.RdfXmlReader" />
               </description>
   </item>
   <item>
     <term>"n3" or "text/n3"</term>
     <description>
-                <see cref="T:SemWeb.IO.N3Reader" />
+                <see cref="T:SemWeb.N3Reader" />
               </description>
   </item>
 </list></returns>

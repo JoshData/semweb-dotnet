@@ -2,7 +2,7 @@
   <TypeSignature Language="C#" Value="public abstract class Store : SemWeb.StatementSinkEx" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
-    <AssemblyVersion>0.9.1966.18518</AssemblyVersion>
+    <AssemblyVersion>0.9.1966.19251</AssemblyVersion>
   </AssemblyInfo>
   <Base>
     <BaseTypeName>System.Object</BaseTypeName>
@@ -461,11 +461,11 @@
   </item>
   <item>
     <term>xml:[filename]</term>
-    <description>A <see cref="T:SemWeb.IO.RdfXmlWriter" /> opened on the given file.</description>
+    <description>A <see cref="T:SemWeb.RdfXmlWriter" /> opened on the given file.</description>
   </item>
   <item>
     <term>n3:[filename]</term>
-    <description>A <see cref="T:SemWeb.IO.N3Writer" /> opened on the given file.</description>
+    <description>A <see cref="T:SemWeb.N3Writer" /> opened on the given file.</description>
   </item>
   <item>
     <term>sql:[table]</term>

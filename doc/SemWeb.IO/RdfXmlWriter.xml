@@ -1,8 +1,8 @@
-<Type Name="RdfXmlWriter" FullName="SemWeb.IO.RdfXmlWriter">
+<Type Name="RdfXmlWriter" FullName="SemWeb.RdfXmlWriter">
   <TypeSignature Language="C#" Value="public class RdfXmlWriter : SemWeb.RdfWriter" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
-    <AssemblyVersion>0.9.1966.18518</AssemblyVersion>
+    <AssemblyVersion>0.9.1966.19251</AssemblyVersion>
   </AssemblyInfo>
   <Base>
     <BaseTypeName>SemWeb.RdfWriter</BaseTypeName>

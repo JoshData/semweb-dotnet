@@ -1,8 +1,8 @@
-<Type Name="N3Writer" FullName="SemWeb.IO.N3Writer">
+<Type Name="N3Writer" FullName="SemWeb.N3Writer">
   <TypeSignature Language="C#" Value="public class N3Writer : SemWeb.RdfWriter" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
-    <AssemblyVersion>0.9.1966.18518</AssemblyVersion>
+    <AssemblyVersion>0.9.1966.19251</AssemblyVersion>
   </AssemblyInfo>
   <Base>
     <BaseTypeName>SemWeb.RdfWriter</BaseTypeName>
@@ -16,9 +16,9 @@
         <Parameter Name="file" Type="System.String" />
       </Parameters>
       <Docs>
-        <param name="file">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
+        <param name="file">The path to a file where the statements will be stored, or "-" to output to Console.Out.</param>
+        <summary>Creates an N3Writer that outputs statements to a file.</summary>
+        <remarks>None.</remarks>
       </Docs>
     </Member>
     <Member MemberName=".ctor">
@@ -29,10 +29,10 @@
         <Parameter Name="ns" Type="SemWeb.NamespaceManager" />
       </Parameters>
       <Docs>
-        <param name="file">To be added.</param>
-        <param name="ns">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
+        <param name="file">The path to a file where the statements will be stored, or "-" to output to Console.Out.</param>
+        <param name="ns">A NamespaceManager containing a mapping from prefixes to namespace URIs.</param>
+        <summary>Creates an N3Writer that outputs statements to a file, using a list of namespace prefixes.</summary>
+        <remarks>A "@prefix" directive is written for each prefix in the NamespaceManager, if <see cref="P:SemWeb.N3Writer.NTriples" /> is <see langword="false" />, which is the default. The NamespaceManager should not be modified once statements have been written.</remarks>
       </Docs>
     </Member>
     <Member MemberName=".ctor">
@@ -42,9 +42,9 @@
         <Parameter Name="writer" Type="System.IO.TextWriter" />
       </Parameters>
       <Docs>
-        <param name="writer">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
+        <param name="writer">The TextWriter to which statements will be written.</param>
+        <summary>Creates an N3Writer that outputs statements to a TextWriter.</summary>
+        <remarks>None.</remarks>
       </Docs>
     </Member>
     <Member MemberName=".ctor">
@@ -55,15 +55,28 @@
         <Parameter Name="ns" Type="SemWeb.NamespaceManager" />
       </Parameters>
       <Docs>
-        <param name="writer">To be added.</param>
-        <param name="ns">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
+        <param name="writer">The TextWriter to which statements will be written.</param>
+        <param name="ns">A NamespaceManager containing a mapping from prefixes to namespace URIs.</param>
+        <summary>Creates an N3Writer that outputs statements to a TextWriter, using a list of namespace prefixes.</summary>
+        <remarks>A "@prefix" directive is written for each prefix in the NamespaceManager, if <see cref="P:SemWeb.N3Writer.NTriples" /> is <see langword="false" />, which is the default. The NamespaceManager should not be modified once statements have been written.</remarks>
+      </Docs>
+    </Member>
+  
+  <Member MemberName="NTriples">
+      <MemberSignature Language="C#" Value="public bool NTriples { set; get; };" />
+      <MemberType>Property</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Boolean</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Gets or sets whether the writer will output strict NTriples, or full N3.</summary>
+        <value>True if the write will output strict NTriples, false to output full N3.</value>
+        <remarks>The default value is <see langword="false" />.</remarks>
       </Docs>
     </Member>
   </Members>
   <Docs>
-    <summary>To be added.</summary>
-    <remarks>To be added.</remarks>
+    <summary>Writes out RDF statements to a stream in Notation 3 or NTriples format.</summary>
+    <remarks>None.</remarks>
   </Docs>
 </Type>
