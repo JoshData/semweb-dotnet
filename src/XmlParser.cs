@@ -8,7 +8,7 @@ using D = Drive.Rdf.RdfXmlParser;
  
 using SemWeb;
 
-namespace SemWeb.IO {
+namespace SemWeb {
 	public class RdfXmlReader : RdfReader {
 		XmlDocument doc;
 		Hashtable resources = new Hashtable();

@@ -3,7 +3,7 @@ using System.IO;
 
 using SemWeb;
 
-namespace SemWeb.IO {
+namespace SemWeb {
 	public class N3Writer : RdfWriter {
 		TextWriter writer;
 		NamespaceManager ns;
@@ -14,6 +14,8 @@ namespace SemWeb.IO {
 		
 		long anonCounter = 0;
 		
+		bool ntriples = false;
+		
 		public N3Writer(string file) : this(file, null) { }
 		
 		public N3Writer(string file, NamespaceManager ns) : this(GetWriter(file), ns) { }
@@ -21,12 +23,12 @@ namespace SemWeb.IO {
 		public N3Writer(TextWriter writer) : this(writer, null) { }
 		
 		public N3Writer(TextWriter writer, NamespaceManager ns) {
-			if (ns == null)
-				ns = new NamespaceManager();
 			this.writer = writer; this.ns = ns;
 		}
 		
 		public override NamespaceManager Namespaces { get { return ns; } }
+		
+		public bool NTriples { get { return ntriples; } set { ntriples = value; } }
 		
 		public override void WriteStatement(string subj, string pred, string obj) {
 			WriteStatement2(URI(subj), URI(pred), URI(obj));
@@ -61,6 +63,7 @@ namespace SemWeb.IO {
 				if (ok)
 					return ":" + uri.Substring(len);
 			}
+			if (NTriples || ns == null) return "<" + uri + ">";
 			return ns.Normalize(uri);
 		}
 		
@@ -71,8 +74,18 @@ namespace SemWeb.IO {
 		
 		private void WriteStatement2(string subj, string pred, string obj) {
 			closed = false;
+			
+			if (!hasWritten && ns != null && !NTriples) {
+				foreach (string prefix in ns.GetPrefixes()) {
+					writer.Write("@prefix ");
+					writer.Write(prefix);
+					writer.Write(": <");
+					writer.Write(ns.GetNamespace(prefix));
+					writer.Write("> .\n");
+				}
+			}
 
-			if (lastSubject != null && lastSubject == subj) {
+			if (lastSubject != null && lastSubject == subj && !NTriples) {
 				if (lastPredicate != null && lastPredicate == pred) {
 					writer.Write(",\n\t\t");
 					WriteThing(obj);

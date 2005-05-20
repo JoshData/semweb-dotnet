@@ -4,6 +4,11 @@
 
 </summary>
     <remarks><para>Classes that inherit from <see cref="T:SemWeb.Store" /> are repositories of <see cref="T:SemWeb.Statement" />s about <see cref="T:SemWeb.Resource" />s (<see cref="T:SemWeb.Entity" />s and <see cref="T:SemWeb.Literal" />s).</para>
+
+<para>The <see cref="T:SemWeb.N3Reader" /> and <see cref="T:SemWeb.N3Writer" /> are used for reading and writing data in Notation 3 format.  Most of the N3 specification is supported, including everything in NTriples and Turtle.  N3 is the recommended format for IO because reading and writing N3 data does not require loading the entire data source into memory.</para>
+
+<para>The <see cref="T:SemWeb.RdfXmlReader" /> and <see cref="T:SemWeb.RdfXmlWriter" /> are used for reading and writing data in RDF/XML format.  The RdfXmlReader loads the complete XML document into memory before any statements are made available.  Likewise, the RdfXmlWriter creates the entire output document in memory before writing anything to the stream.  For these reasons, the RDF/XML format is not recommended.</para>
+
 </remarks>
   </Docs>
 </Namespace>

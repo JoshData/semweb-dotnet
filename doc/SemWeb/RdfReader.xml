@@ -97,7 +97,7 @@
       <Docs>
         <summary>The base URI for resolving relative URIs found in the stream.</summary>
         <value>The base URI for resolving relative URIs found in the stream.  May be, and is initially, <see langword="null" />.  </value>
-        <remarks>When this property is <see langword="null" />, the parser may not be able to parse streams containing relative URIs.</remarks>
+        <remarks>When this property is <see langword="null" />, the parser may not be able to parse streams containing relative URIs.  Always set this property before beginning reading if the stream could possibly contain relative URIs.</remarks>
       </Docs>
     </Member>
   <Member MemberName="OnWarning">
@@ -161,6 +161,7 @@
   </Members>
   <Docs>
     <summary>The base class of types that read statements from streams.</summary>
-    <remarks>This is an abstract class. See the classes in <see cref="N:SemWeb.IO" /> for implementations of parsers.</remarks>
+    <remarks><para>This is an abstract class. Implementations of readers are provided in this namespace and in <see cref="N:SemWeb.IO" />.</para>
+</remarks>
   </Docs>
 </Type>

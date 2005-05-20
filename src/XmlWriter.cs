@@ -5,7 +5,7 @@ using System.Xml;
 
 using SemWeb;
 
-namespace SemWeb.IO {
+namespace SemWeb {
 	public class RdfXmlWriter : RdfWriter {
 		XmlWriter writer;
 		NamespaceManager ns;
@@ -158,7 +158,7 @@ namespace SemWeb.IO {
 				ns = new NamespaceManager();
 			this.writer = writer;
 			this.ns = ns;
-			autons = new AutoPrefixNamespaceManager(this.ns);
+			//autons = new AutoPrefixNamespaceManager(this.ns);
 		}
 		
 		public override NamespaceManager Namespaces { get { return ns; } }

@@ -6,7 +6,7 @@ using System.Text;
 using SemWeb;
 using SemWeb.Util;
 
-namespace SemWeb.IO {
+namespace SemWeb {
 
 	public class N3Reader : RdfReader {
 		Resource PrefixResource = new Literal("@prefix");

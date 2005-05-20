@@ -89,16 +89,16 @@ namespace SemWeb {
 				case "xml":
 					if (spec == "") throw new ArgumentException("Use: xml:filename");
 					if (output) {
-						return new SemWeb.IO.RdfXmlWriter(spec);
+						return new RdfXmlWriter(spec);
 					} else {
-						return new MemoryStore(new SemWeb.IO.RdfXmlReader(spec));
+						return new MemoryStore(new RdfXmlReader(spec));
 					}
 				case "n3":
 					if (spec == "") throw new ArgumentException("Use: n3:filename");
 					if (output) {
-						return new SemWeb.IO.N3Writer(spec);
+						return new N3Writer(spec);
 					} else {
-						return new MemoryStore(new SemWeb.IO.N3Reader(spec));
+						return new MemoryStore(new N3Reader(spec));
 					}
 				case "sql":
 					if (spec == "") throw new ArgumentException("Use: sql:tablename");
@@ -220,7 +220,7 @@ namespace SemWeb {
 		}
 		
 		public void Write(System.IO.TextWriter writer) {
-			using (RdfWriter w = new SemWeb.IO.N3Writer(writer)) {
+			using (RdfWriter w = new N3Writer(writer)) {
 				Write(w);
 			}
 		}

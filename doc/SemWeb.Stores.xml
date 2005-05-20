@@ -1,6 +1,6 @@
 <Namespace Name="SemWeb.Stores">
   <Docs>
-    <summary>To be added.</summary>
+    <summary>This namespace contains implementations of stores, which hold RDF statements.</summary>
     <remarks>To be added.</remarks>
   </Docs>
 </Namespace>

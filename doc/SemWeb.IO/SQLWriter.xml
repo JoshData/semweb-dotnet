@@ -16,9 +16,9 @@
         <Parameter Name="spec" Type="System.String" />
       </Parameters>
       <Docs>
-        <param name="spec">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
+        <param name="spec">The prefix for the names of the tables used by the writer.</param>
+        <summary>Creates a new SQLWriter that outputs to Console.Out and uses the given table name prefix.</summary>
+        <remarks>None.</remarks>
       </Docs>
     </Member>
     <Member MemberName=".ctor">
@@ -29,9 +29,9 @@
         <Parameter Name="tablename" Type="System.String" />
       </Parameters>
       <Docs>
-        <param name="file">To be added.</param>
-        <param name="tablename">To be added.</param>
-        <summary>To be added.</summary>
+        <param name="file">The name of the file to write SQL statements to, or "-" to write to Console.Out.</param>
+        <param name="tablename">The prefix for the names of the tables used by the writer.</param>
+        <summary>Creates a new SQLWriter that outputs to the names file and uses the given table name prefix.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -43,15 +43,15 @@
         <Parameter Name="tablename" Type="System.String" />
       </Parameters>
       <Docs>
-        <param name="writer">To be added.</param>
-        <param name="tablename">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
+        <param name="writer">The TextWriter to output SQL statements to.</param>
+        <param name="tablename">The prefix for the names of the tables used by the writer.</param>
+        <summary>Creates a new SQLWriter that outputs to a TextWriter and uses the given table name prefix.</summary>
+        <remarks>None.</remarks>
       </Docs>
     </Member>
   </Members>
   <Docs>
-    <summary>To be added.</summary>
-    <remarks>To be added.</remarks>
+    <summary>This class writes RDF statements to a stream as SQL suitable to be loaded into a database that will be used by <see cref="T:SemWeb.Stores.SQLStore" />.</summary>
+    <remarks>None.</remarks>
   </Docs>
 </Type>

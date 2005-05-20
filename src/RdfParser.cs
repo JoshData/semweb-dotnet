@@ -46,10 +46,10 @@ namespace SemWeb {
 			switch (type) {
 				case "xml":
 				case "text/xml":
-					return new SemWeb.IO.RdfXmlReader(source);
+					return new RdfXmlReader(source);
 				case "n3":
 				case "text/n3":
-					return new SemWeb.IO.N3Reader(source);
+					return new N3Reader(source);
 				default:
 					throw new ArgumentException("Unknown parser type: " + type);
 			}

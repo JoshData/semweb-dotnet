@@ -775,7 +775,7 @@ namespace SemWeb.Stores {
 		protected abstract object RunScalar(string sql);
 		protected abstract IDataReader RunReader(string sql);
 		
-		protected int RunScalarInt(string sql, int def) {
+		private int RunScalarInt(string sql, int def) {
 			object ret = RunScalar(sql);
 			if (ret == null) return def;
 			if (ret is int) return (int)ret;
@@ -786,7 +786,7 @@ namespace SemWeb.Stores {
 			}
 		}
 		
-		protected string RunScalarString(string sql) {
+		private string RunScalarString(string sql) {
 			object ret = RunScalar(sql);
 			if (ret == null) return null;
 			if (ret is string) return (string)ret;
