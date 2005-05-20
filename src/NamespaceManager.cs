@@ -3,7 +3,7 @@ using System.Collections;
 
 namespace SemWeb {
 	
-	public class NS {
+	internal class NS {
 		public const string RDF = "http://www.w3.org/1999/02/22-rdf-syntax-ns#";
 	
 		/*Entity entRDFTYPE = "http://www.w3.org/1999/02/22-rdf-syntax-ns#type";
@@ -117,7 +117,7 @@ namespace SemWeb {
 namespace SemWeb.IO {
 	using SemWeb;
 	
-	public class AutoPrefixNamespaceManager : NamespaceManager {
+	internal class AutoPrefixNamespaceManager : NamespaceManager {
 		int counter = 0;
 		
 		public AutoPrefixNamespaceManager() : this (null) {

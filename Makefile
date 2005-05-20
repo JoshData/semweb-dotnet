@@ -31,7 +31,7 @@ bin/rdfshmush.exe: src.misc/rdfshmush.cs bin/SemWeb.dll
 	mcs src.misc/rdfshmush.cs -out:bin/rdfshmush.exe -r bin/SemWeb.dll
 		
 doc: Makefile
-	mono /usr/lib/monodoc/monodocer.exe -assembly:bin/SemWeb.dll -path:doc
+	mono /usr/lib/monodoc/monodocer.exe -assembly:bin/SemWeb.dll -path:doc #--delete
 	mkdir -p doc-html
 	mono /usr/lib/monodoc/monodocs2html.exe -source:doc -dest:doc-html -template:docstemplate.xsl
 

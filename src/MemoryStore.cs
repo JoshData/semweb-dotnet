@@ -15,7 +15,7 @@ namespace SemWeb {
 		public MemoryStore() {
 		}
 		
-		public MemoryStore(RdfParser parser) {
+		public MemoryStore(RdfReader parser) {
 			Import(parser);
 		}
 

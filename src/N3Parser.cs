@@ -8,7 +8,7 @@ using SemWeb.Util;
 
 namespace SemWeb.IO {
 
-	public class N3Parser : RdfParser {
+	public class N3Reader : RdfReader {
 		Resource PrefixResource = new Literal("@prefix");
 		
 		TextReader sourcestream;
@@ -21,11 +21,11 @@ namespace SemWeb.IO {
 		Entity entOWLSAMEAS = "http://www.w3.org/2002/07/owl#sameAs";
 		Entity entLOGIMPLIES = "http://www.w3.org/2000/10/swap/log#implies";
 		
-		public N3Parser(TextReader source) {
+		public N3Reader(TextReader source) {
 			this.sourcestream = source;
 		}
 		
-		public N3Parser(string sourcefile) {
+		public N3Reader(string sourcefile) {
 			this.sourcestream = GetReader(sourcefile);
 			BaseUri = sourcefile + "#";
 		}

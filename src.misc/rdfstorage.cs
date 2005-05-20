@@ -58,7 +58,7 @@ public class RDFStorage {
 		if (storage is IDisposable) ((IDisposable)storage).Dispose();
 	}
 
-	private class MyMultiRdfParser : RdfParser {
+	private class MyMultiRdfParser : RdfReader {
 		IList files;
 		string format;
 		Entity meta;
@@ -78,7 +78,7 @@ public class RDFStorage {
 				
 					StatementFilterSink filter = new StatementFilterSink(storage);
 				
-					RdfParser parser = RdfParser.Create(format, infile);
+					RdfReader parser = RdfReader.Create(format, infile);
 					parser.Meta = meta;				
 					parser.Parse(filter);
 					parser.Dispose();
@@ -115,7 +115,7 @@ internal class StatementFilterSink : StatementSinkEx {
 		return ((StatementSinkEx)sink).CreateAnonymousEntity();
 	}
 	
-	public void Import(RdfParser parser) {
+	public void Import(RdfReader parser) {
 		if (!(sink is StatementSinkEx)) throw new InvalidOperationException();
 		((StatementSinkEx)sink).Import(parser);
 	}

@@ -7,7 +7,7 @@ namespace SemWeb {
 		public ParserException (string message) : base (message) {}
 	}
 
-	public abstract class RdfParser : IDisposable {
+	public abstract class RdfReader : IDisposable {
 		Entity meta = null;
 		string baseuri = null;
 		ArrayList warnings = new ArrayList();
@@ -42,14 +42,14 @@ namespace SemWeb {
 		public virtual void Dispose() {
 		}
 		
-		public static RdfParser Create(string type, string source) {
+		public static RdfReader Create(string type, string source) {
 			switch (type) {
 				case "xml":
 				case "text/xml":
-					return new SemWeb.IO.RdfXmlParser(source);
+					return new SemWeb.IO.RdfXmlReader(source);
 				case "n3":
 				case "text/n3":
-					return new SemWeb.IO.N3Parser(source);
+					return new SemWeb.IO.N3Reader(source);
 				default:
 					throw new ArgumentException("Unknown parser type: " + type);
 			}
@@ -65,13 +65,13 @@ namespace SemWeb {
 		}
 	}
 	
-	internal class MultiRdfParser : RdfParser {
+	internal class MultiRdfReader : RdfReader {
 		private ArrayList parsers = new ArrayList();
 		
 		public ArrayList Parsers { get { return parsers; } }
 		
 		public override void Parse(StatementSinkEx storage) {
-			foreach (RdfParser p in Parsers)
+			foreach (RdfReader p in Parsers)
 				p.Parse(storage);
 		}
 	}

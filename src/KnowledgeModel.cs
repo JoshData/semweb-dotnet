@@ -18,7 +18,7 @@ namespace SemWeb.Stores {
 			mainstore = stores;
 		}
 		
-		public KnowledgeModel(RdfParser parser) : this() {
+		public KnowledgeModel(RdfReader parser) : this() {
 			stores.Add(new MemoryStore(parser));
 		}
 

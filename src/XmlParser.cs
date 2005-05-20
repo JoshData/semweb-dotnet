@@ -9,29 +9,29 @@ using D = Drive.Rdf.RdfXmlParser;
 using SemWeb;
 
 namespace SemWeb.IO {
-	public class RdfXmlParser : RdfParser {
+	public class RdfXmlReader : RdfReader {
 		XmlDocument doc;
 		Hashtable resources = new Hashtable();
 		Hashtable anons = new Hashtable();
 		
-		public RdfXmlParser(XmlDocument document) {
+		public RdfXmlReader(XmlDocument document) {
 			this.doc = document;
 		}
 		
-		public RdfXmlParser(XmlReader document) {
+		public RdfXmlReader(XmlReader document) {
 			XmlValidatingReader reader = new XmlValidatingReader(document);
 			reader.ValidationType = ValidationType.None;
 			doc = new XmlDocument();
 			doc.Load(reader);
 		}
 		
-		public RdfXmlParser(TextReader document) : this(new XmlTextReader(document)) {
+		public RdfXmlReader(TextReader document) : this(new XmlTextReader(document)) {
 		}
 
-		public RdfXmlParser(Stream document) : this(new StreamReader(document)) {
+		public RdfXmlReader(Stream document) : this(new StreamReader(document)) {
 		}
 
-		public RdfXmlParser(string file) : this(GetReader(file)) {
+		public RdfXmlReader(string file) : this(GetReader(file)) {
 		}
 
 		public override void Parse(StatementSinkEx storage) {

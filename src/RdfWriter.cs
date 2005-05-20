@@ -38,7 +38,7 @@ namespace SemWeb {
 			return true;
 		}
 
-		public virtual void Import(RdfParser parser) {
+		public virtual void Import(RdfReader parser) {
 			parser.Parse(this);
 		}
 		

@@ -39,7 +39,7 @@ namespace SemWeb.Reasoning {
 			store.Remove(statement);
 		}
 
-		public override void Import(RdfParser parser) {
+		public override void Import(RdfReader parser) {
 			store.Import(parser);
 		}
 		

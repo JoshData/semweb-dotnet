@@ -715,7 +715,7 @@ namespace SemWeb.Stores {
 			return "\"" + b.ToString() + "\"";
 		}
 
-		public override void Import(RdfParser parser) {
+		public override void Import(RdfReader parser) {
 			if (parser == null) throw new ArgumentNullException();
 			
 			Init();

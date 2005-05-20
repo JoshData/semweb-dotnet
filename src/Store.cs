@@ -10,7 +10,7 @@ namespace SemWeb {
 
 	public interface StatementSinkEx : StatementSink {
 		Entity CreateAnonymousEntity();
-		void Import(RdfParser parser);
+		void Import(RdfReader parser);
 	}
 	
 	internal class StatementCounterSink : StatementSink {
@@ -54,7 +54,7 @@ namespace SemWeb {
 			return ((StatementSinkEx)sink).CreateAnonymousEntity();
 		}
 		
-		public void Import(RdfParser parser) {
+		public void Import(RdfReader parser) {
 			if (!(sink is StatementSinkEx)) throw new InvalidOperationException();
 			((StatementSinkEx)sink).Import(parser);
 		}
@@ -91,14 +91,14 @@ namespace SemWeb {
 					if (output) {
 						return new SemWeb.IO.RdfXmlWriter(spec);
 					} else {
-						return new MemoryStore(new SemWeb.IO.RdfXmlParser(spec));
+						return new MemoryStore(new SemWeb.IO.RdfXmlReader(spec));
 					}
 				case "n3":
 					if (spec == "") throw new ArgumentException("Use: n3:filename");
 					if (output) {
 						return new SemWeb.IO.N3Writer(spec);
 					} else {
-						return new MemoryStore(new SemWeb.IO.N3Parser(spec));
+						return new MemoryStore(new SemWeb.IO.N3Reader(spec));
 					}
 				case "sql":
 					if (spec == "") throw new ArgumentException("Use: sql:tablename");
@@ -162,7 +162,7 @@ namespace SemWeb {
 			other.Select(new Statement(null,null,null), this);
 		}
 		
-		public virtual void Import(RdfParser parser) {
+		public virtual void Import(RdfReader parser) {
 			parser.Parse(this);
 		}
 		
@@ -247,7 +247,7 @@ namespace SemWeb.Stores {
 			stores.Add(store);
 		}
 		
-		public void Add(Store store, RdfParser source) {
+		public void Add(Store store, RdfReader source) {
 			Add(store);
 			store.Import(source);
 		}
