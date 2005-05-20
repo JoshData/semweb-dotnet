@@ -2,7 +2,7 @@
   <TypeSignature Language="C#" Value="public abstract class RdfParser : System.IDisposable" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
-    <AssemblyVersion>1.0.1954.18463</AssemblyVersion>
+    <AssemblyVersion>0.9.1960.25689</AssemblyVersion>
   </AssemblyInfo>
   <Base>
     <BaseTypeName>System.Object</BaseTypeName>
@@ -115,17 +115,7 @@
         <remarks>This is not currently used for anything.</remarks>
       </Docs>
     </Member>
-  <Member MemberName="variables">
-      <MemberSignature Language="C#" Value="protected System.Collections.ArrayList variables;" />
-      <MemberType>Field</MemberType>
-      <ReturnValue>
-        <ReturnType>System.Collections.ArrayList</ReturnType>
-      </ReturnValue>
-      <Docs>
-        <summary>This field is used by implementors to list entity variables found in the stream.</summary>
-        <remarks>To be added.</remarks>
-      </Docs>
-    </Member>
+  
   <Member MemberName="Variables">
       <MemberSignature Language="C#" Value="public System.Collections.ICollection Variables { get; };" />
       <MemberType>Property</MemberType>

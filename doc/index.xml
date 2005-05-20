@@ -52,7 +52,6 @@
       <Type Name="SQLWriter" />
       <Type Name="RdfXmlParser" />
       <Type Name="RdfXmlWriter" />
-      <Type Name="AutoPrefixNamespaceManager" />
       <Type Name="RdfCompactWriter" />
     </Namespace>
     <Namespace Name="SemWeb.Reasoning">

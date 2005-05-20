@@ -2,7 +2,7 @@
   <TypeSignature Language="C#" Value="public class RdfXmlParser : SemWeb.RdfParser" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
-    <AssemblyVersion>1.0.1954.18463</AssemblyVersion>
+    <AssemblyVersion>0.9.1960.25689</AssemblyVersion>
   </AssemblyInfo>
   <Base>
     <BaseTypeName>SemWeb.RdfParser</BaseTypeName>
@@ -16,9 +16,9 @@
         <Parameter Name="document" Type="System.Xml.XmlDocument" />
       </Parameters>
       <Docs>
-        <param name="document">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
+        <param name="document">The RDF/XML document.</param>
+        <summary>Creates a parser for an XML document already loaded.</summary>
+        <remarks>None.</remarks>
       </Docs>
     </Member>
     <Member MemberName=".ctor">
@@ -28,9 +28,9 @@
         <Parameter Name="document" Type="System.Xml.XmlReader" />
       </Parameters>
       <Docs>
-        <param name="document">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
+        <param name="document">A stream containing the RDF/XML file.</param>
+        <summary>Creates a parser for an XmlReader.</summary>
+        <remarks>None.</remarks>
       </Docs>
     </Member>
     <Member MemberName=".ctor">
@@ -40,9 +40,9 @@
         <Parameter Name="document" Type="System.IO.TextReader" />
       </Parameters>
       <Docs>
-        <param name="document">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
+        <param name="document">The stream containing the RDF/XML file.</param>
+        <summary>Creates a parser from a TextReader.</summary>
+        <remarks>None.</remarks>
       </Docs>
     </Member>
     <Member MemberName=".ctor">
@@ -52,9 +52,9 @@
         <Parameter Name="document" Type="System.IO.Stream" />
       </Parameters>
       <Docs>
-        <param name="document">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
+        <param name="document">The stream containing the RDF/XML file.</param>
+        <summary>Creates a parser from a stream.</summary>
+        <remarks>None.</remarks>
       </Docs>
     </Member>
     <Member MemberName=".ctor">
@@ -64,14 +64,16 @@
         <Parameter Name="file" Type="System.String" />
       </Parameters>
       <Docs>
-        <param name="file">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
+        <param name="file">The path of the file containing RDF/XML, or "-" to read from Console.In.</param>
+        <summary>Creates a parser for a file.</summary>
+        <remarks>None.</remarks>
       </Docs>
     </Member>
   </Members>
   <Docs>
-    <summary>To be added.</summary>
-    <remarks>To be added.</remarks>
+    <summary>Reads RDF statements from an RDF/XML file.</summary>
+    <remarks>
+      <para>The RdfXmlParser loads the complete XML document into memory before any statements are made available.</para>
+    </remarks>
   </Docs>
 </Type>

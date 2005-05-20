@@ -2,7 +2,7 @@
   <TypeSignature Language="C#" Value="public struct VariableBinding" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
-    <AssemblyVersion>1.0.1954.18463</AssemblyVersion>
+    <AssemblyVersion>0.9.1960.25689</AssemblyVersion>
   </AssemblyInfo>
   <Base>
     <BaseTypeName>System.ValueType</BaseTypeName>

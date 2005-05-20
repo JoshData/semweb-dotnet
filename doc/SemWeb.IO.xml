@@ -1,7 +1,10 @@
 <Namespace Name="SemWeb.IO">
   <Docs>
     <summary>This namespace contains classes for reading and writing RDF data in RDF/XML and Notation 3 formats.</summary>
-    <remarks><para>The <see cref="T:SemWeb.N3Parser" /> and <see cref="T:SemWeb.N3Writer" />, as well as the Drive-based <see cref="T:SemWeb.RdfXmlParser" />, are the primary means of loading RDF data into stores and writing out RDF data into files.</para>
+    <remarks><para>The <see cref="T:SemWeb.IO.N3Parser" /> and <see cref="T:SemWeb.IO.N3Writer" /> are used for reading and writing data in Notation 3 format.  Most of the N3 specification is supported, including everything in NTriples and Turtle.  N3 is the recommended format for IO because reading and writing N3 data does not require loading the entire data source into memory.</para>
+
+<para>The <see cref="T:SemWeb.IO.RdfXmlParser" /> and <see cref="T:SemWeb.IO.RdfXmlWriter" /> are used for reading and writing data in RDF/XML format.  The RdfXmlParser loads the complete XML document into memory before any statements are made available.  Likewise, the RdfXmlWriter creates the entire output document in memory before writing anything to the stream.  For these reasons, the RDF/XML format is not recommended.</para>
+
 </remarks>
   </Docs>
 </Namespace>

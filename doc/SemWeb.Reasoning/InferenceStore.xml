@@ -2,27 +2,14 @@
   <TypeSignature Language="C#" Value="public class InferenceStore : SemWeb.Store" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
-    <AssemblyVersion>1.0.1954.18463</AssemblyVersion>
+    <AssemblyVersion>0.9.1960.25689</AssemblyVersion>
   </AssemblyInfo>
   <Base>
     <BaseTypeName>SemWeb.Store</BaseTypeName>
   </Base>
   <Interfaces />
   <Members>
-    <Member MemberName=".ctor">
-      <MemberSignature Language="C#" Value="public InferenceStore (SemWeb.Store store, SemWeb.ReasoningEngine engine);" />
-      <MemberType>Constructor</MemberType>
-      <Parameters>
-        <Parameter Name="store" Type="SemWeb.Store" />
-        <Parameter Name="engine" Type="SemWeb.ReasoningEngine" />
-      </Parameters>
-      <Docs>
-        <param name="store">The underlying data model from which to draw inferences.</param>
-        <param name="engine">A reasoning engine that is able to draw interences.</param>
-        <summary>Constructs a new inference store.</summary>
-        <remarks>None.</remarks>
-      </Docs>
-    </Member>
+    
     <Member MemberName="Source">
       <MemberSignature Language="C#" Value="public SemWeb.Store Source { get; };" />
       <MemberType>Property</MemberType>

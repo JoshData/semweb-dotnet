@@ -2,7 +2,7 @@
   <TypeSignature Language="C#" Value="public class KnowledgeModel : SemWeb.Store" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
-    <AssemblyVersion>1.0.1954.18463</AssemblyVersion>
+    <AssemblyVersion>0.9.1960.25689</AssemblyVersion>
   </AssemblyInfo>
   <Base>
     <BaseTypeName>SemWeb.Store</BaseTypeName>
@@ -49,23 +49,7 @@
 <para>The store should have been created passing this KnowledgeModel to its constructor so that the store is associated with this KnowledgeModel.</para></remarks>
       </Docs>
     </Member>
-    <Member MemberName="AddReasoning">
-      <MemberSignature Language="C#" Value="public void AddReasoning (SemWeb.ReasoningEngine engine);" />
-      <MemberType>Method</MemberType>
-      <ReturnValue>
-        <ReturnType>System.Void</ReturnType>
-      </ReturnValue>
-      <Parameters>
-        <Parameter Name="engine" Type="SemWeb.ReasoningEngine" />
-      </Parameters>
-      <Docs>
-        <param name="engine">An inference engine.</param>
-        <summary>Adds an inference engine to the KnowledgeModel.</summary>
-        <remarks>
-          <para>Calls to Select and Contains on this KnowledgeModel will reflect the capabilities of the added inference engine.</para>
-<para>Inference engines are executed in the order in which they were added.  The inferences made by a later engine are not available as input to an earlier engine.</para></remarks>
-      </Docs>
-    </Member>
+    
     <Member MemberName="Storage">
       <MemberSignature Language="C#" Value="public SemWeb.Stores.MultiStore Storage { get; };" />
       <MemberType>Property</MemberType>

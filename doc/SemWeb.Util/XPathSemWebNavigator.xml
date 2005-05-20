@@ -2,7 +2,7 @@
   <TypeSignature Language="C#" Value="public class XPathSemWebNavigator : System.Xml.XPath.XPathNavigator" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
-    <AssemblyVersion>1.0.1954.18463</AssemblyVersion>
+    <AssemblyVersion>0.9.1960.25689</AssemblyVersion>
   </AssemblyInfo>
   <Base>
     <BaseTypeName>System.Xml.XPath.XPathNavigator</BaseTypeName>
@@ -27,7 +27,7 @@
     </Member>
   </Members>
   <Docs>
-    <summary>To be added.</summary>
+    <summary>Allows XPath expressions to be evaluated in an RDF model.</summary>
     <remarks>To be added.</remarks>
   </Docs>
 </Type>
