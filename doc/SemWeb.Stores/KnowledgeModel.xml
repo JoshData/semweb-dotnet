@@ -1,4 +1,4 @@
-<Type Name="KnowledgeModel" FullName="SemWeb.KnowledgeModel">
+<Type Name="KnowledgeModel" FullName="SemWeb.Stores.KnowledgeModel">
   <TypeSignature Language="C#" Value="public class KnowledgeModel : SemWeb.Store" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
@@ -27,7 +27,7 @@
       </Parameters>
       <Docs>
         <param name="parser">A parser containing statements to load into the memory store.</param>
-        <summary>Creates a new KnowledgeModel, adds to it a <see cref="T:SemWeb.Stores.MemoryStore" />, and loads in the statements from the given parser.</summary>
+        <summary>Creates a new KnowledgeModel, adds to it a <see cref="T:SemWeb.Stores.MemoryStore" />, and loads in the statements from the given reader.</summary>
         <remarks>This is a convenience function.</remarks>
       </Docs>
     </Member>
@@ -75,41 +75,14 @@
         <Parameter Name="engine" Type="SemWeb.Reasoning.ReasoningEngine" />
       </Parameters>
       <Docs>
-        <param name="engine">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
+        <param name="engine">The reasoning engine.</param>
+        <summary>Adds a reasoning engine to the KnowledgeModel.</summary>
+        <remarks>Select calls on this store will now return statements filtered by the reasoning engine.</remarks>
       </Docs>
     </Member>
   </Members>
   <Docs>
     <summary>A store for combining multiple stores and inference engines.</summary>
-    <remarks>
-      <para>Resources and stores can be associated with KnowledgeModels through their constructors.  Associating a KnowledgeModel is optional, but doing so enables the default accessor of Resources, which allows for easy traversal of the RDF graph.</para>
-
-<para>Associating resources and stores with KnowledgeModels can only be done through their constructors.  But, doing so to stores does not add the store into the KnowledgeModel to make the statements available for calls to <see cref="M:SemWeb.Store.Select(SemWeb.Statement,SemWeb.StatementSink)" />.  <see cref="M:SemWeb.KnowledgeModel.Add(SemWeb.Store)" /> must be called separately.  Likewise, calling <see cref="M:SemWeb.KnowledgeModel.Add(SemWeb.Store)" /> does not change which KnowledgeModel a store is associate with (if any).</para>
-
-<example>
-  <para>The following is a basic example of an RDF application using a KnowledgeModel.  It reads an RDF/XML file on standard input and writes an N3 version of the statements to standard output.</para>
-  <code lang="C#" src="../examples/simple.cs">// Compile with: mcs -r:../bin/SemWeb.dll simple.cs
-// Execute with: MONO_PATH=../bin mono simple.exe &lt; testfile.rdf
-
-using System;
-using SemWeb;
-using SemWeb.IO;
-using SemWeb.Stores;
-
-public class Simple {
-	public static void Main() {
-		KnowledgeModel model = new KnowledgeModel();
-		
-		MemoryStore store = new MemoryStore(model);
-		model.Add(store);
-		
-		store.Import(new RdfXmlParser(Console.In));
-		store.Write(new N3Writer(Console.Out));
-	}
-}
-</code>
-</example></remarks>
+    <remarks>None.</remarks>
   </Docs>
 </Type>

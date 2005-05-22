@@ -38,7 +38,7 @@
       <Docs>
         <param name="store">The store to add into the group.</param>
         <param name="source">Statements to add into the store.</param>
-        <summary>Adds a store into the group and loads the contents of the parser into the store.</summary>
+        <summary>Adds a store into the group and loads the contents of the reader into the store.</summary>
         <remarks>This is a convenience function.</remarks>
       </Docs>
     </Member>
@@ -62,13 +62,13 @@
       <MemberType>Constructor</MemberType>
       <Parameters />
       <Docs>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
+        <summary>Creates a new MultiStore.</summary>
+        <remarks>Add stores to the MultiStore with the Add method.</remarks>
       </Docs>
     </Member>
   </Members>
   <Docs>
-    <summary>A group of stores.</summary>
+    <summary>A store that combines the statements of multiple stores.</summary>
     <remarks>
       <para>The class groups together multiple stores.  It is used by the <see cref="T:SemWeb.KnowledgeModel" /> class.</para>
 <para>The MultiStore does not support the Clear, Add, and Remove methods.</para></remarks>

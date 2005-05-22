@@ -18,11 +18,11 @@
         <Parameter Name="namespaces" Type="SemWeb.NamespaceManager" />
       </Parameters>
       <Docs>
-        <param name="root">To be added.</param>
-        <param name="model">To be added.</param>
-        <param name="namespaces">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
+        <param name="root">The entity at the root node of the XPath document model.</param>
+        <param name="model">The data model that the navigator will explore.</param>
+        <param name="namespaces">A NamespaceManager used to resolve prefixes in XPath expressions evaluated by the navigator.</param>
+        <summary>Creates a new navigator starting at the given entity.</summary>
+        <remarks>None.</remarks>
       </Docs>
     </Member>
   </Members>

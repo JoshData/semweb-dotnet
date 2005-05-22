@@ -24,9 +24,9 @@
         <Parameter Name="sql" Type="System.String" />
       </Parameters>
       <Docs>
-        <param name="sql">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
+        <param name="sql">The SQL statement to execute.</param>
+        <summary>Executes an SQL statement without a return value.</summary>
+        <remarks>Inheritors must implemented this method.</remarks>
       </Docs>
     </Member>
     <Member MemberName="RunScalar">
@@ -39,10 +39,10 @@
         <Parameter Name="sql" Type="System.String" />
       </Parameters>
       <Docs>
-        <param name="sql">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
+        <param name="sql">The SQL statement to run that returns a number of text value.</param>
+        <summary>Executes an SQL statement that returns a scalar value.</summary>
+        <returns>The numeric or text value.</returns>
+        <remarks>Inheritors must implement this method.</remarks>
       </Docs>
     </Member>
     <Member MemberName="RunReader">
@@ -55,46 +55,14 @@
         <Parameter Name="sql" Type="System.String" />
       </Parameters>
       <Docs>
-        <param name="sql">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
+        <param name="sql">The SQL statement to run.</param>
+        <summary>Executes an SQL statement that returns a table.</summary>
+        <returns>An IDataReader containing the result of the tabular query.</returns>
+        <remarks>Inheritors must implement this method.</remarks>
       </Docs>
     </Member>
-    <Member MemberName="RunScalarInt">
-      <MemberSignature Language="C#" Value="protected int RunScalarInt (string sql, int def);" />
-      <MemberType>Method</MemberType>
-      <ReturnValue>
-        <ReturnType>System.Int32</ReturnType>
-      </ReturnValue>
-      <Parameters>
-        <Parameter Name="sql" Type="System.String" />
-        <Parameter Name="def" Type="System.Int32" />
-      </Parameters>
-      <Docs>
-        <param name="sql">To be added.</param>
-        <param name="def">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
-      </Docs>
-    </Member>
-    <Member MemberName="RunScalarString">
-      <MemberSignature Language="C#" Value="protected string RunScalarString (string sql);" />
-      <MemberType>Method</MemberType>
-      <ReturnValue>
-        <ReturnType>System.String</ReturnType>
-      </ReturnValue>
-      <Parameters>
-        <Parameter Name="sql" Type="System.String" />
-      </Parameters>
-      <Docs>
-        <param name="sql">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
-      </Docs>
-    </Member>
+    
+    
     <Member MemberName="CreateTable">
       <MemberSignature Language="C#" Value="protected virtual void CreateTable ();" />
       <MemberType>Method</MemberType>
@@ -103,8 +71,8 @@
       </ReturnValue>
       <Parameters />
       <Docs>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
+        <summary>Creates the tables needed by the SQLStore.</summary>
+        <remarks>Inheritors may override this method to change the way tables are created by the SQLStore.</remarks>
       </Docs>
     </Member>
     <Member MemberName="CreateIndexes">
@@ -115,8 +83,8 @@
       </ReturnValue>
       <Parameters />
       <Docs>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
+        <summary>Creates the indexes on the tables.</summary>
+        <remarks>Inheritors may override this method to change the way indexes are created on the tables used by the SQLStore.</remarks>
       </Docs>
     </Member>
     <Member MemberName="BeginTransaction">
@@ -127,8 +95,8 @@
       </ReturnValue>
       <Parameters />
       <Docs>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
+        <summary>Called at the start of <see cref="M:SemWeb.Store.Import(SemWeb.RdfReader)" />.</summary>
+        <remarks>Inheritors may override this method to put a lock on the tables or begin a transaction to speed up the process of adding many statements into the tables.  The default implementation does nothing.</remarks>
       </Docs>
     </Member>
     <Member MemberName="EndTransaction">
@@ -139,8 +107,8 @@
       </ReturnValue>
       <Parameters />
       <Docs>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
+        <summary>Called at the end of <see cref="M:SemWeb.Store.Import(SemWeb.RdfReader)" />.</summary>
+        <remarks>Inheritors may override this method to end a lock or transaction started in <see cref="M:SemWeb.Stores.SQLStore.BeginTransaction()" />.</remarks>
       </Docs>
     </Member>
     <Member MemberName="TableName">
@@ -150,26 +118,55 @@
         <ReturnType>System.String</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
+        <summary>Gets the table prefix passed to the constructor.</summary>
+        <value>The table prefix passed to the constructor.</value>
+        <remarks>This property is protected and read-only.</remarks>
       </Docs>
     </Member>
   <Member MemberName=".ctor">
-      <MemberSignature Language="C#" Value="public SQLStore (string table);" />
+      <MemberSignature Language="C#" Value="protected SQLStore (string table);" />
       <MemberType>Constructor</MemberType>
       <Parameters>
         <Parameter Name="table" Type="System.String" />
       </Parameters>
       <Docs>
-        <param name="table">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
+        <param name="table">The prefix name of the tables used by this store.</param>
+        <summary>The protected constructor used by inherited classes.</summary>
+        <remarks>The two tables used by this store will be <paramref name="table" />_statements and <paramref name="table" />_literals.</remarks>
       </Docs>
     </Member>
   </Members>
   <Docs>
-    <summary>To be added.</summary>
-    <remarks>To be added.</remarks>
+    <summary>A store that holds statements in an SQL database.</summary>
+    <remarks>
+      <para>This class is abstract and is inherited by classes for particular database backends.  Backends are provided for MySQL and SQLite in separate assemblies.  Rather than referencing those assemblies and using their constructors to create stores for those databases, it is easier to use <see cref="M:SemWeb.Store.CreateForInput(string)" /> or <see cref="M:SemWeb.Store.CreateForOutput(string)" />.  Both methods return SQLStores that can be used for both reading and writing.</para>
+
+<para>The SQLStore stores statements in two tables, one containing the statement triples (actually quadruples with meta information) and the other containing string data including entity URIs and typed literal values.  The CREATE statements for the tables, which are automatically executed by the SQLStore when needed, are:</para>
+
+
+<example>
+  <code lang="SQL">
+CREATE TABLE TABLEPREFIX_statements (subject int UNSIGNED NOT NULL,
+       predicate int UNSIGNED NOT NULL, objecttype int NOT NULL, object int UNSIGNED NOT NULL,
+       meta int UNSIGNED NOT NULL);
+
+CREATE TABLE TABLEPREFIX_literals (id INT NOT NULL, value BLOB NOT NULL,
+      language TEXT, datatype TEXT, PRIMARY KEY(id));
+  </code>
+</example>
+
+<para>Indexes are created on the subject, predicate, and object/objecttype columns in the statements table, and on the value column in the literals table.</para>
+
+<para>Each entity stored in the tables is given an ID starting at 1 which is used as the value of the subject, predicate, object, and meta columns when the entity appears in a statement.  When the object of a statement is an entity, objecttype is 0 and object contains the ID of the entity.  When the object of a statement is a literal, objecttype is 1 and the object column contains the value of the id column in the literals table for the literal value.  Literals in the literals table can be referenced by more than one statement.  Lastly, entity URIs are stored in the statements table by setting the predicate column to 0 and referencing the URI of the entity, put in the literals table, with objecttype=1 and object set to the id of the URI in the literals table.</para>
+
+<para>Anonymous entities (blank nodes) are simply those entities mentioned in the statements table that have no entry giving their URI.</para>
+
+<block subset="none" type="note">
+  <para>
+     While it is safe to use many SQLStores to read from the same store, it is not safe to use multiple SQLStores to write to the same store concurrently.
+  </para>
+</block>
+
+<para>Inheritors must implement <see cref="M:SemWeb.Stores.SQLStore.RunCommand(string)" />, <see cref="M:SemWeb.Stores.SQLStore.RunReader(string)" />, and <see cref="M:SemWeb.Stores.SQLStore.RunScalar(string)" />.</para></remarks>
   </Docs>
 </Type>

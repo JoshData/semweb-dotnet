@@ -1,6 +1,6 @@
 <Namespace Name="SemWeb.Query">
   <Docs>
-    <summary>To be added.</summary>
-    <remarks>To be added.</remarks>
+    <summary>This namespace contains classes for performing queries on stores.</summary>
+    <remarks>The types in this namespace are experimental.</remarks>
   </Docs>
 </Namespace>

@@ -161,7 +161,8 @@
   </Members>
   <Docs>
     <summary>The base class of types that read statements from streams.</summary>
-    <remarks><para>This is an abstract class. Implementations of readers are provided in this namespace and in <see cref="N:SemWeb.IO" />.</para>
+    <remarks>
+      <para>This is an abstract class. Implementations of readers are provided in this namespace and in <see cref="N:SemWeb.IO" />.</para>
 </remarks>
   </Docs>
 </Type>

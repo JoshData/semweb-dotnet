@@ -1,4 +1,4 @@
-<Type Name="ReasoningEngine" FullName="SemWeb.ReasoningEngine">
+<Type Name="ReasoningEngine" FullName="SemWeb.Reasoning.ReasoningEngine">
   <TypeSignature Language="C#" Value="public abstract class ReasoningEngine" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
