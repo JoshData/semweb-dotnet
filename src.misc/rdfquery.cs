@@ -39,7 +39,7 @@ public class RDFQuery {
 			return;
 		}
 
-		RdfParser queryparser = RdfParser.Create(opts.@in, "-");
+		RdfReader queryparser = RdfReader.Create(opts.@in, "-");
 		queryparser.BaseUri = "query://query/#";
 		
 		QueryResultSink qs;

@@ -38,7 +38,7 @@ namespace SemWeb.Stores {
 		private static readonly string[] fourcols = new string[] { "subject", "predicate", "object", "meta" };
 		private static readonly string[] predcol = new string[] { "predicate" };
 
-		public SQLStore(string table) {
+		protected SQLStore(string table) {
 			this.table = table;
 		}
 		

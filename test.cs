@@ -25,7 +25,7 @@ public class Test {
 	public static void Main(string[] args) {
 		MemoryStore storage = new MemoryStore();
 		//storage.Import(new N3Parser(new StreamReader("people.n3")));
-		storage.Import(new RdfXmlParser(new StreamReader("../rdf/schemas/owl.rdf")));
+		storage.Import(new RdfXmlReader(new StreamReader("../rdf/schemas/owl.rdf")));
 		storage.Write(new N3Writer(Console.Out));
 	}	
 }
