@@ -142,5 +142,42 @@ namespace SemWeb {
 				}
 			}
 		}
+		
+		public override Entity[] FindEntities(Statement[] filters) {
+			ArrayList ents = new ArrayList();
+			foreach (Statement s in Select(replaceFind(filters[0], null))) {
+				if (filters[0].Subject != null && filters[0].Subject == FindVariable)
+					ents.Add(s.Subject);
+				if (filters[0].Predicate != null && filters[0].Predicate == FindVariable)
+					ents.Add(s.Predicate);
+				if (filters[0].Object != null && filters[0].Object == FindVariable && s.Object is Entity)
+					ents.Add(s.Object);
+				if (filters[0].Meta != null && filters[0].Meta == FindVariable)
+					ents.Add(s.Meta);
+			}
+			
+			foreach (Statement f in filters) {
+				if (f == filters[0]) continue;
+				
+				ArrayList e2 = new ArrayList();
+				foreach (Entity e in ents) {
+					if (Contains(replaceFind(f, e)))
+						e2.Add(e);
+				}
+				
+				ents = e2;
+			}
+			
+			return (Entity[])ents.ToArray(typeof(Entity));
+		}
+		
+		private Statement replaceFind(Statement s, Entity e) {
+			return new Statement(
+				s.Subject == null || s.Subject != FindVariable ? s.Subject : e,
+				s.Predicate == null || s.Predicate != FindVariable ? s.Predicate : e,
+				s.Object == null || s.Object != FindVariable ? s.Object : e,
+				s.Meta == null || s.Meta != FindVariable ? s.Meta : e
+				);
+		}
 	}
 }

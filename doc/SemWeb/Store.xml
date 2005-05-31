@@ -543,6 +543,33 @@
 </block></remarks>
       </Docs>
     </Member>
+  <Member MemberName="FindVariable">
+      <MemberSignature Language="C#" Value="public static readonly SemWeb.Entity FindVariable;" />
+      <MemberType>Field</MemberType>
+      <ReturnValue>
+        <ReturnType>SemWeb.Entity</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+  <Member MemberName="FindEntities">
+      <MemberSignature Language="C#" Value="public abstract SemWeb.Entity[] FindEntities (SemWeb.Statement[] filters);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>SemWeb.Entity[]</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="filters" Type="SemWeb.Statement[]" />
+      </Parameters>
+      <Docs>
+        <param name="filters">To be added.</param>
+        <summary>To be added.</summary>
+        <returns>To be added.</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
   </Members>
   <Docs>
     <summary>A repository for <see cref="T:SemWeb.Statement" />s.</summary>

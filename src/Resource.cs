@@ -4,7 +4,7 @@ using System.Collections;
 namespace SemWeb {
 	
 	public abstract class Resource {
-		internal ArrayList extraKeys = new ArrayList();
+		internal ArrayList extraKeys;
 		
 		internal class ExtraKey {
 			public object Key;
@@ -16,14 +16,13 @@ namespace SemWeb {
 		internal Resource() {
 		}
 		
-		//public static explicit operator Resource(string uri) { return new Entity(uri); }
-		
 		public override string ToString() {
 			if (Uri != null) return Uri;
 			return "_";
 		}
 		
 		internal object GetResourceKey(object key) {
+			if (extraKeys == null) return null;
 			for (int i = 0; i < extraKeys.Count; i++) {
 				Resource.ExtraKey ekey = (Resource.ExtraKey)extraKeys[i];
 				if (ekey.Key == key)
@@ -32,6 +31,8 @@ namespace SemWeb {
 			return null;
 		}
 		internal void SetResourceKey(object key, object value) {
+			if (extraKeys == null) extraKeys = new ArrayList();
+			
 			foreach (Resource.ExtraKey ekey in extraKeys)
 				if (ekey.Key == key) { extraKeys.Remove(ekey); break; }
 			
@@ -46,23 +47,12 @@ namespace SemWeb {
 	
 	public sealed class Entity : Resource {
 		private string uri;
-		private LazyUriLoader lazyLoader;
 		int cachedHashCode = -1;
 		
-		public Entity(string uri) { this.uri = uri; }
+		public Entity(string uri) { if (uri != null) this.uri = string.Intern(uri); }
 		
-		private Entity(LazyUriLoader uriLoader) { this.lazyLoader = uriLoader; }
-		
-		public static Entity LazyResolve(LazyUriLoader uriLoader) {
-			return new Entity(uriLoader);
-		}
-
 		public override string Uri {
 			get {
-				if (lazyLoader != null) {
-					uri = lazyLoader.LazyLoadUri(this);
-					lazyLoader = null;
-				}					
 				return uri;
 			}
 		}
@@ -72,13 +62,11 @@ namespace SemWeb {
 		public override int GetHashCode() {
 			if (cachedHashCode != -1) return cachedHashCode;
 			
-			if (lazyLoader == null && Uri != null) {
+			if (Uri != null) {
 				cachedHashCode = Uri.GetHashCode();
-			} else if (extraKeys.Count == 1) {
+			} else if (extraKeys != null && extraKeys.Count == 1) {
 				ExtraKey v = (ExtraKey)extraKeys[0];
 				cachedHashCode = unchecked(v.Key.GetHashCode() + v.Value.GetHashCode());
-			} else if (Uri != null) {
-				cachedHashCode = Uri.GetHashCode();
 			}
 			
 			if (cachedHashCode == -1) cachedHashCode = 0;
@@ -90,23 +78,21 @@ namespace SemWeb {
 			if (!(other is Resource)) return false;
 			if ((object)this == other) return true;
 			
-			// If anonymous, then we have to compare extraKeys.  If we're lazy-loading
-			// the URI of this resource, then go for the extra keys too.
-			// Test the lazLoader first so that the Uri property isn't called!
-			if (lazyLoader != null || (Uri == null && ((Resource)other).Uri == null)) {
+			// If anonymous, then we have to compare extraKeys.
+			if ((Uri == null && ((Resource)other).Uri == null)) {
 				ArrayList otherkeys = ((Resource)other).extraKeys;
-				for (int vi1 = 0; vi1 < extraKeys.Count; vi1++) {
-					ExtraKey v1 = (ExtraKey)extraKeys[vi1];
-					for (int vi2 = 0; vi2 < otherkeys.Count; vi2++) {
-						ExtraKey v2 = (ExtraKey)otherkeys[vi2];
-						if (v1.Key == v2.Key)
-							return v1.Value.Equals(v2.Value);
+				if (otherkeys != null && extraKeys != null) {
+					for (int vi1 = 0; vi1 < extraKeys.Count; vi1++) {
+						ExtraKey v1 = (ExtraKey)extraKeys[vi1];
+						for (int vi2 = 0; vi2 < otherkeys.Count; vi2++) {
+							ExtraKey v2 = (ExtraKey)otherkeys[vi2];
+							if (v1.Key == v2.Key)
+								return v1.Value.Equals(v2.Value);
+						}
 					}
 				}
 				
-				// If anonymous and no match, false.  If LazyLoading, go on to test the URIs.
-				if (lazyLoader == null)
-					return false;
+				return false;
 			}				
 			
 			return ((Resource)other).Uri != null && ((Resource)other).Uri == Uri;
@@ -125,10 +111,6 @@ namespace SemWeb {
 		public static bool operator !=(Entity a, Entity b) {
 			return !(a == b);
 		}
-		
-		public interface LazyUriLoader {
-			string LazyLoadUri(Entity entity);
-		}
 	}
 	
 	public sealed class Literal : Resource { 
@@ -138,13 +120,17 @@ namespace SemWeb {
 		}
 		
 		public Literal(string value, string language, string dataType) {
-		  this.value = value;
+		  if (value == null)
+			  throw new ArgumentNullException("value");
+		  this.value = string.Intern(value);
 		  this.lang = language;
 		  this.type = dataType;
 		  if (language != null && dataType != null)
 			  throw new ArgumentException("A language and a data type cannot both be specified.");
 		}
 		
+		public static explicit operator Literal(string value) { return new Literal(value); }
+
 		public override string Uri { get { return null; } }
 		
 		public string Value { get { return value; } }
@@ -195,7 +181,7 @@ namespace SemWeb {
 		}
 		
 		public static Literal Parse(string literal, NamespaceManager namespaces) {
-			if (literal.Length <= 2 || literal[0] != '\"') throw new FormatException("Literal value must start with a quote.");
+			if (literal.Length < 2 || literal[0] != '\"') throw new FormatException("Literal value must start with a quote.");
 			int quote = literal.LastIndexOf('"');
 			if (quote <= 0) throw new FormatException("Literal value must have an end quote (" + literal + ")");
 			string value = literal.Substring(1, quote-1);

@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.IO;
+using System.Text;
 
 using SemWeb;
 using SemWeb.Stores;
@@ -227,7 +228,7 @@ namespace SemWeb.Query {
 				
 				if (!first)  { output.Write(", "); } first = false;
 				if (var.Target is Literal)
-					output.Write(SemWeb.Stores.SQLStore.Escape(((Literal)var.Target).Value));
+					output.Write(Escape(((Literal)var.Target).Value));
 				else if (var.Target.Uri != null)
 					output.Write("\"" + var.Target.Uri + "\"");
 				else
@@ -237,6 +238,21 @@ namespace SemWeb.Query {
 			
 			return true;
 		}
+		
+		private string Escape(string str) {
+			if (str == null) return "NULL";
+			return "\"" + EscapeUnquoted(str) + "\"";
+		}
+		
+		StringBuilder EscapeUnquotedBuffer = new StringBuilder();
+		private string EscapeUnquoted(string str) {
+			StringBuilder b = EscapeUnquotedBuffer;
+			b.Length = 0;
+			b.Append(str);
+			SQLStore.Escape(b);
+			return b.ToString();
+		}
+		
 	}
 
 	public class SparqlXmlQuerySink : QueryResultSink {

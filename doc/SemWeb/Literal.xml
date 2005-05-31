@@ -94,6 +94,22 @@
         <remarks>The encoded literal is in the form of:   "value"[^^datatypeURI|@langcode].</remarks>
       </Docs>
     </Member>
+  <Member MemberName="op_Explicit">
+      <MemberSignature Language="C#" Value="public static SemWeb.Literal op_Explicit (string value);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>SemWeb.Literal</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="value" Type="System.String" />
+      </Parameters>
+      <Docs>
+        <param name="value">To be added.</param>
+        <summary>To be added.</summary>
+        <returns>To be added.</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
   </Members>
   <Docs>
     <summary>A literal (text string) node in an RDF graph.</summary>

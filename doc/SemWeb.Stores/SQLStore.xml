@@ -1,5 +1,5 @@
 <Type Name="SQLStore" FullName="SemWeb.Stores.SQLStore">
-  <TypeSignature Language="C#" Value="public abstract class SQLStore : SemWeb.Store, SemWeb.Entity+LazyUriLoader" />
+  <TypeSignature Language="C#" Value="public abstract class SQLStore : SemWeb.Store" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
     <AssemblyVersion>0.9.0.0</AssemblyVersion>
@@ -8,9 +8,6 @@
     <BaseTypeName>SemWeb.Store</BaseTypeName>
   </Base>
   <Interfaces>
-    <Interface>
-      <InterfaceName>SemWeb.Entity+LazyUriLoader</InterfaceName>
-    </Interface>
   </Interfaces>
   <Members>
     
@@ -135,13 +132,58 @@
         <remarks>The two tables used by this store will be <paramref name="table" />_statements and <paramref name="table" />_literals.</remarks>
       </Docs>
     </Member>
+  <Member MemberName="CreateNullTest">
+      <MemberSignature Language="C#" Value="protected abstract string CreateNullTest (string column);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>System.String</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="column" Type="System.String" />
+      </Parameters>
+      <Docs>
+        <param name="column">To be added.</param>
+        <summary>To be added.</summary>
+        <returns>To be added.</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+  <Member MemberName="EscapedAppend">
+      <MemberSignature Language="C#" Value="protected virtual void EscapedAppend (System.Text.StringBuilder b, string str);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="b" Type="System.Text.StringBuilder" />
+        <Parameter Name="str" Type="System.String" />
+      </Parameters>
+      <Docs>
+        <param name="b">To be added.</param>
+        <param name="str">To be added.</param>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+  <Member MemberName="SupportsInsertCombined">
+      <MemberSignature Language="C#" Value="protected abstract bool SupportsInsertCombined { get; };" />
+      <MemberType>Property</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Boolean</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+        <value>To be added.</value>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
   </Members>
   <Docs>
     <summary>A store that holds statements in an SQL database.</summary>
     <remarks>
       <para>This class is abstract and is inherited by classes for particular database backends.  Backends are provided for MySQL and SQLite in separate assemblies.  Rather than referencing those assemblies and using their constructors to create stores for those databases, it is easier to use <see cref="M:SemWeb.Store.CreateForInput(string)" /> or <see cref="M:SemWeb.Store.CreateForOutput(string)" />.  Both methods return SQLStores that can be used for both reading and writing.</para>
 
-<para>The SQLStore stores statements in two tables, one containing the statement triples (actually quadruples with meta information) and the other containing string data including entity URIs and typed literal values.  The CREATE statements for the tables, which are automatically executed by the SQLStore when needed, are:</para>
+<para>The SQLStore uses three tables, one containing the statement triples (actually quadruples with meta information) using numeric identifiers for each resource, one mapping entity identifiers to URIs, and the last mapping literal identifiers to string/language/datatype triples.  The CREATE statements for the tables, which are automatically executed by the SQLStore when needed, are:</para>
 
 
 <example>
@@ -150,16 +192,19 @@ CREATE TABLE TABLEPREFIX_statements (subject int UNSIGNED NOT NULL,
        predicate int UNSIGNED NOT NULL, objecttype int NOT NULL, object int UNSIGNED NOT NULL,
        meta int UNSIGNED NOT NULL);
 
+CREATE TABLE TABLEPREFIX_entities (id INT NOT NULL, value BLOB NOT NULL,
+      PRIMARY KEY(id));
+
 CREATE TABLE TABLEPREFIX_literals (id INT NOT NULL, value BLOB NOT NULL,
       language TEXT, datatype TEXT, PRIMARY KEY(id));
-  </code>
+</code>
 </example>
 
-<para>Indexes are created on the subject, predicate, and object/objecttype columns in the statements table, and on the value column in the literals table.</para>
+<para>Indexes are created on the subject, predicate, and object/objecttype columns in the statements table, and on the value columns in the entities and literals table.  Because MySQL before version 4.1.2 supported text indexes of length up to 255 bytes, URIs in the SQLStore are limited to this length.</para>
 
-<para>Each entity stored in the tables is given an ID starting at 1 which is used as the value of the subject, predicate, object, and meta columns when the entity appears in a statement.  When the object of a statement is an entity, objecttype is 0 and object contains the ID of the entity.  When the object of a statement is a literal, objecttype is 1 and the object column contains the value of the id column in the literals table for the literal value.  Literals in the literals table can be referenced by more than one statement.  Lastly, entity URIs are stored in the statements table by setting the predicate column to 0 and referencing the URI of the entity, put in the literals table, with objecttype=1 and object set to the id of the URI in the literals table.</para>
+<para>Each resource stored in the tables is given an ID starting at 1 which is used as the value of the subject, predicate, object, and meta columns when the entity appears in a statement.  The value 0 is used for statements with no meta information.  When the object of a statement is an entity, objecttype is 0 and object contains the ID of the entity.  When the object of a statement is a literal, objecttype is 1 and the object column contains the value of the id column in the literals table for the literal value.  Literals in the literals table can be referenced by more than one statement.</para>
 
-<para>Anonymous entities (blank nodes) are simply those entities mentioned in the statements table that have no entry giving their URI.</para>
+<para>Anonymous entities (blank nodes) are simply those entities mentioned in the statements table that have no entry giving their URI in the entities table.</para>
 
 <block subset="none" type="note">
   <para>

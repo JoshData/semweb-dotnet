@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Text;
 
 using System.Data;
 using Mono.Data.SqliteClient;
@@ -17,6 +18,29 @@ namespace SemWeb.Stores {
 			dbcon.Open();
 		}
 		
+		protected override bool SupportsInsertCombined { get { return false; } }
+		
+		protected override string CreateNullTest(string column) {
+			return column + " ISNULL";
+		}
+		
+		protected override void EscapedAppend(StringBuilder b, string str) {
+			b.Append('\'');
+			for (int i = 0; i < str.Length; i++) {
+				char c = str[i];
+				switch (c) {
+					case '\'':
+						b.Append(c);
+						b.Append(c);
+						break;
+					default:
+						b.Append(c);
+						break;
+				}
+			}
+			b.Append('\'');
+		}
+		
 		protected override void RunCommand(string sql) {
 			if (debug) Console.Error.WriteLine(sql);
 			IDbCommand dbcmd = dbcon.CreateCommand();
@@ -26,11 +50,12 @@ namespace SemWeb.Stores {
 		}
 		
 		protected override object RunScalar(string sql) {
+			if (debug) Console.Error.Write(sql);
 			IDbCommand dbcmd = dbcon.CreateCommand();
 			dbcmd.CommandText = sql;
 			object ret = dbcmd.ExecuteScalar();
 			dbcmd.Dispose();
-			if (debug) Console.Error.WriteLine(sql + " => " + ret);
+			if (debug) Console.Error.WriteLine(" => " + ret);
 			return ret;
 		}
 
@@ -44,21 +69,11 @@ namespace SemWeb.Stores {
 		}
 
 		protected override void BeginTransaction() {
-			try {
-				RunCommand("DROP INDEX subject_index on " + TableName);
-				RunCommand("DROP INDEX predicate_index on " + TableName);
-				RunCommand("DROP INDEX object_index on " + TableName);
-				RunCommand("DROP INDEX subject_predicate_index on " + TableName);
-				RunCommand("DROP INDEX predicate_object_index on " + TableName);
-			} catch (Exception e) {
-			}
-
 			RunCommand("BEGIN");
 		}
 		
 		protected override void EndTransaction() {
 			RunCommand("END");
-			CreateIndexes();
 		}
 		
 	}

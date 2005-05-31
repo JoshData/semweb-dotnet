@@ -80,22 +80,7 @@
     </Member>
   
   
-  <Member MemberName="LazyResolve">
-      <MemberSignature Language="C#" Value="public static SemWeb.Entity LazyResolve (SemWeb.Entity+LazyUriLoader uriLoader);" />
-      <MemberType>Method</MemberType>
-      <ReturnValue>
-        <ReturnType>SemWeb.Entity</ReturnType>
-      </ReturnValue>
-      <Parameters>
-        <Parameter Name="uriLoader" Type="SemWeb.Entity+LazyUriLoader" />
-      </Parameters>
-      <Docs>
-        <param name="uriLoader">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
-      </Docs>
-    </Member>
+  
   </Members>
   <Docs>
     <summary>An entity resource in a graph, which is any node but a literal.</summary>

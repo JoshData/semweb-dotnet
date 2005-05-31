@@ -19,7 +19,6 @@
       <Type Name="Entity" />
       <Type Name="Literal" />
       <Type Name="Statement" />
-      <Type Name="Entity+LazyUriLoader" />
       <Type Name="SelectPartialFilter" />
       <Type Name="StatementSinkEx" />
       <Type Name="MemoryStore" />
@@ -51,7 +50,6 @@
       <Type Name="KnowledgeModel" />
     </Namespace>
     <Namespace Name="SemWeb.IO">
-      <Type Name="SQLWriter" />
     </Namespace>
     <Namespace Name="SemWeb.Reasoning">
       <Type Name="RDFSReasoning" />

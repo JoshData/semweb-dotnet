@@ -27,10 +27,12 @@ public class RDFStorage {
 	}
 	
 	public static void Main(string[] args) {
+		try {
+	
 		Opts opts = new Opts();
 		opts.ProcessArgs(args);
 
-		if (opts.RemainingArguments.Length == 0) {
+		if (opts.RemainingArguments.Length == 0 && opts.@out == "n3:-") {
 			opts.DoHelp();
 			return;
 		}
@@ -43,19 +45,26 @@ public class RDFStorage {
 		
 		if (opts.clear) {
 			if (!(storage is Store)) {
-				Console.Error.WriteLine("The --clear option cannot be used with this type of output storage.");
-				return;
+				Console.Error.WriteLine("The --clear option cannot be used with this type of output storage.  Ignoring --clear.");
+			} else {
+				try {
+					if (meta == null)
+						((Store)storage).Clear();
+					else
+						((Store)storage).Remove(new Statement(null, null, null, meta));
+				} catch (Exception e) {
+					Console.Error.WriteLine("The --clear option was not successful: " + e.Message);
+				}
 			}
-			
-			if (meta == null)
-				((Store)storage).Clear();
-			else
-				((Store)storage).Remove(new Statement(null, null, null, meta));
 		}
 		
 		MyMultiRdfParser multiparser = new MyMultiRdfParser(opts.RemainingArguments, opts.@in, meta);
 		storage.Import(multiparser);
 		if (storage is IDisposable) ((IDisposable)storage).Dispose();
+		
+		} catch (Exception exc) {
+			Console.Error.WriteLine(exc);
+		}
 	}
 
 	private class MyMultiRdfParser : RdfReader {
@@ -70,6 +79,9 @@ public class RDFStorage {
 		}
 		
 		public override void Parse(StatementSinkEx storage) {
+			DateTime allstart = DateTime.Now;
+			long stct = 0;
+					
 			foreach (string infile in files) {
 				Console.Error.Write(infile);
 				
@@ -83,6 +95,8 @@ public class RDFStorage {
 					parser.Parse(filter);
 					parser.Dispose();
 					
+					stct += filter.StatementCount;
+					
 					TimeSpan time = DateTime.Now - start;
 					
 					Console.Error.WriteLine(" {0}m{1}s, {2} statements, {3} st/sec", (int)time.TotalMinutes, (int)time.Seconds, filter.StatementCount, time.TotalSeconds == 0 ? "?" : ((int)(filter.StatementCount/time.TotalSeconds)).ToString());
@@ -92,6 +106,9 @@ public class RDFStorage {
 					Console.Error.WriteLine(e);
 				}
 			}
+			
+			TimeSpan alltime = DateTime.Now - allstart;
+			Console.Error.WriteLine("Total Time: {0}m{1}s, {2} statements, {3} st/sec", (int)alltime.TotalMinutes, (int)alltime.Seconds, stct, alltime.TotalSeconds == 0 ? "?" : ((int)(stct/alltime.TotalSeconds)).ToString());
 		}
 	}
 }

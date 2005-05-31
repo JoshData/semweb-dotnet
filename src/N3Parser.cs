@@ -19,6 +19,7 @@ namespace SemWeb {
 		Entity entRDFREST = "http://www.w3.org/1999/02/22-rdf-syntax-ns#rest";
 		Entity entRDFNIL = "http://www.w3.org/1999/02/22-rdf-syntax-ns#nil";
 		Entity entOWLSAMEAS = "http://www.w3.org/2002/07/owl#sameAs";
+		Entity entDAMLEQUIV = "http://www.daml.org/2000/12/daml+oil#equivalentTo";
 		Entity entLOGIMPLIES = "http://www.w3.org/2000/10/swap/log#implies";
 		
 		public N3Reader(TextReader source) {
@@ -34,7 +35,7 @@ namespace SemWeb {
 			public MyReader source;
 			public StatementSinkEx store;
 			public NamespaceManager namespaces;
-			public Hashtable namedNode;
+			public UriMap namedNode;
 			public Hashtable anonymous;
 			public Entity meta;
 			
@@ -46,7 +47,7 @@ namespace SemWeb {
 			context.source = new MyReader(sourcestream);
 			context.store = store;
 			context.namespaces = namespaces;
-			context.namedNode = new Hashtable();
+			context.namedNode = new UriMap();
 			context.anonymous = new Hashtable();
 			context.meta = Meta;
 			
@@ -63,8 +64,8 @@ namespace SemWeb {
 			
 			if ((object)subject == (object)PrefixResource) {
 				loc = context.Location;
-				string qname = ReadToken(context.source);
-				if (!qname.EndsWith(":")) OnError("When using @prefix, the prefix identifier must end with a colon", loc);
+				string qname = ReadToken(context.source) as string;
+				if (qname == null || !qname.EndsWith(":")) OnError("When using @prefix, the prefix identifier must end with a colon", loc);
 				
 				loc = context.Location;
 				Resource uri = ReadResource(context, out reverse);
@@ -157,7 +158,7 @@ namespace SemWeb {
 		
 		private StringBuilder readTokenBuffer = new StringBuilder();
 		
-		private string ReadToken(MyReader source) {
+		private object ReadToken(MyReader source) {
 			ReadWhitespace(source);
 			
 			Location loc = new Location(source.Line, source.Col);
@@ -184,6 +185,7 @@ namespace SemWeb {
 			} else if (firstchar == '"') {
 				// A string: ("""[^"\\]*(?:(?:\\.|"(?!""))[^"\\]*)*""")|("[^"\\]*(?:\\.[^"\\]*)*")
 				// What kind of crazy regex is this??
+				b.Length = 0; // get rid of the open quote
 				bool escaped = false;
 				bool tripplequoted = false;
 				while (true) {
@@ -238,9 +240,9 @@ namespace SemWeb {
 							OnError("Unrecognized escape character: " + (char)c, loc);
 						escaped = false;
 					} else {
-						b.Append((char)c);
 						if (c == '"')
 							break;
+						b.Append((char)c);
 					}
 				}
 				
@@ -248,17 +250,25 @@ namespace SemWeb {
 					source.Read();
 					source.Read();
 				}
+				
+				string litvalue = b.ToString();
+				string litlang = null;
+				string litdt = null;
 
 				// Strings can be suffixed with @langcode or ^^symbol (but not both?).
-				if (b[0] == '"' && source.Peek() == '@') {
-					b.Append((char)source.Read());
+				if (source.Peek() == '@') {
+					source.Read();
+					b.Length = 0;
 					while (char.IsLetterOrDigit((char)source.Peek()) || source.Peek() == (int)'-')
 						b.Append((char)source.Read());
-				} else if (b[0] == '"' && source.Peek() == '^' && source.Peek2() == '^') {
-					b.Append((char)source.Read());
-					b.Append((char)source.Read());
-					b.Append(ReadToken(source)); 
+					litlang = b.ToString();
+				} else if (source.Peek() == '^' && source.Peek2() == '^') {
+					source.Read();
+					source.Read();
+					litdt = ReadToken(source).ToString(); // better be a string URI 
 				}
+				
+				return new Literal(litvalue, litlang, litdt);
 
 			} else if (char.IsLetter((char)firstchar) || firstchar == '?' || firstchar == '@' || firstchar == ':' || firstchar == '_') {
 				// Something starting with @
@@ -348,7 +358,7 @@ namespace SemWeb {
 			Entity ret = (Entity)context.namedNode[uri];
 			if (ret != null) return ret;
 			ret = new Entity(uri);
-			context.namedNode[uri] = ret;
+			//context.namedNode[uri] = ret;
 			return ret;
 		}
 
@@ -357,7 +367,11 @@ namespace SemWeb {
 			
 			Location loc = context.Location;
 			
-			string str = ReadToken(context.source);
+			object tok = ReadToken(context.source);
+			if (tok is Literal)
+				return (Literal)tok;
+			
+			string str = (string)tok;
 			if (str == "")
 				return null;
 			
@@ -374,22 +388,26 @@ namespace SemWeb {
 			
 			if (str == "a")
 				return entRDFTYPE;
-			if (str == "=") // ?
-				return entOWLSAMEAS;
-			if (str == "=>") // ?
+			if (str == "=")
+				return entDAMLEQUIV;
+			if (str == "=>")
 				return entLOGIMPLIES;
-			if (str == "<=") // ?
-				OnError("The <= predicate is not supported (because I don't know what it translates to)", loc);
+			if (str == "<=") {
+				reverse = true;
+				return entLOGIMPLIES;
+			}				
 
 			if (str == "has") // ignore this token
-				str = ReadToken(context.source);
+				return ReadResource2(context, out reverse);
 			
 			if (str == "is") {
 				// Reverse predicate
-				str = ReadToken(context.source);
+				bool reversetemp;
+				Resource pred = ReadResource2(context, out reversetemp);
 				reverse = true;
-				string of = ReadToken(context.source);
-				if (of != "of") OnError("Expecting token 'of' but found '" + of + "'", loc);
+				string of = ReadToken(context.source) as string;
+				if (of == null || of != "of") OnError("Expecting token 'of' but found '" + of + "'", loc);
+				return pred;
 			}
 			
 			// URI
@@ -403,12 +421,6 @@ namespace SemWeb {
 				}
 				// relativize it
 				return GetResource(context, uri);
-			}
-			
-			// STRING LITERAL
-			
-			if (str.StartsWith("\"")) {
-				return Literal.Parse(str, context.namespaces);
 			}
 			
 			// VARIABLE

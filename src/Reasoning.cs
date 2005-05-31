@@ -79,6 +79,10 @@ namespace SemWeb.Reasoning {
 			store.Replace(a, b);
 		}
 
+		public override Entity[] FindEntities(Statement[] filters) {
+			return store.FindEntities(filters);
+		}
+		
 		private class ReasoningStatementSink : StatementSink {
 			Statement template;
 			StatementSink store;

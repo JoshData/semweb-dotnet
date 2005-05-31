@@ -75,6 +75,7 @@ namespace SemWeb {
 		private void WriteStatement2(string subj, string pred, string obj) {
 			closed = false;
 			
+			// Write the prefix directives at the beginning.
 			if (!hasWritten && ns != null && !NTriples) {
 				foreach (string prefix in ns.GetPrefixes()) {
 					writer.Write("@prefix ");
@@ -85,16 +86,31 @@ namespace SemWeb {
 				}
 			}
 
+			// Repeated subject.
 			if (lastSubject != null && lastSubject == subj && !NTriples) {
+				// Repeated predicate too.
 				if (lastPredicate != null && lastPredicate == pred) {
 					writer.Write(",\n\t\t");
 					WriteThing(obj);
+					
+				// Just a repeated subject.
 				} else {
 					writer.Write(";\n\t");
 					WriteThing(pred);
 					WriteThing(obj);
 					lastPredicate = pred;
 				}
+			
+			// The subject became the object.  Abbreviate with
+			// is...of notation.
+			} else if (lastSubject != null && lastSubject == obj && !NTriples) {
+				writer.Write(";\n\tis ");
+				WriteThing(pred);
+				writer.Write("of ");
+				WriteThing(subj);
+				lastPredicate = null;
+			
+			// Start a new statement.
 			} else {
 				if (hasWritten)
 					writer.Write(".\n");

@@ -20,7 +20,13 @@ namespace SemWeb.Stores {
 			this.connectionString = connectionString;
 			RefreshConnection();
 		}
+
+		protected override bool SupportsInsertCombined { get { return true; } }
 		
+		protected override string CreateNullTest(string column) {
+			return "ISNULL(" + column + ")";
+		}
+
 		public void Dispose() {
 			connection.Close();
 		}
@@ -65,7 +71,7 @@ namespace SemWeb.Stores {
 
 		protected override void BeginTransaction() {
 			//RunCommand("BEGIN");
-			RunCommand("LOCK TABLES " + TableName + "_statements WRITE, " + TableName + "_literals WRITE");
+			RunCommand("LOCK TABLES " + TableName + "_statements WRITE, " + TableName + "_literals WRITE, " + TableName + "_entities WRITE");
 			locked = true;
 		}
 		
@@ -77,9 +83,10 @@ namespace SemWeb.Stores {
 		
 		private void Yield() {
 			if (!locked) return;
-			if (locker++ == 50000) {
+			if (locker++ == 100) {
 				locker = 0;
-				RunCommand("UNLOCK TABLES; LOCK TABLES " + TableName + "_statements WRITE, " + TableName + "_literals WRITE;");
+				RunCommand("UNLOCK TABLES;");
+				BeginTransaction();
 			}
 		}
 	}

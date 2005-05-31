@@ -64,6 +64,8 @@ namespace SemWeb {
 		
 		Entity rdfType;
 		
+		public static readonly Entity FindVariable = new Entity(null);
+		
 		public static Store CreateForInput(string spec) {
 			return (Store)Create(spec, false);
 		}		
@@ -100,12 +102,6 @@ namespace SemWeb {
 					} else {
 						return new MemoryStore(new N3Reader(spec));
 					}
-				case "sql":
-					if (spec == "") throw new ArgumentException("Use: sql:tablename");
-					if (output)
-						return new SemWeb.IO.SQLWriter(spec);
-					else
-						throw new InvalidOperationException("sql output does not support input.");
 				case "sqlite":
 				case "mysql":
 					if (spec == "") throw new ArgumentException("Use: sqlite|mysql:table:connection-string");
@@ -116,10 +112,12 @@ namespace SemWeb {
 					spec = spec.Substring(c+1);
 					
 					string classtype = null;
-					if (type == "sqlite")
+					if (type == "sqlite") {
 						classtype = "SemWeb.Stores.SqliteStore, SemWeb.SqliteStore";
-					else if (type == "mysql")
+						spec = spec.Replace(";", ",");
+					} else if (type == "mysql") {
 						classtype = "SemWeb.Stores.MySQLStore, SemWeb.MySQLStore";
+					}
 					Type ttype = Type.GetType(classtype);
 					if (ttype == null)
 						throw new NotSupportedException("The storage type in <" + classtype + "> could not be found.");
@@ -156,6 +154,7 @@ namespace SemWeb {
 		}
 		
 		public abstract void Add(Statement statement);
+		
 		public abstract void Remove(Statement statement);
 
 		public void Import(Store other) {
@@ -214,6 +213,8 @@ namespace SemWeb {
 		}
 		
 		public abstract void Replace(Entity a, Entity b);
+		
+		public abstract Entity[] FindEntities(Statement[] filters);
 		
 		public void Write(RdfWriter writer) {
 			Select(new Statement(null,null,null), writer);
@@ -313,7 +314,16 @@ namespace SemWeb.Stores {
 		public override void Replace(Entity a, Entity b) {
 			foreach (Store s in stores)
 				s.Replace(a, b);
-		}		
+		}
+		
+		public override Entity[] FindEntities(Statement[] filters) {
+			Hashtable h = new Hashtable();
+			foreach (Store s in stores)
+				foreach (Entity e in s.FindEntities(filters))
+					h[e] = h;
+			return (Entity[])new ArrayList(h.Keys).ToArray(typeof(Entity));
+		}
+		
 	}
 	
 }

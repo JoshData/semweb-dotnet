@@ -37,6 +37,10 @@ doc: Makefile
 
 semweb.zip: bin/SemWeb.dll Makefile
 	rm semweb.zip
-	zip -r semweb.zip bin/SemWeb.dll src/*.cs src.misc/*.cs Makefile README ChangeLog
+	zip -r semweb.zip \
+	bin/SemWeb*.dll bin/Drive.dll \
+	src/*.cs src.misc/*.cs examples/*.cs \
+	Makefile README README.xhtml ChangeLog
 	
-
+deploy: semweb.zip
+	scp semweb.zip publius:www/code/semweb
