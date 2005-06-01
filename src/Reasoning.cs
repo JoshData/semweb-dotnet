@@ -26,11 +26,7 @@ namespace SemWeb.Reasoning {
 		public override Entity[] GetAllPredicates() {
 			return store.GetAllPredicates();
 		}
-			
-		public override Entity CreateAnonymousEntity() {
-			return store.CreateAnonymousEntity();
-		}
-
+		
 		public override void Add(Statement statement) {
 			store.Add(statement);
 		}		

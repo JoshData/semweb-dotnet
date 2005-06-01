@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.IO;
+using System.Text;
 using System.Xml;
 
 using SemWeb;
@@ -46,13 +47,90 @@ namespace SemWeb {
 		private void Start() {
 			if (doc != null) return;
 			doc = new XmlDocument();
-			XmlElement root = doc.CreateElement(ns.GetPrefix(NS.RDF) + ":RDF", NS.RDF);
+			
+			string rdfprefix = ns.GetPrefix(NS.RDF);
+			if (rdfprefix == null) {
+				if (ns.GetNamespace("rdf") == null) {
+					rdfprefix = "rdf";
+					ns.AddNamespace(NS.RDF, "rdf");
+				}
+			}
+			
+			XmlElement root = doc.CreateElement(rdfprefix + ":RDF", NS.RDF);
 			foreach (string prefix in ns.GetPrefixes())
 				root.SetAttribute("xmlns:" + prefix, ns.GetNamespace(prefix));
 			doc.AppendChild(root);
 		}
 		
 		public override NamespaceManager Namespaces { get { return ns; } }
+		
+		char[] normalizechars = { '#', '/' };
+		
+		private void Normalize(string uri, out string prefix, out string localname) {
+			if (uri == "")
+				throw new InvalidOperationException("The empty URI cannot be used as an element node.");	
+		
+			if (ns.Normalize(uri, out prefix, out localname))
+				return;
+				
+			// No namespace prefix was registered, so come up with something.
+			
+			int last = uri.LastIndexOfAny(normalizechars);
+			if (last <= 0)
+				throw new InvalidOperationException("No namespace was registered and no prefix could be automatically generated for <" + uri + ">");
+				
+			int prev = uri.LastIndexOfAny(normalizechars, last-1);
+			if (prev <= 0)
+				throw new InvalidOperationException("No namespace was registered and no prefix could be automatically generated for <" + uri + ">");
+			
+			string ns = uri.Substring(0, last+1);
+			localname = uri.Substring(last+1);
+			
+			// TODO: Make sure the local name (here and anywhere in this
+			// class) is a valid XML name.
+			
+			if (Namespaces.GetPrefix(ns) != null) {
+				prefix = Namespaces.GetPrefix(ns);
+				return;
+			}
+			
+			prefix = uri.Substring(prev+1, last-prev-1);
+			
+			// Remove all non-xmlable (letter) characters.
+			StringBuilder newprefix = new StringBuilder();
+			foreach (char c in prefix)
+				if (char.IsLetter(c))
+					newprefix.Append(c);
+			prefix = newprefix.ToString();
+			
+			if (prefix.Length == 0) {
+				// There were no letters in the prefix!
+				prefix = "ns";
+			}
+			
+			if (Namespaces.GetNamespace(prefix) == null) {
+				doc.DocumentElement.SetAttribute("xmlns:" + prefix, ns);
+				Namespaces.AddNamespace(ns, prefix);
+				return;
+			}
+			
+			int ctr = 1;
+			while (true) {
+				if (Namespaces.GetNamespace(prefix + ctr) == null) {
+					prefix += ctr;
+					doc.DocumentElement.SetAttribute("xmlns:" + prefix, ns);
+					Namespaces.AddNamespace(ns, prefix);
+					return;
+				}
+				ctr++;
+			}
+		}
+		
+		private void SetAttribute(XmlElement element, string nsuri, string prefix, string localname, string val) {
+			XmlAttribute attr = doc.CreateAttribute(prefix, localname, nsuri);
+			attr.InnerXml = val;
+			element.SetAttributeNode(attr);
+		}
 		
 		private XmlElement GetNode(string uri, string type, XmlElement context) {
 			if (nodeMap.ContainsKey(uri))
@@ -65,14 +143,14 @@ namespace SemWeb {
 				node = doc.CreateElement(ns.GetPrefix(NS.RDF) + ":Description", NS.RDF);
 			} else {
 				string prefix, localname;
-				if (!ns.Normalize(type, out prefix, out localname))
-					throw new InvalidOperationException("No prefix is registered for the namespace of " + uri);
+				Normalize(type, out prefix, out localname);
 				node = doc.CreateElement(prefix + ":" + localname, ns.GetNamespace(prefix));
 			}
 			
 			if (!anonAlloc.ContainsKey(uri)) {
-				node.SetAttribute(ns.GetPrefix(NS.RDF) + ":about", NS.RDF, uri);
-				anonAlloc.Remove(uri);
+				SetAttribute(node, NS.RDF, ns.GetPrefix(NS.RDF), "about", uri);
+			} else {
+				SetAttribute(node, NS.RDF, ns.GetPrefix(NS.RDF), "nodeID", uri);
 			}
 			
 			if (context == null)
@@ -86,8 +164,7 @@ namespace SemWeb {
 		
 		private XmlElement CreatePredicate(XmlElement subject, string predicate) {
 			string prefix, localname;
-			if (!ns.Normalize(predicate, out prefix, out localname))
-				throw new InvalidOperationException("No prefix is registered for the namespace of " + predicate);
+			Normalize(predicate, out prefix, out localname);
 			XmlElement pred = doc.CreateElement(prefix + ":" + localname, ns.GetNamespace(prefix));
 			subject.AppendChild(pred);
 			return pred;
@@ -99,7 +176,11 @@ namespace SemWeb {
 			
 			XmlElement prednode = CreatePredicate(subjnode, pred);
 			if (nodeMap.ContainsKey(obj)) {
-				prednode.SetAttribute(ns.GetPrefix(NS.RDF) + ":resource", NS.RDF, obj);
+				if (!anonAlloc.ContainsKey(obj)) {
+					SetAttribute(prednode, NS.RDF, ns.GetPrefix(NS.RDF), "resource", obj);
+				} else {
+					SetAttribute(prednode, NS.RDF, ns.GetPrefix(NS.RDF), "nodeID", obj);
+				}
 			} else {
 				GetNode(obj, null, prednode);
 			}
@@ -112,7 +193,7 @@ namespace SemWeb {
 		}
 		
 		public override string CreateAnonymousEntity() {
-			string id = "_:anon" + (anonCounter++);
+			string id = "anon" + (anonCounter++);
 			anonAlloc[id] = anonAlloc;
 			return id;
 		}

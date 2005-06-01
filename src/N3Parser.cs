@@ -33,7 +33,7 @@ namespace SemWeb {
 
 		private struct ParseContext {
 			public MyReader source;
-			public StatementSinkEx store;
+			public StatementSink store;
 			public NamespaceManager namespaces;
 			public UriMap namedNode;
 			public Hashtable anonymous;
@@ -42,7 +42,7 @@ namespace SemWeb {
 			public Location Location { get { return new Location(source.Line, source.Col); } }
 		}
 		
-		public override void Parse(StatementSinkEx store) {
+		public override void Parse(StatementSink store) {
 			ParseContext context = new ParseContext();
 			context.source = new MyReader(sourcestream);
 			context.store = store;
@@ -334,7 +334,7 @@ namespace SemWeb {
 				if (reverse || reverse2) OnError("is...of is not allowed in path expressions", loc);
 				if (!(path is Entity)) OnError("A path expression cannot be a literal", loc);
 				
-				Entity anon = context.store.CreateAnonymousEntity();
+				Entity anon = new Entity(null);
 				
 				Statement s;
 				if (pathType == '!' || pathType == '.') {
@@ -355,10 +355,13 @@ namespace SemWeb {
 		}			
 		
 		private Entity GetResource(ParseContext context, string uri) {
+			if (!ReuseEntities)
+				return new Entity(uri);
+		
 			Entity ret = (Entity)context.namedNode[uri];
 			if (ret != null) return ret;
 			ret = new Entity(uri);
-			//context.namedNode[uri] = ret;
+			context.namedNode[uri] = ret;
 			return ret;
 		}
 
@@ -441,7 +444,7 @@ namespace SemWeb {
 				if (prefix == "_") {
 					Resource ret = (Resource)context.anonymous[str];
 					if (ret == null) {
-						ret = context.store.CreateAnonymousEntity();
+						ret = new Entity(null);
 						context.anonymous[str] = ret;
 					}
 					return ret;
@@ -460,7 +463,7 @@ namespace SemWeb {
 			// ANONYMOUS
 			
 			if (str == "[") {
-				Entity ret = context.store.CreateAnonymousEntity();
+				Entity ret = new Entity(null);
 				ReadWhitespace(context.source);
 				if (context.source.Peek() != ']') {
 					char bracket = ReadPredicates(ret, context);
@@ -484,9 +487,9 @@ namespace SemWeb {
 						break;
 					
 					if (ent == null) {
-						ent = context.store.CreateAnonymousEntity();
+						ent = new Entity(null);
 					} else {
-						Entity sub = context.store.CreateAnonymousEntity();
+						Entity sub = new Entity(null);
 						context.store.Add(new Statement(ent, entRDFREST, sub, context.meta));
 						ent = sub;
 					}
@@ -508,7 +511,7 @@ namespace SemWeb {
 			if (str == "{") {
 				// Embedded resource
 				ParseContext newcontext = context;
-				newcontext.meta = context.store.CreateAnonymousEntity();
+				newcontext.meta = new Entity(null);
 				while (ReadStatement(newcontext)) { }
 				ReadWhitespace(context.source);
 				if (context.source.Peek() == '}') context.source.Read();

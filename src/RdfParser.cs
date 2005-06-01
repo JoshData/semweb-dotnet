@@ -12,6 +12,7 @@ namespace SemWeb {
 		string baseuri = null;
 		ArrayList warnings = new ArrayList();
 		ArrayList variables = new ArrayList();
+		bool reuseentities = false;
 		
 		public Entity Meta {
 			get {
@@ -31,13 +32,22 @@ namespace SemWeb {
 			}
 		}
 		
+		public bool ReuseEntities {
+			get {
+				return reuseentities;
+			}
+			set {
+				reuseentities = value;
+			}
+		}
+		
 		public ICollection Variables { get { return ArrayList.ReadOnly(variables); } }
 		
 		protected void AddVariable(Entity variable) {
 			variables.Add(variable);
 		}
 
-		public abstract void Parse(StatementSinkEx storage);
+		public abstract void Parse(StatementSink storage);
 		
 		public virtual void Dispose() {
 		}
@@ -70,7 +80,7 @@ namespace SemWeb {
 		
 		public ArrayList Parsers { get { return parsers; } }
 		
-		public override void Parse(StatementSinkEx storage) {
+		public override void Parse(StatementSink storage) {
 			foreach (RdfReader p in Parsers)
 				p.Parse(storage);
 		}

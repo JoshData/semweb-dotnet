@@ -1,5 +1,5 @@
 <Type Name="Store" FullName="SemWeb.Store">
-  <TypeSignature Language="C#" Value="public abstract class Store : SemWeb.StatementSinkEx" />
+  <TypeSignature Language="C#" Value="public abstract class Store : SemWeb.StatementSink" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
     <AssemblyVersion>0.9.0.0</AssemblyVersion>
@@ -9,7 +9,7 @@
   </Base>
   <Interfaces>
     <Interface>
-      <InterfaceName>SemWeb.StatementSinkEx</InterfaceName>
+      <InterfaceName>SemWeb.StatementSink</InterfaceName>
     </Interface>
   </Interfaces>
   <Members>
@@ -565,6 +565,22 @@
       </Parameters>
       <Docs>
         <param name="filters">To be added.</param>
+        <summary>To be added.</summary>
+        <returns>To be added.</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+  <Member MemberName="CreateForOutput">
+      <MemberSignature Language="C#" Value="public static SemWeb.StatementSink CreateForOutput (string spec);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>SemWeb.StatementSink</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="spec" Type="System.String" />
+      </Parameters>
+      <Docs>
+        <param name="spec">To be added.</param>
         <summary>To be added.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>

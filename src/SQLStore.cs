@@ -279,9 +279,21 @@ namespace SemWeb.Stores {
 			ResourceKey key = (ResourceKey)GetResourceKey(resource);
 			if (key != null) return key.ResId;
 			
-			if (resource.Uri == null) throw new ArgumentException("An anonymous resource created by another store cannot be used in this store.");
-
-			int id = GetEntityId(resource.Uri, create, entityInsertBuffer, insertCombined);
+			int id;
+			
+			if (resource.Uri != null) {
+				id = GetEntityId(resource.Uri, create, entityInsertBuffer, insertCombined);
+			} else {
+				if (lockedIdCache != null) {
+					// Can just increment the counter.
+					id = NextId();
+				} else {
+					// Reserve a slot in the database for this resource so its
+					// id is not reused by another call to CreateAnonymousResource.
+					throw new InvalidOperationException("Use of anonymous node not allowed outside of an Import operation.");
+				}
+			}
+				
 			if (id != 0)
 				SetResourceKey(resource, new ResourceKey(id));
 			return id;
@@ -499,19 +511,6 @@ namespace SemWeb.Stores {
 				}
 			}
 			return (Entity[])ret.ToArray(typeof(Entity));;
-		}
-		
-		public override Entity CreateAnonymousEntity() {
-			int resId;
-			if (lockedIdCache != null) {
-				// Can just increment the counter.
-				resId = NextId();
-			} else {
-				// Reserve a slot in the database for this resource so its
-				// id is not reused by another call to CreateAnonymousResource.
-				throw new InvalidOperationException("Not allowed outside of an Import operation.");
-			}
-			return MakeEntity(resId, null, null);
 		}
 		
 		private bool WhereItem(string col, Resource r, System.Text.StringBuilder cmd, bool and) {

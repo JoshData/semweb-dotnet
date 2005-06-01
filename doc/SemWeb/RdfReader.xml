@@ -123,7 +123,7 @@
         <ReturnType>System.Collections.ICollection</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>A list of <see cref="T:SemWeb.Entity" /> objects found in the strem that were marked as being variables (e.g. for queries).</summary>
+        <summary>A list of <see cref="T:SemWeb.Entity" /> objects found in the stream that were marked as being variables (e.g. for queries).</summary>
         <value>A list of <see cref="T:SemWeb.Entity" /> objects found in the strem that were marked as being variables (e.g. for queries).</value>
         <remarks>The list of variables is set by the parser implementation.  Not all parsers support variables.  (N3-formatted RDF does, but XML formatted RDF doesn't.)</remarks>
       </Docs>
@@ -156,6 +156,33 @@
         <param name="variable">An entity that was marked as being a variable.</param>
         <summary>Called by parser implementations to indicate that the entity was marked in the stream as being a variable for a query.</summary>
         <remarks>None.</remarks>
+      </Docs>
+    </Member>
+  <Member MemberName="ReuseEntities">
+      <MemberSignature Language="C#" Value="public bool ReuseEntities { set; get; };" />
+      <MemberType>Property</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Boolean</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Determines whether the reader must reuse Entity objects that it creates.</summary>
+        <value>If false (the default), the reader may create a new Entity object each time an entity is encoutered in the stream.  If true, the reader must return the same Entity object each time it encounters a reference to the same entity.</value>
+        <remarks>Setting this property to true may slow down the performance of the reader, as it may need to consult a hashtable each time a URI is read mapping the URI to an Entity it has previously created.</remarks>
+      </Docs>
+    </Member>
+  <Member MemberName="Parse">
+      <MemberSignature Language="C#" Value="public abstract void Parse (SemWeb.StatementSink storage);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="storage" Type="SemWeb.StatementSink" />
+      </Parameters>
+      <Docs>
+        <param name="storage">To be added.</param>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

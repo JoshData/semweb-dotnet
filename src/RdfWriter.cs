@@ -3,7 +3,7 @@ using System.Collections;
 using System.IO;
 
 namespace SemWeb {
-	public abstract class RdfWriter : IDisposable, StatementSinkEx {
+	public abstract class RdfWriter : IDisposable, StatementSink {
 		string baseuri;
 		bool closed;
 		Entity currentMeta;
@@ -65,12 +65,6 @@ namespace SemWeb {
 			uri = CreateAnonymousEntity();
 			SetResourceKey(e, uri);
 			return uri;
-		}
-		
-		Entity StatementSinkEx.CreateAnonymousEntity() {
-			Entity ent = new Entity(null);
-			SetResourceKey(ent, CreateAnonymousEntity());
-			return ent;
 		}
 		
 		public abstract void WriteStatement(string subj, string pred, string obj);

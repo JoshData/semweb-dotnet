@@ -13,17 +13,23 @@ using SemWeb;
 
 public class RDFStorage {
 	private class Opts : Mono.GetOptions.Options {
-		[Mono.GetOptions.Option("The {format} for the input files: xml or n3.")]
+		[Mono.GetOptions.Option("The {format} for the input files: xml, n3, or ntriples.")]
 		public string @in = "xml";
 
-		[Mono.GetOptions.Option("The destination storage.  Default is N3 to standard out.")]
+		[Mono.GetOptions.Option("The destination {storage}.  Default is N3 to standard out.")]
 		public string @out = "n3:-";
 
 		[Mono.GetOptions.Option("Clear the storage before importing data.")]
 		public bool clear = false;
 
-		[Mono.GetOptions.Option("The URI of a resource that expresses meta information.")]
+		[Mono.GetOptions.Option("The {URI} of a resource that expresses meta information.")]
 		public string meta = null;
+		
+		[Mono.GetOptions.Option("The default base {URI} for the input streams.")]
+		public string baseuri = null;
+		
+		[Mono.GetOptions.Option("Quiet mode: Don't emit status information.")]
+		public bool quiet = false;
 	}
 	
 	public static void Main(string[] args) {
@@ -37,7 +43,7 @@ public class RDFStorage {
 			return;
 		}
 		
-		StatementSinkEx storage = Store.CreateForOutput(opts.@out);
+		StatementSink storage = Store.CreateForOutput(opts.@out);
 		
 		Entity meta = null;
 		if (opts.meta != null)
@@ -58,8 +64,13 @@ public class RDFStorage {
 			}
 		}
 		
-		MyMultiRdfParser multiparser = new MyMultiRdfParser(opts.RemainingArguments, opts.@in, meta);
-		storage.Import(multiparser);
+		MultiRdfParser multiparser = new MultiRdfParser(opts.RemainingArguments, opts.@in, meta, opts.baseuri, opts.quiet);
+		
+		if (storage is Store)
+			((Store)storage).Import(multiparser);
+		else
+			multiparser.Parse(storage);
+		
 		if (storage is IDisposable) ((IDisposable)storage).Dispose();
 		
 		} catch (Exception exc) {
@@ -67,18 +78,22 @@ public class RDFStorage {
 		}
 	}
 
-	private class MyMultiRdfParser : RdfReader {
+	private class MultiRdfParser : RdfReader {
 		IList files;
 		string format;
 		Entity meta;
+		string baseuri;
+		bool quiet;
 		
-		public MyMultiRdfParser(IList files, string format, Entity meta) {
+		public MultiRdfParser(IList files, string format, Entity meta, string baseuri, bool quiet) {
 			this.files = files;
 			this.format = format;
 			this.meta = meta;
+			this.baseuri = baseuri;
+			this.quiet = quiet;
 		}
 		
-		public override void Parse(StatementSinkEx storage) {
+		public override void Parse(StatementSink storage) {
 			DateTime allstart = DateTime.Now;
 			long stct = 0;
 					
@@ -91,7 +106,8 @@ public class RDFStorage {
 					StatementFilterSink filter = new StatementFilterSink(storage);
 				
 					RdfReader parser = RdfReader.Create(format, infile);
-					parser.Meta = meta;				
+					parser.BaseUri = baseuri;
+					parser.Meta = meta;
 					parser.Parse(filter);
 					parser.Dispose();
 					
@@ -99,7 +115,8 @@ public class RDFStorage {
 					
 					TimeSpan time = DateTime.Now - start;
 					
-					Console.Error.WriteLine(" {0}m{1}s, {2} statements, {3} st/sec", (int)time.TotalMinutes, (int)time.Seconds, filter.StatementCount, time.TotalSeconds == 0 ? "?" : ((int)(filter.StatementCount/time.TotalSeconds)).ToString());
+					if (!quiet)
+						Console.Error.WriteLine(" {0}m{1}s, {2} statements, {3} st/sec", (int)time.TotalMinutes, (int)time.Seconds, filter.StatementCount, time.TotalSeconds == 0 ? "?" : ((int)(filter.StatementCount/time.TotalSeconds)).ToString());
 				} catch (ParserException e) {
 					Console.Error.WriteLine(e.Message);
 				} catch (Exception e) {
@@ -108,12 +125,13 @@ public class RDFStorage {
 			}
 			
 			TimeSpan alltime = DateTime.Now - allstart;
-			Console.Error.WriteLine("Total Time: {0}m{1}s, {2} statements, {3} st/sec", (int)alltime.TotalMinutes, (int)alltime.Seconds, stct, alltime.TotalSeconds == 0 ? "?" : ((int)(stct/alltime.TotalSeconds)).ToString());
+			if (!quiet)
+				Console.Error.WriteLine("Total Time: {0}m{1}s, {2} statements, {3} st/sec", (int)alltime.TotalMinutes, (int)alltime.Seconds, stct, alltime.TotalSeconds == 0 ? "?" : ((int)(stct/alltime.TotalSeconds)).ToString());
 		}
 	}
 }
 
-internal class StatementFilterSink : StatementSinkEx {
+internal class StatementFilterSink : StatementSink {
 	StatementSink sink;
 	int counter = 0;
 	
@@ -125,16 +143,6 @@ internal class StatementFilterSink : StatementSinkEx {
 		counter++;
 		sink.Add(statement);
 		return true;
-	}
-	
-	public Entity CreateAnonymousEntity() {
-		if (!(sink is StatementSinkEx)) throw new InvalidOperationException();
-		return ((StatementSinkEx)sink).CreateAnonymousEntity();
-	}
-	
-	public void Import(RdfReader parser) {
-		if (!(sink is StatementSinkEx)) throw new InvalidOperationException();
-		((StatementSinkEx)sink).Import(parser);
 	}
 }
 

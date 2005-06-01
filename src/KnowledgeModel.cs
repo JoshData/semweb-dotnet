@@ -51,7 +51,6 @@ namespace SemWeb.Stores {
 		public override int StatementCount { get { return stores.StatementCount; } }
 
 		public override void Clear() { throw new InvalidOperationException(); }
-		public override Entity CreateAnonymousEntity() { throw new InvalidOperationException(); }
 		public override void Add(Statement statement) { throw new InvalidOperationException(); }
 		public override void Remove(Statement statement) { throw new InvalidOperationException(); }
 		

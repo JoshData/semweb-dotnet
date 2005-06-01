@@ -8,11 +8,6 @@ namespace SemWeb {
 		bool Add(Statement statement);
 	}
 
-	public interface StatementSinkEx : StatementSink {
-		Entity CreateAnonymousEntity();
-		void Import(RdfReader parser);
-	}
-	
 	internal class StatementCounterSink : StatementSink {
 		int counter = 0;
 		
@@ -35,32 +30,7 @@ namespace SemWeb {
 		}
 	}
 
-	internal class StatementFilterSink : StatementSinkEx {
-		StatementSink sink;
-		int counter = 0;
-		
-		public int StatementCount { get { return counter; } }
-		
-		public StatementFilterSink(StatementSink sink) { this.sink = sink; }
-		
-		public bool Add(Statement statement) {
-			counter++;
-			sink.Add(statement);
-			return true;
-		}
-		
-		public Entity CreateAnonymousEntity() {
-			if (!(sink is StatementSinkEx)) throw new InvalidOperationException();
-			return ((StatementSinkEx)sink).CreateAnonymousEntity();
-		}
-		
-		public void Import(RdfReader parser) {
-			if (!(sink is StatementSinkEx)) throw new InvalidOperationException();
-			((StatementSinkEx)sink).Import(parser);
-		}
-	}
-	
-	public abstract class Store : StatementSinkEx {
+	public abstract class Store : StatementSink {
 		
 		Entity rdfType;
 		
@@ -70,8 +40,8 @@ namespace SemWeb {
 			return (Store)Create(spec, false);
 		}		
 		
-		public static StatementSinkEx CreateForOutput(string spec) {
-			return (StatementSinkEx)Create(spec, true);
+		public static StatementSink CreateForOutput(string spec) {
+			return (StatementSink)Create(spec, true);
 		}
 		
 		private static object Create(string spec, bool output) {
@@ -96,9 +66,13 @@ namespace SemWeb {
 						return new MemoryStore(new RdfXmlReader(spec));
 					}
 				case "n3":
+				case "ntriples":
 					if (spec == "") throw new ArgumentException("Use: n3:filename");
 					if (output) {
-						return new N3Writer(spec);
+						N3Writer ret = new N3Writer(spec);
+						if (type == "ntriples")
+							ret.NTriples = true;
+						return ret;
 					} else {
 						return new MemoryStore(new N3Reader(spec));
 					}
@@ -134,8 +108,6 @@ namespace SemWeb {
 		public abstract int StatementCount { get; }
 
 		public abstract void Clear();
-		
-		public abstract Entity CreateAnonymousEntity();
 
 		public Entity[] GetEntitiesOfType(Entity type) {
 			ArrayList entities = new ArrayList();
@@ -284,10 +256,6 @@ namespace SemWeb.Stores {
 				foreach (Resource r in s.GetAllPredicates())
 					h[r] = h;
 			return (Entity[])new ArrayList(h.Keys).ToArray(typeof(Entity));
-		}
-
-		public override Entity CreateAnonymousEntity() {
-			throw new InvalidOperationException("CreateAnonymousResource is not a valid operation on a MultiStore.");
 		}
 
 		public override void Add(Statement statement) { throw new InvalidOperationException("Add is not a valid operation on a MultiStore."); }

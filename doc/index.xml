@@ -20,7 +20,6 @@
       <Type Name="Literal" />
       <Type Name="Statement" />
       <Type Name="SelectPartialFilter" />
-      <Type Name="StatementSinkEx" />
       <Type Name="MemoryStore" />
       <Type Name="RdfReader" />
       <Type Name="N3Reader" />

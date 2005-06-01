@@ -85,10 +85,6 @@ namespace SemWeb {
 			return (Entity[])new ArrayList(h.Keys).ToArray(typeof(Entity));
 		}
 
-		public override Entity CreateAnonymousEntity() {
-			return new Entity((string)null);
-		}
-		
 		private void ShorterList(ref IList list1, IList list2) {
 			if (list2.Count < list1.Count)
 				list1 = list2;
