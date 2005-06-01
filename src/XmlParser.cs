@@ -21,6 +21,10 @@ namespace SemWeb {
 			rdfRest = "http://www.w3.org/1999/02/22-rdf-syntax-ns#rest",
 			rdfNil = "http://www.w3.org/1999/02/22-rdf-syntax-ns#nil";
 		
+		public RdfXmlReader(XmlDocument document) {
+			xml = new XmlNodeReader(document);
+		}
+		
 		public RdfXmlReader(XmlReader document) {
 			XmlValidatingReader reader = new XmlValidatingReader(document);
 			reader.ValidationType = ValidationType.None;

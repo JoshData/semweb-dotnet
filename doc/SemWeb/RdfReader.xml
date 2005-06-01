@@ -129,13 +129,13 @@
       </Docs>
     </Member>
   <Member MemberName="Parse">
-      <MemberSignature Language="C#" Value="public abstract void Parse (SemWeb.StatementSinkEx storage);" />
+      <MemberSignature Language="C#" Value="public abstract void Parse (SemWeb.StatementSink storage);" />
       <MemberType>Method</MemberType>
       <ReturnValue>
         <ReturnType>System.Void</ReturnType>
       </ReturnValue>
       <Parameters>
-        <Parameter Name="storage" Type="SemWeb.StatementSinkEx" />
+        <Parameter Name="storage" Type="SemWeb.StatementSink" />
       </Parameters>
       <Docs>
         <param name="storage">Each statement found in the stream is added to the statement sink via <see cref="M:SemWeb.StatementSink.Add(SemWeb.Statement)" />.</param>
@@ -168,21 +168,6 @@
         <summary>Determines whether the reader must reuse Entity objects that it creates.</summary>
         <value>If false (the default), the reader may create a new Entity object each time an entity is encoutered in the stream.  If true, the reader must return the same Entity object each time it encounters a reference to the same entity.</value>
         <remarks>Setting this property to true may slow down the performance of the reader, as it may need to consult a hashtable each time a URI is read mapping the URI to an Entity it has previously created.</remarks>
-      </Docs>
-    </Member>
-  <Member MemberName="Parse">
-      <MemberSignature Language="C#" Value="public abstract void Parse (SemWeb.StatementSink storage);" />
-      <MemberType>Method</MemberType>
-      <ReturnValue>
-        <ReturnType>System.Void</ReturnType>
-      </ReturnValue>
-      <Parameters>
-        <Parameter Name="storage" Type="SemWeb.StatementSink" />
-      </Parameters>
-      <Docs>
-        <param name="storage">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

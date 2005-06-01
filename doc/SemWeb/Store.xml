@@ -433,18 +433,18 @@
       </Docs>
     </Member>
   <Member MemberName="CreateForOutput">
-      <MemberSignature Language="C#" Value="public static SemWeb.StatementSinkEx CreateForOutput (string spec);" />
+      <MemberSignature Language="C#" Value="public static SemWeb.StatementSink CreateForOutput (string spec);" />
       <MemberType>Method</MemberType>
       <ReturnValue>
-        <ReturnType>SemWeb.StatementSinkEx</ReturnType>
+        <ReturnType>SemWeb.StatementSink</ReturnType>
       </ReturnValue>
       <Parameters>
         <Parameter Name="spec" Type="System.String" />
       </Parameters>
       <Docs>
         <param name="spec">A specification string whose format is given below.</param>
-        <summary>Creates a <see cref="T:SemWeb.StatementSinkEx" /> into which statements will be added.</summary>
-        <returns>A StatementSinkEx.</returns>
+        <summary>Creates a <see cref="T:SemWeb.StatementSink" /> into which statements will be added.</summary>
+        <returns>A StatementSink.</returns>
         <remarks>
           <para>The specifier string is in one of the following formats.  When a filename is expected, a dash can be used to indicate standard output.</para>
 
@@ -480,19 +480,6 @@
     <description>A <see cref="T:SemWeb.Stores.SQLStore" /> connected to the MySQL database given in the connection string, using the tables prefixed by the table parameter.</description>
   </item>
 </list></remarks>
-      </Docs>
-    </Member>
-  <Member MemberName="CreateAnonymousEntity">
-      <MemberSignature Language="C#" Value="public abstract SemWeb.Entity CreateAnonymousEntity ();" />
-      <MemberType>Method</MemberType>
-      <ReturnValue>
-        <ReturnType>SemWeb.Entity</ReturnType>
-      </ReturnValue>
-      <Parameters />
-      <Docs>
-        <summary>Creates an anonymous entity in the store.</summary>
-        <returns>A new anonymous entity.</returns>
-        <remarks>None.</remarks>
       </Docs>
     </Member>
   <Member MemberName="Select">
@@ -570,22 +557,7 @@
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
-  <Member MemberName="CreateForOutput">
-      <MemberSignature Language="C#" Value="public static SemWeb.StatementSink CreateForOutput (string spec);" />
-      <MemberType>Method</MemberType>
-      <ReturnValue>
-        <ReturnType>SemWeb.StatementSink</ReturnType>
-      </ReturnValue>
-      <Parameters>
-        <Parameter Name="spec" Type="System.String" />
-      </Parameters>
-      <Docs>
-        <param name="spec">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
-      </Docs>
-    </Member>
+
   </Members>
   <Docs>
     <summary>A repository for <see cref="T:SemWeb.Statement" />s.</summary>
