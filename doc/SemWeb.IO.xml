@@ -1,6 +1,0 @@
-<Namespace Name="SemWeb.IO">
-  <Docs>
-    <summary>This namespace contains classes for reading and writing RDF data in secondary formats.</summary>
-    <remarks>None.</remarks>
-  </Docs>
-</Namespace>

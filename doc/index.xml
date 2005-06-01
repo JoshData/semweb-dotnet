@@ -4,8 +4,6 @@
     <para>SemWeb is a C#/.NET library for manipulating RDF data and interacting with the semantic web.
 	SemWeb was written by Joshua Tauberer (tauberer@for.net) and has its home at <a href="http://taubz.for.net/code/semweb">http://taubz.for.net/code/semweb</a>.  It is developed
 	and tested under Mono, but it should run on Windows fine, in principle.</para>
-    <para>The goals of SemWeb are to have a straightforward interface, pluggable backends, and streaming data.</para>
-    <para>Brief feature summary: Storage backends exist for holding statements in memory or in Sqlite/MySQL databases.  RDF parsers exist for RDF/XML (based on Drive) and most of N3 (but all of Turtle and NTriples).  RDF serializers exist for just N3 at the moment.  There is an experimental query engine, but no RDQL/SPARQL support yet.  And there are experimental reasoning engines based on RDFS and OWL.</para>
   </Remarks>
   <Copyright>Updated March 2005.  See <a href="http://taubz.for.net/code/semweb">http://taubz.for.net/code/semweb</a>.</Copyright>
   <Types>
