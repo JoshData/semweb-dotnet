@@ -23,22 +23,23 @@ bin/SemWeb.MySQLStore.dll: src.misc/MySQLStore.cs bin/SemWeb.dll
 	-r:bin/SemWeb.dll -r:System.Data -r:ByteFX.Data
 
 bin/SemWeb.dll: src/*.cs
-	cp lib/* bin
 	mcs -g src/*.cs -out:bin/SemWeb.dll -t:library \
-		-r:bin/Drive.dll -r:System.Data
+		-r:System.Data
 
 bin/rdfshmush.exe: src.misc/rdfshmush.cs bin/SemWeb.dll
 	mcs src.misc/rdfshmush.cs -out:bin/rdfshmush.exe -r bin/SemWeb.dll
 		
 doc: Makefile
 	mono /usr/lib/monodoc/monodocer.exe -assembly:bin/SemWeb.dll -path:doc #--delete
+	#mono /usr/lib/monodoc/monodocs2slashdoc.exe doc > SemWeb.docs.xml
 	mkdir -p doc-html
 	mono /usr/lib/monodoc/monodocs2html.exe -source:doc -dest:doc-html -template:docstemplate.xsl
 
 semweb.zip: bin/SemWeb.dll Makefile
-	rm semweb.zip
+	rm -f semweb.zip
 	zip -r semweb.zip \
-	bin/SemWeb*.dll bin/Drive.dll \
+	bin/* \
+	doc/*.xml doc/*/*.xml \
 	src/*.cs src.misc/*.cs examples/*.cs \
 	Makefile README README.xhtml ChangeLog
 	

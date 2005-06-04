@@ -1,6 +1,6 @@
 <Namespace Name="SemWeb.Reasoning">
   <Docs>
-    <summary>The classes in this namespace are for drawing inferences for the <see cref="T:SemWeb.InferenceStore" />.</summary>
-    <remarks>The reasoning engines are not fully complete.</remarks>
+    <summary>The classes in this namespace are for drawing inferences for the <see cref="T:SemWeb.Reasoning.InferenceStore" />.</summary>
+    <remarks>The reasoning engines are not fully complete and the API is likely to change.</remarks>
   </Docs>
 </Namespace>

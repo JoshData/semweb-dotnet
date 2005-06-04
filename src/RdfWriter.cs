@@ -37,10 +37,6 @@ namespace SemWeb {
 			Add(statement);
 			return true;
 		}
-
-		public virtual void Import(RdfReader parser) {
-			parser.Parse(this);
-		}
 		
 		public void Add(Statement statement) {
 			if (statement.AnyNull)

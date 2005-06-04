@@ -10,6 +10,7 @@ namespace SemWeb {
 
 	public class N3Reader : RdfReader {
 		Resource PrefixResource = new Literal("@prefix");
+		Resource KeywordsResource = new Literal("@keywords");
 		
 		TextReader sourcestream;
 		NamespaceManager namespaces = new NamespaceManager();
@@ -38,6 +39,8 @@ namespace SemWeb {
 			public UriMap namedNode;
 			public Hashtable anonymous;
 			public Entity meta;
+			public bool UsingKeywords;
+			public Hashtable Keywords;
 			
 			public Location Location { get { return new Location(source.Line, source.Col); } }
 		}
@@ -80,6 +83,39 @@ namespace SemWeb {
 				return true;
 			}
 			
+			if ((object)subject == (object)KeywordsResource) {
+				context.UsingKeywords = true;
+				context.Keywords = new Hashtable();
+				while (true) {
+					ReadWhitespace(context.source);
+					if (context.source.Peek() == '.') {
+						context.source.Read();
+						break;
+					}
+				
+					loc = context.Location;
+					string tok = ReadToken(context.source) as string;
+					if (tok == null)
+						OnError("Expecting keyword names", loc);
+						
+					context.Keywords[tok] = tok;
+				}
+				return true;
+			}
+			
+			// It's possible to just assert the presence of an entity
+			// by following the entity with a period, or a } to end
+			// a reified context.
+			if (NextPunc(context.source) == '.') {
+				context.source.Read();
+				return true;
+			}
+			if (NextPunc(context.source) == '}') {
+				context.source.Read();
+				return false; // end of block
+			}
+			
+			// Read the predicates for this subject.
 			char period = ReadPredicates(subject, context);
 			loc = context.Location;
 			if (period != '.' && period != '}')
@@ -156,6 +192,11 @@ namespace SemWeb {
 			return (char)c;
 		}
 		
+		private int NextPunc(MyReader source) {
+			ReadWhitespace(source);
+			return source.Peek();
+		}
+		
 		private StringBuilder readTokenBuffer = new StringBuilder();
 		
 		private object ReadToken(MyReader source) {
@@ -187,13 +228,13 @@ namespace SemWeb {
 				// What kind of crazy regex is this??
 				b.Length = 0; // get rid of the open quote
 				bool escaped = false;
-				bool tripplequoted = false;
+				bool triplequoted = false;
 				while (true) {
 					int c = source.Read();
 					if (c == -1) OnError("Unexpected end of stream within a string", loc);
 					
-					if (b.Length == 1 && c == (int)'"' && source.Peek() == (int)'"') {
-						tripplequoted = true;
+					if (b.Length == 0 && c == (int)'"' && source.Peek() == (int)'"') {
+						triplequoted = true;
 						source.Read();
 						continue;
 					}
@@ -240,13 +281,15 @@ namespace SemWeb {
 							OnError("Unrecognized escape character: " + (char)c, loc);
 						escaped = false;
 					} else {
-						if (c == '"')
+						if (c == '"' && !triplequoted)
+							break;
+						if (c == '"' && source.Peek() == '"' && source.Peek2() == '"' && triplequoted)
 							break;
 						b.Append((char)c);
 					}
 				}
 				
-				if (tripplequoted) { // read the extra end quotes
+				if (triplequoted) { // read the extra end quotes
 					source.Read();
 					source.Read();
 				}
@@ -382,15 +425,22 @@ namespace SemWeb {
 
 			if (str == "@prefix")
 				return PrefixResource;
-			
-			if (str.StartsWith("@"))
-				OnError("The " + str + " directive is not supported", loc);
 
+			if (str == "@keywords")
+				return KeywordsResource;
+			
+			if (context.UsingKeywords && context.Keywords.Contains(str))
+				str = "@" + str;
+			if (!context.UsingKeywords &&
+				( str == "a" || str == "has" || str == "is"))
+				str = "@" + str;
+			
 			// Standard Keywords
 			// TODO: Turn these off with @keywords
 			
-			if (str == "a")
+			if (str == "@a")
 				return entRDFTYPE;
+				
 			if (str == "=")
 				return entDAMLEQUIV;
 			if (str == "=>")
@@ -400,10 +450,10 @@ namespace SemWeb {
 				return entLOGIMPLIES;
 			}				
 
-			if (str == "has") // ignore this token
+			if (str == "@has") // ignore this token
 				return ReadResource2(context, out reverse);
 			
-			if (str == "is") {
+			if (str == "@is") {
 				// Reverse predicate
 				bool reversetemp;
 				Resource pred = ReadResource2(context, out reversetemp);
@@ -413,6 +463,9 @@ namespace SemWeb {
 				return pred;
 			}
 			
+			if (str.StartsWith("@"))
+				OnError("The " + str + " directive is not supported", loc);
+
 			// URI
 			
 			if (str.StartsWith("<") && str.EndsWith(">")) {
@@ -512,7 +565,7 @@ namespace SemWeb {
 				// Embedded resource
 				ParseContext newcontext = context;
 				newcontext.meta = new Entity(null);
-				while (ReadStatement(newcontext)) { }
+				while (NextPunc(context.source) != '}' && ReadStatement(newcontext)) { }
 				ReadWhitespace(context.source);
 				if (context.source.Peek() == '}') context.source.Read();
 				return newcontext.meta;
@@ -524,6 +577,14 @@ namespace SemWeb {
 			double numval;
 			if (double.TryParse(str, System.Globalization.NumberStyles.Any, null, out numval))
 				return new Literal(numval.ToString());
+			
+			// If @keywords is used, alphanumerics that aren't keywords
+			// are local names in the default namespace.
+			if (context.UsingKeywords && char.IsLetter(str[0])) {
+				if (BaseUri == null)
+					OnError("The document contains an unqualified name but no BaseUri was specified: \"" + str + "\"", loc);
+				return GetResource(context, BaseUri + str);
+			}
 			
 			// NOTHING MATCHED
 			

@@ -1,5 +1,4 @@
 <Overview>
-  <Assembly Version="1.0.1898.20865">SemWeb</Assembly>
   <Remarks>
     <para>SemWeb is a C#/.NET library for manipulating RDF data and interacting with the semantic web.
 	SemWeb was written by Joshua Tauberer (tauberer@for.net) and has its home at <a href="http://taubz.for.net/code/semweb">http://taubz.for.net/code/semweb</a>.  It is developed
@@ -58,33 +57,38 @@
       <Type Name="XPathSemWebNavigator" />
     </Namespace>
   </Types>
-  <Attributes>
-    <Attribute>
-      <AttributeName>System.Reflection.AssemblyKeyName(KeyName="")</AttributeName>
-    </Attribute>
-    <Attribute>
-      <AttributeName>System.Reflection.AssemblyCulture(Culture="")</AttributeName>
-    </Attribute>
-    <Attribute>
-      <AttributeName>System.Reflection.AssemblyTrademark(Trademark="")</AttributeName>
-    </Attribute>
-    <Attribute>
-      <AttributeName>System.Reflection.AssemblyCopyright(Copyright="Copyright (c) 2005 Joshua Tauberer &lt;tauberer@for.net&gt;")</AttributeName>
-    </Attribute>
-    <Attribute>
-      <AttributeName>System.Reflection.AssemblyProduct(Product="")</AttributeName>
-    </Attribute>
-    <Attribute>
-      <AttributeName>System.Reflection.AssemblyCompany(Company="")</AttributeName>
-    </Attribute>
-    <Attribute>
-      <AttributeName>System.Reflection.AssemblyConfiguration(Configuration="")</AttributeName>
-    </Attribute>
-    <Attribute>
-      <AttributeName>System.Reflection.AssemblyDescription(Description="A library for applications using the semantic web.")</AttributeName>
-    </Attribute>
-    <Attribute>
-      <AttributeName>System.Reflection.AssemblyTitle(Title="SemWeb")</AttributeName>
-    </Attribute>
-  </Attributes>
+  <Assemblies>
+    <Assembly Name="SemWeb" Version="0.9.0.0">
+      <Attributes>
+        <Attribute>
+          <AttributeName>System.Reflection.AssemblyKeyName(KeyName="")</AttributeName>
+        </Attribute>
+        <Attribute>
+          <AttributeName>System.Reflection.AssemblyCulture(Culture="")</AttributeName>
+        </Attribute>
+        <Attribute>
+          <AttributeName>System.Reflection.AssemblyTrademark(Trademark="")</AttributeName>
+        </Attribute>
+        <Attribute>
+          <AttributeName>System.Reflection.AssemblyCopyright(Copyright="Copyright (c) 2005 Joshua Tauberer &lt;tauberer@for.net&gt;")</AttributeName>
+        </Attribute>
+        <Attribute>
+          <AttributeName>System.Reflection.AssemblyProduct(Product="")</AttributeName>
+        </Attribute>
+        <Attribute>
+          <AttributeName>System.Reflection.AssemblyCompany(Company="")</AttributeName>
+        </Attribute>
+        <Attribute>
+          <AttributeName>System.Reflection.AssemblyConfiguration(Configuration="")</AttributeName>
+        </Attribute>
+        <Attribute>
+          <AttributeName>System.Reflection.AssemblyDescription(Description="A library for applications using the semantic web.")</AttributeName>
+        </Attribute>
+        <Attribute>
+          <AttributeName>System.Reflection.AssemblyTitle(Title="SemWeb")</AttributeName>
+        </Attribute>
+      </Attributes>
+    </Assembly>
+  </Assemblies>
+  <Title>SemWeb</Title>
 </Overview>

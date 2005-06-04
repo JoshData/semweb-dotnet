@@ -1,4 +1,4 @@
-<Type Name="MemoryStore" FullName="SemWeb.Stores.MemoryStore">
+<Type Name="MemoryStore" FullName="SemWeb.MemoryStore">
   <TypeSignature Language="C#" Value="public class MemoryStore : SemWeb.Store, System.Collections.IEnumerable" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>

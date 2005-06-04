@@ -152,21 +152,7 @@
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
-  <Member MemberName="Import">
-      <MemberSignature Language="C#" Value="public virtual void Import (SemWeb.RdfReader parser);" />
-      <MemberType>Method</MemberType>
-      <ReturnValue>
-        <ReturnType>System.Void</ReturnType>
-      </ReturnValue>
-      <Parameters>
-        <Parameter Name="parser" Type="SemWeb.RdfReader" />
-      </Parameters>
-      <Docs>
-        <param name="parser">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
-      </Docs>
-    </Member>
+  
   <Member MemberName="CreateAnonymousEntity">
       <MemberSignature Language="C#" Value="public abstract string CreateAnonymousEntity ();" />
       <MemberType>Method</MemberType>
