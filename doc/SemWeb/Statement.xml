@@ -43,8 +43,8 @@
         <remarks>None.</remarks>
       </Docs>
     </Member>
-    <Member MemberName="Empty">
-      <MemberSignature Language="C#" Value="public static readonly SemWeb.Statement Empty;" />
+    <Member MemberName="All">
+      <MemberSignature Language="C#" Value="public static readonly SemWeb.Statement All;" />
       <MemberType>Field</MemberType>
       <ReturnValue>
         <ReturnType>SemWeb.Statement</ReturnType>
@@ -78,11 +78,12 @@
         <Parameter Name="b" Type="SemWeb.Statement" />
       </Parameters>
       <Docs>
-        <param name="a">To be added.</param>
-        <param name="b">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
+        <param name="a">A statement.</param>
+        <param name="b">A statement.</param>
+        <summary>Tests two statements for equality.</summary>
+        <returns>Whether the two statements are equal.</returns>
+        <remarks>Statements are considered equal when their subjects, predicates, objects, and
+        meta entities are considered equal, or both are <see langword="null" />.</remarks>
       </Docs>
     </Member>
     <Member MemberName="op_Inequality">
@@ -96,11 +97,12 @@
         <Parameter Name="b" Type="SemWeb.Statement" />
       </Parameters>
       <Docs>
-        <param name="a">To be added.</param>
-        <param name="b">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
+        <param name="a">A statement.</param>
+        <param name="b">A statement.</param>
+        <summary>Tests two statements for inequality.</summary>
+        <returns>Whether the two statements are not equal.</returns>
+        <remarks>Statements are considered equal when their subjects, predicates, objects, and
+        meta entities are considered equal, or both are <see langword="null" />.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Subject">

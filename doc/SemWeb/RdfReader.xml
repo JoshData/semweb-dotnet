@@ -1,5 +1,5 @@
 <Type Name="RdfReader" FullName="SemWeb.RdfReader">
-  <TypeSignature Language="C#" Value="public abstract class RdfReader : System.IDisposable" />
+  <TypeSignature Language="C#" Value="public abstract class RdfReader : SemWeb.StatementSource, System.IDisposable" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
     <AssemblyVersion>0.9.0.0</AssemblyVersion>
@@ -8,6 +8,9 @@
     <BaseTypeName>System.Object</BaseTypeName>
   </Base>
   <Interfaces>
+    <Interface>
+      <InterfaceName>SemWeb.StatementSource</InterfaceName>
+    </Interface>
     <Interface>
       <InterfaceName>System.IDisposable</InterfaceName>
     </Interface>
@@ -31,8 +34,8 @@
       </ReturnValue>
       <Parameters />
       <Docs>
-        <summary>Disposes the parser.</summary>
-        <remarks>The resources associated with the parser are freed.</remarks>
+        <summary>Disposes the reader.</summary>
+        <remarks>The resources associated with the reader are freed.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Create">
@@ -48,9 +51,9 @@
       <Docs>
         <param name="type">The stream type.</param>
         <param name="source">The name of the source stream, as a file name, or "-" for standard input.</param>
-        <summary>Creates a parser in the factory paradigm.</summary>
+        <summary>Creates a reader in the factory paradigm.</summary>
         <returns>
-          <para>The type of parser returned is given in the following table.</para>
+          <para>The type of reader returned is given in the following table.</para>
 
 <list type="table">
   <listheader>
@@ -83,7 +86,7 @@
         <ReturnType>SemWeb.Entity</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>An entity to assign as the meta entity for statements loaded by this parser.</summary>
+        <summary>An entity to assign as the meta entity for statements loaded by this reader.</summary>
         <value>An entity to use for meta information, or <see langword="null" />.</value>
         <remarks>The value of this property is used as the meta argument in calls to <see cref="C:SemWeb.Statement(SemWeb.Entity,SemWeb.Entity,SemWeb.Resource,SemWeb.Entity)" />.  The use of <see cref="P:SemWeb.Statement.Meta" /> is up to the application.</remarks>
       </Docs>
@@ -97,7 +100,7 @@
       <Docs>
         <summary>The base URI for resolving relative URIs found in the stream.</summary>
         <value>The base URI for resolving relative URIs found in the stream.  May be, and is initially, <see langword="null" />.  </value>
-        <remarks>When this property is <see langword="null" />, the parser may not be able to parse streams containing relative URIs.  Always set this property before beginning reading if the stream could possibly contain relative URIs.</remarks>
+        <remarks>When this property is <see langword="null" />, the reader may not be able to read streams containing relative URIs.  Always set this property before beginning reading if the stream could possibly contain relative URIs.</remarks>
       </Docs>
     </Member>
   <Member MemberName="OnWarning">
@@ -125,22 +128,22 @@
       <Docs>
         <summary>A list of <see cref="T:SemWeb.Entity" /> objects found in the stream that were marked as being variables (e.g. for queries).</summary>
         <value>A list of <see cref="T:SemWeb.Entity" /> objects found in the strem that were marked as being variables (e.g. for queries).</value>
-        <remarks>The list of variables is set by the parser implementation.  Not all parsers support variables.  (N3-formatted RDF does, but XML formatted RDF doesn't.)</remarks>
+        <remarks>The list of variables is set by the reader implementation.  Not all readers support variables.  (N3-formatted RDF does, but XML formatted RDF doesn't.)</remarks>
       </Docs>
     </Member>
-  <Member MemberName="Parse">
-      <MemberSignature Language="C#" Value="public abstract void Parse (SemWeb.StatementSink storage);" />
+  <Member MemberName="Select">
+      <MemberSignature Language="C#" Value="public abstract void Select (SemWeb.StatementSink sink);" />
       <MemberType>Method</MemberType>
       <ReturnValue>
         <ReturnType>System.Void</ReturnType>
       </ReturnValue>
       <Parameters>
-        <Parameter Name="storage" Type="SemWeb.StatementSink" />
+        <Parameter Name="sink" Type="SemWeb.StatementSink" />
       </Parameters>
       <Docs>
-        <param name="storage">Each statement found in the stream is added to the statement sink via <see cref="M:SemWeb.StatementSink.Add(SemWeb.Statement)" />.</param>
-        <summary>Parses the stream into the statement sink.</summary>
-        <remarks>User code should call <see cref="M:SemWeb.Store.Import(SemWeb.RdfReader)" /> rather than calling this method directly.</remarks>
+        <param name="sink">Each statement found in the stream is added to the statement sink via <see cref="M:SemWeb.StatementSink.Add(SemWeb.Statement)" />.</param>
+        <summary>Reads the stream into the statement sink.</summary>
+        <remarks>User code should call <see cref="M:SemWeb.Store.Import(SemWeb.StatementSource)" /> rather than calling this method directly.</remarks>
       </Docs>
     </Member>
   <Member MemberName="AddVariable">

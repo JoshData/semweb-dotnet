@@ -1,5 +1,5 @@
 <Type Name="Store" FullName="SemWeb.Store">
-  <TypeSignature Language="C#" Value="public abstract class Store : SemWeb.StatementSink" />
+  <TypeSignature Language="C#" Value="public abstract class Store : SemWeb.StatementSink, SemWeb.StatementSource" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
     <AssemblyVersion>0.9.0.0</AssemblyVersion>
@@ -10,6 +10,9 @@
   <Interfaces>
     <Interface>
       <InterfaceName>SemWeb.StatementSink</InterfaceName>
+    </Interface>
+    <Interface>
+      <InterfaceName>SemWeb.StatementSource</InterfaceName>
     </Interface>
   </Interfaces>
   <Members>
@@ -79,33 +82,18 @@
       </Docs>
     </Member>
     <Member MemberName="Import">
-      <MemberSignature Language="C#" Value="public void Import (SemWeb.Store other);" />
+      <MemberSignature Language="C#" Value="public virtual void Import (SemWeb.StatementSource source);" />
       <MemberType>Method</MemberType>
       <ReturnValue>
         <ReturnType>System.Void</ReturnType>
       </ReturnValue>
       <Parameters>
-        <Parameter Name="other" Type="SemWeb.Store" />
+        <Parameter Name="source" Type="SemWeb.StatementSource" />
       </Parameters>
       <Docs>
-        <param name="other">The store whose contents are to be imported.</param>
-        <summary>Loads the contents of another store into this store.</summary>
-        <remarks>Stores may choose to lock their underlying data source during this operation.</remarks>
-      </Docs>
-    </Member>
-    <Member MemberName="Import">
-      <MemberSignature Language="C#" Value="public virtual void Import (SemWeb.RdfReader parser);" />
-      <MemberType>Method</MemberType>
-      <ReturnValue>
-        <ReturnType>System.Void</ReturnType>
-      </ReturnValue>
-      <Parameters>
-        <Parameter Name="parser" Type="SemWeb.RdfReader" />
-      </Parameters>
-      <Docs>
-        <param name="parser">The parser whose statements will be added into the store.</param>
-        <summary>Loads the contents of a parser into the store.</summary>
-        <remarks>This method wraps a call to <see cref="M:SemWeb.RdfReader.Parse(SemWeb.Store)" /> in store-specific code that prepares the store for receiving many statements.  The store may make itself locked for access by other processes to make the parsing faster.  To avoid this, call <see cref="M:SemWeb.RdfReader.Parse(SemWeb.Store)" /> directly.</remarks>
+        <param name="source">The source whose statements will be added into the store.</param>
+        <summary>Loads the contents of a StatementSource into the store.</summary>
+        <remarks>This method wraps a call to <see cref="M:SemWeb.StatementSource.Select(SemWeb.StatementSink" /> in store-specific code that prepares the store for receiving many statements.  The store may make itself locked for access by other processes to make the parsing faster.  To avoid this, call <see cref="M:SemWeb.StatementSource.Select(SemWeb.StatementSink)" /> directly.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Contains">
@@ -387,10 +375,10 @@
       </Docs>
     </Member>
   <Member MemberName="CreateForInput">
-      <MemberSignature Language="C#" Value="public static SemWeb.Store CreateForInput (string spec);" />
+      <MemberSignature Language="C#" Value="public static SemWeb.StatementSource CreateForInput (string spec);" />
       <MemberType>Method</MemberType>
       <ReturnValue>
-        <ReturnType>SemWeb.Store</ReturnType>
+        <ReturnType>SemWeb.StatementSource</ReturnType>
       </ReturnValue>
       <Parameters>
         <Parameter Name="spec" Type="System.String" />
@@ -398,7 +386,7 @@
       <Docs>
         <param name="spec">A specifier string, whose format is given below.</param>
         <summary>Creates a store from which statements will be read.</summary>
-        <returns>A store.</returns>
+        <returns>A StatementSource from which statements can be read.  A RdfReader or Store is returned.</returns>
         <remarks>
           <para>The specifier string is in one of the following formats.  When a filename is expected, a dash can be used to indicate standard input.</para>
 
@@ -415,11 +403,11 @@
   </item>
   <item>
     <term>xml:[filename]</term>
-    <description>A <see cref="T:SemWeb.MemoryStore" /> whose contents have been parsed from the RDF/XML file.</description>
+    <description>A <see cref="T:SemWeb.RdfXmlReader" /> to read the RDF/XML file.</description>
   </item>
   <item>
     <term>n3:[filename]</term>
-    <description>A <see cref="T:SemWeb.MemoryStore" /> whose contents have been parsed from the N3 file.</description>
+    <description>A <see cref="T:SemWeb.N3Reader" /> to read the N3 file.</description>
   </item>
   <item>
     <term>sqlite:[table]:[connection string]</term>
@@ -557,7 +545,21 @@
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
-
+  <Member MemberName="Select">
+      <MemberSignature Language="C#" Value="public void Select (SemWeb.StatementSink result);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="result" Type="SemWeb.StatementSink" />
+      </Parameters>
+      <Docs>
+        <param name="result">To be added.</param>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
   </Members>
   <Docs>
     <summary>A repository for <see cref="T:SemWeb.Statement" />s.</summary>

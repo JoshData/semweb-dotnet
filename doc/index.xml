@@ -4,7 +4,7 @@
 	SemWeb was written by Joshua Tauberer (tauberer@for.net) and has its home at <a href="http://taubz.for.net/code/semweb">http://taubz.for.net/code/semweb</a>.  It is developed
 	and tested under Mono, but it should run on Windows fine, in principle.</para>
   </Remarks>
-  <Copyright>Updated March 2005.  See <a href="http://taubz.for.net/code/semweb">http://taubz.for.net/code/semweb</a>.</Copyright>
+  <Copyright>See <a href="http://taubz.for.net/code/semweb">http://taubz.for.net/code/semweb</a>.</Copyright>
   <Types>
     <Namespace Name="SemWeb">
       <Type Name="StatementSink" />
@@ -23,6 +23,7 @@
       <Type Name="N3Writer" />
       <Type Name="RdfXmlReader" />
       <Type Name="RdfXmlWriter" />
+      <Type Name="StatementSource" />
     </Namespace>
     <Namespace Name="SemWeb.Query">
       <Type Name="QueryException" />
