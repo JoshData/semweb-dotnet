@@ -45,7 +45,7 @@ namespace SemWeb {
 			public Location Location { get { return new Location(source.Line, source.Col); } }
 		}
 		
-		public override void Parse(StatementSink store) {
+		public override void Select(StatementSink store) {
 			ParseContext context = new ParseContext();
 			context.source = new MyReader(sourcestream);
 			context.store = store;
@@ -67,7 +67,7 @@ namespace SemWeb {
 			
 			if ((object)subject == (object)PrefixResource) {
 				loc = context.Location;
-				string qname = ReadToken(context.source) as string;
+				string qname = ReadToken(context.source, context) as string;
 				if (qname == null || !qname.EndsWith(":")) OnError("When using @prefix, the prefix identifier must end with a colon", loc);
 				
 				loc = context.Location;
@@ -94,7 +94,7 @@ namespace SemWeb {
 					}
 				
 					loc = context.Location;
-					string tok = ReadToken(context.source) as string;
+					string tok = ReadToken(context.source, context) as string;
 					if (tok == null)
 						OnError("Expecting keyword names", loc);
 						
@@ -197,9 +197,49 @@ namespace SemWeb {
 			return source.Peek();
 		}
 		
+		private void ReadEscapedChar(char c, StringBuilder b, MyReader source, Location loc) {
+			if (c == 'n') b.Append('\n');
+			else if (c == 'r') b.Append('\r');
+			else if (c == 't') b.Append('\t');
+			else if (c == '\\') b.Append('\\');		
+			else if (c == '"') b.Append('"');
+			else if (c == '\'') b.Append('\'');
+			else if (c == 'a') b.Append('\a');
+			else if (c == 'b') b.Append('\b');
+			else if (c == 'f') b.Append('\f');
+			else if (c == 'v') b.Append('\v');
+			else if (c == '\n') { }
+			else if (c == '\r') { }
+			else if (c == 'u' || c == 'U') {
+				StringBuilder num = new StringBuilder();
+				if (c == 'u')  {
+					num.Append((char)source.Read()); // four hex digits
+					num.Append((char)source.Read());
+					num.Append((char)source.Read());
+					num.Append((char)source.Read());
+				} else {
+					source.Read(); // two zeros
+					source.Read();
+					num.Append((char)source.Read()); // six hex digits
+					num.Append((char)source.Read());
+					num.Append((char)source.Read());
+					num.Append((char)source.Read());
+					num.Append((char)source.Read());
+					num.Append((char)source.Read());
+				}
+				
+				int unicode = int.Parse(num.ToString(), System.Globalization.NumberStyles.AllowHexSpecifier);
+				b.Append((char)unicode); // is this correct?
+				
+			} else if (char.IsDigit((char)c) || c == 'x')
+				OnError("Octal and hex byte-value escapes are deprecated and not supported", loc);
+			else
+				OnError("Unrecognized escape character: " + (char)c, loc);
+		}
+		
 		private StringBuilder readTokenBuffer = new StringBuilder();
 		
-		private object ReadToken(MyReader source) {
+		private object ReadToken(MyReader source, ParseContext context) {
 			ReadWhitespace(source);
 			
 			Location loc = new Location(source.Line, source.Col);
@@ -212,15 +252,25 @@ namespace SemWeb {
 			b.Append((char)firstchar);
 
 			if (firstchar == '<') {
-				// This is a URI or the <= verb
+				// This is a URI or the <= verb.  URIs can be escaped like strings, at least in the NTriples spec.
+				bool escaped = false;
 				while (true) {
 					int c = source.Read();
 					if (c == -1) OnError("Unexpected end of stream within a token beginning with <", loc);
-					b.Append((char)c);
+					
 					if (b.Length == 2 && c == '=')
-						break; // the <= verb
-					if (c == '>') // end of the URI
-						break;
+						return "<="; // the <= verb
+					
+					if (escaped) {
+						ReadEscapedChar((char)c, b, source, loc);
+						escaped = false;
+					} else if (c == '\\') {
+						escaped = true;
+					} else {
+						b.Append((char)c);
+						if (c == '>') // end of the URI
+							break;
+					}
 				}
 			
 			} else if (firstchar == '"') {
@@ -242,43 +292,7 @@ namespace SemWeb {
 					if (!escaped && c == '\\')
 						escaped = true;
 					else if (escaped) {
-						if (c == 'n') b.Append('\n');
-						else if (c == 'r') b.Append('\r');
-						else if (c == 't') b.Append('\t');
-						else if (c == '\\') b.Append('\\');		
-						else if (c == '"') b.Append('"');
-						else if (c == '\'') b.Append('\'');
-						else if (c == 'a') b.Append('\a');
-						else if (c == 'b') b.Append('\b');
-						else if (c == 'f') b.Append('\f');
-						else if (c == 'v') b.Append('\v');
-						else if (c == '\n') { }
-						else if (c == '\r') { }
-						else if (c == 'u' || c == 'U') {
-							StringBuilder num = new StringBuilder();
-							if (c == 'u')  {
-								num.Append((char)source.Read()); // four hex digits
-								num.Append((char)source.Read());
-								num.Append((char)source.Read());
-								num.Append((char)source.Read());
-							} else {
-								source.Read(); // two zeros
-								source.Read();
-								num.Append((char)source.Read()); // six hex digits
-								num.Append((char)source.Read());
-								num.Append((char)source.Read());
-								num.Append((char)source.Read());
-								num.Append((char)source.Read());
-								num.Append((char)source.Read());
-							}
-							
-							int unicode = int.Parse(num.ToString(), System.Globalization.NumberStyles.AllowHexSpecifier);
-							b.Append((char)unicode); // is this correct?
-							
-						} else if (char.IsDigit((char)c) || c == 'x')
-							OnError("Octal and hex byte-value escapes are deprecated and not supported", loc);
-						else
-							OnError("Unrecognized escape character: " + (char)c, loc);
+						ReadEscapedChar((char)c, b, source, loc);
 						escaped = false;
 					} else {
 						if (c == '"' && !triplequoted)
@@ -306,9 +320,18 @@ namespace SemWeb {
 						b.Append((char)source.Read());
 					litlang = b.ToString();
 				} else if (source.Peek() == '^' && source.Peek2() == '^') {
+					loc = new Location(source.Line, source.Col);
 					source.Read();
 					source.Read();
-					litdt = ReadToken(source).ToString(); // better be a string URI 
+					litdt = ReadToken(source, context).ToString(); // better be a string URI
+					if (litdt.StartsWith("<") && litdt.EndsWith(">"))
+						litdt = litdt.Substring(1, litdt.Length-2);
+					else if (litdt.IndexOf(":") != -1) {
+						Resource r = ResolveQName(litdt, context, loc);
+						if (r.Uri == null)
+							OnError("A literal datatype cannot be an anonymous entity", loc);
+						litdt = r.Uri;
+					}
 				}
 				
 				return new Literal(litvalue, litlang, litdt);
@@ -408,12 +431,34 @@ namespace SemWeb {
 			return ret;
 		}
 
+		private Resource ResolveQName(string str, ParseContext context, Location loc) {
+			int colon = str.IndexOf(":");
+			string prefix = str.Substring(0, colon);
+			if (prefix == "_") {
+				Resource ret = (Resource)context.anonymous[str];
+				if (ret == null) {
+					ret = new Entity(null);
+					context.anonymous[str] = ret;
+				}
+				return ret;
+			} else if (prefix == "") {
+				if (BaseUri == null)
+					OnError("The document contains a relative URI but no BaseUri was specified", loc);
+				return GetResource(context, BaseUri + str.Substring(colon+1));
+			} else {
+				string ns = context.namespaces.GetNamespace(prefix);
+				if (ns == null)
+					OnError("Prefix is undefined: " + str, loc);
+				return GetResource(context, ns + str.Substring(colon+1));
+			}
+		}
+			
 		private Resource ReadResource2(ParseContext context, out bool reverse) {
 			reverse = false;
 			
 			Location loc = context.Location;
 			
-			object tok = ReadToken(context.source);
+			object tok = ReadToken(context.source, context);
 			if (tok is Literal)
 				return (Literal)tok;
 			
@@ -458,7 +503,7 @@ namespace SemWeb {
 				bool reversetemp;
 				Resource pred = ReadResource2(context, out reversetemp);
 				reverse = true;
-				string of = ReadToken(context.source) as string;
+				string of = ReadToken(context.source, context) as string;
 				if (of == null || of != "of") OnError("Expecting token 'of' but found '" + of + "'", loc);
 				return pred;
 			}
@@ -491,28 +536,9 @@ namespace SemWeb {
 			
 			// QNAME
 
-			int colon = str.IndexOf(":");
-			if (colon != -1) {
-				string prefix = str.Substring(0, colon);
-				if (prefix == "_") {
-					Resource ret = (Resource)context.anonymous[str];
-					if (ret == null) {
-						ret = new Entity(null);
-						context.anonymous[str] = ret;
-					}
-					return ret;
-				} else if (prefix == "") {
-					if (BaseUri == null)
-						OnError("The document contains a relative URI but no BaseUri was specified", loc);
-					return GetResource(context, BaseUri + str.Substring(colon+1));
-				} else {
-					string ns = context.namespaces.GetNamespace(prefix);
-					if (ns == null)
-						OnError("Prefix is undefined: " + str, loc);
-					return GetResource(context, ns + str.Substring(colon+1));
-				}
-			}
-			
+			if (str.IndexOf(":") != -1)
+				return ResolveQName(str, context, loc);
+				
 			// ANONYMOUS
 			
 			if (str == "[") {

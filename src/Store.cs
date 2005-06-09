@@ -4,6 +4,10 @@ using System.Data;
 
 namespace SemWeb {
 	
+	public interface StatementSource {
+		void Select(StatementSink sink);
+	}
+	
 	public interface StatementSink {
 		bool Add(Statement statement);
 	}
@@ -30,14 +34,14 @@ namespace SemWeb {
 		}
 	}
 
-	public abstract class Store : StatementSink {
+	public abstract class Store : StatementSource, StatementSink {
 		
 		Entity rdfType;
 		
 		public static readonly Entity FindVariable = new Entity(null);
 		
-		public static Store CreateForInput(string spec) {
-			return (Store)Create(spec, false);
+		public static StatementSource CreateForInput(string spec) {
+			return (StatementSource)Create(spec, false);
 		}		
 		
 		public static StatementSink CreateForOutput(string spec) {
@@ -63,7 +67,7 @@ namespace SemWeb {
 					if (output) {
 						return new RdfXmlWriter(spec);
 					} else {
-						return new MemoryStore(new RdfXmlReader(spec));
+						return new RdfXmlReader(spec);
 					}
 				case "n3":
 				case "ntriples":
@@ -74,7 +78,7 @@ namespace SemWeb {
 							ret.NTriples = true;
 						return ret;
 					} else {
-						return new MemoryStore(new N3Reader(spec));
+						return new N3Reader(spec);
 					}
 				case "sqlite":
 				case "mysql":
@@ -95,7 +99,7 @@ namespace SemWeb {
 					Type ttype = Type.GetType(classtype);
 					if (ttype == null)
 						throw new NotSupportedException("The storage type in <" + classtype + "> could not be found.");
-					return (Store)Activator.CreateInstance(ttype, new object[] { spec, table });
+					return Activator.CreateInstance(ttype, new object[] { spec, table });
 				default:
 					throw new ArgumentException("Unknown parser type: " + type);
 			}
@@ -129,12 +133,8 @@ namespace SemWeb {
 		
 		public abstract void Remove(Statement statement);
 
-		public void Import(Store other) {
-			other.Select(new Statement(null,null,null), this);
-		}
-		
-		public virtual void Import(RdfReader parser) {
-			parser.Parse(this);
+		public virtual void Import(StatementSource source) {
+			source.Select(this);
 		}
 		
 		public abstract Entity[] GetAllEntities();
@@ -145,6 +145,10 @@ namespace SemWeb {
 			StatementExistsSink sink = new StatementExistsSink();
 			Select(statement, sink);
 			return sink.Exists;
+		}
+		
+		public void Select(StatementSink result) {
+			Select(Statement.All, result);
 		}
 		
 		public void Select(Statement template, StatementSink result) {

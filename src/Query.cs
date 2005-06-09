@@ -213,7 +213,7 @@ namespace SemWeb.Query {
 			
 			// And all anonymous nodes in the graph
 			Hashtable seenAnonNodes = new Hashtable();
-			foreach (Statement s in model.Select(Statement.Empty)) {
+			foreach (Statement s in model) {
 				foreach (Resource r in new Resource[] { s.Subject, s.Predicate, s.Object }) {
 					if (r.Uri != null || !(r is Entity) || seenAnonNodes.ContainsKey(r)) continue;
 					seenAnonNodes[r] = r;

@@ -69,7 +69,7 @@ public class RDFStorage {
 		if (storage is Store)
 			((Store)storage).Import(multiparser);
 		else
-			multiparser.Parse(storage);
+			multiparser.Select(storage);
 		
 		if (storage is IDisposable) ((IDisposable)storage).Dispose();
 		
@@ -93,7 +93,7 @@ public class RDFStorage {
 			this.quiet = quiet;
 		}
 		
-		public override void Parse(StatementSink storage) {
+		public override void Select(StatementSink storage) {
 			DateTime allstart = DateTime.Now;
 			long stct = 0;
 					
@@ -108,7 +108,7 @@ public class RDFStorage {
 					RdfReader parser = RdfReader.Create(format, infile);
 					parser.BaseUri = baseuri;
 					parser.Meta = meta;
-					parser.Parse(filter);
+					parser.Select(filter);
 					parser.Dispose();
 					
 					stct += filter.StatementCount;
@@ -118,9 +118,9 @@ public class RDFStorage {
 					if (!quiet)
 						Console.Error.WriteLine(" {0}m{1}s, {2} statements, {3} st/sec", (int)time.TotalMinutes, (int)time.Seconds, filter.StatementCount, time.TotalSeconds == 0 ? "?" : ((int)(filter.StatementCount/time.TotalSeconds)).ToString());
 				} catch (ParserException e) {
-					Console.Error.WriteLine(e.Message);
+					Console.Error.WriteLine(" " + e.Message);
 				} catch (Exception e) {
-					Console.Error.WriteLine(e);
+					Console.Error.WriteLine("\n" + e + "\n");
 				}
 			}
 			

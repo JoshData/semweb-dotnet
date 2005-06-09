@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Text;
 
 using SemWeb;
 
@@ -63,13 +64,69 @@ namespace SemWeb {
 				if (ok)
 					return ":" + uri.Substring(len);
 			}
-			if (NTriples || ns == null) return "<" + uri + ">";
-			return ns.Normalize(uri);
+			if (NTriples || ns == null) return "<" + Escape(uri) + ">";
+			
+			string ret = ns.Normalize(uri);
+			if (ret[0] != '<') return ret;
+			
+			return "<" + Escape(uri) + ">";
 		}
 		
-		private void WriteLiteral(string expr) {
-			writer.Write(expr);
-			writer.Write(" ");
+		private static char HexDigit(char c, int digit) {
+			int n = (((int)c) >> (digit * 4)) & 0xF;
+			if (n <= 9)
+				return (char)('0' + n);
+			else
+				return (char)('A' + (n-10));
+		}
+		
+		public static string Escape(string str) {
+			// Check if any escaping is necessary, following the NTriples spec.
+			bool needed = false;
+			for (int i = 0; i < str.Length; i++) {
+				char c = str[i];
+				if (!((c >= 0x20 && c <= 0x21) || (c >= 0x23 && c <= 0x5B) || (c >= 0x5D && c <= 0x7E))) {
+					needed = true;
+					break;
+				}
+			}
+			
+			if (!needed) return str;
+			
+			StringBuilder b = new StringBuilder();
+			for (int i = 0; i < str.Length; i++) {
+				char c = str[i];
+				if ((c >= 0x20 && c <= 0x21) || (c >= 0x23 && c <= 0x5B) || (c >= 0x5D && c <= 0x7E)) {
+					b.Append(c);
+				} else if (c == 0x9) {
+					b.Append("\\t");				
+				} else if (c == 0xA) {
+					b.Append("\\n");				
+				} else if (c == 0xD) {
+					b.Append("\\r");				
+				} else if (c == 0x22) {
+					b.Append("\\\"");				
+				} else if (c == 0x5C) {
+					b.Append("\\\\");				
+				} else if (c <= 0x8 || c == 0xB || c == 0xC || (c >= 0xE && c <= 0x1F) || (c >= 0x7F && c <= 0xFFFF)) {
+					b.Append("\\u");
+					b.Append(HexDigit(c, 3));
+					b.Append(HexDigit(c, 2));
+					b.Append(HexDigit(c, 1));
+					b.Append(HexDigit(c, 0));
+				} else if (c >= 0x10000) {
+					b.Append("\\U");
+					b.Append(HexDigit(c, 7));
+					b.Append(HexDigit(c, 6));
+					b.Append(HexDigit(c, 5));
+					b.Append(HexDigit(c, 4));
+					b.Append(HexDigit(c, 3));
+					b.Append(HexDigit(c, 2));
+					b.Append(HexDigit(c, 1));
+					b.Append(HexDigit(c, 0));
+				}
+			}
+			return b.ToString();
 		}
 		
 		private void WriteStatement2(string subj, string pred, string obj) {

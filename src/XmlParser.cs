@@ -16,10 +16,14 @@ namespace SemWeb {
 		StatementSink storage;
 		
 		static readonly Entity
-			rdfType = NS.RDF + "type",
+			rdfType = "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
 			rdfFirst = "http://www.w3.org/1999/02/22-rdf-syntax-ns#first",
 			rdfRest = "http://www.w3.org/1999/02/22-rdf-syntax-ns#rest",
-			rdfNil = "http://www.w3.org/1999/02/22-rdf-syntax-ns#nil";
+			rdfNil = "http://www.w3.org/1999/02/22-rdf-syntax-ns#nil",
+			rdfSubject = "http://www.w3.org/1999/02/22-rdf-syntax-ns#subject",
+			rdfPredicate = "http://www.w3.org/1999/02/22-rdf-syntax-ns#predicate",
+			rdfObject = "http://www.w3.org/1999/02/22-rdf-syntax-ns#object",
+			rdfStatement = "http://www.w3.org/1999/02/22-rdf-syntax-ns#Statement";
 		
 		public RdfXmlReader(XmlDocument document) {
 			xml = new XmlNodeReader(document);
@@ -40,7 +44,7 @@ namespace SemWeb {
 		public RdfXmlReader(string file) : this(GetReader(file)) {
 		}
 		
-		public override void Parse(StatementSink storage) {
+		public override void Select(StatementSink storage) {
 			// Read past the processing instructions to
 			// the document element.  If it is rdf:RDF,
 			// then process the description nodes within it.
@@ -77,7 +81,8 @@ namespace SemWeb {
 		}
 		
 		private string Unrelativize(string uri) {
-			if (!uri.StartsWith("#") && uri != "") return uri;
+			// How can we tell if a URI is relative?  No colon?			
+			if (uri.IndexOf(':') != -1) return uri;
 			if (xml.BaseURI == "" && BaseUri == null)
 				OnError("A relative URI was used in the document but the document has no base URI");
 			if (xml.BaseURI != "")
@@ -142,13 +147,16 @@ namespace SemWeb {
 			return entity;
 		}
 		
-		private void ParsePropertyAttributes(Entity entity) {
-			if (!xml.MoveToFirstAttribute()) return;
+		private bool ParsePropertyAttributes(Entity entity) {
+			bool foundAttrs = false;
+			
+			if (!xml.MoveToFirstAttribute()) return false;
 			do {
 				// rdf:type is interpreted with an entity object,
 				// not a literal object.
 				if (CurNode() == NS.RDF + "type") {
 					storage.Add(new Statement(entity, rdfType, (Entity)xml.Value));
+					foundAttrs = true;
 					continue;
 				}
 				
@@ -164,13 +172,20 @@ namespace SemWeb {
 				if (CurNode() == NS.RDF + "nodeID") continue;
 				if (CurNode() == NS.RDF + "datatype") continue;
 				
+				// Unrecognized attributes in the xml namespace should be ignored.
+				if (xml.Prefix == "xml") continue;
+				
 				// This is a literal property attribute.
+				string lang = xml.XmlLang != "" ? xml.XmlLang : null;
 				storage.Add(new Statement(entity, CurNode(),
-					new Literal(xml.Value, xml.XmlLang, null)));
+					new Literal(xml.Value, lang, null)));
+				foundAttrs = true;
 					
 			} while (xml.MoveToNextAttribute());
 			
 			xml.MoveToElement();
+			
+			return foundAttrs;
 		}
 		
 		private void ParsePropertyNodes(Entity subject) {
@@ -180,7 +195,7 @@ namespace SemWeb {
 			
 			if (xml.IsEmptyElement) return;
 			
-			int liIndex = 0;
+			int liIndex = 1;
 			
 			while (xml.Read()) {
 				if (xml.NodeType == XmlNodeType.EndElement)
@@ -204,7 +219,11 @@ namespace SemWeb {
 			string datatype = xml.GetAttribute("datatype", NS.RDF);
 			
 			string lang = xml.XmlLang != "" ? xml.XmlLang : null;
-			
+
+			string predicate = CurNode();
+			if (predicate == NS.RDF + "li")
+				predicate = NS.RDF + "_" + (liIndex++);
+				
 			Resource objct = null;
 			if (nodeID != null || resource != null) {
 				if (isset(nodeID) + isset(resource) > 1)
@@ -225,19 +244,23 @@ namespace SemWeb {
 				while (xml.Read()) {
 					if (xml.NodeType == XmlNodeType.EndElement) break;
 					if (xml.NodeType == XmlNodeType.Whitespace) continue;
+					if (xml.NodeType == XmlNodeType.Comment) continue;
+					if (xml.NodeType == XmlNodeType.ProcessingInstruction) continue;
 					OnError("Content is not allowed within a property with a rdf:nodeID or rdf:resource attribute");
 				}
 			
 			} else if (parseType != null && parseType == "Literal") {
-				objct = new Literal(xml.ReadInnerXml(), lang, datatype);
+				if (datatype == null)
+					datatype = "http://www.w3.org/1999/02/22-rdf-syntax-ns#XMLLiteral";
+				objct = new Literal(xml.ReadInnerXml(), null, datatype);
 				
 			} else if (parseType != null && parseType == "Resource") {
-				if (xml.IsEmptyElement)
-					OnError("Expecting a resource description");
-				
 				objct = new Entity(null);
-				ParsePropertyAttributes((Entity)objct);
-				ParsePropertyNodes((Entity)objct);
+				
+				if (!xml.IsEmptyElement) {
+					ParsePropertyAttributes((Entity)objct);
+					ParsePropertyNodes((Entity)objct);
+				}
 				
 			} else if (parseType != null && parseType == "Collection") {
 				Entity collection = new Entity(null);
@@ -258,7 +281,7 @@ namespace SemWeb {
 					
 					empty = false;
 				}
-								
+
 				storage.Add(new Statement(lastnode, rdfRest, rdfNil));
 				
 				if (empty)
@@ -268,45 +291,58 @@ namespace SemWeb {
 				
 			} else if (datatype != null) {
 				// Forces even xml content to be read as in parseType=Literal?
-				objct = new Literal(xml.ReadInnerXml(), lang, datatype);
+				// Note that any xml:lang is discarded.
+				objct = new Literal(xml.ReadInnerXml(), null, datatype);
 			
 			} else {
 				// We don't know whether the contents of this element
 				// refer to a literal or an entity.  If an element is
 				// a child of this node, then it must be an entity.
-				// Otherwise the text content is the literal value.
+				// If the property has predicate attributes, then it
+				// is an anonymous entity.  Otherwise the text content
+				// is the literal value.
 				
-				StringBuilder textcontent = new StringBuilder();
-				bool hadText = false;
-				bool hadElement = false;
-				
-				if (!xml.IsEmptyElement)
-				while (xml.Read()) {
-					if (xml.NodeType == XmlNodeType.EndElement) break;
-					if (xml.NodeType == XmlNodeType.Element) {
-						if (hadText)
-							OnError("Both text and elements are present as a property value");
-						hadElement = true;
-						
-						objct = ParseDescription();
-					} else if (xml.NodeType == XmlNodeType.Text || xml.NodeType == XmlNodeType.SignificantWhitespace) {
-						if (hadElement)
-							OnError("Both text and elements are present as a property value");
-						textcontent.Append(xml.Value);
-						hadText = true;
-					} else {
-						textcontent.Append(xml.Value);
+				objct = new Entity(null);
+				if (ParsePropertyAttributes((Entity)objct)) {
+					// Found property attributes.  There should be no other internal content?
+					
+					if (!xml.IsEmptyElement)
+					while (xml.Read()) {
+						if (xml.NodeType == XmlNodeType.EndElement) break;
+						if (xml.NodeType == XmlNodeType.Whitespace) continue;
+						if (xml.NodeType == XmlNodeType.Comment) continue;
+						if (xml.NodeType == XmlNodeType.ProcessingInstruction) continue;
+						OnError(xml.NodeType + " is not allowed within a property with property attributes");
 					}
+					
+				} else {
+					StringBuilder textcontent = new StringBuilder();
+					bool hadText = false;
+					bool hadElement = false;
+					
+					if (!xml.IsEmptyElement)
+					while (xml.Read()) {
+						if (xml.NodeType == XmlNodeType.EndElement) break;
+						if (xml.NodeType == XmlNodeType.Element) {
+							if (hadText)
+								OnError("Both text and elements are present as a property value");
+							hadElement = true;
+							
+							objct = ParseDescription();
+						} else if (xml.NodeType == XmlNodeType.Text || xml.NodeType == XmlNodeType.SignificantWhitespace) {
+							if (hadElement)
+								OnError("Both text and elements are present as a property value");
+							textcontent.Append(xml.Value);
+							hadText = true;
+						} else {
+							textcontent.Append(xml.Value);
+						}
+					}
+					
+					if (!hadElement)
+						objct = new Literal(textcontent.ToString(), lang, null);
 				}
-				
-				if (!hadElement)
-					objct = new Literal(textcontent.ToString(), lang, null);
-				
 			}
-				
-			string predicate = CurNode();
-			if (predicate == NS.RDF + "li")
-				predicate = NS.RDF + "_" + (liIndex++);
 				
 			string ID = xml.GetAttribute("ID", NS.RDF);
 			if (ID == null) {
@@ -315,10 +351,10 @@ namespace SemWeb {
 			} else {
 				// Reified
 				Entity statement = GetBlankNode(ID);
-				storage.Add(new Statement(statement, NS.RDF + "subject", subject));
-				storage.Add(new Statement(statement, NS.RDF + "predicate", (Entity)predicate));
-				storage.Add(new Statement(statement, NS.RDF + "object", objct));
-				storage.Add(new Statement(statement, NS.RDF + "type", (Entity)(NS.RDF + "Statement")));
+				storage.Add(new Statement(statement, rdfType, rdfStatement));
+				storage.Add(new Statement(statement, rdfSubject, subject));
+				storage.Add(new Statement(statement, rdfPredicate, (Entity)predicate));
+				storage.Add(new Statement(statement, rdfObject, objct));
 			}
 		}
 		

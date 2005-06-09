@@ -1,4 +1,4 @@
-all: bin/SemWeb.dll bin/SemWeb.MySQLStore.dll bin/SemWeb.SqliteStore.dll bin/SemWeb.dll bin/rdfstorage.exe bin/rdfquery.exe bin/test.exe
+all: bin/SemWeb.dll bin/SemWeb.MySQLStore.dll bin/SemWeb.SqliteStore.dll bin/SemWeb.dll bin/rdfstorage.exe bin/rdfquery.exe bin/test.exe bin/rdfs2cs.exe
 #bin/rdfshmush.exe bin/rdfs2cs.exe 
 	
 bin/test.exe: test.cs bin/SemWeb.dll bin/SemWeb.SqliteStore.dll
@@ -6,7 +6,7 @@ bin/test.exe: test.cs bin/SemWeb.dll bin/SemWeb.SqliteStore.dll
 	-r:bin/SemWeb.dll -r:bin/SemWeb.SqliteStore.dll
 
 bin/rdfs2cs.exe: src.misc/rdfscs.cs bin/SemWeb.dll
-	#mcs src.misc/rdfscs.cs -out:bin/rdfs2cs.exe -r:bin/SemWeb.dll -r:Mono.GetOptions
+	mcs src.misc/rdfscs.cs -out:bin/rdfs2cs.exe -r:bin/SemWeb.dll -r:Mono.GetOptions
 
 bin/rdfstorage.exe: src.misc/rdfstorage.cs bin/SemWeb.dll
 	mcs src.misc/rdfstorage.cs -out:bin/rdfstorage.exe -r:bin/SemWeb.dll -r:Mono.GetOptions

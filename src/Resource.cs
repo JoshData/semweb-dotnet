@@ -125,8 +125,6 @@ namespace SemWeb {
 		  this.value = string.Intern(value);
 		  this.lang = language;
 		  this.type = dataType;
-		  if (language != null && dataType != null)
-			  throw new ArgumentException("A language and a data type cannot both be specified.");
 		}
 		
 		public static explicit operator Literal(string value) { return new Literal(value); }
@@ -160,21 +158,17 @@ namespace SemWeb {
 		public override string ToString() {
 			System.Text.StringBuilder ret = new System.Text.StringBuilder();
 			ret.Append('"');
-			foreach (char c in Value) {
-				if (c == '\\' || c == '"')
-					ret.Append('\\');
-				ret.Append(c);
-			}			
+			ret.Append(N3Writer.Escape(Value));
 			ret.Append('"');
 			
 			if (Language != null) {
 				ret.Append('@');
-				ret.Append(Language);
+				ret.Append(N3Writer.Escape(Language));
 			}
 			
 			if (DataType != null) {
 				ret.Append("^^<");
-				ret.Append(DataType);
+				ret.Append(N3Writer.Escape(DataType));
 				ret.Append(">");
 			}
 			return ret.ToString();

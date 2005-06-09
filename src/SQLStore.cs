@@ -675,7 +675,7 @@ namespace SemWeb.Stores {
 			first = true;
 			foreach (Statement template in templates) {
 				if (template.Subject == null && template.Predicate == null && template.Object == null) {
-					Select(Statement.Empty, result);
+					Select(result);
 					return;
 				}
 				
@@ -702,7 +702,7 @@ namespace SemWeb.Stores {
 			
 			cmd.Append(");");
 			
-			Select2(cmd.ToString(), Statement.Empty, partialFilter, partialFilter.SelectFirst, result);
+			Select2(cmd.ToString(), Statement.All, partialFilter, partialFilter.SelectFirst, result);
 		}
 		
 		public override void Select(Statement template, SelectPartialFilter partialFilter, StatementSink result) {
@@ -831,8 +831,8 @@ namespace SemWeb.Stores {
 			b.Replace("*", "\\*");
 		}
 
-		public override void Import(RdfReader parser) {
-			if (parser == null) throw new ArgumentNullException();
+		public override void Import(StatementSource source) {
+			if (source == null) throw new ArgumentNullException();
 			if (lockedIdCache != null) throw new InvalidOperationException("Store is already importing.");
 			
 			Init();
@@ -853,7 +853,7 @@ namespace SemWeb.Stores {
 			BeginTransaction();
 			
 			try {
-				base.Import(parser);
+				base.Import(source);
 			} finally {
 				RunAddBuffer();
 				EndTransaction();

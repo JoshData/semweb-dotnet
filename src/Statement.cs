@@ -7,7 +7,7 @@ namespace SemWeb {
 		private Resource o;
 		private Entity m;
 		
-		public static readonly Statement Empty = new Statement(null, null, null, null);
+		public static readonly Statement All = new Statement(null, null, null, null);
 		
 		public Statement(Entity subject, Entity predicate, Resource @object)
 		: this(subject, predicate, @object, null) {

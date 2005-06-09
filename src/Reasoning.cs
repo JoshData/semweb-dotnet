@@ -35,8 +35,8 @@ namespace SemWeb.Reasoning {
 			store.Remove(statement);
 		}
 
-		public override void Import(RdfReader parser) {
-			store.Import(parser);
+		public override void Import(StatementSource source) {
+			store.Import(source);
 		}
 		
 		public override void Select(Statement template, SelectPartialFilter partialFilter, StatementSink result) {
