@@ -1,4 +1,4 @@
-all: bin/SemWeb.dll bin/SemWeb.MySQLStore.dll bin/SemWeb.SqliteStore.dll bin/SemWeb.dll bin/rdfstorage.exe bin/rdfquery.exe bin/test.exe bin/rdfs2cs.exe
+all: bin/SemWeb.dll bin/SemWeb.MySQLStore.dll bin/SemWeb.SqliteStore.dll bin/SemWeb.dll bin/rdfstorage.exe bin/rdfquery.exe bin/test.exe bin/rdfs2cs.exe bin/runtests.exe
 #bin/rdfshmush.exe bin/rdfs2cs.exe 
 	
 bin/test.exe: test.cs bin/SemWeb.dll bin/SemWeb.SqliteStore.dll
@@ -28,6 +28,9 @@ bin/SemWeb.dll: src/*.cs
 
 bin/rdfshmush.exe: src.misc/rdfshmush.cs bin/SemWeb.dll
 	mcs src.misc/rdfshmush.cs -out:bin/rdfshmush.exe -r bin/SemWeb.dll
+
+bin/runtests.exe: src.misc/runtests.cs
+	mcs -g src.misc/runtests.cs -out:bin/runtests.exe -r bin/SemWeb.dll
 		
 doc: Makefile
 	mono /usr/lib/monodoc/monodocer.exe -assembly:bin/SemWeb.dll -path:doc #--delete

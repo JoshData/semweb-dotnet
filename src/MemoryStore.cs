@@ -15,8 +15,8 @@ namespace SemWeb {
 		public MemoryStore() {
 		}
 		
-		public MemoryStore(RdfReader parser) {
-			Import(parser);
+		public MemoryStore(StatementSource source) {
+			Import(source);
 		}
 
 		public IList Statements { get { return ArrayList.ReadOnly(statements); } }

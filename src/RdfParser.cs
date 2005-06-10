@@ -13,7 +13,7 @@ namespace SemWeb {
 		ArrayList warnings = new ArrayList();
 		ArrayList variables = new ArrayList();
 		bool reuseentities = false;
-		
+
 		public Entity Meta {
 			get {
 				return meta;
@@ -72,6 +72,18 @@ namespace SemWeb {
 		
 		protected void OnWarning(string message) {
 			warnings.Add(message);
+		}
+		
+		internal string GetAbsoluteUri(string baseuri, string uri) {
+			if (baseuri == null) return uri;
+			if (uri.IndexOf(':') != -1) return uri;
+			try {
+				UriBuilder b = new UriBuilder(baseuri);
+				b.Fragment = null; // per W3 RDF/XML test suite
+				return new Uri(b.Uri, uri, true).ToString();
+			} catch (UriFormatException e) {
+				return baseuri + uri;
+			}			
 		}
 	}
 	

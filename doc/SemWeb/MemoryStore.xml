@@ -48,14 +48,14 @@ foreach (Statement s in memoryStore)
       </Docs>
     </Member>
   <Member MemberName=".ctor">
-      <MemberSignature Language="C#" Value="public MemoryStore (SemWeb.RdfReader parser);" />
+      <MemberSignature Language="C#" Value="public MemoryStore (SemWeb.StatementSource source);" />
       <MemberType>Constructor</MemberType>
       <Parameters>
-        <Parameter Name="parser" Type="SemWeb.RdfReader" />
+        <Parameter Name="source" Type="SemWeb.StatementSource" />
       </Parameters>
       <Docs>
-        <param name="parser">A RdfReader, the contents of which are read into the memory store.</param>
-        <summary>Creates a new MemoryStore and imports data from a parser.</summary>
+        <param name="source">A StatementSource, the contents of which are read into the memory store.</param>
+        <summary>Creates a new MemoryStore and reads the data from a StatementSource, which might be an RdfReader, for instance.</summary>
         <remarks>None.</remarks>
       </Docs>
     </Member>

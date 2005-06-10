@@ -98,7 +98,8 @@ public class RDFStorage {
 			long stct = 0;
 					
 			foreach (string infile in files) {
-				Console.Error.Write(infile);
+				if (!quiet)
+					Console.Error.Write(infile);
 				
 				try {
 					DateTime start = DateTime.Now;

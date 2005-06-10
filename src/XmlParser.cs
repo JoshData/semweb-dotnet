@@ -8,10 +8,13 @@ using SemWeb.Util;
 
 namespace SemWeb {
 	public class RdfXmlReader : RdfReader {
+		// TODO: Make some of the errors warnings.
+	
 		XmlReader xml;
 		
 		Hashtable blankNodes = new Hashtable();
 		UriMap namedNodes = new UriMap();
+		Hashtable seenIDs = new Hashtable();
 		
 		StatementSink storage;
 		
@@ -81,14 +84,7 @@ namespace SemWeb {
 		}
 		
 		private string Unrelativize(string uri) {
-			// How can we tell if a URI is relative?  No colon?			
-			if (uri.IndexOf(':') != -1) return uri;
-			if (xml.BaseURI == "" && BaseUri == null)
-				OnError("A relative URI was used in the document but the document has no base URI");
-			if (xml.BaseURI != "")
-				return xml.BaseURI + uri;
-			else
-				return BaseUri + uri;
+			return GetAbsoluteUri(xml.BaseURI != "" ? xml.BaseURI : BaseUri, uri);
 		}
 		
 		private Entity GetBlankNode(string nodeID) {
@@ -128,9 +124,13 @@ namespace SemWeb {
 			
 			if (about != null)
 				entity = GetNamedNode(Unrelativize(about));
-			else if (ID != null)
+			else if (ID != null) {
 				entity = GetNamedNode(Unrelativize("#" + ID));
-			else if (nodeID != null)
+				
+				if (seenIDs.ContainsKey(entity.Uri))
+					OnError("Two descriptions cannot use the same rdf:ID: <" + entity.Uri + ">");
+				seenIDs[entity.Uri] = seenIDs;
+			} else if (nodeID != null)
 				entity = GetBlankNode(nodeID);
 			else
 				entity = new Entity(null);
@@ -138,6 +138,7 @@ namespace SemWeb {
 			// If the name of the element is not rdf:Description,
 			// then the name gives its type.
 			if (CurNode() != NS.RDF + "Description") {
+				if (CurNode() == NS.RDF + "li") OnError("rdf:li cannot be the type of a node");
 				storage.Add(new Statement(entity, rdfType, (Entity)CurNode()));
 			}
 			
@@ -152,32 +153,46 @@ namespace SemWeb {
 			
 			if (!xml.MoveToFirstAttribute()) return false;
 			do {
+				// Propery attributes in the default namespace
+				// should be ignored.
+				if (xml.NamespaceURI == "")
+					continue;
+			
+				string curnode = CurNode();
+				
 				// rdf:type is interpreted with an entity object,
 				// not a literal object.
-				if (CurNode() == NS.RDF + "type") {
+				if (curnode == NS.RDF + "type") {
 					storage.Add(new Statement(entity, rdfType, (Entity)xml.Value));
 					foundAttrs = true;
 					continue;
 				}
 				
 				// Properties which are not recognized as property
-				// attributes.
-				if (CurNode() == NS.RDF + "RDF") continue;
-				if (CurNode() == NS.RDF + "Description") continue;
-				if (CurNode() == NS.RDF + "ID") continue;
-				if (CurNode() == NS.RDF + "about") continue;
-				if (CurNode() == NS.RDF + "parseType") continue;
-				if (CurNode() == NS.RDF + "resource") continue;
-				if (CurNode() == NS.RDF + "li") continue;
-				if (CurNode() == NS.RDF + "nodeID") continue;
-				if (CurNode() == NS.RDF + "datatype") continue;
+				// attributes and should be ignored.
+				if (curnode == NS.RDF + "RDF") continue;
+				if (curnode == NS.RDF + "Description") continue;
+				if (curnode == NS.RDF + "ID") continue;
+				if (curnode == NS.RDF + "about") continue;
+				if (curnode == NS.RDF + "parseType") continue;
+				if (curnode == NS.RDF + "resource") continue;
+				if (curnode == NS.RDF + "nodeID") continue;
+				if (curnode == NS.RDF + "datatype") continue;
+				
+				// Properties which are invalid as attributes.
+				if (curnode == NS.RDF + "li")
+					OnError("rdf:li is not a valid attribute");
+				if (curnode == NS.RDF + "aboutEach" || curnode == NS.RDF + "aboutEachPrefix")
+					OnError("rdf:aboutEach has been removed from the RDF spec");
 				
 				// Unrecognized attributes in the xml namespace should be ignored.
 				if (xml.Prefix == "xml") continue;
+				if (xml.Prefix == "xmlns") continue;
+				if (curnode == "http://www.w3.org/2000/xmlns/xmlns") continue;
 				
 				// This is a literal property attribute.
 				string lang = xml.XmlLang != "" ? xml.XmlLang : null;
-				storage.Add(new Statement(entity, CurNode(),
+				storage.Add(new Statement(entity, curnode,
 					new Literal(xml.Value, lang, null)));
 				foundAttrs = true;
 					
@@ -212,6 +227,8 @@ namespace SemWeb {
 			// and on returning the reader is positioned past
 			// that node.
 			
+			// Get all of the attributes before we move the reader forward.
+			
 			string nodeID = xml.GetAttribute("nodeID", NS.RDF);
 			string resource = xml.GetAttribute("resource", NS.RDF);
 			
@@ -224,6 +241,8 @@ namespace SemWeb {
 			if (predicate == NS.RDF + "li")
 				predicate = NS.RDF + "_" + (liIndex++);
 				
+			string ID = xml.GetAttribute("ID", NS.RDF);
+			
 			Resource objct = null;
 			if (nodeID != null || resource != null) {
 				if (isset(nodeID) + isset(resource) > 1)
@@ -238,6 +257,8 @@ namespace SemWeb {
 					objct = GetBlankNode(nodeID);
 				else if (resource != null)
 					objct = GetNamedNode(Unrelativize(resource));
+					
+				ParsePropertyAttributes((Entity)objct);
 				
 				// No children are allowed in this element.
 				if (!xml.IsEmptyElement)
@@ -252,32 +273,39 @@ namespace SemWeb {
 			} else if (parseType != null && parseType == "Literal") {
 				if (datatype == null)
 					datatype = "http://www.w3.org/1999/02/22-rdf-syntax-ns#XMLLiteral";
+				
+				if (ParsePropertyAttributes(new Entity(null)))
+					OnError("Property attributes are not valid when parseType is Literal");
+				
 				objct = new Literal(xml.ReadInnerXml(), null, datatype);
 				
 			} else if (parseType != null && parseType == "Resource") {
 				objct = new Entity(null);
 				
-				if (!xml.IsEmptyElement) {
-					ParsePropertyAttributes((Entity)objct);
+				ParsePropertyAttributes((Entity)objct);
+				if (!xml.IsEmptyElement)
 					ParsePropertyNodes((Entity)objct);
-				}
 				
 			} else if (parseType != null && parseType == "Collection") {
 				Entity collection = new Entity(null);
 				Entity lastnode = collection;
 				bool empty = true;
 				
+				ParsePropertyAttributes(collection);
+				
 				if (!xml.IsEmptyElement)
 				while (xml.Read()) {
 					if (xml.NodeType == XmlNodeType.EndElement) break;
 					if (xml.NodeType != XmlNodeType.Element) continue;
+					
+					if (!empty) {
+						Entity next = new Entity(null);
+						storage.Add(new Statement(lastnode, rdfRest, next));
+						lastnode = next;
+					}
+					
 					Entity item = ParseDescription();
-					
 					storage.Add(new Statement(lastnode, rdfFirst, item));
-					
-					Entity next = new Entity(null);
-					storage.Add(new Statement(lastnode, rdfRest, next));
-					lastnode = next;
 					
 					empty = false;
 				}
@@ -292,6 +320,10 @@ namespace SemWeb {
 			} else if (datatype != null) {
 				// Forces even xml content to be read as in parseType=Literal?
 				// Note that any xml:lang is discarded.
+				
+				if (ParsePropertyAttributes(new Entity(null)))
+					OnError("Property attributes are not valid when a data type is given");
+					
 				objct = new Literal(xml.ReadInnerXml(), null, datatype);
 			
 			} else {
@@ -344,13 +376,12 @@ namespace SemWeb {
 				}
 			}
 				
-			string ID = xml.GetAttribute("ID", NS.RDF);
-			if (ID == null) {
-				// Not reified
-				storage.Add(new Statement(subject, predicate, objct));
-			} else {
-				// Reified
-				Entity statement = GetBlankNode(ID);
+			storage.Add(new Statement(subject, predicate, objct));
+			
+			if (ID != null) {
+				// In addition to adding the statement as normal, also
+				// add a reified statement.
+				Entity statement = GetNamedNode(Unrelativize("#" + ID));;
 				storage.Add(new Statement(statement, rdfType, rdfStatement));
 				storage.Add(new Statement(statement, rdfSubject, subject));
 				storage.Add(new Statement(statement, rdfPredicate, (Entity)predicate));

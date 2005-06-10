@@ -100,7 +100,7 @@
       <Docs>
         <summary>The base URI for resolving relative URIs found in the stream.</summary>
         <value>The base URI for resolving relative URIs found in the stream.  May be, and is initially, <see langword="null" />.  </value>
-        <remarks>When this property is <see langword="null" />, the reader may not be able to read streams containing relative URIs.  Always set this property before beginning reading if the stream could possibly contain relative URIs.</remarks>
+        <remarks>When this property is <see langword="null" />, the reader will not correctly resolve relative URIs in the stream.  Always set this property before beginning reading when the base URI of the document is known.</remarks>
       </Docs>
     </Member>
   <Member MemberName="OnWarning">

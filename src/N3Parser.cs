@@ -29,7 +29,7 @@ namespace SemWeb {
 		
 		public N3Reader(string sourcefile) {
 			this.sourcestream = GetReader(sourcefile);
-			BaseUri = sourcefile + "#";
+			BaseUri = "file:" + sourcefile + "#";
 		}
 
 		private struct ParseContext {
@@ -272,7 +272,7 @@ namespace SemWeb {
 							break;
 					}
 				}
-			
+				
 			} else if (firstchar == '"') {
 				// A string: ("""[^"\\]*(?:(?:\\.|"(?!""))[^"\\]*)*""")|("[^"\\]*(?:\\.[^"\\]*)*")
 				// What kind of crazy regex is this??
@@ -442,9 +442,7 @@ namespace SemWeb {
 				}
 				return ret;
 			} else if (prefix == "") {
-				if (BaseUri == null)
-					OnError("The document contains a relative URI but no BaseUri was specified", loc);
-				return GetResource(context, BaseUri + str.Substring(colon+1));
+				return GetResource(context, (BaseUri == null ? "" : BaseUri) + str.Substring(colon+1));
 			} else {
 				string ns = context.namespaces.GetNamespace(prefix);
 				if (ns == null)
@@ -514,13 +512,7 @@ namespace SemWeb {
 			// URI
 			
 			if (str.StartsWith("<") && str.EndsWith(">")) {
-				string uri = str.Substring(1, str.Length-2);
-				if (uri.StartsWith("#")) {
-					if (BaseUri == null)
-						OnError("The document contains a relative URI but no BaseUri was specified", loc);
-					uri = BaseUri + uri;
-				}
-				// relativize it
+				string uri = GetAbsoluteUri(BaseUri, str.Substring(1, str.Length-2));
 				return GetResource(context, uri);
 			}
 			
