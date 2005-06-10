@@ -1,0 +1,29 @@
+<Type Name="StatementSource" FullName="SemWeb.StatementSource">
+  <TypeSignature Language="C#" Value="public interface StatementSource" />
+  <AssemblyInfo>
+    <AssemblyName>SemWeb</AssemblyName>
+    <AssemblyVersion>0.9.0.0</AssemblyVersion>
+  </AssemblyInfo>
+  <Interfaces />
+  <Members>
+    <Member MemberName="Select">
+      <MemberSignature Language="C#" Value="public void Select (SemWeb.StatementSink sink);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="sink" Type="SemWeb.StatementSink" />
+      </Parameters>
+      <Docs>
+        <param name="sink">To be added.</param>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+  </Members>
+  <Docs>
+    <summary>To be added.</summary>
+    <remarks>To be added.</remarks>
+  </Docs>
+</Type>

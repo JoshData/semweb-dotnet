@@ -1,9 +1,6 @@
 // This example reads an RDF/XML file on standard input
 // and writes it back out in N3 format to standard output.
 
-// Compile with: mcs -r:../bin/SemWeb.dll simple.cs
-// Execute with: MONO_PATH=../bin mono simple.exe < test.rdf
-
 using System;
 using SemWeb;
 

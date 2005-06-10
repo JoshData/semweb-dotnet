@@ -1,10 +1,6 @@
-all: bin/SemWeb.dll bin/SemWeb.MySQLStore.dll bin/SemWeb.SqliteStore.dll bin/SemWeb.dll bin/rdfstorage.exe bin/rdfquery.exe bin/test.exe bin/rdfs2cs.exe bin/runtests.exe
+all: bin/SemWeb.dll bin/SemWeb.MySQLStore.dll bin/SemWeb.SqliteStore.dll bin/SemWeb.dll bin/rdfstorage.exe bin/rdfquery.exe bin/rdfs2cs.exe bin/runtests.exe
 #bin/rdfshmush.exe bin/rdfs2cs.exe 
 	
-bin/test.exe: test.cs bin/SemWeb.dll bin/SemWeb.SqliteStore.dll
-	mcs test.cs -out:bin/test.exe \
-	-r:bin/SemWeb.dll -r:bin/SemWeb.SqliteStore.dll
-
 bin/rdfs2cs.exe: src.misc/rdfscs.cs bin/SemWeb.dll
 	mcs src.misc/rdfscs.cs -out:bin/rdfs2cs.exe -r:bin/SemWeb.dll -r:Mono.GetOptions
 
@@ -38,12 +34,14 @@ doc: Makefile
 	mkdir -p doc-html
 	mono /usr/lib/monodoc/monodocs2html.exe -source:doc -dest:doc-html -template:docstemplate.xsl
 
-semweb.zip: bin/SemWeb.dll Makefile
+semweb.zip: bin/SemWeb.dll Makefile doc
 	rm -f semweb.zip
 	zip -r semweb.zip \
 	bin/* \
+	src/*.cs src.misc/*.cs \
+	examples/*.cs examples/*.rdf \
 	doc/*.xml doc/*/*.xml \
-	src/*.cs src.misc/*.cs examples/*.cs \
+	doc-html \
 	Makefile README README.xhtml ChangeLog
 	
 deploy: semweb.zip

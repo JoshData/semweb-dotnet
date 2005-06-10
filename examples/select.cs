@@ -2,9 +2,6 @@
 // and writes it back out statement-by-statement using
 // each of the Select overloads.
 
-// Compile with: mcs -r:../bin/SemWeb.dll select.cs
-// Execute with: MONO_PATH=../bin mono select.exe < test.rdf
-
 using System;
 using SemWeb;
 
@@ -14,7 +11,7 @@ public class Select {
 		
 		store.Import(new RdfXmlReader(Console.In));
 		
-		foreach (Statement stmt in store.Select(Statement.Empty)) {
+		foreach (Statement stmt in store.Select(Statement.All)) {
 			Console.WriteLine(stmt);
 		}
 		Console.WriteLine();
@@ -24,7 +21,7 @@ public class Select {
 		}
 		Console.WriteLine();
 		
-		store.Select(Statement.Empty, new MyStatementWriter());
+		store.Select(Statement.All, new MyStatementWriter());
 		Console.WriteLine();
 	}
 	
