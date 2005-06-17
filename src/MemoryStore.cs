@@ -164,13 +164,13 @@ namespace SemWeb {
 		public override Entity[] FindEntities(Statement[] filters) {
 			ArrayList ents = new ArrayList();
 			foreach (Statement s in Select(replaceFind(filters[0], null))) {
-				if (filters[0].Subject != null && filters[0].Subject == FindVariable)
+				if (filters[0].Subject != null && filters[0].Subject == null)
 					ents.Add(s.Subject);
-				if (filters[0].Predicate != null && filters[0].Predicate == FindVariable)
+				if (filters[0].Predicate != null && filters[0].Predicate == null)
 					ents.Add(s.Predicate);
-				if (filters[0].Object != null && filters[0].Object == FindVariable && s.Object is Entity)
+				if (filters[0].Object != null && filters[0].Object == null && s.Object is Entity)
 					ents.Add(s.Object);
-				if (filters[0].Meta != null && filters[0].Meta == FindVariable)
+				if (filters[0].Meta != null && filters[0].Meta == null)
 					ents.Add(s.Meta);
 			}
 			
@@ -191,10 +191,10 @@ namespace SemWeb {
 		
 		private Statement replaceFind(Statement s, Entity e) {
 			return new Statement(
-				s.Subject == null || s.Subject != FindVariable ? s.Subject : e,
-				s.Predicate == null || s.Predicate != FindVariable ? s.Predicate : e,
-				s.Object == null || s.Object != FindVariable ? s.Object : e,
-				s.Meta == null || s.Meta != FindVariable ? s.Meta : e
+				s.Subject == null || s.Subject != null ? s.Subject : e,
+				s.Predicate == null || s.Predicate != null ? s.Predicate : e,
+				s.Object == null || s.Object != null ? s.Object : e,
+				s.Meta == null || s.Meta != null ? s.Meta : e
 				);
 		}
 	}

@@ -1,4 +1,3 @@
-
 using System;
 using System.Collections;
 using System.IO;
@@ -548,12 +547,17 @@ namespace SemWeb.Query {
 			ArrayList initialFilters = new ArrayList();
 			foreach (Statement s in predicateInitialFilters[node.BindingIndex]) {
 				Statement q = new Statement(
-					s.Subject == node.Variable ? Store.FindVariable : (Entity)GetBinding(s.Subject, node, true, state),
-					s.Predicate == node.Variable ? Store.FindVariable : (Entity)GetBinding(s.Predicate, node, true, state),
-					s.Object == node.Variable ? Store.FindVariable : GetBinding(s.Object, node, false, state));
+					s.Subject == node.Variable ? null : (Entity)GetBinding(s.Subject, node, true, state),
+					s.Predicate == node.Variable ? null : (Entity)GetBinding(s.Predicate, node, true, state),
+					s.Object == node.Variable ? null : GetBinding(s.Object, node, false, state));
+
+				// If the subject or predicate resolved as a literal,
+				// it might be null here.  So we just skip the filter...
+				// The Object is checked for completeness.  Shouldn't happen.
+				if (s.Subject != node.Variable && q.Subject == null) continue;
+				if (s.Predicate != node.Variable && q.Predicate == null) continue;
+				if (s.Object != node.Variable && q.Object == null) continue;
 					
-				int nullCount = ((q.Subject == null) ? 1 : 0) + ((q.Predicate == null) ? 1 : 0) + ((q.Object == null) ? 1 : 0);
-				if (nullCount != 0) continue; // Only happens if a literal value for a variable ends up as the subject/predicate of this statement.  Continuing drops the statement as a filter; probably not good.
 				initialFilters.Add(q);
 			}
 			if (initialFilters.Count != 0) {

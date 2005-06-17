@@ -38,8 +38,6 @@ namespace SemWeb {
 		
 		Entity rdfType;
 		
-		public static readonly Entity FindVariable = new Entity(null);
-		
 		public static StatementSource CreateForInput(string spec) {
 			return (StatementSource)Create(spec, false);
 		}		
@@ -158,7 +156,7 @@ namespace SemWeb {
 		}
 		
 		public void Select(StatementSink result) {
-			Select(Statement.All, result);
+			Select(new Statement(null,null,null), result);
 		}
 		
 		public void Select(Statement template, StatementSink result) {

@@ -15,7 +15,7 @@ namespace SemWeb {
 		
 		long anonCounter = 0;
 		
-		Formats format = Formats.Notation3;
+		Formats format = Formats.Turtle;
 		
 		public enum Formats {
 			NTriples,
@@ -86,7 +86,7 @@ namespace SemWeb {
 				return (char)('A' + (n-10));
 		}
 		
-		public static string Escape(string str) {
+		internal static string Escape(string str) {
 			// Check if any escaping is necessary, following the NTriples spec.
 			bool needed = false;
 			for (int i = 0; i < str.Length; i++) {

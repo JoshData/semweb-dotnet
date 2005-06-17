@@ -979,8 +979,8 @@ namespace SemWeb.Stores {
 		public override Entity[] FindEntities(Statement[] filters) {
 			Init();
 			
-			string f1pos = is_spom(FindVariable, filters[0]);
-			if (f1pos == null) throw new ArgumentException("FindVariable must appear in every statement.");
+			string f1pos = is_spom(filters[0]);
+			if (f1pos == null) throw new ArgumentException("Null must appear in every statement.");
 			
 			StringBuilder cmd = new StringBuilder();
 			cmd.Append("SELECT s.");
@@ -1005,20 +1005,20 @@ namespace SemWeb.Stores {
 				cmd.Append("=f");
 				cmd.Append(i);
 				cmd.Append(".");
-				string fipos = is_spom(FindVariable, filters[i]);
-				if (fipos == null) throw new ArgumentException("FindVariable must appear in every statement.");
+				string fipos = is_spom(filters[i]);
+				if (fipos == null) throw new ArgumentException("Null must appear in every statement.");
 				cmd.Append(fipos);
 				
-				if (filters[i].Subject != null && filters[i].Subject != FindVariable)
+				if (filters[i].Subject != null && filters[i].Subject != null)
 					if (!WhereItem("f" + i + ".subject", filters[i].Subject, cmd, true)) return new Entity[0];
-				if (filters[i].Predicate != null && filters[i].Predicate != FindVariable)
+				if (filters[i].Predicate != null && filters[i].Predicate != null)
 					if (!WhereItem("f" + i + ".predicate", filters[i].Predicate, cmd, true)) return new Entity[0];
-				if (filters[i].Object != null && filters[i].Object != FindVariable && !isliteralmatch(filters[i].Object))
+				if (filters[i].Object != null && filters[i].Object != null && !isliteralmatch(filters[i].Object))
 					if (!WhereItem("f" + i + ".object", filters[i].Object, cmd, true)) return new Entity[0];
-				if (filters[i].Meta != null && filters[i].Meta != FindVariable)
+				if (filters[i].Meta != null && filters[i].Meta != null)
 					if (!WhereItem("f" + i + ".meta", filters[i].Meta, cmd, true)) return new Entity[0];
 				
-				if (filters[i].Object == FindVariable)
+				if (filters[i].Object == null)
 					cmd.Append("AND f" + i + ".objecttype=0 ");
 					
 				if (isliteralmatch(filters[i].Object)) {
@@ -1029,18 +1029,18 @@ namespace SemWeb.Stores {
 			
 			cmd.Append(" WHERE 1 ");
 			
-			if (filters[0].Subject != null && filters[0].Subject != FindVariable)
+			if (filters[0].Subject != null && filters[0].Subject != null)
 				if (!WhereItem("s.subject", filters[0].Subject, cmd, true)) return new Entity[0];
-			if (filters[0].Predicate != null && filters[0].Predicate != FindVariable)
+			if (filters[0].Predicate != null && filters[0].Predicate != null)
 				if (!WhereItem("s.predicate", filters[0].Predicate, cmd, true)) return new Entity[0];
-			if (filters[0].Object != null && filters[0].Object != FindVariable && !isliteralmatch(filters[0].Object))
+			if (filters[0].Object != null && filters[0].Object != null && !isliteralmatch(filters[0].Object))
 				if (!WhereItem("s.object", filters[0].Object, cmd, true)) return new Entity[0];
 			if (isliteralmatch(filters[0].Object))
 				cmd.Append("AND s.objecttype=1 ");
-			if (filters[0].Meta != null && filters[0].Meta != FindVariable)
+			if (filters[0].Meta != null && filters[0].Meta != null)
 				if (!WhereItem("s.meta", filters[0].Meta, cmd, true)) return new Entity[0];
 			
-			if (filters[0].Object == FindVariable)
+			if (filters[0].Object == null)
 				cmd.Append(" AND s.objecttype=0");
 				
 			cmd.Append(";");
@@ -1065,11 +1065,11 @@ namespace SemWeb.Stores {
 			return (Entity[])entities.ToArray(typeof(Entity));
 		}
 		
-		private string is_spom(Resource r, Statement s) {
-			if (s.Subject == r) return "subject";
-			if (s.Predicate == r) return "predicate";
-			if (s.Object == r) return "object";
-			if (s.Meta == r) return "meta";
+		private string is_spom(Statement s) {
+			if (s.Subject == null) return "subject";
+			if (s.Predicate == null) return "predicate";
+			if (s.Object == null) return "object";
+			if (s.Meta == null) return "meta";
 			return null;
 		}
 		
