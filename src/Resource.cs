@@ -21,6 +21,24 @@ namespace SemWeb {
 			return "_";
 		}
 		
+		// These get rid of the warning about overring ==, !=.
+		// Since Entity and Literal override these, we're ok.
+		public override bool Equals(object other) {
+			return base.Equals(other);
+		}
+		public override int GetHashCode() {
+			return base.GetHashCode();
+		}
+		
+		public static bool operator ==(Resource a, Resource b) {
+			if (a == null && b == null) return true;
+			if (a == null || b == null) return false;
+			return a.Equals(b);
+		}
+		public static bool operator !=(Resource a, Resource b) {
+			return !(a == b);
+		}
+		
 		internal object GetResourceKey(object key) {
 			if (extraKeys == null) return null;
 			for (int i = 0; i < extraKeys.Count; i++) {
@@ -75,7 +93,7 @@ namespace SemWeb {
 		}
 			
 		public override bool Equals(object other) {
-			if (!(other is Resource)) return false;
+			if (!(other is Entity)) return false;
 			if ((object)this == other) return true;
 			
 			// If anonymous, then we have to compare extraKeys.
@@ -312,4 +330,21 @@ namespace SemWeb {
 		}
 	}
 	*/
+}
+
+namespace SemWeb.Bind {
+	public class Any {
+		Entity ent;
+		Store model;
+				
+		public Any(Entity entity, Store model) {
+			this.ent = entity;
+			this.model = model;
+		}
+		
+		public Entity Entity { get { return ent; } }
+		public Store Model { get { return model; } }
+		
+		public string Uri { get { return ent.Uri; } }
+	}
 }

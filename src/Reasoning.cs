@@ -75,6 +75,10 @@ namespace SemWeb.Reasoning {
 			store.Replace(a, b);
 		}
 
+		public override void Replace(Statement find, Statement replacement) {
+			store.Replace(find, replacement);
+		}
+		
 		public override Entity[] FindEntities(Statement[] filters) {
 			return store.FindEntities(filters);
 		}

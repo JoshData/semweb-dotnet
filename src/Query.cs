@@ -1,3 +1,4 @@
+
 using System;
 using System.Collections;
 using System.IO;
@@ -26,6 +27,7 @@ namespace SemWeb.Query {
 		
 		Hashtable variableHash = new Hashtable();
 		VariableBinding[] initialBindings;
+		ArrayList[] predicateInitialFilters;
 		ArrayList[] predicateFilters;
 		ArrayList[] valueFilters;
 		ArrayList[] variablesDistinct;
@@ -64,7 +66,7 @@ namespace SemWeb.Query {
 
 		public void SetGraph(Store graph) {
 			if (model != null) throw new ArgumentException("A graph has already been set for this query.");
-			model = new MemoryStore(null);
+			model = new MemoryStore();
 			model.Import(graph);
 		}
 		
@@ -95,7 +97,6 @@ namespace SemWeb.Query {
 			public int Depth;
 			
 			public Set Alternatives;
-			public Hashtable PreCache = new Hashtable();		
 			
 			public bool ValueNotImportant {
 				get {
@@ -228,6 +229,7 @@ namespace SemWeb.Query {
 			
 			// Get a list of all statements about each variable.
 			
+			predicateInitialFilters = new ArrayList[initialBindings.Length];
 			predicateFilters = new ArrayList[initialBindings.Length];
 			valueFilters = new ArrayList[initialBindings.Length];
 			variablesDistinct = new ArrayList[initialBindings.Length];
@@ -237,6 +239,7 @@ namespace SemWeb.Query {
 			for (int i = 0; i < initialBindings.Length; i++) {
 				Entity variable = initialBindings[i].Variable;
 
+				predicateInitialFilters[i] = new ArrayList();
 				predicateFilters[i] = new ArrayList();
 				
 				for (int spo = 0; spo <= 2; spo++) {
@@ -418,7 +421,64 @@ namespace SemWeb.Query {
 			// irrelevant. Prune them off.
 			rootVariable.PruneAnonymousLeaves();
 			
+			// For each variable that can't be a literal, move the predicate
+			// filters for that variable that refer only to the variable
+			// and known values into predicateInitialFilters, so that
+			// the FindEntities optimization can be used.
+			setFindEntitiesInitialFilters(rootVariable);
+			
 			//rootVariable.Dump();
+		}
+
+		void setFindEntitiesInitialFilters(VariableNode node) {
+			setFindEntitiesInitialFilters2(node);
+			foreach (VariableNode c in node.Children)
+				setFindEntitiesInitialFilters(c);
+		}
+		
+		void setFindEntitiesInitialFilters2(VariableNode node) {
+			// Get a list of predicate filters in which all parts of the filter
+			// are known values besides this variable.  Then feed that to FindEntities
+			// to get an initial set of entities.  This is useful when an entity is
+			// defined according to multiple constants (e.g. rdf:type, literal functional
+			// properties), when the store is optimized for FindEntities.
+			// But, FindEntities only returns entities.  This variable could have a literal
+			// value if it appears only as the object of a statement, in which case
+			// don't do this.
+			
+			// TODO: If there are functional properties, use those exclusively.
+			
+			// If this variable could be a literal value, don't do anything special here.
+			bool mightBeLiteral = true;
+			foreach (Statement s in predicateFilters[node.BindingIndex]) {
+				if (s.Subject == node.Variable || s.Predicate == node.Variable) {
+					mightBeLiteral = false;
+					break;
+				}
+			}
+			if (mightBeLiteral) return;
+			
+			for (int i = 0; i < predicateFilters[node.BindingIndex].Count; i++) {
+				Statement s = (Statement)predicateFilters[node.BindingIndex][i];
+				
+				if (!IsDefined(s.Subject, node)) continue;
+				if (!IsDefined(s.Predicate, node)) continue;
+				if (!IsDefined(s.Object, node)) continue;
+				
+				predicateFilters[node.BindingIndex].RemoveAt(i); // remove from this list
+				i--;
+				
+				predicateInitialFilters[node.BindingIndex].Add(s); // add to this list
+			}
+		}
+		
+		private bool IsDefined(Resource ent, VariableNode currentNode) {
+			if (!(ent is Entity) || !variableHash.ContainsKey(ent)) return true;
+			do {
+				if (ent == currentNode.Variable) return true;
+				currentNode = currentNode.Parent;
+			} while (currentNode.Parent != currentNode);
+			return false;
 		}
 		
 		private Resource GetBinding(Resource ent, VariableNode currentNode, bool reqEntity, SearchState state) {
@@ -444,23 +504,6 @@ namespace SemWeb.Query {
 				throw new QueryException("An anonymous node in the query was not a variable.");
 
 			return ent;
-		}
-
-		private bool GetAlternativesSet(Resource ent, VariableNode currentNode, out VariableNode outNode, out Set outSet) {
-			if (variableHash.ContainsKey(ent)) {
-				while (currentNode.Parent != currentNode) {
-					currentNode = currentNode.Parent;
-					if (currentNode.Variable.Equals(ent)) {
-						outNode = currentNode;
-						outSet = currentNode.Alternatives;
-						return true;
-					}
-				}
-			}
-			
-			outNode = null;
-			outSet = null;
-			return false;
 		}
 
 		public void Query(Store target, QueryResultSink sink) {
@@ -495,9 +538,25 @@ namespace SemWeb.Query {
 		private bool Recurse(SearchState state, VariableNode node, out bool emittedBinding) {
 			Set resources = null;
 			
-			for (int sIndex = 0; sIndex < predicateFilters[node.BindingIndex].Count; sIndex++) { 
-				Statement s = (Statement)predicateFilters[node.BindingIndex][sIndex];
-				
+			ArrayList initialFilters = new ArrayList();
+			foreach (Statement s in predicateInitialFilters[node.BindingIndex]) {
+				Statement q = new Statement(
+					s.Subject == node.Variable ? Store.FindVariable : (Entity)GetBinding(s.Subject, node, true, state),
+					s.Predicate == node.Variable ? Store.FindVariable : (Entity)GetBinding(s.Predicate, node, true, state),
+					s.Object == node.Variable ? Store.FindVariable : GetBinding(s.Object, node, false, state));
+					
+				int nullCount = ((q.Subject == null) ? 1 : 0) + ((q.Predicate == null) ? 1 : 0) + ((q.Object == null) ? 1 : 0);
+				if (nullCount != 0) continue; // Only happens if a literal value for a variable ends up as the subject/predicate of this statement.  Continuing drops the statement as a filter; probably not good.
+				initialFilters.Add(q);
+			}
+			if (initialFilters.Count != 0) {
+				resources = new Set();
+				foreach (Entity e in state.target.FindEntities((Statement[])initialFilters.ToArray(typeof(Statement)))) {
+					resources.Add(e);
+				}
+			}
+			
+			foreach (Statement s in predicateFilters[node.BindingIndex]) {
 				Store selectCache = null;
 				
 				int spo;
@@ -511,36 +570,9 @@ namespace SemWeb.Query {
 					spo == 2 ? null : GetBinding(s.Object, node, false, state));
 				
 				if (resources == null) {
-					if (spo == 2 && node.NoSelect && q.Subject != null && q.Predicate != null) {
-						VariableNode altNode;
-						Set altSet;
-						if (GetAlternativesSet(s.Subject, node, out altNode, out altSet)) {
-							PreCacheKey key = new PreCacheKey(q.Subject, q.Predicate);
-							Resource value = (Resource)altNode.PreCache[key];
-							if (value == null) {
-								// Run a combined select on all of the potential resources.
-								ArrayList queries = new ArrayList();
-								foreach (Resource r in altSet.Items()) {
-									if (!(r is Entity)) continue;
-									Statement q2 = new Statement((Entity)r, q.Predicate, null);
-									queries.Add(q2);
-								}
-								
-								state.target.Select((Statement[])queries.ToArray(typeof(Statement)), new PutInHash(0, 1, 2, altNode.PreCache));
-							}
-							
-							value = (Resource)altNode.PreCache[key];
-							resources = new Set();
-							if (value != null)
-								resources.Add(value);
-						}
-					}
-					
-					if (resources == null) {
-						// Select all resources that match this statement
-						// The selection will also apply any value filters for this variable
-						resources = SelectCache(q, spo, state, selectCache, node).Clone();
-					}
+					// Select all resources that match this statement
+					// The selection will also apply any value filters for this variable
+					resources = SelectCache(q, spo, state, selectCache, node).Clone();
 					
 					// Apply distinctFrom restrictions to make sure the value of this
 					// variable is not equal to the value of other variables, as specified.
@@ -554,6 +586,13 @@ namespace SemWeb.Query {
 					
 					// Deal with queries with nothing yet known with a later variable.
 					if (nullCount == 3)
+						continue;
+						
+					// Sometimes we might want to restrict the number of possible
+					// resources for this variable by testing this statement,
+					// even though one of its parts is for a later variable.
+					// But we won't do this now.
+					if (nullCount == 2)
 						continue;
 					
 					if (nullCount >= 2) {
@@ -576,7 +615,7 @@ namespace SemWeb.Query {
 							spo == 2 ? true : false,
 							false);
 							
-						if (sIndex == predicateFilters[node.BindingIndex].Count-1 && node.NoSelect)
+						if (predicateFilters[node.BindingIndex].Count == 1 && node.NoSelect)
 							selectFilter.SelectFirst = true;
 	
 						Set resources2 = new Set();
@@ -609,7 +648,6 @@ namespace SemWeb.Query {
 			}
 			
 			node.Alternatives = resources;
-			node.PreCache.Clear();
 			
 			emittedBinding = false;
 			
@@ -628,7 +666,6 @@ namespace SemWeb.Query {
 			} if (node.Children.Count == 1) {
 				// The node has one child, so simply recurse into the child.
 				VariableNode child = (VariableNode)node.Children[0];
-				//PrecacheSelect(node, resources, child, state);
 				foreach (Resource r in resources.Items()) {
 					state.bindings[node.BindingIndex].Target = r;
 					
@@ -653,7 +690,6 @@ namespace SemWeb.Query {
 				
 				for (int i = 0; i < node.Children.Count; i++) {
 					VariableNode child = (VariableNode)node.Children[i];
-					//PrecacheSelect(node, resources, child, state);
 					
 					for (int r = 0; r < resourceItems.Count; r++) {
 						if (filteredOut[r]) continue;
@@ -851,30 +887,6 @@ namespace SemWeb.Query {
 			}
 		}
 
-		private class PutInHash : StatementSink {
-			int spo1, spo2, spo3;
-			Hashtable cache;
-			
-			public PutInHash(int spo1, int spo2, int spo3, Hashtable cache) {
-				this.spo1 = spo1; this.spo2 = spo2; this.spo3 = spo3; this.cache = cache;
-			}
-
-			public bool Add(Statement statement) {
-				Resource a, b, c;
-				if (spo1 == 0) a = statement.Subject;
-				else if (spo1 == 1) a = statement.Predicate;
-				else a = statement.Object;
-				if (spo2 == 0) b = statement.Subject;
-				else if (spo2 == 1) b = statement.Predicate;
-				else b = statement.Object;
-				if (spo3 == 0) c = statement.Subject;
-				else if (spo3 == 1) c = statement.Predicate;
-				else c = statement.Object;
-				cache[new PreCacheKey(a,b)] = c;
-				return true;
-			}
-		}
-
 		private class Set {
 			Hashtable store;
 			ArrayList items;
@@ -934,16 +946,6 @@ namespace SemWeb.Query {
 			public override void Finished() { sink.Finished(); }
 		}
 		
-		private class PreCacheKey {
-			Resource s, p;
-			public PreCacheKey(Resource subject, Resource predicate) { s = subject; p = predicate; }
-			public override bool Equals(object other) {
-				return ((PreCacheKey)other).s.Equals(s) && ((PreCacheKey)other).p.Equals(p);
-			}
-			public override int GetHashCode() {
-				return s.GetHashCode() ^ p.GetHashCode();
-			}
-		}
 	}
 	
 	public abstract class QueryResultSink {

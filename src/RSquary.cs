@@ -46,7 +46,7 @@ namespace SemWeb.Query {
 			
 			// Add all statements except the query predicates and value filters into a
 			// new store with just the statements relevant to the search.
-			Store matchModel = new MemoryStore(null);
+			Store matchModel = new MemoryStore();
 			foreach (Statement s in queryModel.Select(Statement.All)) {
 				if (IsQueryPredicate(s.Predicate)) continue;
 				

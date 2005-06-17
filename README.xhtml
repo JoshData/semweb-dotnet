@@ -112,9 +112,10 @@ store.Select(Statement.All, new MyStatementWriter());
 
 <p>To load statements into a MySQL store, create the MySQL store as follows:</p>
 
-<pre class="code">Store store = Store.CreateForOutput("mysql:tablename_prefix:Database=databasename; User id=dbusername");</pre>
+<pre class="code">Store store = (Store)Store.CreateForOutput("mysql:tablename_prefix:Database=databasename; User id=dbusername");</pre>
 
-<p>Then use the store as normal:</p>
+<p>Make sure the SemWeb.MySQL assembly, in addition to the SemWeb assembly, is available at run time.
+You don't need to reference it at compile time if you create it this way. Then use the store as normal:</p>
 
 <pre class="code">store.Import(new N3Reader(new StreamReader(filename)));</pre>
 

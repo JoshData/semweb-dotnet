@@ -57,6 +57,9 @@
     <Namespace Name="SemWeb.Util">
       <Type Name="XPathSemWebNavigator" />
     </Namespace>
+    <Namespace Name="SemWeb.Bind">
+      <Type Name="Any" />
+    </Namespace>
   </Types>
   <Assemblies>
     <Assembly Name="SemWeb" Version="0.9.0.0">

@@ -71,11 +71,19 @@ namespace SemWeb {
 					}
 				case "n3":
 				case "ntriples":
-					if (spec == "") throw new ArgumentException("Use: n3:filename");
+				case "nt":
+				case "turtle":
+					if (spec == "") throw new ArgumentException("Use: format:filename");
 					if (output) {
 						N3Writer ret = new N3Writer(spec);
-						if (type == "ntriples")
-							ret.NTriples = true;
+						switch (type) {
+							case "nt": case "ntriples":
+								ret.Format = N3Writer.Formats.NTriples;
+								break;
+							case "turtle":
+								ret.Format = N3Writer.Formats.Turtle;
+								break;
+						}
 						return ret;
 					} else {
 						return new N3Reader(spec);
@@ -180,7 +188,7 @@ namespace SemWeb {
 					resources[s.Object] = s.Object;
 			return (Resource[])new ArrayList(resources.Keys).ToArray(typeof(Resource));
 		}
-		public Entity[] SelectSubjects(Entity predicate, Entity @object) {
+		public Entity[] SelectSubjects(Entity predicate, Resource @object) {
 			Hashtable resources = new Hashtable();
 			foreach (Statement s in Select(new Statement(null, predicate, @object), new SelectPartialFilter(true, false, false, false)))
 				if (!resources.ContainsKey(s.Subject))
@@ -188,7 +196,9 @@ namespace SemWeb {
 			return (Entity[])new ArrayList(resources.Keys).ToArray(typeof(Entity));
 		}
 		
-		public abstract void Replace(Entity a, Entity b);
+		public abstract void Replace(Entity find, Entity replacement);
+		
+		public abstract void Replace(Statement find, Statement replacement);
 		
 		public abstract Entity[] FindEntities(Statement[] filters);
 		
@@ -286,6 +296,11 @@ namespace SemWeb.Stores {
 		public override void Replace(Entity a, Entity b) {
 			foreach (Store s in stores)
 				s.Replace(a, b);
+		}
+		
+		public override void Replace(Statement find, Statement replacement) {
+			foreach (Store s in stores)
+				s.Replace(find, replacement);
 		}
 		
 		public override Entity[] FindEntities(Statement[] filters) {

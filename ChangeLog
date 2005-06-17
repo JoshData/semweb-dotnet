@@ -1,3 +1,17 @@
+	* New API to replace one statement with another statement in a store.
+	* New API to test whether a statement template matches a statement.
+	* The Resource class now has its == and != operators overloaded.
+	* Store.CreateForInput/Output now accepts 'ntriples' 'nt' and 'turtle'.
+	* Store.SelectSubjects API change.
+	* Select on multiple templates for SQL stores is now unoptimized but working.
+	* SQLLite has a bug in how they handle LEFT JOIN.  SQL store now
+	  works around this.
+	* SQL stores now index on the meta field.
+	* FindEntities works now.
+	* N3Writer can output in NTriples, Turtle, or full N3 mode.
+	* The query engine works now.
+	* Xml (Sparql) query result output now has nice indentation.
+
 2005-06-10 Version 0.5 Posted
 
 	* First release.

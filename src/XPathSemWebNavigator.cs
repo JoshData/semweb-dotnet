@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Xml;
+using System.Xml.Xsl;
 using System.Xml.XPath;
 
 using SemWeb;
@@ -14,6 +15,10 @@ namespace SemWeb.Util {
 		ArrayList stack = new ArrayList();
 		Position current;
 		
+		private static Entity ExpandEntitiesOfType = new Entity(null);
+		
+		Entity rdfType = NS.RDF+"type";
+		
 		private class Position {
 			public int Index;
 			public bool FirstChild, LastChild;
@@ -24,7 +29,7 @@ namespace SemWeb.Util {
 			public Position[] Children;
 		}
 		
-		private class NSWrap : XmlNamespaceManager {
+		private class NSWrap : XsltContext {
 			NamespaceManager nsmgr;
 			
 			public NSWrap(NamespaceManager nsmgr) : base(new NameTable()) { this.nsmgr = nsmgr; }
@@ -39,7 +44,31 @@ namespace SemWeb.Util {
 			public override string LookupPrefix (string uri) {
 				return nsmgr.GetPrefix(uri);
 			}
+			
+			// These don't really do anything (yet?).
+			
+			public override bool Whitespace {
+				get { return false; }
+			} 
+			
+			public override int CompareDocument (string baseUri, string nextbaseUri) {
+				return baseUri.CompareTo(nextbaseUri);
+			}
+			
+			public override bool PreserveWhitespace (System.Xml.XPath.XPathNavigator node) {
+				return false;
+			}
+			
+			public override IXsltContextFunction ResolveFunction (string prefix, string name, System.Xml.XPath.XPathResultType[] ArgTypes) {
+				return null;
+			}
+
+			public override IXsltContextVariable ResolveVariable (string prefix, string name) {
+				return null;
+			}
 		}
+
+		public XPathSemWebNavigator(Store model, NamespaceManager namespaces) : this(ExpandEntitiesOfType, model, namespaces, null) { }
 
 		public XPathSemWebNavigator(Entity root, Store model, NamespaceManager namespaces) : this(root, model, namespaces, null) { }
 		
@@ -77,6 +106,28 @@ namespace SemWeb.Util {
 			
 			ArrayList children = new ArrayList();
 			int ctr = 0;
+			
+			if (p.Object == ExpandEntitiesOfType) {
+				if (expandOnlyThisPredicate == null) {
+					// Get a list of entities and their types.
+					foreach (Statement s in model.Select(new Statement(null, rdfType, null))) {
+						if (!(s.Object is Entity)) continue;
+						Position c = new Position();
+						c.Index = ctr++;
+						c.Predicate = (Entity)s.Object;
+						c.Object = s.Subject;
+						children.Add(c);
+					}
+				} else {
+					foreach (Entity e in model.GetEntitiesOfType(expandOnlyThisPredicate)) {
+						Position c = new Position();
+						c.Predicate = expandOnlyThisPredicate;
+						c.Index = ctr++;
+						c.Object = e;
+						children.Add(c);
+					}
+				}
+			} else {
 
 			if (expandOnlyThisPredicate == null || !expandOnlyThisPredicate.StartsWith("!")) {
 				Statement q = new Statement(
@@ -108,6 +159,8 @@ namespace SemWeb.Util {
 				}
 			}
 			
+			}
+			
 			p.Children = (Position[])children.ToArray(typeof(Position));
 			
 			if (p.Children.Length > 0) {
@@ -127,6 +180,8 @@ namespace SemWeb.Util {
 		public override string LocalName {
 			get {
 				string p, l;
+				if (current.Predicate == ExpandEntitiesOfType)
+					return "root";
 				if (current.Predicate.Uri == null)
 					return "anonymous";
 				if (nsmgr.Normalize(current.Predicate.Uri, out p, out l))
@@ -137,6 +192,8 @@ namespace SemWeb.Util {
 
 		public override string Name {
 			get {
+				if (current.Predicate == ExpandEntitiesOfType)
+					return "root";
 				if (current.Predicate.Uri == null)
 					return "anonymous";
 				return nsmgr.Normalize(current.Predicate.Uri);
@@ -179,6 +236,8 @@ namespace SemWeb.Util {
 
 		public override string Value {
 			get {
+				if (current.Predicate == ExpandEntitiesOfType)
+					return "root";
 				if (current.Object is Literal)
 					return ((Literal)current.Object).Value;
 				if (current.Object.Uri == null)

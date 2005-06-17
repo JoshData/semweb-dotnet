@@ -171,14 +171,14 @@
       </Docs>
     </Member>
     <Member MemberName="SelectSubjects">
-      <MemberSignature Language="C#" Value="public SemWeb.Entity[] SelectSubjects (SemWeb.Entity predicate, SemWeb.Entity object);" />
+      <MemberSignature Language="C#" Value="public SemWeb.Entity[] SelectSubjects (SemWeb.Entity predicate, SemWeb.Resource object);" />
       <MemberType>Method</MemberType>
       <ReturnValue>
         <ReturnType>SemWeb.Entity[]</ReturnType>
       </ReturnValue>
       <Parameters>
         <Parameter Name="predicate" Type="SemWeb.Entity" />
-        <Parameter Name="object" Type="SemWeb.Entity" />
+        <Parameter Name="object" Type="SemWeb.Resource" />
       </Parameters>
       <Docs>
         <param name="predicate">The predicate of the statements to query.</param>

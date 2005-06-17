@@ -112,10 +112,8 @@ namespace SemWeb {
 			if (source == null) return;
 			
 			foreach (Statement statement in source) {
-				if (template.Subject != null && statement.Subject != null && !template.Subject.Equals(statement.Subject)) continue;
-				if (template.Predicate != null && statement.Predicate != null && !template.Predicate.Equals(statement.Predicate)) continue;
-				if (template.Object != null && statement.Object != null && !template.Object.Equals(statement.Object)) continue;
-				if (template.Meta != null && statement.Meta != null && !template.Meta.Equals(statement.Meta)) continue;
+				if (!template.Matches(statement))
+					continue;
 				if (!result.Add(statement)) return;
 			}
 		}
@@ -136,6 +134,18 @@ namespace SemWeb {
 						statement.Meta == a ? b : a
 						));
 				}
+			}
+		}
+		
+		public override void Replace(Statement find, Statement replacement) {
+			if (find.AnyNull) throw new ArgumentNullException("find");
+			if (replacement.AnyNull) throw new ArgumentNullException("replacement");
+			if (find == replacement) return;
+			
+			foreach (Statement match in Select(find)) {
+				Remove(match);
+				Add(replacement);
+				break; // should match just one statement anyway
 			}
 		}
 		

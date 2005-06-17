@@ -37,6 +37,14 @@ namespace SemWeb {
 			return new Statement((Entity)Object, Predicate, Subject, Meta);
 		}
 		
+		public bool Matches(Statement statement) {
+			if (Subject != null && Subject != statement.Subject) return false;
+			if (Predicate != null && Predicate != statement.Predicate) return false;
+			if (Object != null && Object != statement.Object) return false;
+			if (Meta != null && Meta != statement.Meta) return false;
+			return true;
+		}
+		
 		public override string ToString() {
 			string ret = "";
 			if (Subject != null) ret += "<" + Subject + "> "; else ret += "? ";

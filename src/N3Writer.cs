@@ -15,7 +15,13 @@ namespace SemWeb {
 		
 		long anonCounter = 0;
 		
-		bool ntriples = false;
+		Formats format = Formats.Notation3;
+		
+		public enum Formats {
+			NTriples,
+			Turtle,
+			Notation3
+		}
 		
 		public N3Writer(string file) : this(file, null) { }
 		
@@ -29,7 +35,7 @@ namespace SemWeb {
 		
 		public override NamespaceManager Namespaces { get { return ns; } }
 		
-		public bool NTriples { get { return ntriples; } set { ntriples = value; } }
+		public Formats Format { get { return format; } set { format = value; } }
 		
 		public override void WriteStatement(string subj, string pred, string obj) {
 			WriteStatement2(URI(subj), URI(pred), URI(obj));
@@ -64,7 +70,7 @@ namespace SemWeb {
 				if (ok)
 					return ":" + uri.Substring(len);
 			}
-			if (NTriples || ns == null) return "<" + Escape(uri) + ">";
+			if (Format == Formats.NTriples || ns == null) return "<" + Escape(uri) + ">";
 			
 			string ret = ns.Normalize(uri);
 			if (ret[0] != '<') return ret;
@@ -133,7 +139,7 @@ namespace SemWeb {
 			closed = false;
 			
 			// Write the prefix directives at the beginning.
-			if (!hasWritten && ns != null && !NTriples) {
+			if (!hasWritten && ns != null && !(Format == Formats.NTriples)) {
 				foreach (string prefix in ns.GetPrefixes()) {
 					writer.Write("@prefix ");
 					writer.Write(prefix);
@@ -144,7 +150,7 @@ namespace SemWeb {
 			}
 
 			// Repeated subject.
-			if (lastSubject != null && lastSubject == subj && !NTriples) {
+			if (lastSubject != null && lastSubject == subj && !(Format == Formats.NTriples)) {
 				// Repeated predicate too.
 				if (lastPredicate != null && lastPredicate == pred) {
 					writer.Write(",\n\t\t");
@@ -159,8 +165,8 @@ namespace SemWeb {
 				}
 			
 			// The subject became the object.  Abbreviate with
-			// is...of notation.
-			} else if (lastSubject != null && lastSubject == obj && !NTriples) {
+			// is...of notation (Notation3 format only).
+			} else if (lastSubject != null && lastSubject == obj && (Format == Formats.Notation3)) {
 				writer.Write(";\n\tis ");
 				WriteThing(pred);
 				writer.Write("of ");

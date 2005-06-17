@@ -619,6 +619,10 @@ namespace SemWeb.Stores {
 		}
 		
 		public override void Select(Statement[] templates, SelectPartialFilter partialFilter, StatementSink result) {
+			foreach (Statement t in templates)
+				Select(t, partialFilter, result);
+		}
+		/*
 			if (templates == null) throw new ArgumentNullException();
 			if (result == null) throw new ArgumentNullException();
 			if (templates.Length == 0) return;
@@ -703,7 +707,7 @@ namespace SemWeb.Stores {
 			cmd.Append(");");
 			
 			Select2(cmd.ToString(), Statement.All, partialFilter, partialFilter.SelectFirst, result);
-		}
+		}*/
 		
 		public override void Select(Statement template, SelectPartialFilter partialFilter, StatementSink result) {
 			if (result == null) throw new ArgumentNullException();
@@ -723,6 +727,12 @@ namespace SemWeb.Stores {
 			
 			if (partialFilter2.SelectNone)
 				partialFilter2 = SelectPartialFilter.All;
+				
+			// SQLite has a problem with LEFT JOIN: When a condition is made on the
+			// first table in the ON clause (q.objecttype=0/1), when it fails,
+			// it excludes the row from the first table, whereas it should only
+			// exclude the results of the join, but include the row.  Thus, the space
+			// of IDs between literals and entities must be shared!
 			
 			System.Text.StringBuilder cmd = new System.Text.StringBuilder("SELECT ");
 			SelectFilter(partialFilter2, cmd);
@@ -730,13 +740,15 @@ namespace SemWeb.Stores {
 			cmd.Append(table);
 			cmd.Append("_statements AS q LEFT JOIN ");
 			cmd.Append(table);
-			cmd.Append("_literals AS lit ON q.objecttype=1 AND q.object=lit.id LEFT JOIN ");
+			//cmd.Append("_literals AS lit ON q.objecttype=1 AND q.object=lit.id LEFT JOIN ");
+			cmd.Append("_literals AS lit ON q.object=lit.id LEFT JOIN ");
 			cmd.Append(table);
 			cmd.Append("_entities AS suri ON q.subject = suri.id LEFT JOIN ");
 			cmd.Append(table);
 			cmd.Append("_entities AS puri ON q.predicate = puri.id LEFT JOIN ");
 			cmd.Append(table);
-			cmd.Append("_entities AS ouri ON q.objecttype=0 AND q.object = ouri.id LEFT JOIN ");
+			//cmd.Append("_entities AS ouri ON q.objecttype=0 AND q.object = ouri.id LEFT JOIN ");
+			cmd.Append("_entities AS ouri ON q.object = ouri.id LEFT JOIN ");
 			cmd.Append(table);
 			cmd.Append("_entities AS muri ON q.meta = muri.id ");
 			if (!WhereClause(template, cmd)) return;
@@ -912,20 +924,56 @@ namespace SemWeb.Stores {
 			}			
 		}
 		
+		public override void Replace(Statement find, Statement replacement) {
+			if (find.AnyNull) throw new ArgumentNullException("find");
+			if (replacement.AnyNull) throw new ArgumentNullException("replacement");
+			if (find == replacement) return;
+			
+			Init();
+			RunAddBuffer();
+
+			int subj = GetResourceId(replacement.Subject, true);
+			int pred = GetResourceId(replacement.Predicate, true);
+			int objtype = ObjectType(replacement.Object);
+			int obj = GetResourceId(replacement.Object, true);
+			int meta = GetResourceId(replacement.Meta, true);
+
+			StringBuilder cmd = cmdBuffer; cmd.Length = 0;
+			
+			cmd.Append("UPDATE ");
+			cmd.Append(table);
+			cmd.Append("_statements SET subject=");
+			cmd.Append(subj);
+			cmd.Append(", predicate=");
+			cmd.Append(pred);
+			cmd.Append(", objecttype=");
+			cmd.Append(objtype);
+			cmd.Append(", object=");
+			cmd.Append(obj);
+			cmd.Append(", meta=");
+			cmd.Append(meta);
+			cmd.Append(" ");
+			
+			if (!WhereClause(find, cmd))
+				return;
+			
+			RunCommand(cmd.ToString());
+		}
+		
 		public override Entity[] FindEntities(Statement[] filters) {
 			Init();
 			
-			StringBuilder cmd = new StringBuilder();
-			cmd.Append("SELECT s.");
-			
 			string f1pos = is_spom(FindVariable, filters[0]);
 			if (f1pos == null) throw new ArgumentException("FindVariable must appear in every statement.");
+			
+			StringBuilder cmd = new StringBuilder();
+			cmd.Append("SELECT s.");
 			cmd.Append(f1pos);
 			cmd.Append(", uri.value FROM ");
 			cmd.Append(table);
 			cmd.Append("_statements AS s LEFT JOIN ");
 			cmd.Append(table);
-			cmd.Append("_entities AS uri ON uri.id=");
+			cmd.Append("_entities AS uri ON uri.id=s.");
 			cmd.Append(f1pos);
 			
 			if (isliteralmatch(filters[0].Object))
@@ -954,6 +1002,9 @@ namespace SemWeb.Stores {
 				if (filters[i].Meta != null && filters[i].Meta != FindVariable)
 					if (!WhereItem("f" + i + ".meta", filters[i].Meta, cmd, true)) return new Entity[0];
 				
+				if (filters[i].Object == FindVariable)
+					cmd.Append("AND f" + i + ".objecttype=0 ");
+					
 				if (isliteralmatch(filters[i].Object)) {
 					cmd.Append("AND f" + i + ".objecttype=1 ");
 					appendLiteralMatch(cmd, "l" + i, "f" + i, ((Literal)filters[i].Object).Value);
@@ -972,6 +1023,10 @@ namespace SemWeb.Stores {
 				cmd.Append("AND s.objecttype=1 ");
 			if (filters[0].Meta != null && filters[0].Meta != FindVariable)
 				if (!WhereItem("s.meta", filters[0].Meta, cmd, true)) return new Entity[0];
+			
+			if (filters[0].Object == FindVariable)
+				cmd.Append(" AND s.objecttype=0");
+				
 			cmd.Append(";");
 			
 			//Console.Error.WriteLine(cmd.ToString());
@@ -1087,9 +1142,9 @@ namespace SemWeb.Stores {
 				"CREATE INDEX subject_index ON " + table + "_statements(subject);",
 				"CREATE INDEX predicate_index ON " + table + "_statements(predicate);",
 				"CREATE INDEX object_index ON " + table + "_statements(objecttype, object);",
+				"CREATE INDEX meta_index ON " + table + "_statements(meta);",
 			
-				"CREATE INDEX literal_index ON " + table + "_literals(value(40));",
-				
+				"CREATE INDEX literal_index ON " + table + "_literals(value(30));",
 				"CREATE UNIQUE INDEX entity_index ON " + table + "_entities(value(255));"
 				};
 		}

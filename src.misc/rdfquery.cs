@@ -49,16 +49,16 @@ public class RDFQuery {
 			qs = new SQLQuerySink(Console.Out, "rdf");
 		else if (opts.format == "html")
 			qs = new HTMLQuerySink(Console.Out);
-		else if (opts.format == "xml")
-			qs = new SparqlXmlQuerySink(new System.Xml.XmlTextWriter(Console.Out), queryparser.BaseUri);
-		else {
+		else if (opts.format == "xml") {
+			System.Xml.XmlTextWriter w = new System.Xml.XmlTextWriter(Console.Out);
+			w.Formatting = System.Xml.Formatting.Indented;
+			qs = new SparqlXmlQuerySink(w, queryparser.BaseUri);
+		} else {
 			Console.Error.WriteLine("Invalid output format.");
 			return;
 		}
 
-		KnowledgeModel querymodel = new KnowledgeModel(queryparser);
-		
-		RSquary query = new RSquary(querymodel, "query://query/#query");
+		RSquary query = new RSquary(new MemoryStore(queryparser), "query://query/#query");
 		
 		// Make sure the ?abc variables in N3 are considered variables.
 		foreach (Entity var in queryparser.Variables)
@@ -73,8 +73,8 @@ public class RDFQuery {
 			model.Add(storage);
 		}
 		
-		if (opts.rdfs) model.AddReasoning(new SemWeb.Reasoning.RDFSReasoning());
-		if (opts.owl) model.AddReasoning(new SemWeb.Reasoning.OWLReasoning());
+		//if (opts.rdfs) model.AddReasoning(new SemWeb.Reasoning.RDFSReasoning());
+		//if (opts.owl) model.AddReasoning(new SemWeb.Reasoning.OWLReasoning());
 		
 		if (opts.limit > 0)
 			query.ReturnLimit = opts.limit;

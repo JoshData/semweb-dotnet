@@ -1,4 +1,6 @@
-all: bin/SemWeb.dll bin/SemWeb.MySQLStore.dll bin/SemWeb.SqliteStore.dll bin/SemWeb.dll bin/rdfstorage.exe bin/rdfquery.exe bin/rdfs2cs.exe bin/runtests.exe
+VERSION=0.5
+
+all: bin/SemWeb.dll bin/SemWeb.MySQLStore.dll bin/SemWeb.SqliteStore.dll bin/SemWeb.dll bin/rdfstorage.exe bin/rdfquery.exe bin/rdfs2cs.exe bin/runtests.exe bin/rdfxsltproc.exe
 #bin/rdfshmush.exe bin/rdfs2cs.exe 
 	
 bin/rdfs2cs.exe: src.misc/rdfscs.cs bin/SemWeb.dll
@@ -27,6 +29,9 @@ bin/rdfshmush.exe: src.misc/rdfshmush.cs bin/SemWeb.dll
 
 bin/runtests.exe: src.misc/runtests.cs
 	mcs -g src.misc/runtests.cs -out:bin/runtests.exe -r bin/SemWeb.dll
+
+bin/rdfxsltproc.exe: src.misc/rdfxsltproc.cs
+	mcs -g src.misc/rdfxsltproc.cs -out:bin/rdfxsltproc.exe -r bin/SemWeb.dll -r Mono.GetOptions
 		
 doc: Makefile
 	mono /usr/lib/monodoc/monodocer.exe -assembly:bin/SemWeb.dll -path:doc #--delete
@@ -43,6 +48,13 @@ semweb.zip: bin/SemWeb.dll Makefile doc
 	doc/*.xml doc/*/*.xml \
 	doc-html \
 	Makefile README README.xhtml ChangeLog
+
+semweb-$(VERSION).tgz: semweb.zip
+	rm -rf package-workspace
+	mkdir -p package-workspace/semweb-$(VERSION)
+	unzip semweb.zip -d package-workspace/semweb-$(VERSION)
+	tar -czf semweb-$(VERSION).tgz -C package-workspace semweb-$(VERSION)
+	rm -rf package-workspace
 	
-deploy: semweb.zip
-	scp semweb.zip publius:www/code/semweb
+deploy: semweb.zip semweb-$(VERSION).tgz
+	scp semweb.zip semweb-$(VERSION).tgz publius:www/code/semweb

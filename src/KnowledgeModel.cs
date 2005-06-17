@@ -58,6 +58,10 @@ namespace SemWeb.Stores {
 			mainstore.Replace(a, b);
 		}
 		
+		public override void Replace(Statement find, Statement replacement) {
+			mainstore.Replace(find, replacement);
+		}
+		
 		public override Entity[] FindEntities(Statement[] filters) {
 			return mainstore.FindEntities(filters);
 		}
