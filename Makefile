@@ -1,11 +1,7 @@
 VERSION=0.5
 
-all: bin/SemWeb.dll bin/SemWeb.MySQLStore.dll bin/SemWeb.SqliteStore.dll bin/SemWeb.dll bin/rdfstorage.exe bin/rdfquery.exe bin/rdfs2cs.exe bin/runtests.exe bin/rdfxsltproc.exe
-#bin/rdfshmush.exe bin/rdfs2cs.exe 
+all: bin/SemWeb.dll bin/SemWeb.MySQLStore.dll bin/SemWeb.SqliteStore.dll bin/SemWeb.dll bin/rdfstorage.exe bin/rdfquery.exe bin/rdfs2cs.exe bin/runtests.exe bin/rdfxsltproc.exe bin/rdfbind.exe
 	
-bin/rdfs2cs.exe: src.misc/rdfscs.cs bin/SemWeb.dll
-	mcs src.misc/rdfscs.cs -out:bin/rdfs2cs.exe -r:bin/SemWeb.dll -r:Mono.GetOptions
-
 bin/rdfstorage.exe: src.misc/rdfstorage.cs bin/SemWeb.dll
 	mcs src.misc/rdfstorage.cs -out:bin/rdfstorage.exe -r:bin/SemWeb.dll -r:Mono.GetOptions
 	
@@ -33,6 +29,9 @@ bin/runtests.exe: src.misc/runtests.cs
 bin/rdfxsltproc.exe: src.misc/rdfxsltproc.cs
 	mcs -g src.misc/rdfxsltproc.cs -out:bin/rdfxsltproc.exe -r bin/SemWeb.dll -r Mono.GetOptions
 		
+bin/rdfbind.exe: src.misc/rdfbind.cs bin/SemWeb.dll
+	mcs src.misc/rdfbind.cs -out:bin/rdfbind.exe -r:bin/SemWeb.dll -r:Mono.GetOptions
+
 doc: Makefile
 	mono /usr/lib/monodoc/monodocer.exe -assembly:bin/SemWeb.dll -path:doc #--delete
 	#mono /usr/lib/monodoc/monodocs2slashdoc.exe doc > SemWeb.docs.xml

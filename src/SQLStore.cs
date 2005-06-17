@@ -19,7 +19,7 @@ namespace SemWeb.Stores {
 		
 		Hashtable literalCache = new Hashtable();
 		int literalCacheSize = 0;
-		
+
 		bool Debug = false;
 		
 		StringBuilder cmdBuffer = new StringBuilder();
@@ -54,6 +54,7 @@ namespace SemWeb.Stores {
 		protected string TableName { get { return table; } }
 		
 		protected abstract bool SupportsInsertCombined { get; }
+		protected abstract bool SupportsUseIndex { get; }
 		
 		protected abstract string CreateNullTest(string column);
 
@@ -521,7 +522,14 @@ namespace SemWeb.Stores {
 				if (col != "object")
 					colprefix = col.Substring(0, col.Length-"object".Length);
 			
-				if (r is Literal) {
+				if (r is MultiRes) {
+					// Assumption that ID space of literals and entities are the same.
+					cmd.Append("( ");
+					cmd.Append(col);
+					cmd.Append(" IN (");
+					if (!AppendMultiRes((MultiRes)r, cmd)) return false;
+					cmd.Append(" ))");
+				} else if (r is Literal) {
 					Literal lit = (Literal)r;
 					int id = GetResourceId(lit, false);
 					if (id == 0) return false;
@@ -543,6 +551,13 @@ namespace SemWeb.Stores {
 					cmd.Append(id);
 					cmd.Append(")");
 				}
+			
+			} else if (r is MultiRes) {
+				cmd.Append("( ");
+				cmd.Append(col);
+				cmd.Append(" IN (");
+				if (!AppendMultiRes((MultiRes)r, cmd)) return false;
+				cmd.Append(" ))");
 				
 			} else {
 				int id = GetResourceId(r, false);
@@ -558,23 +573,37 @@ namespace SemWeb.Stores {
 			return true;
 		}
 		
+		private bool AppendMultiRes(MultiRes r, StringBuilder cmd) {
+			for (int i = 0; i < r.items.Count; i++) {
+				if (i != 0) cmd.Append(",");
+				int id = GetResourceId((Resource)r.items[i], false);
+				if (id == 0) return false;
+				cmd.Append(id);
+			}
+			return true;
+		}
+		
 		private bool WhereClause(Statement template, System.Text.StringBuilder cmd) {
-			if (template.Subject == null && template.Predicate == null && template.Object == null && template.Meta == null)
+			return WhereClause(template.Subject, template.Predicate, template.Object, template.Meta, cmd);
+		}
+
+		private bool WhereClause(Resource templateSubject, Resource templatePredicate, Resource templateObject, Resource templateMeta, System.Text.StringBuilder cmd) {
+			if (templateSubject == null && templatePredicate == null && templateObject == null && templateMeta == null)
 				return true;
 			
 			cmd.Append(" WHERE ");
 			
-			if (template.Subject != null)
-				if (!WhereItem("subject", template.Subject, cmd, false)) return false;
+			if (templateSubject != null)
+				if (!WhereItem("subject", templateSubject, cmd, false)) return false;
 			
-			if (template.Predicate != null)
-				if (!WhereItem("predicate", template.Predicate, cmd, template.Subject != null)) return false;
+			if (templatePredicate != null)
+				if (!WhereItem("predicate", templatePredicate, cmd, templateSubject != null)) return false;
 			
-			if (template.Object != null)
-				if (!WhereItem("object", template.Object, cmd, template.Subject != null || template.Predicate != null)) return false;
+			if (templateObject != null)
+				if (!WhereItem("object", templateObject, cmd, templateSubject != null || templatePredicate != null)) return false;
 			
-			if (template.Meta != null)
-				if (!WhereItem("meta", template.Meta, cmd, template.Subject != null || template.Predicate != null || template.Object != null)) return false;
+			if (templateMeta != null)
+				if (!WhereItem("meta", templateMeta, cmd, templateSubject != null || templatePredicate != null || templateObject != null)) return false;
 			
 			return true;
 		}
@@ -619,28 +648,14 @@ namespace SemWeb.Stores {
 		}
 		
 		public override void Select(Statement[] templates, SelectPartialFilter partialFilter, StatementSink result) {
-			foreach (Statement t in templates)
-				Select(t, partialFilter, result);
-		}
-		/*
 			if (templates == null) throw new ArgumentNullException();
 			if (result == null) throw new ArgumentNullException();
 			if (templates.Length == 0) return;
 	
-			Init();
-			RunAddBuffer();
-			
-			System.Text.StringBuilder cmd = new System.Text.StringBuilder("SELECT ");
-			SelectFilter(partialFilter, cmd);
-			cmd.Append(" value, language, datatype FROM ");
-			cmd.Append(table);
-			cmd.Append("_statements LEFT JOIN ");
-			cmd.Append(table);
-			cmd.Append("_literals ON objecttype=1 AND object=id WHERE (");
-			
 			bool first = true;
 			Resource sv = null, pv = null, ov = null, mv = null;
 			bool sm = false, pm = false, om = false, mm = false;
+			ArrayList sl = new ArrayList(), pl = new ArrayList(), ol = new ArrayList(), ml = new ArrayList();
 			foreach (Statement template in templates) {
 				if (first) {
 					first = false;
@@ -654,62 +669,41 @@ namespace SemWeb.Stores {
 					if (ov != template.Object) om = true;
 					if (mv != template.Meta) mm = true;
 				}
+				if (template.Subject != null) sl.Add(template.Subject);
+				if (template.Predicate != null) pl.Add(template.Predicate);
+				if (template.Object != null) ol.Add(template.Object);
+				if (template.Meta != null) ml.Add(template.Meta);
 			}
 			
 			if (!sm && !pm && !om && !mm) {
-				Select(templates[0], result);
+				Select(templates[0], partialFilter, result);
 				return;
+			} else if (sm && !pm && !om && !mm) {
+				Select(new MultiRes(sl), pv, ov, mv, partialFilter, result);
+			} else if (!sm && pm && !om && !mm) {
+				Select(sv, new MultiRes(pl), ov, mv, partialFilter, result);
+			} else if (!sm && !pm && om && !mm) {
+				Select(sv, pv, new MultiRes(ol), mv, partialFilter, result);
+			} else if (!sm && !pm && !om && mm) {
+				Select(sv, pv, ov, new MultiRes(ml), partialFilter, result);
 			} else {
-				if (!sm && sv != null)
-					if (!WhereItem("subject", sv, cmd, false)) return;
-				if (!pm && pv != null)
-					if (!WhereItem("predicate", pv, cmd, (!sm && sv != null))) return;
-				if (!om && ov != null)
-					if (!WhereItem("object", ov, cmd, (!sm && sv != null) || (!pm && pv != null))) return;
-				if (!mm && mv != null)
-					if (!WhereItem("meta", mv, cmd, (!sm && sv != null) || (!pm && pv != null) || (!om && ov != null))) return;
-				
-				if (!((!sm && sv != null) || (!pm && pv != null) || (!om && ov != null) || (!mm && mv != null))) {
-					cmd.Append("1");
-				}
+				foreach (Statement template in templates)
+					Select(template, partialFilter, result);
 			}
-			
-			cmd.Append(") and (");
-			
-			first = true;
-			foreach (Statement template in templates) {
-				if (template.Subject == null && template.Predicate == null && template.Object == null) {
-					Select(result);
-					return;
-				}
-				
-				if (!first)
-					cmd.Append(" OR ");
-				first = false;
-				
-				cmd.Append("(");
-
-				if (sm && template.Subject != null)
-					if (!WhereItem("subject", template.Subject, cmd, false)) return;
-
-				if (pm && template.Predicate != null)
-					if (!WhereItem("predicate", template.Predicate, cmd, (sm && template.Subject != null))) return;
-					
-				if (om && template.Object != null)
-					if (!WhereItem("object", template.Object, cmd, (sm && template.Subject != null) || (pm && template.Predicate != null))) return;
-
-				if (mm && template.Meta != null)
-					if (!WhereItem("meta", template.Meta, cmd, (sm && template.Subject != null) || (pm && template.Predicate != null) || (om && template.Object != null))) return;
-
-				cmd.Append(")");
-			}
-			
-			cmd.Append(");");
-			
-			Select2(cmd.ToString(), Statement.All, partialFilter, partialFilter.SelectFirst, result);
-		}*/
+		}
+		
+		private class MultiRes : Resource {
+			public MultiRes(ArrayList a) { items = a; }
+			public ArrayList items;
+			public override string Uri { get { return null; } }
+		}
 		
 		public override void Select(Statement template, SelectPartialFilter partialFilter, StatementSink result) {
+			if (result == null) throw new ArgumentNullException();
+			Select(template.Subject, template.Predicate, template.Object, template.Meta, partialFilter, result);
+		}
+
+		private void Select(Resource templateSubject, Resource templatePredicate, Resource templateObject, Resource templateMeta, SelectPartialFilter partialFilter, StatementSink result) {
 			if (result == null) throw new ArgumentNullException();
 	
 			Init();
@@ -718,15 +712,15 @@ namespace SemWeb.Stores {
 			bool limitOne = partialFilter.SelectFirst;
 			
 			// Don't select on columns that we already know from the template
-			SelectPartialFilter partialFilter2 = new SelectPartialFilter(
-				partialFilter.Subject && template.Subject == null,
-				partialFilter.Predicate && template.Predicate == null,
-				partialFilter.Object && template.Object == null,
-				partialFilter.Meta && template.Meta == null
+			partialFilter = new SelectPartialFilter(
+				(partialFilter.Subject && templateSubject == null) || templateSubject is MultiRes,
+				(partialFilter.Predicate && templatePredicate == null) || templatePredicate is MultiRes,
+				(partialFilter.Object && templateObject == null) || templateObject is MultiRes,
+				(partialFilter.Meta && templateMeta == null) || templateMeta is MultiRes
 				);
 			
-			if (partialFilter2.SelectNone)
-				partialFilter2 = SelectPartialFilter.All;
+			if (partialFilter.SelectNone)
+				partialFilter = SelectPartialFilter.All;
 				
 			// SQLite has a problem with LEFT JOIN: When a condition is made on the
 			// first table in the ON clause (q.objecttype=0/1), when it fails,
@@ -735,41 +729,63 @@ namespace SemWeb.Stores {
 			// of IDs between literals and entities must be shared!
 			
 			System.Text.StringBuilder cmd = new System.Text.StringBuilder("SELECT ");
-			SelectFilter(partialFilter2, cmd);
-			cmd.Append(", lit.value, lit.language, lit.datatype FROM ");
+			SelectFilter(partialFilter, cmd);
+			if (partialFilter.Object)
+				cmd.Append(", lit.value, lit.language, lit.datatype");
+			cmd.Append(" FROM ");
 			cmd.Append(table);
-			cmd.Append("_statements AS q LEFT JOIN ");
-			cmd.Append(table);
-			//cmd.Append("_literals AS lit ON q.objecttype=1 AND q.object=lit.id LEFT JOIN ");
-			cmd.Append("_literals AS lit ON q.object=lit.id LEFT JOIN ");
-			cmd.Append(table);
-			cmd.Append("_entities AS suri ON q.subject = suri.id LEFT JOIN ");
-			cmd.Append(table);
-			cmd.Append("_entities AS puri ON q.predicate = puri.id LEFT JOIN ");
-			cmd.Append(table);
-			//cmd.Append("_entities AS ouri ON q.objecttype=0 AND q.object = ouri.id LEFT JOIN ");
-			cmd.Append("_entities AS ouri ON q.object = ouri.id LEFT JOIN ");
-			cmd.Append(table);
-			cmd.Append("_entities AS muri ON q.meta = muri.id ");
-			if (!WhereClause(template, cmd)) return;
+			cmd.Append("_statements AS q");
+			if (SupportsUseIndex) {
+				// When selecting on mutliple resources at once, assume that it's faster
+				// to select for each resource, rather than based on another index (say,
+				// the predicate that the templates share).
+				if (templateSubject is MultiRes) cmd.Append(" USE INDEX(subject_index)");
+				if (templatePredicate is MultiRes) cmd.Append(" USE INDEX(predicate_index)");
+				if (templateObject is MultiRes) cmd.Append(" USE INDEX(object_index)");
+				if (templateMeta is MultiRes) cmd.Append(" USE INDEX(meta_index)");
+			}
+			
+			if (partialFilter.Object) {
+				cmd.Append(" LEFT JOIN ");
+				cmd.Append(table);
+				//cmd.Append("_literals AS lit ON q.objecttype=1 AND q.object=lit.id LEFT JOIN ");
+				cmd.Append("_literals AS lit ON q.object=lit.id");
+			}
+			if (partialFilter.Subject) {
+				cmd.Append(" LEFT JOIN ");
+				cmd.Append(table);
+				cmd.Append("_entities AS suri ON q.subject = suri.id");
+			}
+			if (partialFilter.Predicate) {
+				cmd.Append(" LEFT JOIN ");
+				cmd.Append(table);
+				cmd.Append("_entities AS puri ON q.predicate = puri.id");
+			}
+			if (partialFilter.Object) {
+				cmd.Append(" LEFT JOIN ");
+				cmd.Append(table);
+				//cmd.Append("_entities AS ouri ON q.objecttype=0 AND q.object = ouri.id LEFT JOIN ");
+				cmd.Append("_entities AS ouri ON q.object = ouri.id");
+			}
+			if (partialFilter.Meta) {
+				cmd.Append(" LEFT JOIN ");
+				cmd.Append(table);
+				cmd.Append("_entities AS muri ON q.meta = muri.id");
+			}
+			cmd.Append(' ');
+			if (!WhereClause(templateSubject, templatePredicate, templateObject, templateMeta, cmd)) return;
 			cmd.Append(";");
 			
-			Select2(cmd.ToString(), template, partialFilter2, limitOne, result);
-		}
-		
-		private void Select2(string cmd, Statement template, SelectPartialFilter partialFilter, bool limitOne, StatementSink result) {
-			// Run the query
-			
 			if (limitOne)
-				cmd += " LIMIT 1";
+				cmd.Append(" LIMIT 1");
 			
 			if (Debug || false) {
-				string cmd2 = cmd;
+				string cmd2 = cmd.ToString();
 				//if (cmd2.Length > 80) cmd2 = cmd2.Substring(0, 80);
 				Console.Error.WriteLine(cmd2);
 			}
 			
-			IDataReader reader = RunReader(cmd);
+			IDataReader reader = RunReader(cmd.ToString());
 			
 			Hashtable entMap = new Hashtable();
 			
@@ -785,19 +801,19 @@ namespace SemWeb.Stores {
 					if (partialFilter.Meta) { mid = AsInt(reader[col++]); muri = AsString(reader[col++]); }
 					
 					string lv = null, ll = null, ld = null;
-					if (ot == 1) {
+					if (ot == 1 && partialFilter.Object) {
 						lv = AsString(reader[col++]);
 						ll = AsString(reader[col++]);
 						ld = AsString(reader[col++]);
 					}
 					
 					bool ret = result.Add(new Statement(
-						!partialFilter.Subject ? template.Subject : MakeEntity(sid, suri, entMap),
-						!partialFilter.Predicate ? template.Predicate : MakeEntity(pid, puri, entMap),
-						!partialFilter.Object ? template.Object : 
+						!partialFilter.Subject ? (Entity)templateSubject : MakeEntity(sid, suri, entMap),
+						!partialFilter.Predicate ? (Entity)templatePredicate : MakeEntity(pid, puri, entMap),
+						!partialFilter.Object ? templateObject : 
 							(ot == 0 ? (Resource)MakeEntity(oid, ouri, entMap)
 								     : (Resource)new Literal(lv, ll, ld)),
-						(!partialFilter.Meta || mid == 0) ? template.Meta : MakeEntity(mid, muri, entMap)
+						(!partialFilter.Meta || mid == 0) ? (Entity)templateMeta : MakeEntity(mid, muri, entMap)
 						));
 					if (!ret) break;
 

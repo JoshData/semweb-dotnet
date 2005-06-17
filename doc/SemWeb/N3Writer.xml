@@ -32,7 +32,7 @@
         <param name="file">The path to a file where the statements will be stored, or "-" to output to Console.Out.</param>
         <param name="ns">A NamespaceManager containing a mapping from prefixes to namespace URIs.</param>
         <summary>Creates an N3Writer that outputs statements to a file, using a list of namespace prefixes.</summary>
-        <remarks>A "@prefix" directive is written for each prefix in the NamespaceManager, if <see cref="P:SemWeb.N3Writer.NTriples" /> is <see langword="false" />, which is the default. The NamespaceManager should not be modified once statements have been written.</remarks>
+        <remarks>A "@prefix" directive is written for each prefix in the NamespaceManager, and other N3 syntactic constructs are used, if <see cref="P:SemWeb.N3Writer.Format" /> is Notation3, which is the default. The NamespaceManager should not be modified once statements have been written.</remarks>
       </Docs>
     </Member>
     <Member MemberName=".ctor">
@@ -58,22 +58,10 @@
         <param name="writer">The TextWriter to which statements will be written.</param>
         <param name="ns">A NamespaceManager containing a mapping from prefixes to namespace URIs.</param>
         <summary>Creates an N3Writer that outputs statements to a TextWriter, using a list of namespace prefixes.</summary>
-        <remarks>A "@prefix" directive is written for each prefix in the NamespaceManager, if <see cref="P:SemWeb.N3Writer.NTriples" /> is <see langword="false" />, which is the default. The NamespaceManager should not be modified once statements have been written.</remarks>
+        <remarks>A "@prefix" directive is written for each prefix in the NamespaceManager, and other N3 syntactic constructs are used, if <see cref="P:SemWeb.N3Writer.Format" /> is Notation3, which is the default. The NamespaceManager should not be modified once statements have been written.</remarks>
       </Docs>
     </Member>
   
-  <Member MemberName="NTriples">
-      <MemberSignature Language="C#" Value="public bool NTriples { set; get; };" />
-      <MemberType>Property</MemberType>
-      <ReturnValue>
-        <ReturnType>System.Boolean</ReturnType>
-      </ReturnValue>
-      <Docs>
-        <summary>Gets or sets whether the writer will output strict NTriples, or full N3.</summary>
-        <value>True if the write will output strict NTriples, false to output full N3.</value>
-        <remarks>The default value is <see langword="false" />.</remarks>
-      </Docs>
-    </Member>
   <Member MemberName="Escape">
       <MemberSignature Language="C#" Value="public static string Escape (string str);" />
       <MemberType>Method</MemberType>
@@ -90,9 +78,21 @@
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
+  <Member MemberName="Format">
+      <MemberSignature Language="C#" Value="public SemWeb.N3Writer+Formats Format { set; get; };" />
+      <MemberType>Property</MemberType>
+      <ReturnValue>
+        <ReturnType>SemWeb.N3Writer+Formats</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+        <value>To be added.</value>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
   </Members>
   <Docs>
-    <summary>Writes out RDF statements to a stream in Notation 3 or NTriples format.</summary>
+    <summary>Writes out RDF statements to a stream in Notation 3, Turtle, or NTriples format.</summary>
     <remarks>None.</remarks>
   </Docs>
 </Type>

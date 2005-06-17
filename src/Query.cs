@@ -96,13 +96,15 @@ namespace SemWeb.Query {
 			public bool NoSelect;
 			public int Depth;
 			
-			public Set Alternatives;
+			public Set KnownValues;
 			
 			public bool ValueNotImportant {
 				get {
 					return Variable.Uri == null && Children.Count == 0;
 				}
 			}
+			
+			public bool NoSelectLeaf { get { return NoSelect && Children.Count == 0; } }
 			
 			public bool Sees(VariableNode dependency) {
 				if (this == dependency) return true;
@@ -480,7 +482,7 @@ namespace SemWeb.Query {
 			} while (currentNode.Parent != currentNode);
 			return false;
 		}
-		
+
 		private Resource GetBinding(Resource ent, VariableNode currentNode, bool reqEntity, SearchState state) {
 			if (!(ent is Entity)) {
 				if (reqEntity) return null;
@@ -537,6 +539,11 @@ namespace SemWeb.Query {
 		
 		private bool Recurse(SearchState state, VariableNode node, out bool emittedBinding) {
 			Set resources = null;
+			Hashtable futureValues = new Hashtable();
+						
+			if (node.KnownValues != null) {
+				resources = node.KnownValues;
+			} else {
 			
 			ArrayList initialFilters = new ArrayList();
 			foreach (Statement s in predicateInitialFilters[node.BindingIndex]) {
@@ -588,14 +595,18 @@ namespace SemWeb.Query {
 					if (nullCount == 3)
 						continue;
 						
-					// Sometimes we might want to restrict the number of possible
-					// resources for this variable by testing this statement,
-					// even though one of its parts is for a later variable.
-					// But we won't do this now.
-					if (nullCount == 2)
-						continue;
 					
-					if (nullCount >= 2) {
+					if (nullCount == 2) {
+						// If this references a later SelectFirst variable, then do the select
+						// here for all of the possible resources.
+						VariableNode sv = (VariableNode)variableHash[s.Subject];
+						VariableNode pv = (VariableNode)variableHash[s.Predicate];
+						VariableNode ov = (VariableNode)variableHash[s.Object];
+						if (sv != null) if (sv == node || sv.BindingIndex <= node.BindingIndex || !sv.NoSelectLeaf) sv = null;
+						if (pv != null) if (pv == node || pv.BindingIndex <= node.BindingIndex || !pv.NoSelectLeaf) pv = null;
+						if (ov != null) if (ov == node || ov.BindingIndex <= node.BindingIndex || !ov.NoSelectLeaf) ov = null;
+						if (sv == null && pv == null && ov == null) continue;
+						
 						// Run a combined select on all of the potential resources.
 						ArrayList queries = new ArrayList();
 						foreach (Resource r in resources.Items()) {
@@ -608,18 +619,9 @@ namespace SemWeb.Query {
 							
 							queries.Add(q2);
 						}
-						
-						SelectPartialFilter selectFilter = new SelectPartialFilter(
-							spo == 0 ? true : false,
-							spo == 1 ? true : false,
-							spo == 2 ? true : false,
-							false);
-							
-						if (predicateFilters[node.BindingIndex].Count == 1 && node.NoSelect)
-							selectFilter.SelectFirst = true;
-	
+
 						Set resources2 = new Set();
-						state.target.Select((Statement[])queries.ToArray(typeof(Statement)), selectFilter, new PutInSet(spo, resources2));
+						state.target.Select((Statement[])queries.ToArray(typeof(Statement)), new PutInSet(spo, resources2, futureValues, sv, pv, ov));
 						
 						resources = resources2;
 						
@@ -647,8 +649,8 @@ namespace SemWeb.Query {
 				resources.Add(new Entity((string)null));
 			}
 			
-			node.Alternatives = resources;
-			
+			} // KNOWN VALUES
+
 			emittedBinding = false;
 			
 			if (node.Children.Count == 0) {
@@ -669,9 +671,13 @@ namespace SemWeb.Query {
 				foreach (Resource r in resources.Items()) {
 					state.bindings[node.BindingIndex].Target = r;
 					
+					SetFutureValues(futureValues, r, true);
+					
 					bool eb;
 					if (Recurse(state, child, out eb)) return true;
 					emittedBinding |= eb;
+
+					SetFutureValues(futureValues, r, false);
 					
 					if (node.NoSelect && eb) break; // report only one binding for non-selective variables
 				}
@@ -714,8 +720,12 @@ namespace SemWeb.Query {
 							filteredOut[r] = true; // requires no more processing later
 						}
 						
+						SetFutureValues(futureValues, (Resource)resourceItems[r], true);
+						
 						bool eb;
 						if (Recurse(state, child, out eb)) return true;
+
+						SetFutureValues(futureValues, (Resource)resourceItems[r], false);
 						
 						if (state.sink == oldsink) {
 							emittedBinding |= eb;
@@ -775,6 +785,20 @@ namespace SemWeb.Query {
 			}
 			
 			return false;
+		}
+		
+		private void SetFutureValues(Hashtable futureValues, Resource r, bool set) {
+			Hashtable h = (Hashtable)futureValues[r];
+			if (h == null) return;
+			
+			foreach (VariableNode n in h.Keys) {
+				if (set) {
+					n.KnownValues = new Set();
+					n.KnownValues.Add((Resource)h[n]);
+				} else {
+					n.KnownValues = null;
+				}
+			}
 		}
 		
 		private ArrayList SymmetricSelect(Entity e, Entity p, Store model) {
@@ -874,15 +898,37 @@ namespace SemWeb.Query {
 		private class PutInSet : StatementSink {
 			int spo;
 			Set sink;
+			Hashtable remember;
+			VariableNode sv, pv, ov;
 			
 			public PutInSet(int spo, Set sink) {
 				this.spo = spo; this.sink = sink;
 			}
+			public PutInSet(int spo, Set sink, Hashtable remember, VariableNode sv, VariableNode pv, VariableNode ov) : this(spo, sink) {
+				this.remember = remember;
+				this.sv = sv;
+				this.pv = pv;
+				this.ov = ov;
+			}
 
 			public bool Add(Statement statement) {
-				if (spo == 0) sink.Add(statement.Subject);
-				else if (spo == 1) sink.Add(statement.Predicate);
-				else sink.Add(statement.Object);
+				Resource r;
+				if (spo == 0) r = statement.Subject;
+				else if (spo == 1) r = statement.Predicate;
+				else r = statement.Object;
+				sink.Add(r);
+				
+				if (remember != null) {
+					Hashtable rh = (Hashtable)remember[r];
+					if (rh == null) {
+						rh = new Hashtable();
+						remember[r] = rh;
+					}					
+					
+					if (sv != null) rh[sv] = statement.Subject;
+					if (pv != null) rh[pv] = statement.Predicate;
+					if (ov != null) rh[ov] = statement.Object;
+				}
 				return true;
 			}
 		}

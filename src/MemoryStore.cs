@@ -11,6 +11,7 @@ namespace SemWeb {
 		Hashtable statementsAboutObject = new Hashtable();
 		
 		bool isIndexed = false;
+		internal bool allowIndexing = true;
 		
 		public MemoryStore() {
 		}
@@ -46,8 +47,8 @@ namespace SemWeb {
 			if (statement.AnyNull) throw new ArgumentNullException();
 			statements.Add(statement);
 			if (isIndexed) {
-				if (statement.Subject != null) GetIndexArray(statementsAboutSubject, statement.Subject).Add(statement);
-				if (statement.Object != null) GetIndexArray(statementsAboutObject, statement.Object).Add(statement);
+				GetIndexArray(statementsAboutSubject, statement.Subject).Add(statement);
+				GetIndexArray(statementsAboutObject, statement.Object).Add(statement);
 			}
 		}
 		
@@ -60,10 +61,23 @@ namespace SemWeb {
 		}
 		
 		public override void Remove(Statement statement) {
-			statements.Remove(statement);
-			if (isIndexed) {
-				if (statement.Subject != null) GetIndexArray(statementsAboutSubject, statement.Subject).Remove(statement);
-				if (statement.Object != null) GetIndexArray(statementsAboutObject, statement.Object).Remove(statement);
+			if (statement.AnyNull) {
+				for (int i = 0; i < statements.Count; i++) {
+					Statement s = (Statement)statements[i];
+					if (statement.Matches(s)) {
+						statements.RemoveAt(i); i--;
+						if (isIndexed) {
+							GetIndexArray(statementsAboutSubject, s.Subject).Remove(s);
+							GetIndexArray(statementsAboutObject, s.Object).Remove(s);
+						}
+					}
+				}
+			} else {
+				statements.Remove(statement);
+				if (isIndexed) {
+					GetIndexArray(statementsAboutSubject, statement.Subject).Remove(statement);
+					GetIndexArray(statementsAboutObject, statement.Object).Remove(statement);
+				}
 			}
 		}
 		
@@ -96,13 +110,11 @@ namespace SemWeb {
 			// The first time select is called, turn indexing on for the store.
 			// TODO: Perform this index in a background thread if there are a lot
 			// of statements.
-			if (!isIndexed) {
+			if (!isIndexed && allowIndexing) {
 				isIndexed = true;
 				foreach (Statement statement in statements) {
-					if (statement.Subject != null)
-						GetIndexArray(statementsAboutSubject, statement.Subject).Add(statement);
-					if (statement.Object != null)
-						GetIndexArray(statementsAboutObject, statement.Object).Add(statement);
+					GetIndexArray(statementsAboutSubject, statement.Subject).Add(statement);
+					GetIndexArray(statementsAboutObject, statement.Object).Add(statement);
 				}
 			}
 			

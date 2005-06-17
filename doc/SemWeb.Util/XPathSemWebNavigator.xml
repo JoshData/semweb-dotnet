@@ -25,6 +25,20 @@
         <remarks>None.</remarks>
       </Docs>
     </Member>
+  <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public XPathSemWebNavigator (SemWeb.Store model, SemWeb.NamespaceManager namespaces);" />
+      <MemberType>Constructor</MemberType>
+      <Parameters>
+        <Parameter Name="model" Type="SemWeb.Store" />
+        <Parameter Name="namespaces" Type="SemWeb.NamespaceManager" />
+      </Parameters>
+      <Docs>
+        <param name="model">To be added.</param>
+        <param name="namespaces">To be added.</param>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
   </Members>
   <Docs>
     <summary>Allows XPath expressions to be evaluated in an RDF model.</summary>

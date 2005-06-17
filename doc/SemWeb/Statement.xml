@@ -153,6 +153,22 @@
         <remarks>The use of this property is up to the application.</remarks>
       </Docs>
     </Member>
+  <Member MemberName="Matches">
+      <MemberSignature Language="C#" Value="public bool Matches (SemWeb.Statement statement);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Boolean</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="statement" Type="SemWeb.Statement" />
+      </Parameters>
+      <Docs>
+        <param name="statement">To be added.</param>
+        <summary>To be added.</summary>
+        <returns>To be added.</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
   </Members>
   <Docs>
     <summary>A statement, comprising a subject, predicate, and object.</summary>

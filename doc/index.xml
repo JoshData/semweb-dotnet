@@ -24,6 +24,7 @@
       <Type Name="RdfXmlReader" />
       <Type Name="RdfXmlWriter" />
       <Type Name="StatementSource" />
+      <Type Name="N3Writer+Formats" />
     </Namespace>
     <Namespace Name="SemWeb.Query">
       <Type Name="QueryException" />

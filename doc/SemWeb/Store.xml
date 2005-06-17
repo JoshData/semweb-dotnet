@@ -349,16 +349,18 @@
     </Member>
   
   <Member MemberName="Replace">
-      <MemberSignature Language="C#" Value="public abstract void Replace (SemWeb.Entity a, SemWeb.Entity b);" />
+      <MemberSignature Language="C#" Value="public abstract void Replace (SemWeb.Entity find, SemWeb.Entity replacement);" />
       <MemberType>Method</MemberType>
       <ReturnValue>
         <ReturnType>System.Void</ReturnType>
       </ReturnValue>
       <Parameters>
-        <Parameter Name="a" Type="SemWeb.Entity" />
-        <Parameter Name="b" Type="SemWeb.Entity" />
+        <Parameter Name="find" Type="SemWeb.Entity" />
+        <Parameter Name="replacement" Type="SemWeb.Entity" />
       </Parameters>
       <Docs>
+        <param name="find">To be added.</param>
+        <param name="replacement">To be added.</param>
         <param name="a">The Entity to search for in the store.</param>
         <param name="b">The Entity to replace <paramref name="a" />.</param>
         <summary>Replaces all occurences of one Entity with another Entity.</summary>
@@ -556,6 +558,23 @@
       </Parameters>
       <Docs>
         <param name="result">To be added.</param>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+  <Member MemberName="Replace">
+      <MemberSignature Language="C#" Value="public abstract void Replace (SemWeb.Statement find, SemWeb.Statement replacement);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="find" Type="SemWeb.Statement" />
+        <Parameter Name="replacement" Type="SemWeb.Statement" />
+      </Parameters>
+      <Docs>
+        <param name="find">To be added.</param>
+        <param name="replacement">To be added.</param>
         <summary>To be added.</summary>
         <remarks>To be added.</remarks>
       </Docs>

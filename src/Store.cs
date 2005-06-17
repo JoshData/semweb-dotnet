@@ -151,7 +151,9 @@ namespace SemWeb {
 		
 		public virtual bool Contains(Statement statement) {
 			StatementExistsSink sink = new StatementExistsSink();
-			Select(statement, sink);
+			SelectPartialFilter filter = SelectPartialFilter.All;
+			filter.SelectFirst = true;
+			Select(statement, filter, sink);
 			return sink.Exists;
 		}
 		
@@ -177,6 +179,7 @@ namespace SemWeb {
 		
 		public MemoryStore Select(Statement template, SelectPartialFilter partialFilter) {
 			MemoryStore ms = new MemoryStore();
+			ms.allowIndexing = false;
 			Select(template, partialFilter, ms);
 			return ms;
 		}
