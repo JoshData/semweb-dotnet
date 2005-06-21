@@ -2,7 +2,7 @@
   <TypeSignature Language="C#" Value="public abstract class RdfWriter : SemWeb.StatementSink, System.IDisposable" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
-    <AssemblyVersion>0.9.0.0</AssemblyVersion>
+    <AssemblyVersion>0.5.0.1</AssemblyVersion>
   </AssemblyInfo>
   <Base>
     <BaseTypeName>System.Object</BaseTypeName>
@@ -55,11 +55,11 @@
         <Parameter Name="obj" Type="System.String" />
       </Parameters>
       <Docs>
-        <param name="subj">To be added.</param>
-        <param name="pred">To be added.</param>
-        <param name="obj">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
+        <param name="subj">The URI of the subject of the statement.</param>
+        <param name="pred">The URI of the predicate of the statement.</param>
+        <param name="obj">The URI of the object of the statement.</param>
+        <summary>Writes a statement with an entity object to the stream.</summary>
+        <remarks>In place of any of the URIs, a value returned by <see cref="M:SemWeb.RdfWriter.CreateAnonymousEntity()" /> can be used to indicate an anonymous node.</remarks>
       </Docs>
     </Member>
     <Member MemberName="WriteStatement">
@@ -74,11 +74,11 @@
         <Parameter Name="literal" Type="SemWeb.Literal" />
       </Parameters>
       <Docs>
-        <param name="subj">To be added.</param>
-        <param name="pred">To be added.</param>
-        <param name="literal">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
+        <param name="subj">The URI of the subject of the statement.</param>
+        <param name="pred">The URI of the predicate of the statement.</param>
+        <param name="literal">The object literal value.</param>
+        <summary>Writes a statement with a literal object to the stream.</summary>
+        <remarks>In place of either of the URIs, a value returned by <see cref="M:SemWeb.RdfWriter.CreateAnonymousEntity()" /> can be used to indicate an anonymous node.</remarks>
       </Docs>
     </Member>
     
@@ -129,10 +129,10 @@
         <Parameter Name="resource" Type="SemWeb.Resource" />
       </Parameters>
       <Docs>
-        <param name="resource">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
+        <param name="resource">A resource.</param>
+        <summary>See <see cref="M:SemWeb.Store.GetResourceKey(SemWeb.Resource)" />.</summary>
+        <returns>A resource key associated with the resource and this writer.</returns>
+        <remarks>See <see cref="M:SemWeb.Store.GetResourceKey(SemWeb.Resource)" />.</remarks>
       </Docs>
     </Member>
   <Member MemberName="SetResourceKey">
@@ -146,10 +146,10 @@
         <Parameter Name="value" Type="System.Object" />
       </Parameters>
       <Docs>
-        <param name="resource">To be added.</param>
-        <param name="value">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
+        <param name="resource">A resource.</param>
+        <param name="value">A key to associate with the resource and the writer.</param>
+        <summary>See <see cref="M:SemWeb.Store.SetResourceKey(SemWeb.Resource)" />.</summary>
+        <remarks>See <see cref="M:SemWeb.Store.SetResourceKey(SemWeb.Resource)" />.</remarks>
       </Docs>
     </Member>
   
@@ -161,9 +161,9 @@
       </ReturnValue>
       <Parameters />
       <Docs>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
+        <summary>Returns a string which can be used in place of a URI in WriteStatement to indicate an anonymous (blank) node.</summary>
+        <returns>A string to be used with <see cref="M:SemWeb.RdfWriter.WriteStatement(string,string,string)" /> or <see cref="M:SemWeb.RdfWriter.WriteStatement(string,string,SemWeb.Literal)" />.</returns>
+        <remarks>Call this method once for each anonymous node to be written to ths stream.</remarks>
       </Docs>
     </Member>
   </Members>

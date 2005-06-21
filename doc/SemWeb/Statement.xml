@@ -2,7 +2,7 @@
   <TypeSignature Language="C#" Value="public struct Statement" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
-    <AssemblyVersion>0.9.0.0</AssemblyVersion>
+    <AssemblyVersion>0.5.0.1</AssemblyVersion>
   </AssemblyInfo>
   <Base>
     <BaseTypeName>System.ValueType</BaseTypeName>
@@ -41,17 +41,6 @@
         <param name="meta">An entity with meta-information about the statement.  May be null.</param>
         <summary>Creates a new Statement with a meta entity.</summary>
         <remarks>None.</remarks>
-      </Docs>
-    </Member>
-    <Member MemberName="All">
-      <MemberSignature Language="C#" Value="public static readonly SemWeb.Statement All;" />
-      <MemberType>Field</MemberType>
-      <ReturnValue>
-        <ReturnType>SemWeb.Statement</ReturnType>
-      </ReturnValue>
-      <Docs>
-        <summary>A statement with null subject, predicate, object, and meta.</summary>
-        <remarks>This is useful for accessing all statements in a store with the <see cref="M:SemWeb.Store.Select(SemWeb.Statement,SemWeb.StatementSink)" /> method.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Invert">

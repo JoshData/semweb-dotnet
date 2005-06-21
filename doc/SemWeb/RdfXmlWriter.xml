@@ -2,7 +2,7 @@
   <TypeSignature Language="C#" Value="public class RdfXmlWriter : SemWeb.RdfWriter" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
-    <AssemblyVersion>0.9.0.0</AssemblyVersion>
+    <AssemblyVersion>0.5.0.1</AssemblyVersion>
   </AssemblyInfo>
   <Base>
     <BaseTypeName>SemWeb.RdfWriter</BaseTypeName>
@@ -17,7 +17,7 @@
       </Parameters>
       <Docs>
         <param name="file">To be added.</param>
-        <summary>To be added.</summary>
+        <summary>Creates an RDF/XML writer that writes to the named file.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -31,7 +31,7 @@
       <Docs>
         <param name="file">To be added.</param>
         <param name="ns">To be added.</param>
-        <summary>To be added.</summary>
+        <summary>Creates an RDF/XML writer that writes to the named file, with the given namespace declarations.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -43,7 +43,7 @@
       </Parameters>
       <Docs>
         <param name="writer">To be added.</param>
-        <summary>To be added.</summary>
+        <summary>Creates an RDF/XML writer that writes to the given TextWriter.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -57,7 +57,7 @@
       <Docs>
         <param name="writer">To be added.</param>
         <param name="ns">To be added.</param>
-        <summary>To be added.</summary>
+        <summary>Creates an RDF/XML writer that writes to the given TextWriter, with the given namespace declarations.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -69,7 +69,7 @@
       </Parameters>
       <Docs>
         <param name="writer">To be added.</param>
-        <summary>To be added.</summary>
+        <summary>Creates an RDF/XML writer that writes to the given XmlWriter.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -83,13 +83,17 @@
       <Docs>
         <param name="writer">To be added.</param>
         <param name="ns">To be added.</param>
-        <summary>To be added.</summary>
+        <summary>Creates an RDF/XML writer that writes to the given XmlWriter, with the given namespace declarations.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>
   <Docs>
     <summary>To be added.</summary>
-    <remarks>To be added.</remarks>
+    <remarks>
+      <para>The RdfXmlWriter buffers the entire output document in memory, before writing the document to the stream when Close is called.</para>
+
+<para>The namespaces used in the output data must be registered with the NamespaceManager in the <see cref="P:SemWeb.RdfWriter.Namespaces" /> property before the first call to Add or WriteStatement.  Failure to do so may prevent the document from being written to the stream, as not all URIs can be automatically converted into an XML qualified name.</para>
+</remarks>
   </Docs>
 </Type>

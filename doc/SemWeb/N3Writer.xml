@@ -2,7 +2,7 @@
   <TypeSignature Language="C#" Value="public class N3Writer : SemWeb.RdfWriter" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
-    <AssemblyVersion>0.9.0.0</AssemblyVersion>
+    <AssemblyVersion>0.5.0.1</AssemblyVersion>
   </AssemblyInfo>
   <Base>
     <BaseTypeName>SemWeb.RdfWriter</BaseTypeName>
@@ -62,22 +62,7 @@
       </Docs>
     </Member>
   
-  <Member MemberName="Escape">
-      <MemberSignature Language="C#" Value="public static string Escape (string str);" />
-      <MemberType>Method</MemberType>
-      <ReturnValue>
-        <ReturnType>System.String</ReturnType>
-      </ReturnValue>
-      <Parameters>
-        <Parameter Name="str" Type="System.String" />
-      </Parameters>
-      <Docs>
-        <param name="str">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
-      </Docs>
-    </Member>
+  
   <Member MemberName="Format">
       <MemberSignature Language="C#" Value="public SemWeb.N3Writer+Formats Format { set; get; };" />
       <MemberType>Property</MemberType>
@@ -85,14 +70,14 @@
         <ReturnType>SemWeb.N3Writer+Formats</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
+        <summary>Sets the format for output to Notation3, Turtle, or NTriples.</summary>
+        <value>A value from <see cref="T:SemWeb.N3Writer+Formats" /> that specifies the output format.</value>
+        <remarks>The default format is Turtle.</remarks>
       </Docs>
     </Member>
   </Members>
   <Docs>
-    <summary>Writes out RDF statements to a stream in Notation 3, Turtle, or NTriples format.</summary>
+    <summary>Writes out RDF statements to a stream in Notation 3, Turtle (the default), or NTriples format.</summary>
     <remarks>None.</remarks>
   </Docs>
 </Type>

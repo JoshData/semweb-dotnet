@@ -2,7 +2,7 @@
   <TypeSignature Language="C#" Value="public abstract class Store : SemWeb.StatementSink, SemWeb.StatementSource" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
-    <AssemblyVersion>0.9.0.0</AssemblyVersion>
+    <AssemblyVersion>0.5.0.1</AssemblyVersion>
   </AssemblyInfo>
   <Base>
     <BaseTypeName>System.Object</BaseTypeName>
@@ -359,10 +359,8 @@
         <Parameter Name="replacement" Type="SemWeb.Entity" />
       </Parameters>
       <Docs>
-        <param name="find">To be added.</param>
-        <param name="replacement">To be added.</param>
-        <param name="a">The Entity to search for in the store.</param>
-        <param name="b">The Entity to replace <paramref name="a" />.</param>
+        <param name="find">The Entity to search for in the store.</param>
+        <param name="replacement">The Entity to replace <paramref name="a" />.</param>
         <summary>Replaces all occurences of one Entity with another Entity.</summary>
         <remarks>All occurences of <paramref name="a" /> in statements in the store are replaced with references to <paramref name="b" />.</remarks>
       </Docs>
@@ -408,8 +406,8 @@
     <description>A <see cref="T:SemWeb.RdfXmlReader" /> to read the RDF/XML file.</description>
   </item>
   <item>
-    <term>n3:[filename]</term>
-    <description>A <see cref="T:SemWeb.N3Reader" /> to read the N3 file.</description>
+    <term><para>n3:[filename]</para><para>turtle:[filename]</para><para>nt:[filename]</para><para>ntriples:[filename]</para></term>
+    <description>A <see cref="T:SemWeb.N3Reader" /> to read the N3/Turtle/NTriples file.</description>
   </item>
   <item>
     <term>sqlite:[table]:[connection string]</term>
@@ -454,8 +452,8 @@
     <description>A <see cref="T:SemWeb.RdfXmlWriter" /> opened on the given file.</description>
   </item>
   <item>
-    <term>n3:[filename]</term>
-    <description>A <see cref="T:SemWeb.N3Writer" /> opened on the given file.</description>
+    <term><para>n3:[filename]</para><para>turtle:[filename]</para><para>nt:[filename]</para><para>ntriples:[filename]</para></term>
+    <description>A <see cref="T:SemWeb.N3Writer" /> opened on the given file, writing in the indicated format.</description>
   </item>
   <item>
     <term>sql:[table]</term>
@@ -520,17 +518,7 @@
 </block></remarks>
       </Docs>
     </Member>
-  <Member MemberName="FindVariable">
-      <MemberSignature Language="C#" Value="public static readonly SemWeb.Entity FindVariable;" />
-      <MemberType>Field</MemberType>
-      <ReturnValue>
-        <ReturnType>SemWeb.Entity</ReturnType>
-      </ReturnValue>
-      <Docs>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
-      </Docs>
-    </Member>
+  
   <Member MemberName="FindEntities">
       <MemberSignature Language="C#" Value="public abstract SemWeb.Entity[] FindEntities (SemWeb.Statement[] filters);" />
       <MemberType>Method</MemberType>
@@ -557,9 +545,9 @@
         <Parameter Name="result" Type="SemWeb.StatementSink" />
       </Parameters>
       <Docs>
-        <param name="result">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
+        <param name="result">The destination for the statements in this store.</param>
+        <summary>Streams all statements in this store into a StatementSink.</summary>
+        <remarks>The <see cref="M:SemWeb.StatementSink.Add(SemWeb.Statement)" /> method is called on <paramref name="result" /> for each statement in this store.</remarks>
       </Docs>
     </Member>
   <Member MemberName="Replace">
@@ -573,10 +561,10 @@
         <Parameter Name="replacement" Type="SemWeb.Statement" />
       </Parameters>
       <Docs>
-        <param name="find">To be added.</param>
-        <param name="replacement">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
+        <param name="find">The statement to find.  This parameter must be a complete statement (with subject, predicate, and object non-null), not a template.</param>
+        <param name="replacement">The statement that will replace the first statement.</param>
+        <summary>Replaces a single statement with another statement.</summary>
+        <remarks>Store implementations may choose to optimize this method over a call to Remove followed by Add.</remarks>
       </Docs>
     </Member>
   </Members>

@@ -2,7 +2,7 @@
   <TypeSignature Language="C#" Value="public interface StatementSource" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
-    <AssemblyVersion>0.9.0.0</AssemblyVersion>
+    <AssemblyVersion>0.5.0.1</AssemblyVersion>
   </AssemblyInfo>
   <Interfaces />
   <Members>
@@ -16,14 +16,14 @@
         <Parameter Name="sink" Type="SemWeb.StatementSink" />
       </Parameters>
       <Docs>
-        <param name="sink">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
+        <param name="sink">The destination for statements.</param>
+        <summary>Called to stream the statements in the source into a StatementSink.</summary>
+        <remarks>The <see cref="M:SemWeb.StatementSink.Add(SemWeb.Statement)" /> method is called on <paramref name="sink" /> for each statement in this StatementSource.</remarks>
       </Docs>
     </Member>
   </Members>
   <Docs>
-    <summary>To be added.</summary>
-    <remarks>To be added.</remarks>
+    <summary>A StatementSource is a source of statements, such as a RdfReader or a Store.</summary>
+    <remarks>Access to the statements in this source is provided through calling Select.</remarks>
   </Docs>
 </Type>
