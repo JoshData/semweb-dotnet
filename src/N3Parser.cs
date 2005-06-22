@@ -19,7 +19,7 @@ namespace SemWeb {
 		Entity entRDFFIRST = "http://www.w3.org/1999/02/22-rdf-syntax-ns#first";
 		Entity entRDFREST = "http://www.w3.org/1999/02/22-rdf-syntax-ns#rest";
 		Entity entRDFNIL = "http://www.w3.org/1999/02/22-rdf-syntax-ns#nil";
-		Entity entOWLSAMEAS = "http://www.w3.org/2002/07/owl#sameAs";
+		//Entity entOWLSAMEAS = "http://www.w3.org/2002/07/owl#sameAs";
 		Entity entDAMLEQUIV = "http://www.daml.org/2000/12/daml+oil#equivalentTo";
 		Entity entLOGIMPLIES = "http://www.w3.org/2000/10/swap/log#implies";
 		
@@ -48,7 +48,7 @@ namespace SemWeb {
 		public override void Select(StatementSink store) {
 			ParseContext context = new ParseContext();
 			context.source = new MyReader(sourcestream);
-			context.store = store;
+			context.store = GetDupCheckSink(store);
 			context.namespaces = namespaces;
 			context.namedNode = new UriMap();
 			context.anonymous = new Hashtable();

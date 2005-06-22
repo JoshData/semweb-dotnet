@@ -1,4 +1,4 @@
-VERSION=0.5
+VERSION=0.501
 
 all: bin/SemWeb.dll bin/SemWeb.MySQLStore.dll bin/SemWeb.SqliteStore.dll bin/SemWeb.dll bin/rdfstorage.exe bin/rdfquery.exe bin/rdfs2cs.exe bin/runtests.exe bin/rdfxsltproc.exe bin/rdfbind.exe
 	

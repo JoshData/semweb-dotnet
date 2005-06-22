@@ -116,11 +116,6 @@ namespace SemWeb {
 			return ((Resource)other).Uri != null && ((Resource)other).Uri == Uri;
 		}
 
-		private bool Equals(string other) {
-			if (Uri == null || other == null) return false;
-			return other == Uri;
-		}
-
 		public static bool operator ==(Entity a, Entity b) {
 			if (a == null && b == null) return true;
 			if (a == null || b == null) return false;

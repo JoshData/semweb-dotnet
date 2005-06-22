@@ -328,13 +328,13 @@ namespace SemWeb.Reasoning {
 		private class TransitiveFilter : StatementSink {
 			Store source;
 			StatementSink sink;
-			Entity subject, start, predicate;
+			Entity subject, predicate;
 			bool inverse, checkSymmetric;
 			Hashtable seen = new Hashtable();
 			ArrayList newobjects = new ArrayList();
 			
 			public TransitiveFilter(Store source, StatementSink sink, Entity subject, Entity start, Entity predicate, bool inverse) {
-				this.source = source; this.sink = sink; this.subject = subject; this.start = start; this.predicate = predicate;
+				this.source = source; this.sink = sink; this.subject = subject; this.predicate = predicate;
 				
 				seen[start] = seen;
 				newobjects.Add(start);				

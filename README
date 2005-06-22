@@ -14,5 +14,13 @@ The license basically means you can copy, distribute and
 modify this package however you like, but you need to
 give me due credit.  I think that's fair.
 
-For more informatin, open the README.xhtml file in a
+For more information, open the README.xhtml file in a
 web browser.
+
+Build instructions:
+
+Run make if you're in Linux.  Otherwise, to build SemWeb.dll,
+throw all of the .cs files in the src directory into a
+VisualStudio project and compile.  Each .cs file in the
+src.misc directory should be compiled into its own
+assembly.

@@ -6,7 +6,6 @@ namespace SemWeb {
 	public abstract class RdfWriter : IDisposable, StatementSink {
 		string baseuri;
 		bool closed;
-		Entity currentMeta;
 		
 		public abstract NamespaceManager Namespaces { get; }
 		

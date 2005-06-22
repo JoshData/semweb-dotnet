@@ -54,6 +54,7 @@ namespace SemWeb {
 			// Otherwise, the document element is itself a
 			// description.
 			
+			storage = GetDupCheckSink(storage);
 			this.storage = storage;
 									
 			while (xml.Read()) {

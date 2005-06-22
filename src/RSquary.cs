@@ -222,11 +222,11 @@ namespace SemWeb.Query {
 			}
 			
 			output.Write("INSERT INTO " + table + " VALUES (");
-			bool first = true;
+			bool firstx = true;
 			foreach (VariableBinding var in result) {
 				if (var.Variable.Uri == null) continue;
 				
-				if (!first)  { output.Write(", "); } first = false;
+				if (!firstx)  { output.Write(", "); } firstx = false;
 				if (var.Target is Literal)
 					output.Write(Escape(((Literal)var.Target).Value));
 				else if (var.Target.Uri != null)

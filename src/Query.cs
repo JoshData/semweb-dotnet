@@ -803,14 +803,7 @@ namespace SemWeb.Query {
 					n.KnownValues = null;
 				}
 			}
-		}
-		
-		private ArrayList SymmetricSelect(Entity e, Entity p, Store model) {
-			ArrayList ret = new ArrayList();
-			model.Select(new Statement(e, p, null), new PutInArraySink(2, ret));
-			model.Select(new Statement(null, p, e), new PutInArraySink(0, ret));
-			return ret;
-		}
+		}
 		
 		private class SelectCacheKey {
 			public Statement Q;

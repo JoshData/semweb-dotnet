@@ -406,7 +406,12 @@
     <description>A <see cref="T:SemWeb.RdfXmlReader" /> to read the RDF/XML file.</description>
   </item>
   <item>
-    <term><para>n3:[filename]</para><para>turtle:[filename]</para><para>nt:[filename]</para><para>ntriples:[filename]</para></term>
+    <term>
+                <para>n3:[filename]</para>
+                <para>turtle:[filename]</para>
+                <para>nt:[filename]</para>
+                <para>ntriples:[filename]</para>
+              </term>
     <description>A <see cref="T:SemWeb.N3Reader" /> to read the N3/Turtle/NTriples file.</description>
   </item>
   <item>
@@ -452,7 +457,12 @@
     <description>A <see cref="T:SemWeb.RdfXmlWriter" /> opened on the given file.</description>
   </item>
   <item>
-    <term><para>n3:[filename]</para><para>turtle:[filename]</para><para>nt:[filename]</para><para>ntriples:[filename]</para></term>
+    <term>
+                <para>n3:[filename]</para>
+                <para>turtle:[filename]</para>
+                <para>nt:[filename]</para>
+                <para>ntriples:[filename]</para>
+              </term>
     <description>A <see cref="T:SemWeb.N3Writer" /> opened on the given file, writing in the indicated format.</description>
   </item>
   <item>

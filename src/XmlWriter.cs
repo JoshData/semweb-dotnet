@@ -83,14 +83,14 @@ namespace SemWeb {
 			if (prev <= 0)
 				throw new InvalidOperationException("No namespace was registered and no prefix could be automatically generated for <" + uri + ">");
 			
-			string ns = uri.Substring(0, last+1);
+			string n = uri.Substring(0, last+1);
 			localname = uri.Substring(last+1);
 			
 			// TODO: Make sure the local name (here and anywhere in this
 			// class) is a valid XML name.
 			
-			if (Namespaces.GetPrefix(ns) != null) {
-				prefix = Namespaces.GetPrefix(ns);
+			if (Namespaces.GetPrefix(n) != null) {
+				prefix = Namespaces.GetPrefix(n);
 				return;
 			}
 			
@@ -109,8 +109,8 @@ namespace SemWeb {
 			}
 			
 			if (Namespaces.GetNamespace(prefix) == null) {
-				doc.DocumentElement.SetAttribute("xmlns:" + prefix, ns);
-				Namespaces.AddNamespace(ns, prefix);
+				doc.DocumentElement.SetAttribute("xmlns:" + prefix, n);
+				Namespaces.AddNamespace(n, prefix);
 				return;
 			}
 			
@@ -118,8 +118,8 @@ namespace SemWeb {
 			while (true) {
 				if (Namespaces.GetNamespace(prefix + ctr) == null) {
 					prefix += ctr;
-					doc.DocumentElement.SetAttribute("xmlns:" + prefix, ns);
-					Namespaces.AddNamespace(ns, prefix);
+					doc.DocumentElement.SetAttribute("xmlns:" + prefix, n);
+					Namespaces.AddNamespace(n, prefix);
 					return;
 				}
 				ctr++;

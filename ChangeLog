@@ -1,8 +1,11 @@
+2005-06-20 Version 0.501 Posted
+
+	Just lots of bugs fixed.
 	* New API to replace one statement with another statement in a store.
 	* New API to test whether a statement template matches a statement.
 	* The Resource class now has its == and != operators overloaded.
 	* Store.CreateForInput/Output now accepts 'ntriples' 'nt' and 'turtle'.
-	* Store.SelectSubjects API change.
+	* Store.SelectSubjects signature change.
 	* Select(Statement[]) for SQL stores works now.
 	* SQLLite has a bug in how they handle LEFT JOIN.  SQL store now
 	  works around this.
