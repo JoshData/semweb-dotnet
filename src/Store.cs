@@ -182,6 +182,17 @@ namespace SemWeb {
 			return ms;
 		}
 		
+		public MemoryStore Select(Statement[] templates) {
+			return Select(templates, SelectPartialFilter.All);
+		}
+		
+		public MemoryStore Select(Statement[] templates, SelectPartialFilter partialFilter) {
+			MemoryStore ms = new MemoryStore();
+			ms.allowIndexing = false;
+			Select(templates, partialFilter, ms);
+			return ms;
+		}
+		
 		public Resource[] SelectObjects(Entity subject, Entity predicate) {
 			Hashtable resources = new Hashtable();
 			foreach (Statement s in Select(new Statement(subject, predicate, null), new SelectPartialFilter(false, false, true, false)))
@@ -201,7 +212,53 @@ namespace SemWeb {
 		
 		public abstract void Replace(Statement find, Statement replacement);
 		
-		public abstract Entity[] FindEntities(Statement[] filters);
+		public virtual Entity[] FindEntities(Statement[] filters) {
+			Hashtable ents = new Hashtable();
+			Select(filters[0], new FindEntitiesSink(ents, spom(filters[0])));
+			for (int i = 1; i < filters.Length; i++) {
+				Hashtable ents2 = new Hashtable();
+				Select(filters[i], new FindEntitiesSink(ents2, spom(filters[i])));
+
+				Hashtable ents3 = new Hashtable();
+				if (ents.Count < ents2.Count) {
+					foreach (Entity r in ents.Keys)
+						if (ents2.ContainsKey(r))
+							ents3[r] = r;
+				} else {
+					foreach (Entity r in ents2.Keys)
+						if (ents.ContainsKey(r))
+							ents3[r] = r;
+				}
+				ents = ents3;
+			}
+			
+			ArrayList ret = new ArrayList();
+			ret.AddRange(ents.Keys);
+			return (Entity[])ret.ToArray(typeof(Entity));
+		}
+		
+		private int spom(Statement s) {
+			if (s.Subject == null) return 0;
+			if (s.Predicate == null) return 1;
+			if (s.Object == null) return 2;
+			if (s.Meta == null) return 3;
+			throw new InvalidOperationException("A statement did not have a null field.");
+		}
+		
+		private class FindEntitiesSink : StatementSink {
+			Hashtable ents;
+			int spom;
+			public FindEntitiesSink(Hashtable ents, int spom) { this.ents = ents; this.spom = spom; }
+			public bool Add(Statement s) {
+				Entity e = null;
+				if (spom == 0) e = s.Subject;
+				if (spom == 1) e = s.Predicate;
+				if (spom == 2) e = s.Object as Entity;
+				if (spom == 3) e = s.Meta;
+				if (e != null) ents[e] = ents;
+				return true;
+			}
+		}
 		
 		public void Write(RdfWriter writer) {
 			Select(new Statement(null,null,null), writer);

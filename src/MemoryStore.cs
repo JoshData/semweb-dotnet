@@ -52,14 +52,6 @@ namespace SemWeb {
 			}
 		}
 		
-		public override bool Contains(Statement statement) {
-			if (statement.AnyNull)
-				throw new ArgumentNullException();
-			StatementCounterSink sink = new StatementCounterSink();
-			Select(statement, sink);
-			return sink.StatementCount > 0;
-		}
-		
 		public override void Remove(Statement statement) {
 			if (statement.AnyNull) {
 				for (int i = 0; i < statements.Count; i++) {
