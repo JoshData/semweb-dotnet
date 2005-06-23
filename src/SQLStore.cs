@@ -55,6 +55,7 @@ namespace SemWeb.Stores {
 		
 		protected abstract bool SupportsInsertCombined { get; }
 		protected abstract bool SupportsUseIndex { get; }
+		protected virtual bool SupportsFastJoin { get { return true; } }
 		
 		protected abstract string CreateNullTest(string column);
 
@@ -977,6 +978,11 @@ namespace SemWeb.Stores {
 		}
 		
 		public override Entity[] FindEntities(Statement[] filters) {
+			if (filters.Length == 0) return new Entity[0];
+		
+			if (!SupportsFastJoin)
+				return base.FindEntities(filters);
+		
 			Init();
 			
 			string f1pos = is_spom(filters[0]);
