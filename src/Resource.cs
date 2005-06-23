@@ -31,8 +31,8 @@ namespace SemWeb {
 		}
 		
 		public static bool operator ==(Resource a, Resource b) {
-			if (a == null && b == null) return true;
-			if (a == null || b == null) return false;
+			if ((object)a == null && (object)b == null) return true;
+			if ((object)a == null || (object)b == null) return false;
 			return a.Equals(b);
 		}
 		public static bool operator !=(Resource a, Resource b) {
@@ -117,8 +117,8 @@ namespace SemWeb {
 		}
 
 		public static bool operator ==(Entity a, Entity b) {
-			if (a == null && b == null) return true;
-			if (a == null || b == null) return false;
+			if ((object)a == null && (object)b == null) return true;
+			if ((object)a == null || (object)b == null) return false;
 			return a.Equals(b);
 		}
 		public static bool operator !=(Entity a, Entity b) {
