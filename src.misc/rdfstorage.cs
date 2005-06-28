@@ -13,7 +13,7 @@ using SemWeb;
 
 public class RDFStorage {
 	private class Opts : Mono.GetOptions.Options {
-		[Mono.GetOptions.Option("The {format} for the input files: xml, n3, or ntriples.")]
+		[Mono.GetOptions.Option("The {format} for the input files: xml, n3, or spec to use a full spec.")]
 		public string @in = "xml";
 
 		[Mono.GetOptions.Option("The destination {storage}.  Default is N3 to standard out.")]
@@ -106,11 +106,16 @@ public class RDFStorage {
 				
 					StatementFilterSink filter = new StatementFilterSink(storage);
 				
-					RdfReader parser = RdfReader.Create(format, infile);
-					parser.BaseUri = baseuri;
-					parser.Meta = meta;
-					parser.Select(filter);
-					parser.Dispose();
+					if (format != "spec") {
+						RdfReader parser = RdfReader.Create(format, infile);
+						parser.BaseUri = baseuri;
+						parser.Meta = meta;
+						parser.Select(filter);
+						parser.Dispose();
+					} else {
+						StatementSource src = Store.CreateForInput(infile);
+						src.Select(filter);
+					}
 					
 					stct += filter.StatementCount;
 					

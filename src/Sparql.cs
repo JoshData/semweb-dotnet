@@ -22,7 +22,7 @@ namespace SemWeb.Query {
 		bool selectdistinct = false;
 		bool selectall = false;
 		
-		Store graph = new MemoryStore(null);
+		MemoryStore graph = new MemoryStore();
 		
 		public SparqlParser(TextReader reader) {
 			this.reader = new MyReader(reader);
@@ -55,13 +55,13 @@ namespace SemWeb.Query {
 			QueryEngine query = new QueryEngine();
 			
 			foreach (string var in variables) {
-				if (selectvariables.Contains(var))
-					query.Select(new Entity(var));
-				else
-					query.SelectFirst(new Entity(var));
+				query.Select(new Entity(var));
 			}
 			
-			query.SetGraph(graph);
+			foreach (Statement s in graph)
+				query.AddFilter(s);
+			
+			//graph.Select(new N3Writer(Console.Out));
 			
 			return query;
 		}
@@ -98,8 +98,10 @@ namespace SemWeb.Query {
 			
 			StringBuilder b = new StringBuilder();
 			while (true) {
-				int c = reader.Read();
-				if (c == -1 || char.IsWhiteSpace((char)c)) break;
+				int c = reader.Peek();
+				if (c == -1 || char.IsWhiteSpace((char)c)
+					|| (!char.IsLetterOrDigit((char)c) && c != '?' && c != '$' && c != '-' && c != '_')) break;
+				c = reader.Read();
 				b.Append((char)c);
 			}
 			return b.ToString();
@@ -310,10 +312,11 @@ namespace SemWeb.Query {
 					string pred = ReadVarOrUri();
 					object obj = ReadLiteral();
 					
+					ReadWhitespace();
 					loc = reader.Location;
 					int close = reader.Read();
 					if (close != ')')
-						OnError("Expecting close parenthesis", loc);
+						OnError("Expecting close parenthesis: " + (char)close, loc);
 					
 					graph.Add( new Statement (
 						GetEntity(subj),
@@ -381,6 +384,7 @@ namespace SemWeb.Query {
 							ReadWhitespace();
 							loc = reader.Location;
 							int next = reader.Peek();
+							if (next == ',') { reader.Read(); continue; }
 							if (next != 'D' && next != '?' && next != '$' && next != '*')
 								break;
 							string var = ReadName();

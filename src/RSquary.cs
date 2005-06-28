@@ -13,10 +13,10 @@ namespace SemWeb.Query {
 		// TODO: Grouping and disjunctions
 		
 		public static Entity qSelect = "http://purl.oclc.org/NET/rsquary/select";
-		public static Entity qSelectFirst = "http://purl.oclc.org/NET/rsquary/selectfirst";
 		public static Entity qLimit = "http://purl.oclc.org/NET/rsquary/returnLimit";
 		public static Entity qStart = "http://purl.oclc.org/NET/rsquary/returnStart";
 		public static Entity qDistinctFrom = "http://purl.oclc.org/NET/rsquary/distinctFrom";
+		public static Entity qOptional = "http://purl.oclc.org/NET/rsquary/optional";
 		
 		public RSquary(Store queryModel, string queryUri) : this(queryModel, queryUri, null) {
 		}
@@ -28,14 +28,10 @@ namespace SemWeb.Query {
 			ReturnStart = GetIntOption(queryModel, query, qStart);
 			ReturnLimit = GetIntOption(queryModel, query, qLimit);
 
-			// Search the query for 'select' and 'selectfirst' predicates for variables.
+			// Search the query for 'select'
 			foreach (Resource r in queryModel.SelectObjects(query, qSelect)) {
 				if (!(r is Entity)) throw new QueryException("Query variables cannot be literals.");
 				Select((Entity)r);
-			}
-			foreach (Resource r in queryModel.SelectObjects(query, qSelectFirst)) {
-				if (!(r is Entity)) throw new QueryException("Query variables cannot be literals.");
-				SelectFirst((Entity)r);
 			}
 			
 			// Search the query for 'distinct' predicates between variables.
@@ -46,7 +42,6 @@ namespace SemWeb.Query {
 			
 			// Add all statements except the query predicates and value filters into a
 			// new store with just the statements relevant to the search.
-			Store matchModel = new MemoryStore();
 			foreach (Statement s in queryModel.Select(new Statement(null,null,null))) {
 				if (IsQueryPredicate(s.Predicate)) continue;
 				
@@ -58,13 +53,15 @@ namespace SemWeb.Query {
 					ValueFilter f = ValueFilter.GetValueFilter(s.Predicate, s.Object);
 					if (f != null) {
 						AddValueFilter(s.Subject, f);
+						continue;
 					}
 				}
 				
-				matchModel.Add(s);
+				if (s.Meta == null)
+					AddFilter(s);
+				else if (queryModel.Contains(new Statement(query, qOptional, s.Meta)))
+					AddOptionalFilter(s);
 			}
-			
-			SetGraph(matchModel);
 		}
 		
 		private int GetIntOption(Store queryModel, Entity query, Entity predicate) {
@@ -81,10 +78,10 @@ namespace SemWeb.Query {
 
 		private bool IsQueryPredicate(Entity e) {
 			if (e == qSelect) return true;
-			if (e == qSelectFirst) return true;
 			if (e == qDistinctFrom) return true;
 			if (e == qLimit) return true;
 			if (e == qStart) return true;
+			if (e == qOptional) return true;
 			return false;
 		}
 	}
@@ -94,7 +91,7 @@ namespace SemWeb.Query {
 		public override void Finished() { }
 		public override bool Add(VariableBinding[] result) {
 			foreach (VariableBinding var in result)
-				if (var.Variable.Uri != null)
+				if (var.Variable.Uri != null && var.Target != null)
 					Console.WriteLine(var.Variable + " ==> " + var.Target.ToString());
 			Console.WriteLine();
 			return true;
@@ -270,13 +267,19 @@ namespace SemWeb.Query {
 			output.WriteStartElement("head");
 		}
 		
+		string GetName(string uri) {
+			if (uri.StartsWith(variableNamespace))
+				uri = uri.Substring(variableNamespace.Length);
+			if (uri.StartsWith("?") || uri.StartsWith("$"))
+				uri = uri.Substring(1);
+			return uri;
+		}
+		
 		public override void Init(Entity[] variables) {
 			foreach (Entity var in variables) {
 				if (var.Uri == null) continue;
-				if (!var.Uri.StartsWith(variableNamespace))
-					throw new InvalidOperationException("The SparqlXmlQuerySink requires that all variables be within the URI given in the variableNamespace argument to SparqlXmlQuerySink's constructor."); 
 				output.WriteStartElement("variable");
-				output.WriteAttributeString("name", var.Uri.Substring(variableNamespace.Length));
+				output.WriteAttributeString("name", GetName(var.Uri));
 				output.WriteEndElement();
 			}
 			output.WriteEndElement(); // head
@@ -288,7 +291,7 @@ namespace SemWeb.Query {
 			foreach (VariableBinding var in result) {
 				if (var.Variable.Uri == null) continue;
 				
-				output.WriteStartElement(var.Variable.Uri.Substring(variableNamespace.Length));
+				output.WriteStartElement(GetName(var.Variable.Uri));
 				if (var.Target == null) {
 					output.WriteAttributeString("bound", "false");
 				} else if (var.Target.Uri != null) {

@@ -824,12 +824,14 @@ namespace SemWeb.Stores {
 			}
 		}
 		
+		/*
 		private string Escape(string str) {
 			if (str == null) return "NULL";
 			StringBuilder b = new StringBuilder();
 			EscapedAppend(b, str);
 			return b.ToString();
 		}
+		*/
 		
 		protected virtual void EscapedAppend(StringBuilder b, string str) {
 			b.Append('"');
@@ -1117,6 +1119,7 @@ namespace SemWeb.Stores {
 			}
 		}
 		
+		/*
 		private string RunScalarString(string sql) {
 			object ret = RunScalar(sql);
 			if (ret == null) return null;
@@ -1124,6 +1127,7 @@ namespace SemWeb.Stores {
 			if (ret is byte[]) return System.Text.Encoding.UTF8.GetString((byte[])ret);
 			throw new FormatException("SQL store returned a literal value as " + ret);
 		}
+		*/
 
 		protected virtual void CreateTable() {
 			foreach (string cmd in GetCreateTableCommands(table)) {

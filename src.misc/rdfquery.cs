@@ -18,7 +18,7 @@ public class RDFQuery {
 		public string @in = "xml";
 		
 		[Mono.GetOptions.Option("The {format} for variable binding output: simple, sql, or html")]
-		public string format = "simple";
+		public string format = "xml";
 		
 		[Mono.GetOptions.Option("Use RDFS reasoning.")]
 		public bool rdfs = false;
@@ -38,10 +38,9 @@ public class RDFQuery {
 			opts.DoHelp();
 			return;
 		}
-
-		RdfReader queryparser = RdfReader.Create(opts.@in, "-");
-		queryparser.BaseUri = "query://query/#";
 		
+		string baseuri = "query://query/#";
+
 		QueryResultSink qs;
 		if (opts.format == "simple")
 			qs = new PrintQuerySink();
@@ -52,18 +51,27 @@ public class RDFQuery {
 		else if (opts.format == "xml") {
 			System.Xml.XmlTextWriter w = new System.Xml.XmlTextWriter(Console.Out);
 			w.Formatting = System.Xml.Formatting.Indented;
-			qs = new SparqlXmlQuerySink(w, queryparser.BaseUri);
+			qs = new SparqlXmlQuerySink(w, baseuri);
 		} else {
 			Console.Error.WriteLine("Invalid output format.");
 			return;
 		}
 
-		RSquary query = new RSquary(new MemoryStore(queryparser), "query://query/#query");
+		QueryEngine query;
+		if (opts.@in != "sparql") {
+			RdfReader queryparser = RdfReader.Create(opts.@in, "-");
+			queryparser.BaseUri = baseuri;
 		
-		// Make sure the ?abc variables in N3 are considered variables.
-		foreach (Entity var in queryparser.Variables)
-			query.Select(var);
+			query = new RSquary(new MemoryStore(queryparser), baseuri);
 		
+			// Make sure the ?abc variables in N3 are considered variables.
+			foreach (Entity var in queryparser.Variables)
+				query.Select(var);
+		} else {
+			SparqlParser sparql = new SparqlParser(Console.In);
+			query = sparql.CreateQuery();
+		}
+
 		KnowledgeModel model = new KnowledgeModel();
 		foreach (string arg in opts.RemainingArguments) {
 			StatementSource source = Store.CreateForInput(arg);

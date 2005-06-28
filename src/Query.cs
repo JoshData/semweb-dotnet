@@ -4,6 +4,7 @@ using System.IO;
 
 using SemWeb;
 using SemWeb.Stores;
+using SemWeb.Util;
 
 namespace SemWeb.Query {
 	public class QueryException : ApplicationException {
@@ -15,38 +16,120 @@ namespace SemWeb.Query {
 	}
 	
 	public class QueryEngine {
-		MemoryStore model;
-		
-		ArrayList setupVariablesSelect = new ArrayList();
-		ArrayList setupVariablesSelectFirst = new ArrayList();
+		// Setup information
+	
+		ArrayList setupVariables = new ArrayList();
 		ArrayList setupVariablesDistinct = new ArrayList();
 		ArrayList setupValueFilters = new ArrayList();
-		
-		bool setup = false;
-		
-		Hashtable variableHash = new Hashtable();
-		VariableBinding[] initialBindings;
-		ArrayList[] predicateInitialFilters;
-		ArrayList[] predicateFilters;
-		ArrayList[] valueFilters;
-		ArrayList[] variablesDistinct;
-		VariableNode rootVariable;			
+		ArrayList setupStatements = new ArrayList();
+		ArrayList setupOptionalStatements = new ArrayList();
 		
 		int start = -1;
 		int limit = -1;
 		
-		public void Select(Entity entity) {
-			SelectInternal(entity, setupVariablesSelect);
+		// Query model information
+		
+		bool init = false;
+		object sync = new object();
+		Variable[] variables;
+		Entity[] variableEntities;
+		QueryStatement[][] statements;
+		
+		// contains functional and inverse functional properties
+		ResSet fps = new ResSet(),
+		          ifps = new ResSet();
+		
+		private struct Variable {
+			public Entity Entity;
+			public ValueFilter[] Filters;
 		}
 		
-		public void SelectFirst(Entity entity) {
-			SelectInternal(entity, setupVariablesSelectFirst);
+		private struct VarOrAnchor {
+			public bool IsVariable;
+			public int VarIndex;
+			public Resource Anchor;
+			public Resource[] ArrayOfAnchor;
+			
+			public override string ToString() {
+				if (IsVariable)
+					return "?" + VarIndex;
+				else
+					return Anchor.ToString();
+			}
 		}
-
-		private void SelectInternal(Entity entity, ArrayList list) {
+		
+		private class QueryStatement { // class because of use with IComparer
+			public bool Optional;
+			public VarOrAnchor 
+				Subject,
+				Predicate,
+				Object;
+			
+			public int NumVars() {
+				return (Subject.IsVariable ? 1 : 0)
+					+ (Predicate.IsVariable ? 1 : 0)
+					+ (Object.IsVariable ? 1 : 0);
+			}
+			
+			public override string ToString() {
+				return Subject + " " + Predicate + " " + Object;
+			}
+		}
+		
+		class QueryResult {
+			public ResSet[] Bindings;
+			public QueryResult(QueryEngine q) {
+				Bindings = new ResSet[q.variables.Length];
+			}
+			private QueryResult(int x) {
+				Bindings = new ResSet[x];
+			}
+			public void Add(QueryStatement qs, Statement bs) {
+				if (qs.Subject.IsVariable) Add(qs.Subject.VarIndex, bs.Subject);
+				if (qs.Predicate.IsVariable) Add(qs.Predicate.VarIndex, bs.Predicate);
+				if (qs.Object.IsVariable) Add(qs.Object.VarIndex, bs.Object);
+			}
+			void Add(int varIndex, Resource binding) {
+				if (Bindings[varIndex] == null) Bindings[varIndex] = new ResSet();
+				Bindings[varIndex].Add(binding);
+			}
+			public void Clear(QueryStatement qs) {
+				if (qs.Subject.IsVariable && Bindings[qs.Subject.VarIndex] != null) Bindings[qs.Subject.VarIndex].Clear();
+				if (qs.Predicate.IsVariable && Bindings[qs.Predicate.VarIndex] != null) Bindings[qs.Predicate.VarIndex].Clear();
+				if (qs.Object.IsVariable && Bindings[qs.Object.VarIndex] != null) Bindings[qs.Object.VarIndex].Clear();
+			}
+			public void Set(QueryStatement qs, Statement bs) {
+				if (qs.Subject.IsVariable) Set(qs.Subject.VarIndex, bs.Subject);
+				if (qs.Predicate.IsVariable) Set(qs.Predicate.VarIndex, bs.Predicate);
+				if (qs.Object.IsVariable) Set(qs.Object.VarIndex, bs.Object);
+			}
+			void Set(int varIndex, Resource binding) {
+				if (Bindings[varIndex] == null) Bindings[varIndex] = new ResSet();
+				else Bindings[varIndex].Clear();
+				Bindings[varIndex].Add(binding);
+			}
+			public QueryResult Clone() {
+				QueryResult r = new QueryResult(Bindings.Length);
+				for (int i = 0; i < Bindings.Length; i++)
+					if (Bindings[i] != null)
+						r.Bindings[i] = Bindings[i].Clone();
+				return r;
+			}
+		}
+		
+		class BindingSet {
+			public ArrayList Results = new ArrayList();
+			public QueryResult Union;
+			
+			public BindingSet(QueryEngine q) {
+				Union = new QueryResult(q);
+			}
+		}
+					
+		public void Select(Entity entity) {
 			if (entity.Uri == null) throw new QueryException("Anonymous nodes are automatically considered variables.");
-			if (setupVariablesSelect.Contains(entity) || setupVariablesSelectFirst.Contains(entity)) return;
-			list.Add(entity);
+			if (setupVariables.Contains(entity)) return;
+			setupVariables.Add(entity);
 		}
 
 		public void MakeDistinct(Entity a, Entity b) {
@@ -62,11 +145,13 @@ namespace SemWeb.Query {
 			d.b = filter;
 			setupValueFilters.Add(d);
 		}
+		
+		public void AddFilter(Statement filter) {
+			setupStatements.Add(filter);
+		}
 
-		public void SetGraph(Store graph) {
-			if (model != null) throw new ArgumentException("A graph has already been set for this query.");
-			model = new MemoryStore();
-			model.Import(graph);
+		public void AddOptionalFilter(Statement filter) {
+			setupOptionalStatements.Add(filter);
 		}
 		
 		public int ReturnStart { get { return start; } set { start = value; } }
@@ -81,914 +166,630 @@ namespace SemWeb.Query {
 			public ValueFilter b;
 		}
 		
-		private class VariableNode {
-			public QueryEngine Engine;
+		public void Query(Store targetModel, QueryResultSink result) {
+			lock (sync) {
+				if (!init) {
+					Init();
+					init = true;
+				}
+			}
 			
-			public Resource Variable;
-			public int BindingIndex;
+			result.Init(variableEntities);
 			
-			public Set Dependencies = new Set();
-			
-			public VariableNode Parent = null;
-			public ArrayList Children = new ArrayList();
+			BindingSet bindings = new BindingSet(this);
+			foreach (QueryStatement[] group in statements) {
+				bool ret = Query(group, bindings, targetModel);
+				if (!ret) {
+					// A false return value indicates the query
+					// certainly failed.
+					result.Finished();
+					return;
+				}
+			}
 
-			public bool NoSelect;
-			public int Depth;
+			VariableBinding[] finalbindings = new VariableBinding[variables.Length];
+			for (int i = 0; i < variables.Length; i++)
+				finalbindings[i].Variable = variableEntities[i];
 			
-			public Set KnownValues;
+			int ctr = -1;
+			foreach (QueryResult r in bindings.Results) {
+				Permutation permutation = new Permutation(r.Bindings);
+				do {
+					ctr++;
+					if (ctr < start) continue;
+					for (int i = 0; i < variables.Length; i++)
+						finalbindings[i].Target = permutation[i];
+					result.Add(finalbindings);
+					if (ctr == start+limit) break;	
+				} while (permutation.Next());
+				if (ctr == start+limit) break;	
+			}
 			
-			public bool ValueNotImportant {
+			result.Finished();
+		}
+		
+		class Permutation {
+			public int[] index;
+			public Resource[][] values;
+			
+			public Resource this[int i] {
 				get {
-					return Variable.Uri == null && Children.Count == 0;
+					return values[i][index[i]];
 				}
 			}
 			
-			public bool NoSelectLeaf { get { return NoSelect && Children.Count == 0; } }
-			
-			public bool Sees(VariableNode dependency) {
-				if (this == dependency) return true;
-				if (Parent == null || Parent == this) return false;
-				if (Parent == dependency) return true;
-				return Parent.Sees(dependency);
-			}
-			
-			public void CopyBindings(VariableBinding[] source, VariableBinding[] dest) {
-				dest[BindingIndex] = source[BindingIndex];
-				foreach (VariableNode child in Children)
-					child.CopyBindings(source, dest);
-			}
-			
-			public void SetNoSelectAndDepth() {
-				Depth = 0;
-				
-				// If any of the children of this node are selections,
-				// then this node must be a selection.
-				foreach (VariableNode child in Children) {
-					child.SetNoSelectAndDepth();
-					if (!child.NoSelect) NoSelect = false;
-					if (child.Depth > Depth) Depth = child.Depth;
-				}
-				
-				Depth++;
-			}
-			
-			public void SortChildren() {
-				// Sort the children of this node to put non-selections first,
-				// since they are "purmutatively" simple, and then shorter
-				// trees first.
-				Children.Sort(new ChildComparer());
-				foreach (VariableNode child in Children)
-					child.SortChildren();
-				Engine.predicateFilters[BindingIndex].Sort(new FilterComparer(this));
-			}
-			
-			public void PruneAnonymousLeaves() {
-				for (int i = 0; i < Children.Count; i++) {
-					VariableNode child = (VariableNode)Children[i];
-					child.PruneAnonymousLeaves();
-					if (child.ValueNotImportant) {
-						Children.RemoveAt(i);
-						i--;
-					}					
-				}				
-			}
-			
-			private class ChildComparer : IComparer {
-				public int Compare(object a, object b) {
-					bool an = ((VariableNode)a).NoSelect;
-					bool bn = ((VariableNode)b).NoSelect;
-					if (an && !bn) return -1;
-					if (!an && bn) return 1;
-					
-					return ((VariableNode)a).Depth.CompareTo(((VariableNode)b).Depth);
-				}
-			}
-			
-			private class FilterComparer : IComparer {
-				VariableNode node;
-				public FilterComparer(VariableNode node) { this.node = node; }
-				public int Compare(object a, object b) {
-					return -Order((Statement)a).CompareTo(Order((Statement)b));
-				}
-				int Order(Statement s) {
-					return Order(s.Subject) + Order(s.Predicate) + Order(s.Object);
-				}
-				int Order(Resource r) {
-					if (r == node.Variable) return 0;
-					if (r is Literal) return 1; // literals are always constant
-					if (!node.Engine.variableHash.ContainsKey(r)) return 1; // constant
-					if (node.Sees((VariableNode)node.Engine.variableHash[r])) return 1;
-					return 0;
-				}
-			}
-
-			public void Dump() { Dump(""); }
-			public void Dump(string indent) {
-				Console.Error.Write(indent + Variable);
-				if (NoSelect)
-					Console.Error.Write(" NoSelect");
-				Console.Error.WriteLine();
-				foreach (VariableNode child in Children)
-					child.Dump(indent + " ");
-			}
-		}
-		
-		private class SearchState {
-			public Hashtable cachedSelections = new Hashtable();
-			public Store target;
-			public QueryResultSink sink;
-			public VariableBinding[] bindings;
-		}	
-		
-
-		private void SetUp() {
-			if (setup) return;
-			setup = true;
-			
-			ArrayList variables = new ArrayList();
-			
-			// Get the list of variables			
-			foreach (Entity v in setupVariablesSelect)
-				variables.Add(new VariableBinding(v, null, false));
-			foreach (Entity v in setupVariablesSelectFirst)
-				variables.Add(new VariableBinding(v, null, true));
-			
-			// And all anonymous nodes in the graph
-			Hashtable seenAnonNodes = new Hashtable();
-			foreach (Statement s in model) {
-				foreach (Resource r in new Resource[] { s.Subject, s.Predicate, s.Object }) {
-					if (r.Uri != null || !(r is Entity) || seenAnonNodes.ContainsKey(r)) continue;
-					seenAnonNodes[r] = r;
-					variables.Add(new VariableBinding((Entity)r, null, true));
-				}
-			}
-			
-			initialBindings = (VariableBinding[])variables.ToArray(typeof(VariableBinding));
-			
-			foreach (VariableBinding b in initialBindings)
-				variableHash[b.Variable] = b.Variable;
-			
-			// Get a list of all statements about each variable.
-			
-			predicateInitialFilters = new ArrayList[initialBindings.Length];
-			predicateFilters = new ArrayList[initialBindings.Length];
-			valueFilters = new ArrayList[initialBindings.Length];
-			variablesDistinct = new ArrayList[initialBindings.Length];
-			
-			int[] constantFilters = new int[initialBindings.Length];
-			
-			for (int i = 0; i < initialBindings.Length; i++) {
-				Entity variable = initialBindings[i].Variable;
-
-				predicateInitialFilters[i] = new ArrayList();
-				predicateFilters[i] = new ArrayList();
-				
-				for (int spo = 0; spo <= 2; spo++) {
-					IList filters = model.Select(new Statement(
-						spo == 0 ? variable : null,
-						spo == 1 ? variable : null,
-						spo == 2 ? variable : null)).Statements;
-					
-					foreach (Statement statement in filters) {
-						predicateFilters[i].Add(statement);
-						
-						// Increment the count of filters based only on constants.
-						if (spo == 0 && !variableHash.ContainsKey(statement.Predicate) && !variableHash.ContainsKey(statement.Object))
-							constantFilters[i]++;
-						if (spo == 1 && !variableHash.ContainsKey(statement.Subject) && !variableHash.ContainsKey(statement.Object))
-							constantFilters[i]++;
-						if (spo == 2 && !variableHash.ContainsKey(statement.Subject) && !variableHash.ContainsKey(statement.Predicate))
-							constantFilters[i]++;
-						
-						// TODO: Give (inverse) functional properties (in the right direction)
-						// an advantage, since they essentially turn a variable into a constant.
-					}
-
-				}
-				
-				// Get a list of distict variables from this one
-				
-				variablesDistinct[i] = new ArrayList();
-				foreach (SetupVariablesDistinct d in setupVariablesDistinct) {
-					if (d.a == variable) variablesDistinct[i].Add(d.b);
-					if (d.b == variable) variablesDistinct[i].Add(d.a);
-				}
-				
-				// Get a list of predicate filters for this one
-				valueFilters[i] = new ArrayList();
-				foreach (SetupValueFilter d in setupValueFilters) {
-					if (d.a == variable) valueFilters[i].Add(d.b);
-				}
-			}
-			
-			// Create variable nodes for each variable.
-			
-			VariableNode[] variableNodes = new VariableNode[initialBindings.Length];
-			for (int v = 0; v < initialBindings.Length; v++) {
-				variableNodes[v] = new VariableNode();
-				variableNodes[v].Engine = this;
-				variableNodes[v].Variable = initialBindings[v].Variable;
-				variableNodes[v].BindingIndex = v;
-				variableNodes[v].NoSelect = initialBindings[v].var;
-				variableHash[variableNodes[v].Variable] = variableNodes[v];
-			}
-			
-			// Find the dependencies among the nodes.
-			
-			for (int v = 0; v < initialBindings.Length; v++) {
-				foreach (Statement s in predicateFilters[v]) {
-					if (s.Subject != initialBindings[v].Variable && variableHash.ContainsKey(s.Subject))
-						variableNodes[v].Dependencies.Add( variableHash[s.Subject] );
-					if (s.Predicate != initialBindings[v].Variable && variableHash.ContainsKey(s.Predicate))
-						variableNodes[v].Dependencies.Add( variableHash[s.Predicate] );
-					if (s.Object != initialBindings[v].Variable && variableHash.ContainsKey(s.Object))
-						variableNodes[v].Dependencies.Add( variableHash[s.Object] );
-				}
-			}
-			
-			// Choose a root variable.  This should have the most number of
-			// filters tied to constants (non-variable resources), with
-			// ties going to selection variables.
-			
-			foreach (VariableNode v in variableNodes) {
-				if (constantFilters[v.BindingIndex] == 0) continue;
-				if (rootVariable == null) { rootVariable = v; continue; }
-				if (constantFilters[rootVariable.BindingIndex] < constantFilters[v.BindingIndex])
-					rootVariable = v;
-				if (constantFilters[rootVariable.BindingIndex] == constantFilters[v.BindingIndex]
-					 && initialBindings[rootVariable.BindingIndex].var && !initialBindings[v.BindingIndex].var)
-					rootVariable = v;
-			}
-			if (rootVariable == null) {
-				// No variables had any anchoring in the target model.
-				// Root the tree on an arbitrary variable.
-				rootVariable = variableNodes[0];
-			}
-			
-			// Signifies the root node.
-			rootVariable.Parent = rootVariable;
-			
-			// Hook the remaining variables into the tree somewhere
-			
-			for (int v = 1; v < initialBindings.Length; v++) {
-				// Choose the next variable to place into the tree.
-				// It will be the variable with the most number of
-				// its dependencies already placed on the tree, with
-				// ties going to selection variables.
-				
-				// TODO: Prioritize variables that are determined
-				// through functional properties from variables on
-				// the tree.
-				
-				VariableNode node = null;
-				int dc = -1;
-				foreach (VariableNode n in variableNodes) {
-					if (n.Parent != null) continue;
-					
-					int c = 0;
-					foreach (VariableNode dep in n.Dependencies.Items())
-						if (dep.Parent != null)
-							c++;
-					
-					if (node == null || c > dc) { node = n; dc = c; continue; }
-					if (c == dc && ( 
-						(initialBindings[node.BindingIndex].var && !initialBindings[n.BindingIndex].var)
-						|| (constantFilters[node.BindingIndex] < constantFilters[n.BindingIndex])
-						)) { node = n; dc = c; continue; }
-				}
-				
-				// Find a place for this variable on the tree.  Place
-				// it as a child of any of its dependencies, if that
-				// dependency can see all of its other dependencies
-				// that are already on the tree.
-				
-				foreach (VariableNode dep in node.Dependencies.Items()) {
-					if (dep.Parent == null) continue;
-					bool seesAll = true;
-					foreach (VariableNode dep2 in node.Dependencies.Items()) {
-						if (dep2.Parent == null) continue;
-						if (!dep.Sees(dep2)) { seesAll = false; break; }
-					}
-					if (!seesAll) continue;
-					
-					node.Parent = dep;
-					break;
-				}
-				if (node.Parent != null) continue; // done with this one
-				
-				// This variable is dependent on multiple nodes of the tree.
-				// Find the first node it's dependent on, and then move
-				// subsequent dependencies into subparts of that node.
-				// This could be done better...
-				VariableNode deproot = null;
-				foreach (VariableNode dep in node.Dependencies.Items()) {
-					if (dep.Parent == null) continue;
-					if (deproot == null) { deproot = dep; continue; }
-					
-					// Move other dependencies within this node
-					VariableNode p = dep;
-					while (p.Parent != p) {
-						if (deproot.Sees(p.Parent)) {
-							p.Parent = deproot;
-							deproot = p.Parent;
-							break;
-						}
-						p = p.Parent;
-					}
-				}			
-				node.Parent = deproot;
-				if (node.Parent != null) continue; // done with this one
-				
-				if (node.Parent == null)
-					throw new QueryException("Query variable " + node.Variable + " is not connected to the other entities in the query.");
-			}
-			
-			// Find the children of each variable
-			foreach (VariableNode v in variableNodes)
-				if (v.Parent != v)
-					v.Parent.Children.Add(v);
-				
-			// Determine which children
-			rootVariable.SetNoSelectAndDepth();
-			
-			// Sort the order of children.  Children dependent through
-			// functional properties (TODO), and children marked as
-			// SelectFirst go first, because they will have one result,
-			// which makes permutations on later children faster.  Children
-			// heading shorter trees go first, but I don't remember why.
-			rootVariable.SortChildren();
-			
-			// Anonymous nodes at the leaves of the dependency tree are
-			// irrelevant. Prune them off.
-			rootVariable.PruneAnonymousLeaves();
-			
-			// For each variable that can't be a literal, move the predicate
-			// filters for that variable that refer only to the variable
-			// and known values into predicateInitialFilters, so that
-			// the FindEntities optimization can be used.
-			setFindEntitiesInitialFilters(rootVariable);
-			
-			//rootVariable.Dump();
-		}
-
-		void setFindEntitiesInitialFilters(VariableNode node) {
-			setFindEntitiesInitialFilters2(node);
-			foreach (VariableNode c in node.Children)
-				setFindEntitiesInitialFilters(c);
-		}
-		
-		void setFindEntitiesInitialFilters2(VariableNode node) {
-			// Get a list of predicate filters in which all parts of the filter
-			// are known values besides this variable.  Then feed that to FindEntities
-			// to get an initial set of entities.  This is useful when an entity is
-			// defined according to multiple constants (e.g. rdf:type, literal functional
-			// properties), when the store is optimized for FindEntities.
-			// But, FindEntities only returns entities.  This variable could have a literal
-			// value if it appears only as the object of a statement, in which case
-			// don't do this.
-			
-			// TODO: If there are functional properties, use those exclusively.
-			
-			// If this variable could be a literal value, don't do anything special here.
-			bool mightBeLiteral = true;
-			foreach (Statement s in predicateFilters[node.BindingIndex]) {
-				if (s.Subject == node.Variable || s.Predicate == node.Variable) {
-					mightBeLiteral = false;
-					break;
-				}
-			}
-			if (mightBeLiteral) return;
-			
-			for (int i = 0; i < predicateFilters[node.BindingIndex].Count; i++) {
-				Statement s = (Statement)predicateFilters[node.BindingIndex][i];
-				
-				if (!IsDefined(s.Subject, node)) continue;
-				if (!IsDefined(s.Predicate, node)) continue;
-				if (!IsDefined(s.Object, node)) continue;
-				
-				predicateFilters[node.BindingIndex].RemoveAt(i); // remove from this list
-				i--;
-				
-				predicateInitialFilters[node.BindingIndex].Add(s); // add to this list
-			}
-		}
-		
-		private bool IsDefined(Resource ent, VariableNode currentNode) {
-			if (!(ent is Entity) || !variableHash.ContainsKey(ent)) return true;
-			do {
-				if (ent == currentNode.Variable) return true;
-				currentNode = currentNode.Parent;
-			} while (currentNode.Parent != currentNode);
-			return false;
-		}
-
-		private Resource GetBinding(Resource ent, VariableNode currentNode, bool reqEntity, SearchState state) {
-			if (!(ent is Entity)) {
-				if (reqEntity) return null;
-				return ent;
-			}
-			
-			if (variableHash.ContainsKey(ent)) {
-				while (currentNode.Parent != currentNode) {
-					currentNode = currentNode.Parent;
-					if (currentNode.Variable.Equals(ent)) { 
-						if ((!reqEntity || state.bindings[currentNode.BindingIndex].Target is Entity))
-							return state.bindings[currentNode.BindingIndex].Target;
-						else
-							return null;
+			public Permutation(ResSet[] bindings) {
+				index = new int[bindings.Length];
+				values = new Resource[bindings.Length][];
+				for (int i = 0; i < bindings.Length; i++) {
+					values[i] = new Resource[bindings[i] == null ? 1 : bindings[i].Count];
+					if (bindings[i] != null) {
+						int ctr = 0;
+						foreach (Resource r in bindings[i])
+							values[i][ctr++] = r;
 					}
 				}
-				return null;
 			}
-			
-			if (ent.Uri == null)
-				throw new QueryException("An anonymous node in the query was not a variable.");
-
-			return ent;
-		}
-
-		public void Query(Store target, QueryResultSink sink) {
-			SetUp();
-			
-			if (start != -1 || limit != -1)
-				sink = new StartLimitSink(start, limit, sink);
-			
-			SearchState state = new SearchState();
-			state.target = target;
-			state.sink = sink;
-			state.bindings = (VariableBinding[])initialBindings.Clone();
-			
-			// Send the query sink the list of variables.
-			Entity[] varList = new Entity[initialBindings.Length];
-			for (int i = 0; i < initialBindings.Length; i++)
-				varList[i] = initialBindings[i].Variable;
-			sink.Init(varList);
-			
-			bool emittedBinding;			
-			Recurse(state, rootVariable, out emittedBinding);
-			
-			sink.Finished();
-		}
-		
-		public bool Test(Store target) {
-			StopOnFirst sink = new StopOnFirst();
-			Query(target, sink);
-			return sink.Found;
-		}		
-		
-		private bool Recurse(SearchState state, VariableNode node, out bool emittedBinding) {
-			Set resources = null;
-			Hashtable futureValues = new Hashtable();
-						
-			if (node.KnownValues != null) {
-				resources = node.KnownValues;
-			} else {
-			
-			ArrayList initialFilters = new ArrayList();
-			foreach (Statement s in predicateInitialFilters[node.BindingIndex]) {
-				Statement q = new Statement(
-					s.Subject == node.Variable ? null : (Entity)GetBinding(s.Subject, node, true, state),
-					s.Predicate == node.Variable ? null : (Entity)GetBinding(s.Predicate, node, true, state),
-					s.Object == node.Variable ? null : GetBinding(s.Object, node, false, state));
-
-				// If the subject or predicate resolved as a literal,
-				// it might be null here.  So we just skip the filter...
-				// The Object is checked for completeness.  Shouldn't happen.
-				if (s.Subject != node.Variable && q.Subject == null) continue;
-				if (s.Predicate != node.Variable && q.Predicate == null) continue;
-				if (s.Object != node.Variable && q.Object == null) continue;
+			public bool Next() {
+				for (int i = 0; i < index.Length; i++) {
+					index[i]++;
+					if (index[i] < values[i].Length) break;
 					
-				initialFilters.Add(q);
-			}
-			if (initialFilters.Count != 0) {
-				resources = new Set();
-				foreach (Entity e in state.target.FindEntities((Statement[])initialFilters.ToArray(typeof(Statement)))) {
-					resources.Add(e);
+					index[i] = 0;
+					if (i == index.Length-1) return false;
 				}
+				return true;
+			}
+		}
+		
+		private void Debug(string message) {
+			//Console.Error.WriteLine(message);
+		}
+		
+		class BindingEnumerator {
+			IEnumerator[] loops = new IEnumerator[3];
+			int loop = 0;
+			
+			public BindingEnumerator(QueryStatement qs, QueryResult bindings) {
+				loops[0] = GetBindings(qs.Subject, bindings);
+				loops[1] = GetBindings(qs.Predicate, bindings);
+				loops[2] = GetBindings(qs.Object, bindings);
 			}
 			
-			foreach (Statement s in predicateFilters[node.BindingIndex]) {
-				Store selectCache = null;
-				
-				int spo;
-				if (s.Subject == node.Variable) spo = 0;
-				else if (s.Predicate == node.Variable) spo = 1;
-				else spo = 2;
-				
-				Statement q = new Statement(
-					spo == 0 ? null : (Entity)GetBinding(s.Subject, node, true, state),
-					spo == 1 ? null : (Entity)GetBinding(s.Predicate, node, true, state),
-					spo == 2 ? null : GetBinding(s.Object, node, false, state));
-				
-				if (resources == null) {
-					// Select all resources that match this statement
-					// The selection will also apply any value filters for this variable
-					resources = SelectCache(q, spo, state, selectCache, node).Clone();
-					
-					// Apply distinctFrom restrictions to make sure the value of this
-					// variable is not equal to the value of other variables, as specified.
-					foreach (Resource r in variablesDistinct[node.BindingIndex]) {
-						Resource rb = GetBinding(r, node, false, state);
-						if (rb != null) resources.Remove(rb);
+			public bool MoveNext(out Entity s, out Entity p, out Resource o) {
+				while (true) {
+					bool b = loops[loop].MoveNext();
+					if (!b) {
+						 if (loop == 0) { s = null; p = null; o = null; return false; }
+						 loops[loop].Reset();
+						 loop--;
+						 continue;
 					}
 					
-				} else {
-					int nullCount = ((q.Subject == null) ? 1 : 0) + ((q.Predicate == null) ? 1 : 0) + ((q.Object == null) ? 1 : 0);
+					if (loop <= 1) {
+						object obj = loops[loop].Current;
+						if (obj != null && !(obj is Entity)) continue;
+					}
 					
-					// Deal with queries with nothing yet known with a later variable.
-					if (nullCount == 3)
-						continue;
-						
+					if (loop < 2) { loop++; continue; }
 					
-					if (nullCount == 2) {
-						// If this references a later SelectFirst variable, then do the select
-						// here for all of the possible resources.
-						VariableNode sv = (VariableNode)variableHash[s.Subject];
-						VariableNode pv = (VariableNode)variableHash[s.Predicate];
-						VariableNode ov = (VariableNode)variableHash[s.Object];
-						if (sv != null) if (sv == node || sv.BindingIndex <= node.BindingIndex || !sv.NoSelectLeaf) sv = null;
-						if (pv != null) if (pv == node || pv.BindingIndex <= node.BindingIndex || !pv.NoSelectLeaf) pv = null;
-						if (ov != null) if (ov == node || ov.BindingIndex <= node.BindingIndex || !ov.NoSelectLeaf) ov = null;
-						if (sv == null && pv == null && ov == null) continue;
-						
-						// Run a combined select on all of the potential resources.
-						ArrayList queries = new ArrayList();
-						foreach (Resource r in resources.Items()) {
-							if (spo != 2 && !(r is Entity)) continue;
+					s = loops[0].Current as Entity; 
+					p = loops[1].Current as Entity; 
+					o = loops[2].Current as Resource;
+					return true; 
+				}
+			}
+		}
+
+		private bool Query(QueryStatement[] group, BindingSet bindings, Store targetModel) {
+			if (group.Length == 1) {
+				QueryStatement qs = group[0];
+				
+				int numMultiplyBound = IsMultiplyBound(qs.Subject, bindings)
+					+ IsMultiplyBound(qs.Predicate, bindings)
+					+ IsMultiplyBound(qs.Object, bindings);
+				
+				if (numMultiplyBound >= 1) {
+					// If there is one or more multiply-bound variable,
+					// then we need to iterate through the permutations
+					// of the variables in the statement.
+					
+					Debug(qs.ToString() + " Something Multiply Bound");
+					
+					Entity s, p;
+					Resource o;
+					
+					ArrayList templates = new ArrayList();
+					BindingEnumerator enumer = new BindingEnumerator(qs, bindings.Union);
+					while (enumer.MoveNext(out s, out p, out o))
+						templates.Add(new Statement(s, p, o));
+					
+					Debug("\t" + templates.Count + " Templates");
+					
+					// But we still need to preserve the pairings of
+					// the multiply bound variable with the matching
+					// statements.
+					
+					MemoryStore matches1 = targetModel.Select((Statement[])templates.ToArray(typeof(Statement)));
+					
+					Debug("\t" + matches1.StatementCount + " Matches");
+					
+					// The memory store that we get back from a select
+					// won't do indexing, but indexing will help.
+					MemoryStore matches = new MemoryStore();
+					matches.Import(matches1);
+
+					ArrayList newbindings = new ArrayList();
+					
+					if (!qs.Optional) bindings.Union.Clear(qs);
+					
+					foreach (QueryResult binding in bindings.Results) {
+						// Break apart the permutations in this binding.
+						BindingEnumerator enumer2 = new BindingEnumerator(qs, binding);
+						while (enumer2.MoveNext(out s, out p, out o)) {
+							// Get the matching statements from the union query
+							Statement bs = new Statement(s, p, o);
+							MemoryStore innermatches = matches.Select(bs);
 							
-							Statement q2 = new Statement(
-								spo == 0 ? (Entity)r : q.Subject,
-								spo == 1 ? (Entity)r : q.Predicate,
-								spo == 2 ? r : q.Object);
+							// If no matches, the binding didn't match the filter.
+							if (innermatches.StatementCount == 0) {
+								if (qs.Optional) {
+									// Preserve the binding.
+									newbindings.Add(binding);
+								} else {
+									// Toss out the binding.
+									continue;
+								}
+							}
 							
-							queries.Add(q2);
-						}
-
-						Set resources2 = new Set();
-						state.target.Select((Statement[])queries.ToArray(typeof(Statement)), new PutInSet(spo, resources2, futureValues, sv, pv, ov));
-						
-						resources = resources2;
-						
-					} else {
-						// Find all items that satisfy the filter, and then intersect the sets.
-						Set filter = SelectCache(q, spo, state, selectCache, null);
-						
-						// Perform the loop on the items of the smaller set.
-						Set smaller = (filter.Size() < resources.Size()) ? filter : resources;
-						Set larger = (filter.Size() < resources.Size()) ? resources : filter;						
-						foreach (Resource r in smaller.Items())
-							if (!larger.Contains(r))
-								smaller.Remove(r);							
-						resources = smaller;
-					}
-				}
-			}
-			
-			if (resources == null) {
-				// There were no statements about this variable.  Set it
-				// to an anonymous node, since it may have any value at all.
-				// This is important because this will be invoked when
-				// an anonymous variable node has no children.
-				resources = new Set();
-				resources.Add(new Entity((string)null));
-			}
-			
-			} // KNOWN VALUES
-
-			emittedBinding = false;
-			
-			if (node.Children.Count == 0) {
-				// This is the end of a tree branch.
-				foreach (Resource r in resources.Items()) {
-					emittedBinding = true;
-					
-					state.bindings[node.BindingIndex].Target = r;
-					if (!state.sink.Add(state.bindings)) return true;
-					
-					if (node.NoSelect) break; // report only one binding for non-selective variables
-				}
-				return false;
-				
-			} if (node.Children.Count == 1) {
-				// The node has one child, so simply recurse into the child.
-				VariableNode child = (VariableNode)node.Children[0];
-				foreach (Resource r in resources.Items()) {
-					state.bindings[node.BindingIndex].Target = r;
-					
-					SetFutureValues(futureValues, r, true);
-					
-					bool eb;
-					if (Recurse(state, child, out eb)) return true;
-					emittedBinding |= eb;
-
-					SetFutureValues(futureValues, r, false);
-					
-					if (node.NoSelect && eb) break; // report only one binding for non-selective variables
-				}
-				
-			} else {
-				// Buffer the results of recursing into each child,
-				// and then find the permutations of the buffered results.
-				
-				QueryResultSink oldsink = state.sink;
-				
-				ArrayList resourceItems = new ArrayList(resources.Items());
-				
-				bool[] filteredOut = new bool[resourceItems.Count];
-				bool[] multipleResults = new bool[resourceItems.Count];
-				BufferSink[,] buffers = new BufferSink[resourceItems.Count,node.Children.Count];
-				
-				for (int i = 0; i < node.Children.Count; i++) {
-					VariableNode child = (VariableNode)node.Children[i];
-					
-					for (int r = 0; r < resourceItems.Count; r++) {
-						if (filteredOut[r]) continue;
-						
-						buffers[r,i] = new BufferSink();
-						state.sink = buffers[r,i];
-						
-						state.bindings[node.BindingIndex].Target = (Resource)resourceItems[r];
-						
-						// If this is the last child, and all previous children found
-						// only one binding for this resource, then we can short-circuit
-						// the permutation process and emit the recursion on this child directly.
-						if (i == node.Children.Count-1 && !multipleResults[r]) {
-							state.sink = oldsink;
-							
-							// Copy over the bindings for the individual variables
-							// set in the children of this node.
-							state.bindings = (VariableBinding[])buffers[r,0].Bindings[0];							
-							for (int c = 1; c < node.Children.Count-1; c++)
-								((VariableNode)node.Children[c]).CopyBindings((VariableBinding[])buffers[r,c].Bindings[0], state.bindings);
-							
-							filteredOut[r] = true; // requires no more processing later
-						}
-						
-						SetFutureValues(futureValues, (Resource)resourceItems[r], true);
-						
-						bool eb;
-						if (Recurse(state, child, out eb)) return true;
-
-						SetFutureValues(futureValues, (Resource)resourceItems[r], false);
-						
-						if (state.sink == oldsink) {
-							emittedBinding |= eb;
-							if (node.NoSelect && eb) return false; // report only one binding for non-selective variables
-						}
-						
-						// If no new bindings were found for this resource,
-						// the resource is filtered out for subsequent children.
-						if (buffers[r,i].Bindings.Count == 0) {
-							filteredOut[r] = true;
-							resources.Remove(resourceItems[r]);
-						}
-						if (buffers[r,i].Bindings.Count > 1)
-							multipleResults[r] = true;
-					}
-				}
-				
-				int[] counters = new int[node.Children.Count+1];
-				
-				for (int r = 0; r < resourceItems.Count; r++) {
-					if (filteredOut[r]) continue;
-					
-					emittedBinding = true;
-					
-					// Permute through the combinations of variable bindings determined
-					// by each child.  In 'good' queries, all but one child produces
-					// only one variable binding per possible resource for this node.
-					
-					Array.Clear(counters, 0, counters.Length);
-					
-					while (counters[node.Children.Count] == 0) {
-						VariableBinding[] binding = (VariableBinding[])buffers[r,0].Bindings[counters[0]];
-						
-						for (int c = 1; c < node.Children.Count; c++) {
-							// Copy over the bindings for the individual variables
-							// set in the children of this node.
-							VariableNode child = (VariableNode)node.Children[c];
-							child.CopyBindings((VariableBinding[])buffers[r,c].Bindings[counters[c]], binding);
-						}
-
-						oldsink.Add(binding);
-						
-						if (node.NoSelect) break; // report only one binding for non-selective variables
-						
-						// Increment the counters and carry.
-						counters[0]++;
-						for (int c = 0; c < node.Children.Count; c++) {
-							if (counters[c] == buffers[r,c].Bindings.Count) {
-								counters[c] = 0;
-								counters[c+1]++;
-							} else {
-								break;
+							foreach (Statement m in innermatches) {
+								if (!MatchesFilters(m, qs, targetModel)) {
+									if (qs.Optional) newbindings.Add(binding);
+									continue;
+								}
+								bindings.Union.Add(qs, m);
+								
+								QueryResult r = binding.Clone();
+								r.Set(qs, m);
+								newbindings.Add(r);
 							}
 						}
 					}
-				}
-			}
-			
-			return false;
-		}
-		
-		private void SetFutureValues(Hashtable futureValues, Resource r, bool set) {
-			Hashtable h = (Hashtable)futureValues[r];
-			if (h == null) return;
-			
-			foreach (VariableNode n in h.Keys) {
-				if (set) {
-					n.KnownValues = new Set();
-					n.KnownValues.Add((Resource)h[n]);
-				} else {
-					n.KnownValues = null;
-				}
-			}
-		}
-		
-		private class SelectCacheKey {
-			public Statement Q;
-			public SelectPartialFilter F;
-			public VariableNode Var;
-			
-			public SelectCacheKey(Statement q, SelectPartialFilter f, VariableNode var) {
-				Q = q;
-				F = f;
-				Var = var;
-			}
-			
-			public override int GetHashCode() { return Q.GetHashCode(); }
-			public override bool Equals(object other) {
-				return ((SelectCacheKey)other).Var == Var && Q.Equals(((SelectCacheKey)other).Q)
-				 && F.Equals(((SelectCacheKey)other).F);
-			}
-		}
-		
-		private Set SelectCache(Statement q, int spo, SearchState state, Store queryTarget, VariableNode var) {
-			if (var != null && valueFilters[var.BindingIndex].Count == 0)
-				var = null;
-			
-			//Console.WriteLine(q);
-			
-			//Console.WriteLine((queryTarget == null ? "SQL" : "MEM") + " : " + q + " (" + (var == null ? "no var" : var.Variable.ToString()) + ")");
-			
-			if (queryTarget == null)
-				queryTarget = state.target;
-			
-			SelectPartialFilter f = new SelectPartialFilter(
-				spo == 0 ? true : false,
-				spo == 1 ? true : false,
-				spo == 2 ? true : false,
-				false
-				);
-			
-			SelectCacheKey key = new SelectCacheKey(q, f, var);
-			
-			Set cached = (Set)state.cachedSelections[key];
-			if (cached == null) {
-				cached = new Set();
-				queryTarget.Select(q, f, new PutInSet(spo, cached));
-				
-				// Do value filters
-				if (var != null)
-					ApplyValueFilters(cached, valueFilters[var.BindingIndex], state.target);
-							
-				state.cachedSelections[key] = cached;
-			}
-			
-			return cached;
-		}
-		
-		private void ApplyValueFilters(Set resources, ArrayList valueFilters, Store target) {
-			foreach (ValueFilter f in valueFilters) {
-				foreach (Resource r in resources.Items()) {
-					if (!(r is Literal) && f is LiteralValueFilter)
-						resources.Remove(r);
-					else if (!f.Filter(r, target))
-						resources.Remove(r);
-				}
-			}
-		}
-		
-		private class PutInArraySink : StatementSink {
-			Hashtable seen = new Hashtable();
-			int spo;
-			ArrayList sink;
-			
-			public PutInArraySink(int spo, ArrayList sink) {
-				this.spo = spo; this.sink = sink;
-			}
-
-			public bool Add(Statement statement) {
-				Resource r;
-				if (spo == 0) r = statement.Subject;
-				else if (spo == 1) r = statement.Predicate;
-				else r = statement.Object;
-				if (!(r.Uri != null || r is Literal) || !seen.ContainsKey(r)) {
-					sink.Add(r);
-					if ((r.Uri != null || r is Literal))
-						seen[r] = r;
-				}
-				return true;
-			}
-		}
-		
-		private class PutInSet : StatementSink {
-			int spo;
-			Set sink;
-			Hashtable remember;
-			VariableNode sv, pv, ov;
-			
-			public PutInSet(int spo, Set sink) {
-				this.spo = spo; this.sink = sink;
-			}
-			public PutInSet(int spo, Set sink, Hashtable remember, VariableNode sv, VariableNode pv, VariableNode ov) : this(spo, sink) {
-				this.remember = remember;
-				this.sv = sv;
-				this.pv = pv;
-				this.ov = ov;
-			}
-
-			public bool Add(Statement statement) {
-				Resource r;
-				if (spo == 0) r = statement.Subject;
-				else if (spo == 1) r = statement.Predicate;
-				else r = statement.Object;
-				sink.Add(r);
-				
-				if (remember != null) {
-					Hashtable rh = (Hashtable)remember[r];
-					if (rh == null) {
-						rh = new Hashtable();
-						remember[r] = rh;
-					}					
 					
-					if (sv != null) rh[sv] = statement.Subject;
-					if (pv != null) rh[pv] = statement.Predicate;
-					if (ov != null) rh[ov] = statement.Object;
+					bindings.Results = newbindings;
+					
+				} else {
+					// There are no multiply bound variables, but if
+					// there are more than two unbound variables,
+					// we need to be sure to preserve the pairings
+					// of the matching values.
+				
+					int numUnbound = IsUnbound(qs.Subject, bindings)
+						+ IsUnbound(qs.Predicate, bindings)
+						+ IsUnbound(qs.Object, bindings);
+						
+					bool sunbound = IsUnbound(qs.Subject, bindings) == 1;
+					bool punbound = IsUnbound(qs.Predicate, bindings) == 1;
+					bool ounbound = IsUnbound(qs.Object, bindings) == 1;
+					
+					Statement s = GetStatement(qs, bindings);
+					
+					// If we couldn't get a statement out of this,
+					// then if this was not an optional filter,
+					// fail.  If this was optional, don't change
+					// the bindings any. 
+					if (s == StatementFailed) return qs.Optional;
+					
+					if (numUnbound == 0) {
+						Debug(qs.ToString() + " All bound");
+						
+						// All variables are singly bound already.
+						// We can just test if the statement exists.
+						if (!targetModel.Contains(s)
+							&& !qs.Optional)
+							return false;
+					
+					} else if (numUnbound == 1) {
+						Debug(qs.ToString() + " 1 Unbound");
+					
+						// There is just one unbound variable.  The others
+						// are not multiply bound, so they must be uniquely
+						// bound (but they may not be bound in all results).
+						// Run a combined select to find all possible values
+						// of the unbound variable at once, and set these to
+						// be the values of the variable for matching results.
+						
+						ResSet values = new ResSet();
+						foreach (Statement match in targetModel.Select(s)) {
+							if (!MatchesFilters(match, qs, targetModel)) continue;
+							if (sunbound) values.Add(match.Subject);
+							if (punbound) values.Add(match.Predicate);
+							if (ounbound) values.Add(match.Object);
+						}
+						
+						Debug("\t" + values.Count + " matches");
+						
+						if (values.Count == 0)
+							return qs.Optional;
+							
+						int varIndex = -1;
+						if (sunbound) varIndex = qs.Subject.VarIndex;
+						if (punbound) varIndex = qs.Predicate.VarIndex;
+						if (ounbound) varIndex = qs.Object.VarIndex;
+						
+						if (bindings.Results.Count == 0)
+							bindings.Results.Add(new QueryResult(this));
+						
+						bindings.Union.Bindings[varIndex] = new ResSet();
+						foreach (Resource r in values)
+							bindings.Union.Bindings[varIndex].Add(r);
+							
+						foreach (QueryResult r in bindings.Results) {
+							// Check that the bound variables are bound in this result.
+							// If it is bound, it will be bound to the correct resource,
+							// but it might not be bound at all if an optional statement
+							// failed to match -- in which case, don't modify the binding.
+							if (qs.Subject.IsVariable && !sunbound && r.Bindings[qs.Subject.VarIndex] == null) continue;
+							if (qs.Predicate.IsVariable && !punbound && r.Bindings[qs.Predicate.VarIndex] == null) continue;
+							if (qs.Object.IsVariable && !ounbound && r.Bindings[qs.Object.VarIndex] == null) continue;
+						
+							r.Bindings[varIndex] = values;
+						}
+						
+					} else {
+						// There are two or more unbound variables, the
+						// third variable being uniquely bound, if bound.
+						// Keep track of the pairing of unbound variables.
+						
+						Debug(qs.ToString() + " 2 or 3 Unbound");
+					
+						if (bindings.Results.Count == 0)
+							bindings.Results.Add(new QueryResult(this));
+							
+						ArrayList newbindings = new ArrayList();
+						foreach (Statement match in targetModel.Select(s)) {
+							if (!MatchesFilters(match, qs, targetModel)) continue;
+							bindings.Union.Add(qs, match);
+							foreach (QueryResult r in bindings.Results) {
+								if (numUnbound == 2) {
+									// Check that the bound variable is bound in this result.
+									// If it is bound, it will be bound to the correct resource,
+									// but it might not be bound at all if an optional statement
+									// failed to match -- in which case, preserve the binding if
+									// this was an optional statement.
+									bool matches = true;
+									if (qs.Subject.IsVariable && !sunbound && r.Bindings[qs.Subject.VarIndex] == null) matches = false;
+									if (qs.Subject.IsVariable && !punbound && r.Bindings[qs.Predicate.VarIndex] == null) matches = false;
+									if (qs.Subject.IsVariable && !ounbound && r.Bindings[qs.Object.VarIndex] == null) matches = false;
+									if (!matches) {
+										if (qs.Optional)
+											newbindings.Add(r);
+										continue;
+									}
+								}
+							
+								QueryResult r2 = r.Clone();
+								r2.Add(qs, match);
+								newbindings.Add(r2);
+							}
+						}
+						if (qs.Optional && newbindings.Count == 0)
+							return true; // don't clear out bindings
+						bindings.Results = newbindings;
+					}
 				}
-				return true;
-			}
-		}
+			
+			} else {
+				// There is more than one statement in the group.
+				// These are never optional.
 
-		private class Set {
-			Hashtable store;
-			ArrayList items;
-			
-			public Set() { store = new Hashtable(); }
-			public Set(Set other) { store = (Hashtable)other.store.Clone(); }
-			
-			public void Add(object r) { store[r] = r; items = null; }
-			public void Remove(object r) { store.Remove(r); items = null; }
-			public bool Contains(object r) { return store.ContainsKey(r); }
-			
-			public int Size() { return store.Count; }
-			
-			public ICollection Items() {
-				if (items == null) {
-					items = new ArrayList();
-					items.AddRange(store.Keys);
+				Debug("Statement group.");
+		
+				VarOrAnchor var = new VarOrAnchor();
+				foreach (QueryStatement qs in group) {
+					if (qs.Subject.IsVariable && bindings.Union.Bindings[qs.Subject.VarIndex] == null) var = qs.Subject;
+					if (qs.Predicate.IsVariable && bindings.Union.Bindings[qs.Predicate.VarIndex] == null) var = qs.Predicate;
+					if (qs.Object.IsVariable && bindings.Union.Bindings[qs.Object.VarIndex] == null) var = qs.Object;
+					break;
 				}
-				return items;
+				// The variable should be unbound so far.
+				if (bindings.Union.Bindings[var.VarIndex] != null)
+					throw new Exception();
+				
+				ArrayList findstatements = new ArrayList();
+				foreach (QueryStatement qs in group) {
+					Statement s = GetStatement(qs, bindings);
+					if (s == StatementFailed) return false;
+					findstatements.Add(s);
+				}
+				
+				ResSet values = new ResSet();
+				foreach (Entity r in targetModel.FindEntities((Statement[])findstatements.ToArray(typeof(Statement)))) {
+					if (!MatchesFilters(r, var, targetModel)) continue;
+					values.Add(r);
+				}
+				
+				bindings.Union.Bindings[var.VarIndex] = values;
+				
+				if (bindings.Results.Count == 0)
+					bindings.Results.Add(new QueryResult(this));
+			
+				foreach (QueryResult result in bindings.Results)
+					result.Bindings[var.VarIndex] = values;
 			}
 			
-			public Set Clone() { return new Set(this); }
-		}
-			
-		private class StopOnFirst : QueryResultSink {
-			public bool Found = false;
-			public override bool Add(VariableBinding[] result) {
-				Found = true;
-				return false;
-			}
-			public override void Init(Entity[] variables) { }
-			public override void Finished() { }
-		}
-	
-		private class BufferSink : QueryResultSink {
-			public ArrayList Bindings = new ArrayList();
-			public override bool Add(VariableBinding[] result) {
-				Bindings.Add(result.Clone());
-				return true;
-			}
-			public override void Init(Entity[] variables) { }
-			public override void Finished() { }
-		}
-
-		private class StartLimitSink : QueryResultSink {
-			int start, limit;
-			QueryResultSink sink;
-			int counter = 0;
-			public StartLimitSink(int start, int limit, QueryResultSink sink) { this.start = start; this.limit = limit; this.sink = sink; }
-			public override bool Add(VariableBinding[] result) {
-				counter++;
-				if (counter >= start || start == -1) sink.Add(result);
-				if (counter == limit) return false;
-				return true;
-			}
-			public override void Init(Entity[] variables) { sink.Init(variables); }
-			public override void Finished() { sink.Finished(); }
+			return true;
 		}
 		
+		static Resource[] ResourceArrayNull = new Resource[] { null };
+		
+		private static IEnumerator GetBindings(VarOrAnchor e, QueryResult bindings) {
+			if (!e.IsVariable) {
+				if (e.ArrayOfAnchor == null)
+					e.ArrayOfAnchor = new Resource[] { e.Anchor };
+				return e.ArrayOfAnchor.GetEnumerator();
+			}
+			if (bindings.Bindings[e.VarIndex] == null) return ResourceArrayNull.GetEnumerator();
+			return bindings.Bindings[e.VarIndex].Items.GetEnumerator();
+		}
+		private int IsMultiplyBound(VarOrAnchor e, BindingSet bindings) {
+			if (!e.IsVariable) return 0;
+			if (bindings.Union.Bindings[e.VarIndex] == null) return 0;
+			if (bindings.Union.Bindings[e.VarIndex].Items.Count == 1) return 0;
+			return 1;
+		}
+		private int IsUnbound(VarOrAnchor e, BindingSet bindings) {
+			if (!e.IsVariable) return 0;
+			if (bindings.Union.Bindings[e.VarIndex] == null) return 1;
+			return 0;
+		}
+		
+		private Resource GetUniqueBinding(VarOrAnchor e, BindingSet bindings) {
+			if (!e.IsVariable) return e.Anchor;
+			if (bindings.Union.Bindings[e.VarIndex] == null || bindings.Union.Bindings[e.VarIndex].Count == 0) return null;
+			if (bindings.Union.Bindings[e.VarIndex].Count > 1) throw new Exception();
+			foreach (Resource r in bindings.Union.Bindings[e.VarIndex].Items)
+				return r;
+			throw new Exception();
+		}
+		
+		Statement StatementFailed = new Statement(null, null, null);
+		
+		private Statement GetStatement(QueryStatement sq, BindingSet bindings) {
+			Resource s = GetUniqueBinding(sq.Subject, bindings);
+			Resource p = GetUniqueBinding(sq.Predicate, bindings);
+			Resource o = GetUniqueBinding(sq.Object, bindings);
+			if (s is Literal || p is Literal) return StatementFailed;
+			return new Statement((Entity)s, (Entity)p, o);
+		}
+		
+		bool MatchesFilters(Statement s, QueryStatement q, Store targetModel) {
+			return MatchesFilters(s.Subject, q.Subject, targetModel)
+				&& MatchesFilters(s.Predicate, q.Predicate, targetModel)
+				&& MatchesFilters(s.Object, q.Object, targetModel);
+		}
+		
+		bool MatchesFilters(Resource e, VarOrAnchor var, Store targetModel) {
+			if (!var.IsVariable) return true;
+			foreach (ValueFilter f in variables[var.VarIndex].Filters) {
+				if (!f.Filter(e, targetModel)) return false;
+			}
+			return true;
+		}
+		
+		private void Init() {
+			// Any anonymous nodes in the graph are SelectFirst nodes
+			foreach (Statement s in setupStatements) {
+				InitAnonVariable(s.Subject);
+				InitAnonVariable(s.Predicate);
+				InitAnonVariable(s.Object);
+			}
+			foreach (Statement s in setupOptionalStatements) {
+				InitAnonVariable(s.Subject);
+				InitAnonVariable(s.Predicate);
+				InitAnonVariable(s.Object);
+			}
+		
+			// Set up the variables array.
+			variables = new Variable[setupVariables.Count];
+			variableEntities = new Entity[variables.Length];
+			Hashtable varIndex = new Hashtable();
+			for (int i = 0; i < variables.Length; i++) {
+				variables[i].Entity = (Entity)setupVariables[i];
+				variableEntities[i] = variables[i].Entity;
+				varIndex[variables[i].Entity] = i;
+				
+				ArrayList filters = new ArrayList();
+				foreach (SetupValueFilter filter in setupValueFilters) {
+					if (filter.a == variables[i].Entity)
+						filters.Add(filter.b);
+				}
+				
+				variables[i].Filters = (ValueFilter[])filters.ToArray(typeof(ValueFilter));
+			}
+			
+			// Set up the statements
+			ArrayList statements = new ArrayList();
+			foreach (Statement st in setupStatements)
+				InitSetStatement(st, statements, varIndex, false);
+			foreach (Statement st in setupOptionalStatements)
+				InitSetStatement(st, statements, varIndex, true);
+			
+			// Order the statements in the most efficient order
+			// for the recursive query.
+			Hashtable setVars = new Hashtable();
+			ArrayList sgroups = new ArrayList();
+			while (statements.Count > 0) {
+				QueryStatement[] group = InitBuildNode(statements, setVars);
+				sgroups.Add(group);
+				foreach (QueryStatement qs in group) {
+					if (qs.Subject.IsVariable) setVars[qs.Subject.VarIndex] = setVars;
+					if (qs.Predicate.IsVariable) setVars[qs.Predicate.VarIndex] = setVars;
+					if (qs.Object.IsVariable) setVars[qs.Object.VarIndex] = setVars;
+				}
+			}
+			
+			this.statements = (QueryStatement[][])sgroups.ToArray(typeof(QueryStatement[]));
+		}
+		
+		private void InitAnonVariable(Resource r) {
+			if (r is Entity && r.Uri == null)
+				setupVariables.Add(r);
+		}
+		
+		private void InitSetStatement(Statement st, ArrayList statements, Hashtable varIndex, bool optional) {
+			QueryStatement qs = new QueryStatement();
+			
+			InitSetStatement(st.Subject, ref qs.Subject, varIndex);
+			InitSetStatement(st.Predicate, ref qs.Predicate, varIndex);
+			InitSetStatement(st.Object, ref qs.Object, varIndex);
+			
+			qs.Optional = optional;
+			
+			// If this statement has no variables, just drop it.
+			if (!qs.Subject.IsVariable && !qs.Predicate.IsVariable && !qs.Object.IsVariable)
+				return;
+
+			statements.Add(qs);
+		}
+		
+		private void InitSetStatement(Resource ent, ref VarOrAnchor st, Hashtable varIndex) {
+			if (!varIndex.ContainsKey(ent)) {
+				st.IsVariable = false;
+				st.Anchor = ent;
+			} else {
+				st.IsVariable = true;
+				st.VarIndex = (int)varIndex[ent];
+			}
+		}
+		
+		private class QueryStatementComparer : IComparer {
+			Hashtable setVars;
+			ResSet fps, ifps;
+			
+			public QueryStatementComparer(Hashtable setVars, ResSet fps, ResSet ifps) {
+				this.setVars = setVars;
+				this.fps = fps;
+				this.ifps = ifps;
+			}
+		
+			int IComparer.Compare(object a, object b) {
+				return Compare((QueryStatement)a, (QueryStatement)b);
+			}
+			
+			public int Compare(QueryStatement a, QueryStatement b) {
+				int optional = a.Optional.CompareTo(b.Optional);
+				if (optional != 0) return optional;
+				
+				int numvars = NumVars(a).CompareTo(NumVars(b));
+				if (numvars != 0) return numvars;
+				
+				int complexity = Complexity(a).CompareTo(Complexity(b));
+				return complexity;
+			}
+			
+			private int NumVars(QueryStatement s) {
+				int ret = 0;
+				if (s.Subject.IsVariable && !setVars.ContainsKey(s.Subject.VarIndex))
+					ret++;
+				if (s.Predicate.IsVariable && !setVars.ContainsKey(s.Predicate.VarIndex))
+					ret++;
+				if (s.Object.IsVariable && !setVars.ContainsKey(s.Object.VarIndex))
+					ret++;
+				return ret;
+			}
+			
+			private int Complexity(QueryStatement s) {
+				if (s.Predicate.IsVariable) return 2;
+				if ((!s.Subject.IsVariable || setVars.ContainsKey(s.Subject.VarIndex))
+					&& fps.Contains(s.Predicate.Anchor))
+					return 0;
+				if ((!s.Object.IsVariable || setVars.ContainsKey(s.Object.VarIndex))
+					&& ifps.Contains(s.Predicate.Anchor))
+					return 0;
+				return 1;
+			}
+		}
+		
+		private QueryStatement[] InitBuildNode(ArrayList statements, Hashtable setVars) {
+			// Get the best statements to consider
+			// Because we can consider statements in groups, we need
+			// a list of lists.
+			QueryStatementComparer comparer = new QueryStatementComparer(setVars, fps, ifps);
+			ArrayList considerations = new ArrayList();
+			for (int i = 0; i < statements.Count; i++) {
+				QueryStatement next = (QueryStatement)statements[i];
+				int comp = 1;
+				if (considerations.Count > 0) {
+					QueryStatement curcomp = (QueryStatement) ((ArrayList)considerations[0])[0];
+					comp = comparer.Compare(curcomp, next);
+				}
+				
+				if (comp < 0) // next is worse than current
+					continue;
+				
+				if (comp > 0) // clear out worse possibilities
+					considerations.Clear();
+				
+				// next is equal to what we have.  we can either
+				// group it with an existing statement, or make
+				// a new group out of it.
+				
+				bool grouped = false;
+				foreach (ArrayList g in considerations) {
+					// We can group next in g, if the only
+					// unset variables in next are the only
+					// unset variables in the statements in g.
+					// AND if nothing else is a variable,
+					// because of having multiply-bound variables
+					// with FindEntities.  And none may be optional.
+					QueryStatement s = (QueryStatement)g[0];
+					int su = InitBuildNodeGetUniqueUnsetVar(s, setVars);
+					int nu = InitBuildNodeGetUniqueUnsetVar(next, setVars);
+					if (su == nu && su != -1 && s.NumVars() == 1 && next.NumVars() == 1
+						&& !s.Optional && !next.Optional) {
+						g.Add(next);
+						grouped = true;
+						break;
+					}
+				}
+				if (grouped) continue;
+				
+				// we didn't group it with anything existing,
+				// so make a new group
+				
+				ArrayList group = new ArrayList();
+				group.Add(next);
+				considerations.Add(group);
+			}
+			
+			// Pick the group with the most number of statements.
+			ArrayList bestgroup = null;
+			foreach (ArrayList g in considerations) {
+				if (bestgroup == null || bestgroup.Count < g.Count)
+					bestgroup = g;
+			}
+			
+			foreach (QueryStatement qs in bestgroup)
+				statements.Remove(qs);
+			
+			return (QueryStatement[])bestgroup.ToArray(typeof(QueryStatement));
+		}
+		
+		int InitBuildNodeGetUniqueUnsetVar(QueryStatement s, Hashtable setVars) {
+			int ret = -1;
+			if (s.Subject.IsVariable && !setVars.ContainsKey(s.Subject.VarIndex))
+				ret = s.Subject.VarIndex;
+			if (s.Predicate.IsVariable && !setVars.ContainsKey(s.Predicate.VarIndex)) {
+				if (ret != -1) return -1;
+				ret = s.Predicate.VarIndex;
+			}
+			if (s.Object.IsVariable && !setVars.ContainsKey(s.Object.VarIndex)) {
+				if (ret != -1) return -1;
+				ret = s.Object.VarIndex;
+			}
+			return ret;
+		}
 	}
 	
 	public abstract class QueryResultSink {
@@ -1000,15 +801,13 @@ namespace SemWeb.Query {
 	public struct VariableBinding {
 		Entity v;
 		Resource t;
-		internal bool var;
 		
-		internal VariableBinding(Entity variable, Resource target, bool isvar) {
+		internal VariableBinding(Entity variable, Resource target) {
 			v = variable;
 			t = target;
-			var = isvar;
 		}
 		
-		public Entity Variable { get { return v; } }
+		public Entity Variable { get { return v; } internal set { v = value; } }
 		public Resource Target { get { return t; } internal set { t = value; } }
 	}
 }	
