@@ -17,17 +17,17 @@ bin/SemWeb.MySQLStore.dll: src.misc/MySQLStore.cs bin/SemWeb.dll
 	-r:bin/SemWeb.dll -r:System.Data -r:ByteFX.Data
 
 bin/SemWeb.dll: src/*.cs
-	mcs -g src/*.cs -out:bin/SemWeb.dll -t:library \
+	mcs -debug src/*.cs -out:bin/SemWeb.dll -t:library \
 		-r:System.Data
 
 bin/rdfshmush.exe: src.misc/rdfshmush.cs bin/SemWeb.dll
 	mcs src.misc/rdfshmush.cs -out:bin/rdfshmush.exe -r bin/SemWeb.dll
 
 bin/runtests.exe: src.misc/runtests.cs
-	mcs -g src.misc/runtests.cs -out:bin/runtests.exe -r bin/SemWeb.dll
+	mcs -debug src.misc/runtests.cs -out:bin/runtests.exe -r bin/SemWeb.dll
 
 bin/rdfxsltproc.exe: src.misc/rdfxsltproc.cs
-	mcs -g src.misc/rdfxsltproc.cs -out:bin/rdfxsltproc.exe -r bin/SemWeb.dll -r Mono.GetOptions
+	mcs -debug src.misc/rdfxsltproc.cs -out:bin/rdfxsltproc.exe -r bin/SemWeb.dll -r Mono.GetOptions
 		
 bin/rdfbind.exe: src.misc/rdfbind.cs bin/SemWeb.dll
 	mcs src.misc/rdfbind.cs -out:bin/rdfbind.exe -r:bin/SemWeb.dll -r:Mono.GetOptions
