@@ -106,10 +106,12 @@
         <Parameter Name="statement" Type="SemWeb.Statement" />
       </Parameters>
       <Docs>
-        <param name="statement">The statement to search for.</param>
-        <summary>Returns whether the store contains a statement.</summary>
+        <param name="statement">The statement to search for, or a statement template.</param>
+        <summary>Returns whether the store contains a statement, or any
+statement that matches the template.</summary>
         <returns>
-          <see langword="true" /> if the store contains the statement.</returns>
+          <see langword="true" /> if the store contains the statement or
+any statement matching the template.</returns>
         <remarks>None.</remarks>
       </Docs>
     </Member>
