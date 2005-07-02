@@ -1,0 +1,25 @@
+<Combine name="semweb" fileversion="2.0">
+  <Configurations>
+    <Configuration name="Debug" ctype="CombineConfiguration">
+      <Entry build="False" name="semweb" />
+      <Entry build="False" name="MySql" />
+      <Entry build="False" name="rdfstorage" />
+    </Configuration>
+    <Configuration name="Release" ctype="CombineConfiguration">
+      <Entry build="False" name="semweb" />
+      <Entry build="False" name="MySql" />
+      <Entry build="False" name="rdfstorage" />
+    </Configuration>
+  </Configurations>
+  <StartMode startupentry="semweb" single="True">
+    <Execute type="None" entry="semweb" />
+    <Execute type="None" entry="MySql" />
+    <Execute type="None" entry="rdfstorage" />
+  </StartMode>
+  <Entries>
+    <Entry filename="./semweb.mdp" />
+    <Entry filename="./src.misc/MySql.mdp" />
+    <Entry filename="./src.misc/rdfstorage.mdp" />
+    <Entry filename="./src.misc/rdfbind.mdp" />
+  </Entries>
+</Combine>

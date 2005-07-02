@@ -1,3 +1,10 @@
+2005-07-01 Version 0.502 Posted
+
+	* More bug fixes.
+	* Query engine totally rewritten, which will
+	  make much more sense once its documented.
+	* Store.Contains now accepts statement templates.
+
 2005-06-20 Version 0.501 Posted
 
 	Just lots of bugs fixed.
