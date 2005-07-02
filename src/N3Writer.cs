@@ -120,7 +120,7 @@ namespace SemWeb {
 					b.Append(HexDigit(c, 2));
 					b.Append(HexDigit(c, 1));
 					b.Append(HexDigit(c, 0));
-				} else if (c >= 0x10000) {
+				/*} else if (c >= 0x10000) {
 					b.Append("\\U");
 					b.Append(HexDigit(c, 7));
 					b.Append(HexDigit(c, 6));
@@ -129,7 +129,7 @@ namespace SemWeb {
 					b.Append(HexDigit(c, 3));
 					b.Append(HexDigit(c, 2));
 					b.Append(HexDigit(c, 1));
-					b.Append(HexDigit(c, 0));
+					b.Append(HexDigit(c, 0));*/
 				}
 			}
 			return b.ToString();
