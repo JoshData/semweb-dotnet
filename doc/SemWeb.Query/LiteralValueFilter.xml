@@ -2,7 +2,7 @@
   <TypeSignature Language="C#" Value="public abstract class LiteralValueFilter : SemWeb.Query.ValueFilter" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
-    <AssemblyVersion>0.5.0.1</AssemblyVersion>
+    <AssemblyVersion>0.5.0.2</AssemblyVersion>
   </AssemblyInfo>
   <Base>
     <BaseTypeName>SemWeb.Query.ValueFilter</BaseTypeName>

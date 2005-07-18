@@ -2,7 +2,7 @@
   <TypeSignature Language="C#" Value="public class RDFSReasoning : SemWeb.Reasoning.ReasoningEngine" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
-    <AssemblyVersion>0.5.0.1</AssemblyVersion>
+    <AssemblyVersion>0.5.0.2</AssemblyVersion>
   </AssemblyInfo>
   <Base>
     <BaseTypeName>SemWeb.Reasoning.ReasoningEngine</BaseTypeName>

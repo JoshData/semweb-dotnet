@@ -2,7 +2,7 @@
   <TypeSignature Language="C#" Value="public class RSquary : SemWeb.Query.QueryEngine" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
-    <AssemblyVersion>0.5.0.1</AssemblyVersion>
+    <AssemblyVersion>0.5.0.2</AssemblyVersion>
   </AssemblyInfo>
   <Base>
     <BaseTypeName>SemWeb.Query.QueryEngine</BaseTypeName>
@@ -110,8 +110,9 @@
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
-  <Member MemberName="qSelectFirst">
-      <MemberSignature Language="C#" Value="public static SemWeb.Entity qSelectFirst;" />
+  
+  <Member MemberName="qOptional">
+      <MemberSignature Language="C#" Value="public static SemWeb.Entity qOptional;" />
       <MemberType>Field</MemberType>
       <ReturnValue>
         <ReturnType>SemWeb.Entity</ReturnType>

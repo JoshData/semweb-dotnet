@@ -61,7 +61,7 @@
     </Namespace>
   </Types>
   <Assemblies>
-    <Assembly Name="SemWeb" Version="0.5.0.1">
+    <Assembly Name="SemWeb" Version="0.5.0.2">
       <Attributes>
         <Attribute>
           <AttributeName>System.Reflection.AssemblyKeyName(KeyName="")</AttributeName>

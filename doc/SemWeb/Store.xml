@@ -2,7 +2,7 @@
   <TypeSignature Language="C#" Value="public abstract class Store : SemWeb.StatementSink, SemWeb.StatementSource" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
-    <AssemblyVersion>0.5.0.1</AssemblyVersion>
+    <AssemblyVersion>0.5.0.2</AssemblyVersion>
   </AssemblyInfo>
   <Base>
     <BaseTypeName>System.Object</BaseTypeName>
@@ -532,7 +532,7 @@ any statement matching the template.</returns>
     </Member>
   
   <Member MemberName="FindEntities">
-      <MemberSignature Language="C#" Value="public abstract SemWeb.Entity[] FindEntities (SemWeb.Statement[] filters);" />
+      <MemberSignature Language="C#" Value="public virtual SemWeb.Entity[] FindEntities (SemWeb.Statement[] filters);" />
       <MemberType>Method</MemberType>
       <ReturnValue>
         <ReturnType>SemWeb.Entity[]</ReturnType>
@@ -577,6 +577,40 @@ any statement matching the template.</returns>
         <param name="replacement">The statement that will replace the first statement.</param>
         <summary>Replaces a single statement with another statement.</summary>
         <remarks>Store implementations may choose to optimize this method over a call to Remove followed by Add.</remarks>
+      </Docs>
+    </Member>
+  <Member MemberName="Select">
+      <MemberSignature Language="C#" Value="public SemWeb.MemoryStore Select (SemWeb.Statement[] templates);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>SemWeb.MemoryStore</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="templates" Type="SemWeb.Statement[]" />
+      </Parameters>
+      <Docs>
+        <param name="templates">To be added.</param>
+        <summary>To be added.</summary>
+        <returns>To be added.</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+  <Member MemberName="Select">
+      <MemberSignature Language="C#" Value="public SemWeb.MemoryStore Select (SemWeb.Statement[] templates, SemWeb.SelectPartialFilter partialFilter);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>SemWeb.MemoryStore</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="templates" Type="SemWeb.Statement[]" />
+        <Parameter Name="partialFilter" Type="SemWeb.SelectPartialFilter" />
+      </Parameters>
+      <Docs>
+        <param name="templates">To be added.</param>
+        <param name="partialFilter">To be added.</param>
+        <summary>To be added.</summary>
+        <returns>To be added.</returns>
+        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>
