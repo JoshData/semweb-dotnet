@@ -129,11 +129,9 @@ namespace SemWeb.Query {
 	public class SQLQuerySink : QueryResultSink {
 		TextWriter output;
 		string table;
-		bool first = true;
 		
 		public SQLQuerySink(TextWriter output, string table) { this.output = output; this.table = table; }
 		
-		public override void Init(Entity[] variables) { }
 		public override void Finished() { }
 
 		private string GetFieldType(string datatype) {
@@ -187,44 +185,49 @@ namespace SemWeb.Query {
 					return "TIME";
 
 				case "http://www.w3.org/2001/XMLSchema#base64Binary":
-				case "http://www.w3.org/2001/XMLSchema#anyURI":
 					return "BLOB";
+
+				case "http://www.w3.org/2001/XMLSchema#anyURI":
+					// shouldn't be case-insensitive, but using BLOB
+					// instead seems to make things too complex.
+					return "TEXT";
 			}
 			
 			return "TEXT";
 		}
 		
-		public override bool Add(VariableBinding[] result) {
-			if (first) {
-				first = false;
-				output.Write("CREATE TABLE " + table + " (");
+		public override void Init(Entity[] variables) {
+			output.Write("CREATE TABLE " + table + " (");
+			
+			bool f = true;
+			foreach (Entity var in variables) {
+				if (var.Uri == null) continue;
+				string name;
+				int hash = var.Uri.LastIndexOf("#");
+				if (hash == -1) name = "`" + var.Uri + "`";
+				else name = var.Uri.Substring(hash+1);
 				
-				bool f = true;
-				foreach (VariableBinding var in result) {
-					if (var.Variable.Uri == null) continue;
-					string name;
-					int hash = var.Variable.Uri.LastIndexOf("#");
-					if (hash == -1) name = "`" + var.Variable.Uri + "`";
-					else name = var.Variable.Uri.Substring(hash+1);
-					
-					string type = "BLOB";
-					if (var.Target is Literal && ((Literal)var.Target).DataType != null)
-						type = GetFieldType(((Literal)var.Target).DataType);
+				string type = "BLOB";
+				//if (var.Target is Literal && ((Literal)var.Target).DataType != null)
+				//	type = GetFieldType(((Literal)var.Target).DataType);
 
-					if (!f)  { output.Write(", "); } f = false; 
-					output.Write(name + " " + type);
-				}
-				
-				output.WriteLine(");");
+				if (!f)  { output.Write(", "); } f = false; 
+				output.Write(name + " " + type);
 			}
 			
+			output.WriteLine(");");
+		}
+		
+		public override bool Add(VariableBinding[] result) {
 			output.Write("INSERT INTO " + table + " VALUES (");
 			bool firstx = true;
 			foreach (VariableBinding var in result) {
 				if (var.Variable.Uri == null) continue;
 				
 				if (!firstx)  { output.Write(", "); } firstx = false;
-				if (var.Target is Literal)
+				if (var.Target == null)
+					output.Write("NULL");
+				else if (var.Target is Literal)
 					output.Write(Escape(((Literal)var.Target).Value));
 				else if (var.Target.Uri != null)
 					output.Write("\"" + var.Target.Uri + "\"");
@@ -259,6 +262,16 @@ namespace SemWeb.Query {
 		int blankNodeCounter = 0;
 		Hashtable blankNodes = new Hashtable();
 		
+		private static System.Xml.XmlWriter GetWriter(System.IO.TextWriter writer) {
+			System.Xml.XmlTextWriter w = new System.Xml.XmlTextWriter(writer);
+			w.Formatting = System.Xml.Formatting.Indented;
+			return w;
+		}
+		
+		public SparqlXmlQuerySink(TextWriter output, string variableNamespace)
+		 : this(GetWriter(output), variableNamespace) {
+		}
+
 		public SparqlXmlQuerySink(System.Xml.XmlWriter output, string variableNamespace) {
 			this.output = output;
 			this.variableNamespace = variableNamespace;

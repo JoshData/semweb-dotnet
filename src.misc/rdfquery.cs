@@ -49,9 +49,7 @@ public class RDFQuery {
 		else if (opts.format == "html")
 			qs = new HTMLQuerySink(Console.Out);
 		else if (opts.format == "xml") {
-			System.Xml.XmlTextWriter w = new System.Xml.XmlTextWriter(Console.Out);
-			w.Formatting = System.Xml.Formatting.Indented;
-			qs = new SparqlXmlQuerySink(w, baseuri);
+			qs = new SparqlXmlQuerySink(Console.Out, baseuri);
 		} else {
 			Console.Error.WriteLine("Invalid output format.");
 			return;
