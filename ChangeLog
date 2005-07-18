@@ -1,3 +1,8 @@
+	* GetHashCode() for anonmyous resources used to return
+	  zero, which made hashtables of anonymous resources
+	  very slow.  Now it returns Object.GetHashCode().
+	* Fixes in the query engine, SQL store, and N3Reader.
+
 2005-07-01 Version 0.502 Posted
 
 	* More bug fixes.

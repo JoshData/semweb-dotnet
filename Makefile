@@ -32,11 +32,11 @@ bin/rdfxsltproc.exe: src.misc/rdfxsltproc.cs
 bin/rdfbind.exe: src.misc/rdfbind.cs bin/SemWeb.dll
 	mcs src.misc/rdfbind.cs -out:bin/rdfbind.exe -r:bin/SemWeb.dll -r:Mono.GetOptions
 
-doc: Makefile
-	mono /usr/lib/monodoc/monodocer.exe -assembly:bin/SemWeb.dll -path:doc #--delete
+apidocsxml: Makefile
+	mono /usr/lib/monodoc/monodocer.exe -assembly:bin/SemWeb.dll -path:apidocsxml #--delete
 	#mono /usr/lib/monodoc/monodocs2slashdoc.exe doc > SemWeb.docs.xml
-	mkdir -p doc-html
-	mono /usr/lib/monodoc/monodocs2html.exe -source:doc -dest:doc-html -template:docstemplate.xsl
+	mkdir -p apidocs
+	mono /usr/lib/monodoc/monodocs2html.exe -source:apidocsxml -dest:apidocs -template:docstemplate.xsl
 
 semweb.zip: bin/SemWeb.dll Makefile doc
 	rm -f semweb.zip
@@ -44,8 +44,9 @@ semweb.zip: bin/SemWeb.dll Makefile doc
 	bin/* \
 	src/*.cs src.misc/*.cs \
 	examples/*.cs examples/*.rdf \
-	doc/*.xml doc/*/*.xml \
-	doc-html \
+	apidocsxml/*.xml apidocsxml/*/*.xml \
+	apidocs \
+	doc \
 	Makefile README README.xhtml ChangeLog
 
 semweb-$(VERSION).tgz: semweb.zip
