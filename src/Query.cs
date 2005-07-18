@@ -459,8 +459,8 @@ namespace SemWeb.Query {
 									// this was an optional statement.
 									bool matches = true;
 									if (qs.Subject.IsVariable && !sunbound && r.Bindings[qs.Subject.VarIndex] == null) matches = false;
-									if (qs.Subject.IsVariable && !punbound && r.Bindings[qs.Predicate.VarIndex] == null) matches = false;
-									if (qs.Subject.IsVariable && !ounbound && r.Bindings[qs.Object.VarIndex] == null) matches = false;
+									if (qs.Predicate.IsVariable && !punbound && r.Bindings[qs.Predicate.VarIndex] == null) matches = false;
+									if (qs.Object.IsVariable && !ounbound && r.Bindings[qs.Object.VarIndex] == null) matches = false;
 									if (!matches) {
 										if (qs.Optional)
 											newbindings.Add(r);
@@ -793,9 +793,13 @@ namespace SemWeb.Query {
 	}
 	
 	public abstract class QueryResultSink {
-		public abstract void Init(Entity[] variables);
+		public virtual void Init(Entity[] variables) {
+		}
+		
 		public abstract bool Add(VariableBinding[] result);
-		public abstract void Finished();
+
+		public virtual void Finished() {
+		}
 	}
 	
 	public struct VariableBinding {

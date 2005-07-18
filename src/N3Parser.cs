@@ -538,6 +538,8 @@ namespace SemWeb {
 				ReadWhitespace(context.source);
 				if (context.source.Peek() != ']') {
 					char bracket = ReadPredicates(ret, context);
+					if (bracket == '.')
+						bracket = ReadPunc(context.source);
 					if (bracket != ']')
 						OnError("Expected a close bracket but found '" + bracket + "'", loc);
 				} else {

@@ -824,17 +824,19 @@ namespace SemWeb.Stores {
 			}
 		}
 		
-		/*
-		private string Escape(string str) {
+		private string Escape(string str, bool quotes) {
 			if (str == null) return "NULL";
 			StringBuilder b = new StringBuilder();
-			EscapedAppend(b, str);
+			EscapedAppend(b, str, quotes);
 			return b.ToString();
 		}
-		*/
 		
 		protected virtual void EscapedAppend(StringBuilder b, string str) {
-			b.Append('"');
+			EscapedAppend(b, str, true);
+		}
+
+		protected virtual void EscapedAppend(StringBuilder b, string str, bool quotes) {
+			if (quotes) b.Append('"');
 			for (int i = 0; i < str.Length; i++) {
 				char c = str[i];
 				switch (c) {
@@ -851,7 +853,7 @@ namespace SemWeb.Stores {
 						break;
 				}
 			}
-			b.Append('"');
+			if (quotes) b.Append('"');
 		}
 		
 		internal static void Escape(StringBuilder b) {
@@ -1098,10 +1100,9 @@ namespace SemWeb.Stores {
 			cmd.Append(".object");
 			cmd.Append(" AND ");
 			cmd.Append(joinalias);
-			throw new NotImplementedException();
-			//cmd.Append(".value LIKE \"%");
-			//cmd.Append(EscapeUnquoted(pattern));
-			//cmd.Append("%\" ");
+			cmd.Append(".value LIKE \"%");
+			cmd.Append(Escape(pattern, false));
+			cmd.Append("%\" ");
 		}
 		
 		protected abstract void RunCommand(string sql);
