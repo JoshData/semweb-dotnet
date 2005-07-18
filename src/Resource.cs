@@ -87,7 +87,10 @@ namespace SemWeb {
 				cachedHashCode = unchecked(v.Key.GetHashCode() + v.Value.GetHashCode());
 			}
 			
-			if (cachedHashCode == -1) cachedHashCode = 0;
+			// If there's no Uri or ExtraKeys info, then this
+			// object is only equal to itself.  It's then safe
+			// to use object.GetHashCode().
+			if (cachedHashCode == -1) cachedHashCode = base.GetHashCode();
 			
 			return cachedHashCode;
 		}
