@@ -140,7 +140,7 @@ namespace SemWeb {
 			// then the name gives its type.
 			if (CurNode() != NS.RDF + "Description") {
 				if (CurNode() == NS.RDF + "li") OnError("rdf:li cannot be the type of a node");
-				storage.Add(new Statement(entity, rdfType, (Entity)CurNode()));
+				storage.Add(new Statement(entity, rdfType, (Entity)CurNode(), Meta));
 			}
 			
 			ParsePropertyAttributes(entity);
@@ -164,7 +164,7 @@ namespace SemWeb {
 				// rdf:type is interpreted with an entity object,
 				// not a literal object.
 				if (curnode == NS.RDF + "type") {
-					storage.Add(new Statement(entity, rdfType, (Entity)xml.Value));
+					storage.Add(new Statement(entity, rdfType, (Entity)xml.Value, Meta));
 					foundAttrs = true;
 					continue;
 				}
@@ -194,7 +194,7 @@ namespace SemWeb {
 				// This is a literal property attribute.
 				string lang = xml.XmlLang != "" ? xml.XmlLang : null;
 				storage.Add(new Statement(entity, curnode,
-					new Literal(xml.Value, lang, null)));
+					new Literal(xml.Value, lang, null), Meta));
 				foundAttrs = true;
 					
 			} while (xml.MoveToNextAttribute());
@@ -301,17 +301,17 @@ namespace SemWeb {
 					
 					if (!empty) {
 						Entity next = new Entity(null);
-						storage.Add(new Statement(lastnode, rdfRest, next));
+						storage.Add(new Statement(lastnode, rdfRest, next, Meta));
 						lastnode = next;
 					}
 					
 					Entity item = ParseDescription();
-					storage.Add(new Statement(lastnode, rdfFirst, item));
+					storage.Add(new Statement(lastnode, rdfFirst, item, Meta));
 					
 					empty = false;
 				}
 
-				storage.Add(new Statement(lastnode, rdfRest, rdfNil));
+				storage.Add(new Statement(lastnode, rdfRest, rdfNil, Meta));
 				
 				if (empty)
 					objct = rdfNil;
@@ -377,16 +377,16 @@ namespace SemWeb {
 				}
 			}
 				
-			storage.Add(new Statement(subject, predicate, objct));
+			storage.Add(new Statement(subject, predicate, objct, Meta));
 			
 			if (ID != null) {
 				// In addition to adding the statement as normal, also
 				// add a reified statement.
 				Entity statement = GetNamedNode(Unrelativize("#" + ID));;
-				storage.Add(new Statement(statement, rdfType, rdfStatement));
-				storage.Add(new Statement(statement, rdfSubject, subject));
-				storage.Add(new Statement(statement, rdfPredicate, (Entity)predicate));
-				storage.Add(new Statement(statement, rdfObject, objct));
+				storage.Add(new Statement(statement, rdfType, rdfStatement, Meta));
+				storage.Add(new Statement(statement, rdfSubject, subject, Meta));
+				storage.Add(new Statement(statement, rdfPredicate, (Entity)predicate, Meta));
+				storage.Add(new Statement(statement, rdfObject, objct, Meta));
 			}
 		}
 		

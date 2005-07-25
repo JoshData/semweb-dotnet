@@ -56,6 +56,7 @@ namespace SemWeb {
 				writer.WriteLine(".");
 			closed = true;
 			hasWritten = false;
+			writer.Flush();
 		}
 
 		

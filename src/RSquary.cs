@@ -57,7 +57,7 @@ namespace SemWeb.Query {
 					}
 				}
 				
-				if (s.Meta == null)
+				if (s.Meta == Statement.DefaultMeta)
 					AddFilter(s);
 				else if (queryModel.Contains(new Statement(query, qOptional, s.Meta)))
 					AddOptionalFilter(s);

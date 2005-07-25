@@ -79,7 +79,7 @@ namespace SemWeb {
 				if (s.Subject != null) h[s.Subject] = h;
 				if (s.Predicate != null) h[s.Predicate] = h;
 				if (s.Object != null && s.Object is Entity) h[s.Object] = h;
-				if (s.Meta != null) h[s.Meta] = h;
+				if (s.Meta != null && s.Meta != Statement.DefaultMeta) h[s.Meta] = h;
 			}
 			return (Entity[])new ArrayList(h.Keys).ToArray(typeof(Entity));
 		}
@@ -155,14 +155,14 @@ namespace SemWeb {
 		
 		public override Entity[] FindEntities(Statement[] filters) {
 			ArrayList ents = new ArrayList();
-			foreach (Statement s in Select(replaceFind(filters[0], null))) {
-				if (filters[0].Subject != null && filters[0].Subject == null)
+			foreach (Statement s in Select(filters[0])) {
+				if (s.Subject != null && filters[0].Subject == null)
 					ents.Add(s.Subject);
-				if (filters[0].Predicate != null && filters[0].Predicate == null)
+				if (s.Predicate != null && filters[0].Predicate == null)
 					ents.Add(s.Predicate);
-				if (filters[0].Object != null && filters[0].Object == null && s.Object is Entity)
+				if (s.Object != null && filters[0].Object == null && s.Object is Entity)
 					ents.Add(s.Object);
-				if (filters[0].Meta != null && filters[0].Meta == null)
+				if (s.Meta != null && filters[0].Meta == null)
 					ents.Add(s.Meta);
 			}
 			
@@ -171,7 +171,12 @@ namespace SemWeb {
 				
 				ArrayList e2 = new ArrayList();
 				foreach (Entity e in ents) {
-					if (Contains(replaceFind(f, e)))
+					Statement fe = new Statement(
+						f.Subject == null ? e : f.Subject,
+						f.Predicate == null ? e : f.Predicate,
+						f.Object == null ? e : f.Object,
+						f.Meta == null ? e : f.Meta);
+					if (Contains(fe))
 						e2.Add(e);
 				}
 				
@@ -180,14 +185,6 @@ namespace SemWeb {
 			
 			return (Entity[])ents.ToArray(typeof(Entity));
 		}
-		
-		private Statement replaceFind(Statement s, Entity e) {
-			return new Statement(
-				s.Subject == null || s.Subject != null ? s.Subject : e,
-				s.Predicate == null || s.Predicate != null ? s.Predicate : e,
-				s.Object == null || s.Object != null ? s.Object : e,
-				s.Meta == null || s.Meta != null ? s.Meta : e
-				);
-		}
+
 	}
 }

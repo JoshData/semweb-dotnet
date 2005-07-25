@@ -14,17 +14,17 @@ using SemWeb.Query;
 
 public class RDFQuery {
 	private class Opts : Mono.GetOptions.Options {
-		[Mono.GetOptions.Option("The {format} for query input: xml or n3.")]
-		public string @in = "xml";
+		[Mono.GetOptions.Option("The {type} of the query: rsquary (default) or sparql.")]
+		public string type = "rsquary";
 		
 		[Mono.GetOptions.Option("The {format} for variable binding output: simple, sql, or html")]
 		public string format = "xml";
 		
-		[Mono.GetOptions.Option("Use RDFS reasoning.")]
+		/*[Mono.GetOptions.Option("Use RDFS reasoning.")]
 		public bool rdfs = false;
 
 		[Mono.GetOptions.Option("Use OWL reasoning.")]
-		public bool owl = false;
+		public bool owl = false;*/
 
 		[Mono.GetOptions.Option("Maximum number of results to report.")]
 		public int limit = 0;
@@ -56,8 +56,8 @@ public class RDFQuery {
 		}
 
 		QueryEngine query;
-		if (opts.@in != "sparql") {
-			RdfReader queryparser = RdfReader.Create(opts.@in, "-");
+		if (opts.type == "rsquary") {
+			RdfReader queryparser = RdfReader.Create("n3", "-");
 			queryparser.BaseUri = baseuri;
 		
 			query = new RSquary(new MemoryStore(queryparser), baseuri);
@@ -65,9 +65,11 @@ public class RDFQuery {
 			// Make sure the ?abc variables in N3 are considered variables.
 			foreach (Entity var in queryparser.Variables)
 				query.Select(var);
-		} else {
+		} else if (opts.type == "sparql") {
 			SparqlParser sparql = new SparqlParser(Console.In);
 			query = sparql.CreateQuery();
+		} else {
+			throw new Exception("Invalid query format: " + opts.type);
 		}
 
 		KnowledgeModel model = new KnowledgeModel();

@@ -7,8 +7,10 @@ namespace SemWeb {
 		private Resource o;
 		private Entity m;
 		
+		public static Entity DefaultMeta = new Entity(null);
+		
 		public Statement(Entity subject, Entity predicate, Resource @object)
-		: this(subject, predicate, @object, null) {
+		: this(subject, predicate, @object, DefaultMeta) {
 		}
 		
 		public Statement(Entity subject, Entity predicate, Resource @object, Entity meta) {
@@ -26,7 +28,7 @@ namespace SemWeb {
 		
 		internal bool AnyNull {
 			get {
-				return Subject == null || Predicate == null || Object == null;
+				return Subject == null || Predicate == null || Object == null || Meta == null;
 			}
 		}
 		
@@ -55,7 +57,7 @@ namespace SemWeb {
 			} else {
 				ret += "?";
 			}
-			if (Meta != null) ret += " <== <" + Meta + ">";
+			if (Meta != null && Meta != DefaultMeta) ret += " meta=<" + Meta + ">";
 			return ret + ".";
 		}
 		
@@ -68,6 +70,7 @@ namespace SemWeb {
 			if (s != null) ret = unchecked(ret + s.GetHashCode());
 			if (p != null) ret = unchecked(ret + p.GetHashCode());
 			if (o != null) ret = unchecked(ret + o.GetHashCode());
+			if (m != null) ret = unchecked(ret + m.GetHashCode());
 			return ret;
 		}
 		
@@ -75,9 +78,11 @@ namespace SemWeb {
 			if ((a.Subject == null) != (b.Subject == null)) return false;
 			if ((a.Predicate == null) != (b.Predicate == null)) return false;
 			if ((a.Object == null) != (b.Object == null)) return false;
+			if ((a.Meta == null) != (b.Meta == null)) return false;
 			if (a.Subject != null && !a.Subject.Equals(b.Subject)) return false;
 			if (a.Predicate != null && !a.Predicate.Equals(b.Predicate)) return false;
 			if (a.Object != null && !a.Object.Equals(b.Object)) return false;
+			if (a.Meta != null && !a.Meta.Equals(b.Meta)) return false;
 			return true;
 		}
 		public static bool operator !=(Statement a, Statement b) {

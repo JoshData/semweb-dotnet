@@ -5,10 +5,11 @@ using System.IO;
 namespace SemWeb {
 	public class ParserException : ApplicationException {
 		public ParserException (string message) : base (message) {}
+		public ParserException (string message, Exception cause) : base (message, cause) {}
 	}
 
 	public abstract class RdfReader : StatementSource, IDisposable {
-		Entity meta = null;
+		Entity meta = Statement.DefaultMeta;
 		string baseuri = null;
 		ArrayList warnings = new ArrayList();
 		ArrayList variables = new ArrayList();

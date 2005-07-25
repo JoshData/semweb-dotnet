@@ -160,10 +160,10 @@ namespace SemWeb {
 			loc = context.Location;
 			if (!reverse) {
 				if (subject is Literal) OnError("Subjects of statements cannot be literals", loc);			
-				context.store.Add(new Statement((Entity)subject, predicate, value, context.meta));
+				Add(context.store, new Statement((Entity)subject, predicate, value, context.meta), loc);
 			} else {
 				if (value is Literal) OnError("A literal cannot be the object of a reverse-predicate statement", loc);
-				context.store.Add(new Statement((Entity)value, predicate, subject, context.meta));
+				Add(context.store, new Statement((Entity)value, predicate, subject, context.meta), loc);
 			}
 		}
 		
@@ -351,6 +351,11 @@ namespace SemWeb {
 					int ci = source.Peek();
 					if (ci == -1) break;
 					
+					// punctuation followed by a space means the punctuation is
+					// punctuation, and not part of this token
+					if (!char.IsDigit((char)ci) && source.Peek2() != -1 && char.IsWhiteSpace((char)source.Peek2()))
+						break;
+					
 					char c = (char)ci;
 					if (char.IsWhiteSpace(c)) break;
 					
@@ -410,7 +415,7 @@ namespace SemWeb {
 					s = new Statement(anon, (Entity)path, res, context.meta);
 				}
 				
-				context.store.Add( s );
+				Add(context.store, s, loc);
 				
 				res = anon;
 
@@ -501,9 +506,15 @@ namespace SemWeb {
 				bool reversetemp;
 				Resource pred = ReadResource2(context, out reversetemp);
 				reverse = true;
+				
 				string of = ReadToken(context.source, context) as string;
-				if (of == null || of != "of") OnError("Expecting token 'of' but found '" + of + "'", loc);
-				return pred;
+				if (of == null) OnError("End of stream while expecting 'of'", loc);
+				if (of == "@of"
+					|| (!context.UsingKeywords && of == "of")
+					|| (context.UsingKeywords && context.Keywords.Contains("of") && of == "of"))
+					return pred;
+				OnError("Expecting token 'of' but found '" + of + "'", loc);
+				return null; // unreachable
 			}
 			
 			if (str.StartsWith("@"))
@@ -519,9 +530,10 @@ namespace SemWeb {
 			// VARIABLE
 			
 			if (str[0] == '?') {
-				if (BaseUri == null)
-					OnError("Variables require that a BaseUri be specified for the document", loc);
-				Entity var = GetResource(context, BaseUri + str.Substring(1));
+				string uri = str.Substring(1);
+				if (BaseUri != null)
+					uri = BaseUri + uri;
+				Entity var = GetResource(context, uri);
 				AddVariable(var);
 				return var;
 			}
@@ -563,16 +575,16 @@ namespace SemWeb {
 						ent = new Entity(null);
 					} else {
 						Entity sub = new Entity(null);
-						context.store.Add(new Statement(ent, entRDFREST, sub, context.meta));
+						Add(context.store, new Statement(ent, entRDFREST, sub, context.meta), loc);
 						ent = sub;
 					}
 					
-					context.store.Add(new Statement(ent, entRDFFIRST, res, context.meta));					
+					Add(context.store, new Statement(ent, entRDFFIRST, res, context.meta), loc);
 				}
 				if (ent == null) // No list items.
 					ent = entRDFNIL; // according to Turtle spec
 				else
-					context.store.Add(new Statement(ent, entRDFREST, entRDFNIL, context.meta));
+					Add(context.store, new Statement(ent, entRDFREST, entRDFNIL, context.meta), loc);
 				return ent;
 			}
 			
@@ -612,9 +624,21 @@ namespace SemWeb {
 			return null;
 		}
 		
+		private void Add(StatementSink store, Statement statement, Location position) {
+			try {
+				store.Add(statement);
+			} catch (Exception e) {
+				OnError("Add failed on statement { " + statement + " }: " + e.Message, position, e);
+			}
+		}
+		
 		private void OnError(string message, Location position) {
 			throw new ParserException(message + ", line " + position.Line + " col " + position.Col);
 		}
+		private void OnError(string message, Location position, Exception cause) {
+			throw new ParserException(message + ", line " + position.Line + " col " + position.Col, cause);
+		}
+		
 	
 	}
 

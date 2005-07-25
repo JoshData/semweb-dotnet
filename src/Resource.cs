@@ -96,8 +96,8 @@ namespace SemWeb {
 		}
 			
 		public override bool Equals(object other) {
+			if (object.ReferenceEquals(this, other)) return true;
 			if (!(other is Entity)) return false;
-			if ((object)this == other) return true;
 			
 			// If anonymous, then we have to compare extraKeys.
 			if ((Uri == null && ((Resource)other).Uri == null)) {
@@ -118,6 +118,10 @@ namespace SemWeb {
 			
 			return ((Resource)other).Uri != null && ((Resource)other).Uri == Uri;
 		}
+		
+		// Although these do the same as Resource's operator overloads,
+		// having these plus the implict string conversion allows
+		// these operators to work with entities and strings.
 
 		public static bool operator ==(Entity a, Entity b) {
 			if ((object)a == null && (object)b == null) return true;

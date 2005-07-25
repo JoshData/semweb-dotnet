@@ -109,7 +109,7 @@ public class RDFStorage {
 					if (format != "spec") {
 						RdfReader parser = RdfReader.Create(format, infile);
 						parser.BaseUri = baseuri;
-						parser.Meta = meta;
+						if (meta != null) parser.Meta = meta;
 						parser.Select(filter);
 						parser.Dispose();
 					} else {

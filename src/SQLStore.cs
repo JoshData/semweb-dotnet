@@ -75,10 +75,9 @@ namespace SemWeb.Stores {
 			
 			RunAddBuffer();
 			
-			// The 0 id is reserved for null-ish values in the
-			// table, which is just statements with no meta
-			// resource.
-			int nextid = 1;
+			// The 0 id is not used.
+			// The 1 id is reserved for Statement.DefaultMeta.
+			int nextid = 2;
 			
 			CheckMax("select max(subject) from " + table + "_statements", ref nextid);
 			CheckMax("select max(predicate) from " + table + "_statements", ref nextid);
@@ -277,7 +276,10 @@ namespace SemWeb.Stores {
 				Literal lit = (Literal)resource;
 				return GetLiteralId(lit, create, literalCacheComplete, literalInsertBuffer, insertCombined);
 			}
-				
+			
+			if (object.ReferenceEquals(resource, Statement.DefaultMeta))
+				return 1;
+			
 			ResourceKey key = (ResourceKey)GetResourceKey(resource);
 			if (key != null) return key.ResId;
 			
@@ -286,13 +288,20 @@ namespace SemWeb.Stores {
 			if (resource.Uri != null) {
 				id = GetEntityId(resource.Uri, create, entityInsertBuffer, insertCombined);
 			} else {
+				// This anonymous node didn't come from the database
+				// since it didn't have a resource key.  If !create,
+				// then just return 0 to signal the resource doesn't exist.
+				if (!create) return 0;
+
 				if (lockedIdCache != null) {
 					// Can just increment the counter.
 					id = NextId();
 				} else {
-					// Reserve a slot in the database for this resource so its
-					// id is not reused by another call to CreateAnonymousResource.
-					throw new InvalidOperationException("Use of anonymous node not allowed outside of an Import operation.");
+					// We need to reserve an id for this resource so that
+					// this function returns other ids for other anonymous
+					// resources.  Don't know how to do this yet, so
+					// just throw an exception.
+					throw new NotImplementedException("Anonymous nodes cannot be added to this store outside of an Import operation.");
 				}
 			}
 				
@@ -309,6 +318,8 @@ namespace SemWeb.Stores {
 		private Entity MakeEntity(int resourceId, string uri, Hashtable cache) {
 			if (resourceId == 0)
 				return null;
+			if (resourceId == 1)
+				return Statement.DefaultMeta;
 			
 			ResourceKey rk = new ResourceKey(resourceId);
 			
@@ -501,6 +512,7 @@ namespace SemWeb.Stores {
 				try {
 					while (reader.Read()) {
 						int id = AsInt(reader[0]);
+						if (id <= 1) continue; // don't return DefaultMeta.
 						
 						if (seen.ContainsKey(id)) continue;
 						seen[id] = seen;
