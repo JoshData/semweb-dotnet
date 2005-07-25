@@ -4,9 +4,11 @@
 	* Fixes in the query engine, SQL store, and N3Reader.
 	* Statements now have a default non-null Meta field. The
 	  default is Statement.DefaultMeta.
-	* Something has made SQL stores much slower.
+	* Something has made SQLite stores much slower.
 	* RdfXmlReader respects the RdfReader.Meta property.
 	* MemoryStore.FindEntities wasn't working.
+	* The SPARQL parser wasn't reading quoted literals or
+	  numbers properly.
 
 2005-07-01 Version 0.502 Posted
 

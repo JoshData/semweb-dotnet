@@ -508,6 +508,7 @@ namespace SemWeb.Query {
 					if (!MatchesFilters(r, var, targetModel)) continue;
 					values.Add(r);
 				}
+				if (values.Count == 0) return false;
 				
 				bindings.Union.Bindings[var.VarIndex] = values;
 				

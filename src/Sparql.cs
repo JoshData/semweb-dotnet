@@ -143,7 +143,7 @@ namespace SemWeb.Query {
 				if (c == -1)
 					OnError("End of file while reading a QName prefix", loc);
 				if (char.IsWhiteSpace((char)c))
-					OnError("Expecting a colon", loc);
+					OnError("Expecting a colon, " + b, loc);
 				
 				b.Append((char)c);
 
@@ -221,7 +221,7 @@ namespace SemWeb.Query {
 				} else if (c == quotechar) {
 					break;
 				} else {
-					b.Append(c);
+					b.Append((char)c);
 				}				
 			}
 			
@@ -229,6 +229,7 @@ namespace SemWeb.Query {
 		}
 		
 		private object ReadLiteral() {
+			ReadWhitespace();
 			int firstchar = reader.Peek();
 			if (firstchar == -1) OnError("End of file expecting a literal", reader.Location);
 			
