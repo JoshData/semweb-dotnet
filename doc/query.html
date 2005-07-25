@@ -1,0 +1,331 @@
+<html>
+	<head>
+		<title>SemWeb: Querying</title>
+		<link rel="stylesheet" type="text/css" href="stylesheet.css"/>
+	</head>
+	
+	<body>
+
+<h1>Querying</h1>
+
+<p>This page provides an example for running queries against RDF data
+using SemWeb.  It also gives an overview of the design of the query
+engine.</p>
+
+<h2>Getting the data</h2>
+
+<p>We'll use an RDF description of the people in the U.S. Congress
+for this example.  Download the data files at
+<a href="http://www.govtrack.us/data/rdf/people.rdf.gz">http://www.govtrack.us/data/rdf/people.rdf.gz</a>,
+<a href="http://www.govtrack.us/data/rdf/bills.109.rdf.gz">http://www.govtrack.us/data/rdf/bills.109.rdf.gz</a>, and
+<a href="http://www.govtrack.us/data/rdf/bills.109.cosponsors.rdf.gz">http://www.govtrack.us/data/rdf/bills.109.cosponsors.rdf.gz</a>
+and un-gzip them.  (I'm the author of those files.)</p>
+
+<p>To simply some things, we'll put the contents of these three files into a single Notation3 file using the following command.  (You may need to adjust the path to <tt>rdfstorage.exe</tt>.
+It'll be compiled by <tt>make</tt> into the <tt>bin</tt> directory of the SemWeb package.)</p>
+
+<pre class="code">
+mono rdfstorage.exe --out n3:congress.n3 people.rdf bills.109.rdf bills.109.cosponsors.rdf
+</pre>
+
+<p><tt>rdfstorage.exe</tt> reads RDF files into
+a StatementSink, either an RdfWriter or a Store.  The default is to read files in Rdf/Xml format (with the RdfXmlReader).  We specified the output as <tt>n3:congress.n3</tt>, which means to write the data in Notation3 format to the file <tt>congress.n3</tt>.  The command outputs the following:</p>
+
+<pre class="code">
+people.rdf 0m0s, 21013 statements, 22901 st/sec
+bills.109.rdf 0m1s, 41094 statements, 21255 st/sec
+bills.109.cosponsors.rdf 0m2s, 57279 statements, 20145 st/sec
+Total Time: 0m5s, 119386 statements, 20888 st/sec
+</pre>
+
+<h2>Writing the Query</h2>
+
+<p>SemWeb has a query engine that supports a very small subset of SPARQL
+and my own "RSquary" query format.  I like RSquary because the query
+itself is written in any RDF format (think RDF-squared query).  A
+simple RSquary query is just a graph to be matched against the target
+data model, here in Notation 3 format:</p>
+
+<pre class="code">
+@prefix rdf: &lt;http://www.w3.org/1999/02/22-rdf-syntax-ns#&gt; .
+@prefix foaf: &lt;http://xmlns.com/foaf/0.1/&gt; .
+@prefix bill: &lt;urn://govshare.info/rdf/usbill/&gt; .
+
+?bill rdf:type bill:Bill .
+?bill bill:congress "109" .
+?bill bill:type "sr" .
+?bill bill:number "39" .
+
+?bill bill:cosponsor ?person .
+?person foaf:name ?name .
+</pre>
+
+<p>A benefit of using N3 is that it allows entity names starting with "?",
+which RSquary can 'safely' assume are variables in the query.  Anything
+else with a URI, unless otherwise specified, refers to the entity
+with that URI (duh).  Anonymous (blank) nodes are also automatically
+considered variables.  The query above says: Find all bindings
+for the variables <tt>?bill</tt>, <tt>?person</tt>, and <tt>?name</tt>
+such that 1) <tt>?bill</tt> is a bill in Congress identified by 109/sr/39,
+2) <tt>?bill</tt> has <tt>?person</tt> as one of its cosponsors,
+and 3) <tt>?name</tt> is a name of <tt>?person</tt>.</p>
+
+<p>Save the above query as <tt>people_query.n3</tt>.</p>
+
+<h2>Running the Query</h2>
+
+<p>SemWeb contains a program called <tt>rdfquery.exe</tt> which runs
+a RSquary query against a target data model.  To run the query:</p>
+
+<pre class="code">
+mono rdfquery.exe n3:congress.n3 < people_query.n3
+</pre> 
+
+<p><tt>rdfquery.exe</tt> outputs the results by default in the standard
+SPARQL result XML format.  Here's the first few lines of the output.  The
+query took about three seconds to complete, although I get much better
+performance using a MySQL (>=4.0)-backed store.</p>
+
+<pre class="code">
+&lt;sparql xmlns="http://www.w3.org/2001/sw/DataAccess/rf1/result"&gt;
+  &lt;head&gt;
+    &lt;variable name="bill" /&gt;
+    &lt;variable name="person" /&gt;
+    &lt;variable name="name" /&gt;
+  &lt;/head&gt;
+  &lt;results&gt;
+    &lt;result&gt;
+      &lt;bill uri="urn://govshare.info/data/us/congress/109/bills/sr39" /&gt;
+      &lt;person uri="urn://govshare.info/data/us/congress/people/1995/smith.g" /&gt;
+      &lt;name&gt;Gordon Smith&lt;/name&gt;
+    &lt;/result&gt;
+    &lt;result&gt;
+      &lt;bill uri="urn://govshare.info/data/us/congress/109/bills/sr39" /&gt;
+      &lt;person uri="urn://govshare.info/data/us/congress/people/1995/akaka" /&gt;
+      &lt;name&gt;Daniel Akaka&lt;/name&gt;
+    &lt;/result&gt;
+    ...
+</pre>
+
+<p>You can also issue the query in SPARQL format.  Only a small subset of SPARQL is supported.
+Namely, the most basic SELECT queries.  The query above in SPARQL is:</p>
+
+<pre class="code">
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+PREFIX bill: <urn://govshare.info/rdf/usbill/>
+SELECT ?bill ?person ?name
+WHERE
+	( ?bill rdf:type bill:Bill )
+	( ?bill bill:congress "109" )
+	( ?bill bill:type "sr" )
+	( ?bill bill:number "39" )
+	( ?bill bill:cosponsor ?person )
+	( ?person foaf:name ?name )
+</pre>
+
+<p>Put that in <tt>people_query.sparql</tt> and then run it with:</p>
+
+<pre class="code">
+mono rdfquery.exe -type sparql n3:congress.n3 < people_query.sparql
+</pre>
+
+<h2>RSquary Predicates</h2>
+
+<p>RSquary has a few predicates that expand on the simple idea of graph matching.
+Add the following to people_query.n3 to filter out names that don't
+contain "Jon":</p>
+
+<pre class="code">
+@prefix query: &lt;http://purl.oclc.org/NET/rsquary/&gt; .
+?name query:string-contains "Jon" .
+</pre>
+
+<p>RSquary recognizes query:string-contains as a "value filter."
+Rather than matching that statement to the target model (which wouldn't
+be good since query:string-contains isn't in the target model),
+RSquary will instead filter the possible bindings for <tt>?name</tt>,
+eliminating those that don't match the filter.</p>
+
+<p>Other built-in value filters are lt, le, ne, eq, gt, and ge, in the
+same namespace, with the obvious meanings.  The comparisons are string comparisons by
+default, unless the object of the filter is given a recognized
+XML Schema data type, as in:</p>
+
+<pre class="code">
+?amount query:gt "100"^^&lt;http://www.w3.org/2001/XMLSchema#float&gt;
+</pre>
+
+<p>This forces a (slightly more expensive) numeric comparison, and assumes
+that all of the possible values will be parsable with Decimal.Parse.  All
+of the other standard XML Schema numeric types are handled the same way.
+datetime, date, and time are converted to DateTime structs, and duration
+is converted to and compared with TimeSpan.</p>
+
+<h2>Programming with the Query Classes</h2>
+
+<p>To run queries from within your application, you need to follow the
+following steps:</p>
+
+<ul>
+	<li>Assemble the query in RSquary (or SPARQL, if you're daring) format</li>
+	<li>Create a new SemWeb.Query.QueryEngine, adding the statements and variables into the engine</li>
+	<li>Create a QueryResultSink, which will receive each of the resulting bindings</li>
+	<li>Run the query with the Query method of the QueryEngine</li>
+</ul>
+
+<p>If you're using RSquary, you can create the query engine as follows.</p>
+
+<pre class="code">
+// Load the query
+string baseuri = "http://www.example.org/#"; // this doesn't really matter
+RdfReader queryparser = new N3Reader("queryfile.n3");
+queryparser.BaseUri = baseuri;
+
+// Create the query engine
+QueryEngine query = new RSquary(new MemoryStore(queryparser), baseuri);
+
+// Make sure the ?abc variables in N3 are considered variables by the engine.
+foreach (Entity var in queryparser.Variables)
+	query.Select(var);
+</pre>
+
+<p>If you're using SPARQL, the process is slightly different:</p>
+
+<pre class="code">
+SparqlParser sparql = new SparqlParser(new StringReader("SELECT ?a ?b ...."));
+QueryEngine query = sparql.CreateQuery();
+</pre>
+
+<p>Then you need to create a QueryResultSink.  If you want the results in SPARQL
+XML format, just use the SparqlXmlQuerySink:</p>
+
+<pre class="code">
+QueryResultSink qs = new SparqlXmlQuerySink(Console.Out, baseuri);
+</pre>
+
+<p>Alternative, create your own:</p>
+
+<pre class="code">
+public class SimpleQuerySink : QueryResultSink {
+	public override bool Add(VariableBinding[] result) {
+		foreach (VariableBinding var in result)
+			Console.WriteLine(var.Variable + " ==> " + var.Target);
+		Console.WriteLine();
+		return true; // false would mean to abort the query
+	}
+}
+
+QueryResultSink qs = new SimpleQuerySink();
+</pre>
+
+<p>Then run the query:</p>
+
+<pre class="code">
+Store model = new MemoryStore(new N3Reader("sourcedata.n3"));
+query.Query(model, qs);
+</pre>
+
+<h2>Query Engine Design</h2>
+
+<p>The query engine is designed on the assumption that a Select call to
+the target model is very expensive, and thus it makes (or tries to) the fewest
+number of queries on the underlying data.  The tradeoff is that the entire
+result set must be determined and kept in memory before any resulting bindings
+can be returned to the caller.</p>
+
+<p>The naive approach to building a query engine (ahhem, that is to say,
+my first two attempts at writing the engine) is entity-based, where the
+engine permutes through the possible bindings of the variables, outputting
+only those permutations that satisfy the query model.  The trick to this
+method is to figure out the most efficient order for permuting through
+the variables (i.e. ?bill first and ?person second, or the other way around)
+I found it difficult with this method to avoid running running many similar
+selects on the target model, e.g.: (pseudocode)</p>
+
+<pre class="code">
+select ?name where &lt;uri-of-John-Kerry&gt; foaf:name ?name .
+select ?name where &lt;uri-of-Jon-Corzine&gt; foaf:name ?name .
+...
+</pre>
+
+<p>To be efficient, this must be collapsed into a single select:</p>
+
+<pre class="code">
+select ?name where ( &lt;uri-of-John-Kerry&gt; , &lt;uri-of-Jon-Corzine&gt;, or ...) foaf:name ?name .
+</pre>
+
+<p>taking advantage of the fact that it's considerably faster to do one query with
+a disjunction than to union many separate queries, at least with
+the SQL backends.</p>
+
+<p>So rather than permuting through possible bindings, the query engine
+is more statement oriented.  Instead of ordering the variables to minimize
+the number of permutations to go through, the engine orders the statements
+to minimize the number of matching statements at any given step.</p>
+
+<p>To order the statements, the engine starts by selecting the statement
+with the hypothesized fewest number of matches.  It figures that statements
+with one variable will have fewer matches than statements with two variables,
+and further statements with a non-variable subject and OWL-functional-property
+predicate will have even fewer statements.  That statement will be selected
+first.  Then the engine repeats the process to select the next best
+statement, but any variables used in previous statements are considered
+already known, or bound.  For instance, with:</p>
+
+<pre class="code">
+1) gov:Congress dc:hasPart ?something
+2) ?something dc:hasPart ?anotherthing
+3) ?anotherthing dc:title ?title
+</pre>
+
+<p>statement 1 will be chosen first because it has the fewest number of variables,
+and so it's expected that the fewest number of statements will match it in
+the target model.  That is, there won't be many things that are part of Congress,
+compared to the number of pairs x,y for which y is a part of x.  Next,
+one of statements 2 and 3 is chosen to go next.
+Statements 2 and 3 have the same number of variables, but since the engine
+has already seen ?something in a statment previously chosen, the possible
+values for ?something are already constrained and so the number of matches
+for 2 will likely be less than 3.  Statement 2 is chosen to go next,
+and statement 3 last.</p>
+
+<p>Doing the query in this order will result in asking the target model
+only for those things that are part of Congress, and just for each of those
+things what are their parts.  If statement 2 were chosen before statement 1,
+then the target model would first be queried for all x,y pairs where x hasPart
+y, and then after it would filter out the values for x that aren't a part of
+Congress.  Much time would be wasted asking the target model about things that have
+no relation to Congress.</p> 
+
+<p>With the statements ordered, the engine then makes a single pass over the
+statements, running as few selects as possible on the target model to
+get the information it needs.  In this example, the engine will first
+select on (gov:Congress dc:hasPart __) and will remember the resulting
+possible bindings for ?something.  Let's call the possible bindings A, B
+and C.  For statement 2, the engine runs
+a single combined select using a disjunction for the subject (using
+the Select overload that takes a Statement array as an argument).
+The disjunction is over the possible bindings for ?something that it
+determined from the previous statement:</p> 
+
+<pre class="code">
+select ?anotherthing where ( A , B , or C ) dc:hasPart ?anotherthing .
+</pre>
+
+<p>The resulting matches for ?anotherthing are paired up properly
+with the bindings of ?something.  Where no statement matched, the
+binding for ?something is discarded.</p>
+
+<p>Besides ordering the statements efficiently, the trick to this method
+is the bookkeeping to keep straight which bindings go with which other
+bindings, e.g. which names go with which people.</p>
+
+<h2>Leftovers</h2>
+
+<p>The query engine supports optional statements, but I haven't described
+how to use this yet.  I haven't implemented disjunctions in the query,
+and I have no idea how to do that efficiently yet.</p>
+
+	</body>
+</html>

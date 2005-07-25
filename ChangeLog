@@ -1,3 +1,5 @@
+2005-07-24 Version 0.503 Posted
+
 	* GetHashCode() for anonmyous resources used to return
 	  zero, which made hashtables of anonymous resources
 	  very slow.  Now it returns Object.GetHashCode().
