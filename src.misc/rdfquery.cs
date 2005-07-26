@@ -49,7 +49,7 @@ public class RDFQuery {
 		else if (opts.format == "html")
 			qs = new HTMLQuerySink(Console.Out);
 		else if (opts.format == "xml") {
-			qs = new SparqlXmlQuerySink(Console.Out, baseuri);
+			qs = new SparqlXmlQuerySink(Console.Out);
 		} else {
 			Console.Error.WriteLine("Invalid output format.");
 			return;
@@ -60,11 +60,7 @@ public class RDFQuery {
 			RdfReader queryparser = RdfReader.Create("n3", "-");
 			queryparser.BaseUri = baseuri;
 		
-			query = new RSquary(new MemoryStore(queryparser), baseuri);
-		
-			// Make sure the ?abc variables in N3 are considered variables.
-			foreach (Entity var in queryparser.Variables)
-				query.Select(var);
+			query = new RSquary(queryparser);
 		} else if (opts.type == "sparql") {
 			SparqlParser sparql = new SparqlParser(Console.In);
 			query = sparql.CreateQuery();

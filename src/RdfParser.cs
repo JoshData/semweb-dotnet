@@ -12,7 +12,7 @@ namespace SemWeb {
 		Entity meta = Statement.DefaultMeta;
 		string baseuri = null;
 		ArrayList warnings = new ArrayList();
-		ArrayList variables = new ArrayList();
+		Hashtable variablenames = new Hashtable();
 		bool reuseentities = false;
 		bool dupcheck = false;
 
@@ -52,10 +52,10 @@ namespace SemWeb {
 			}
 		}
 		
-		public ICollection Variables { get { return ArrayList.ReadOnly(variables); } }
+		public IDictionary Variables { get { return (Hashtable)variablenames.Clone(); } }
 		
-		protected void AddVariable(Entity variable) {
-			variables.Add(variable);
+		protected void AddVariableName(Entity variable, string name) {
+			variablenames[variable] = name;
 		}
 
 		public abstract void Select(StatementSink sink);

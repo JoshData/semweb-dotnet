@@ -18,7 +18,7 @@ namespace SemWeb.Query {
 	public class QueryEngine {
 		// Setup information
 	
-		ArrayList setupVariables = new ArrayList();
+		Hashtable variableNames = new Hashtable();
 		ArrayList setupVariablesDistinct = new ArrayList();
 		ArrayList setupValueFilters = new ArrayList();
 		ArrayList setupStatements = new ArrayList();
@@ -126,10 +126,8 @@ namespace SemWeb.Query {
 			}
 		}
 					
-		public void Select(Entity entity) {
-			if (entity.Uri == null) throw new QueryException("Anonymous nodes are automatically considered variables.");
-			if (setupVariables.Contains(entity)) return;
-			setupVariables.Add(entity);
+		public void SetVariableName(Entity variable, string name) {
+			variableNames[variable] = name;
 		}
 
 		public void MakeDistinct(Entity a, Entity b) {
@@ -174,7 +172,13 @@ namespace SemWeb.Query {
 				}
 			}
 			
-			result.Init(variableEntities);
+			VariableBinding[] finalbindings = new VariableBinding[variables.Length];
+			for (int i = 0; i < variables.Length; i++) {
+				finalbindings[i].Variable = variableEntities[i];
+				finalbindings[i].Name = (string)variableNames[ variableEntities[i] ];
+			}
+			
+			result.Init(finalbindings);
 			
 			BindingSet bindings = new BindingSet(this);
 			foreach (QueryStatement[] group in statements) {
@@ -187,10 +191,6 @@ namespace SemWeb.Query {
 				}
 			}
 
-			VariableBinding[] finalbindings = new VariableBinding[variables.Length];
-			for (int i = 0; i < variables.Length; i++)
-				finalbindings[i].Variable = variableEntities[i];
-			
 			int ctr = -1;
 			foreach (QueryResult r in bindings.Results) {
 				Permutation permutation = new Permutation(r.Bindings);
@@ -579,16 +579,19 @@ namespace SemWeb.Query {
 		}
 		
 		private void Init() {
-			// Any anonymous nodes in the graph are SelectFirst nodes
+			// Get the list of variables, which is the set
+			// of anonymous nodes in the statements to match.
+			ArrayList setupVariables = new ArrayList();
+			
 			foreach (Statement s in setupStatements) {
-				InitAnonVariable(s.Subject);
-				InitAnonVariable(s.Predicate);
-				InitAnonVariable(s.Object);
+				InitAnonVariable(s.Subject, setupVariables);
+				InitAnonVariable(s.Predicate, setupVariables);
+				InitAnonVariable(s.Object, setupVariables);
 			}
 			foreach (Statement s in setupOptionalStatements) {
-				InitAnonVariable(s.Subject);
-				InitAnonVariable(s.Predicate);
-				InitAnonVariable(s.Object);
+				InitAnonVariable(s.Subject, setupVariables);
+				InitAnonVariable(s.Predicate, setupVariables);
+				InitAnonVariable(s.Object, setupVariables);
 			}
 		
 			// Set up the variables array.
@@ -633,8 +636,8 @@ namespace SemWeb.Query {
 			this.statements = (QueryStatement[][])sgroups.ToArray(typeof(QueryStatement[]));
 		}
 		
-		private void InitAnonVariable(Resource r) {
-			if (r is Entity && r.Uri == null)
+		private void InitAnonVariable(Resource r, ArrayList setupVariables) {
+			if (r is Entity && r.Uri == null && !setupVariables.Contains(r))
 				setupVariables.Add(r);
 		}
 		
@@ -794,7 +797,7 @@ namespace SemWeb.Query {
 	}
 	
 	public abstract class QueryResultSink {
-		public virtual void Init(Entity[] variables) {
+		public virtual void Init(VariableBinding[] variables) {
 		}
 		
 		public abstract bool Add(VariableBinding[] result);
@@ -805,14 +808,17 @@ namespace SemWeb.Query {
 	
 	public struct VariableBinding {
 		Entity v;
+		string n;
 		Resource t;
 		
-		internal VariableBinding(Entity variable, Resource target) {
+		internal VariableBinding(Entity variable, string name, Resource target) {
 			v = variable;
+			n = name;
 			t = target;
 		}
 		
 		public Entity Variable { get { return v; } internal set { v = value; } }
+		public string Name { get { return n; } internal set { n = value; } }
 		public Resource Target { get { return t; } internal set { t = value; } }
 	}
 }	

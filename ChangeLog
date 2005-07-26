@@ -1,3 +1,11 @@
+	* Simplified the treatment of variables in queries:
+	  N3Reader: Variables come in as anonymous nodes now,
+	  and their names are given in the VariableNames IDictionary
+	  of RdfReader.
+	  QueryEngine: Only anonymous nodes are treated as variables.
+	  RSquary: Variable names are set explicitly, and now it's
+	  impossible to make a named node (i.e. with a uri) a variable.
+
 2005-07-24 Version 0.503 Posted
 
 	* GetHashCode() for anonmyous resources used to return

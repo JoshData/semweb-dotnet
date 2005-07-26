@@ -19,6 +19,8 @@ namespace SemWeb.Query {
 		
 		ArrayList variables = new ArrayList();
 		ArrayList selectvariables = new ArrayList();
+		Hashtable variableNames = new Hashtable();
+		Hashtable variableFromName = new Hashtable();
 		bool selectdistinct = false;
 		bool selectall = false;
 		
@@ -40,9 +42,11 @@ namespace SemWeb.Query {
 		
 		public Store Graph { get { return graph; } }
 		
-		public IList Variables { get { return ArrayList.ReadOnly(variables); } }
+		public IList AllVariables { get { return ArrayList.ReadOnly(variables); } }
 		
-		public IList Select { get { return ArrayList.ReadOnly(selectvariables); } }
+		public IList SelectVariables { get { return ArrayList.ReadOnly(selectvariables); } }
+
+		public IDictionary VariableNames { get { return (Hashtable)variableNames.Clone(); } }
 		
 		public enum SparqlQuestion {
 			Select,
@@ -54,9 +58,8 @@ namespace SemWeb.Query {
 		public QueryEngine CreateQuery() {
 			QueryEngine query = new QueryEngine();
 			
-			foreach (string var in variables) {
-				query.Select(new Entity(var));
-			}
+			foreach (DictionaryEntry entry in variableNames)
+				query.SetVariableName((Entity)entry.Key, (string)entry.Value);
 			
 			foreach (Statement s in graph)
 				query.AddFilter(s);
@@ -256,8 +259,15 @@ namespace SemWeb.Query {
 		
 		private Entity GetEntity(string name) {
 			if (name[0] == '?' || name[0] == '$') {
-				if (!variables.Contains(name))
-					variables.Add(name);
+				name = name.Substring(1);
+				Entity ret = (Entity)variableFromName[name];
+				if (ret == null) {
+					ret = new Entity(null);
+					variableFromName[name] = ret;
+					variables.Add(ret);
+					variableNames[ret] = name;
+				}
+				return ret;
 			}
 			
 			return new Entity(name);
@@ -394,8 +404,9 @@ namespace SemWeb.Query {
 							} else if (var[0] == '?' || var[0] == '$') {
 								if (selectall)
 									OnError("Cannot select * and also name other variables", loc);
-								if (!selectvariables.Contains(var))
-									selectvariables.Add(var);
+								Entity varent = GetEntity(var);
+								if (!selectvariables.Contains(varent))
+									selectvariables.Add(varent);
 							} else if (var == "*") {
 								if (selectvariables.Count > 0)
 									OnError("Cannot select * and also name other variables", loc);

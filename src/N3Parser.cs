@@ -38,6 +38,7 @@ namespace SemWeb {
 			public NamespaceManager namespaces;
 			public UriMap namedNode;
 			public Hashtable anonymous;
+			public Hashtable variables;
 			public Entity meta;
 			public bool UsingKeywords;
 			public Hashtable Keywords;
@@ -52,6 +53,7 @@ namespace SemWeb {
 			context.namespaces = namespaces;
 			context.namedNode = new UriMap();
 			context.anonymous = new Hashtable();
+			context.variables = new Hashtable();
 			context.meta = Meta;
 			
 			while (ReadStatement(context)) { }
@@ -530,11 +532,13 @@ namespace SemWeb {
 			// VARIABLE
 			
 			if (str[0] == '?') {
-				string uri = str.Substring(1);
-				if (BaseUri != null)
-					uri = BaseUri + uri;
-				Entity var = GetResource(context, uri);
-				AddVariable(var);
+				string name = str.Substring(1);
+				Entity var = (Entity)context.variables[name];
+				if (var == null) {
+					var = new Entity(null);
+					AddVariableName(var, name);
+					context.variables[name] = var;
+				}
 				return var;
 			}
 			

@@ -1,4 +1,4 @@
-VERSION=0.502
+VERSION=0.504
 
 all: bin/SemWeb.dll bin/SemWeb.MySQLStore.dll bin/SemWeb.SqliteStore.dll bin/SemWeb.dll bin/rdfstorage.exe bin/rdfquery.exe bin/rdfs2cs.exe bin/runtests.exe bin/rdfxsltproc.exe bin/rdfbind.exe
 	
@@ -38,7 +38,7 @@ apidocsxml: Makefile
 	mkdir -p apidocs
 	mono /usr/lib/monodoc/monodocs2html.exe -source:apidocsxml -dest:apidocs -template:docstemplate.xsl
 
-semweb.zip: bin/SemWeb.dll Makefile doc
+semweb.zip: bin/SemWeb.dll Makefile doc apidocs
 	rm -f semweb.zip
 	zip -r semweb.zip \
 	bin/* \

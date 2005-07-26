@@ -12,26 +12,37 @@ namespace SemWeb.Query {
 		// TODO: Optional statements
 		// TODO: Grouping and disjunctions
 		
-		public static Entity qSelect = "http://purl.oclc.org/NET/rsquary/select";
+		public static Entity qName = "http://purl.oclc.org/NET/rsquary/name";
 		public static Entity qLimit = "http://purl.oclc.org/NET/rsquary/returnLimit";
 		public static Entity qStart = "http://purl.oclc.org/NET/rsquary/returnStart";
 		public static Entity qDistinctFrom = "http://purl.oclc.org/NET/rsquary/distinctFrom";
 		public static Entity qOptional = "http://purl.oclc.org/NET/rsquary/optional";
 		
-		public RSquary(Store queryModel, string queryUri) : this(queryModel, queryUri, null) {
+		public RSquary(RdfReader query) :
+			this(new MemoryStore(query),
+				query.BaseUri == null ? null : new Entity(query.BaseUri),
+				query.Variables, null) {
+		}
+
+		public RSquary(Store queryModel, Entity queryNode) : this(queryModel, queryNode, null, null) {
 		}
 		
-		public RSquary(Store queryModel, string queryUri, Hashtable extraValueFilters) {
-			Entity query = new Entity(queryUri);
-			
+		public RSquary(Store queryModel, Entity queryNode, IDictionary variableNames, IDictionary extraValueFilters) {
 			// Find the query options
-			ReturnStart = GetIntOption(queryModel, query, qStart);
-			ReturnLimit = GetIntOption(queryModel, query, qLimit);
+			if (queryNode != null) {
+				ReturnStart = GetIntOption(queryModel, queryNode, qStart);
+				ReturnLimit = GetIntOption(queryModel, queryNode, qLimit);
+			}
 
-			// Search the query for 'select'
-			foreach (Resource r in queryModel.SelectObjects(query, qSelect)) {
-				if (!(r is Entity)) throw new QueryException("Query variables cannot be literals.");
-				Select((Entity)r);
+			// Search the query for variable names
+			foreach (Statement s in queryModel.Select(new Statement(null, qName, null))) {
+				if (s.Object is Entity) throw new QueryException("Variable names must be literals.");
+				SetVariableName(s.Subject, ((Literal)s.Object).Value);
+			}
+			
+			if (variableNames != null) {
+				foreach (DictionaryEntry entry in variableNames)
+					SetVariableName((Entity)entry.Key, (string)entry.Value);
 			}
 			
 			// Search the query for 'distinct' predicates between variables.
@@ -45,7 +56,7 @@ namespace SemWeb.Query {
 			foreach (Statement s in queryModel.Select(new Statement(null,null,null))) {
 				if (IsQueryPredicate(s.Predicate)) continue;
 				
-				if (s.Predicate.Uri != null && extraValueFilters != null && extraValueFilters.ContainsKey(s.Predicate.Uri)) {
+				if (s.Predicate.Uri != null && extraValueFilters != null && extraValueFilters.Contains(s.Predicate.Uri)) {
 					ValueFilterFactory f = (ValueFilterFactory)extraValueFilters[s.Predicate.Uri];
 					AddValueFilter(s.Subject, f.GetValueFilter(s.Predicate.Uri, s.Object));
 					continue;
@@ -59,7 +70,7 @@ namespace SemWeb.Query {
 				
 				if (s.Meta == Statement.DefaultMeta)
 					AddFilter(s);
-				else if (queryModel.Contains(new Statement(query, qOptional, s.Meta)))
+				else if (queryNode != null && queryModel.Contains(new Statement(queryNode, qOptional, s.Meta)))
 					AddOptionalFilter(s);
 			}
 		}
@@ -77,7 +88,7 @@ namespace SemWeb.Query {
 		}		
 
 		private bool IsQueryPredicate(Entity e) {
-			if (e == qSelect) return true;
+			if (e == qName) return true;
 			if (e == qDistinctFrom) return true;
 			if (e == qLimit) return true;
 			if (e == qStart) return true;
@@ -87,12 +98,10 @@ namespace SemWeb.Query {
 	}
 	
 	public class PrintQuerySink : QueryResultSink {
-		public override void Init(Entity[] variables) { }
-		public override void Finished() { }
 		public override bool Add(VariableBinding[] result) {
 			foreach (VariableBinding var in result)
-				if (var.Variable.Uri != null && var.Target != null)
-					Console.WriteLine(var.Variable + " ==> " + var.Target.ToString());
+				if (var.Name != null && var.Target != null)
+					Console.WriteLine(var.Name + " ==> " + var.Target.ToString());
 			Console.WriteLine();
 			return true;
 		}
@@ -103,11 +112,12 @@ namespace SemWeb.Query {
 		
 		public HTMLQuerySink(TextWriter output) { this.output = output; }
 
-		public override void Init(Entity[] variables) {
+		public override void Init(VariableBinding[] variables) {
 			output.WriteLine("<tr>");
-			foreach (Entity var in variables)
-				if (var.Uri != null)
-					output.WriteLine("<th>" + var + "</th>");
+			foreach (VariableBinding var in variables) {
+				if (var.Name == null) continue;
+				output.WriteLine("<th>" + var.Name + "</th>");
+			}
 			output.WriteLine("</tr>");
 		}
 		
@@ -116,7 +126,7 @@ namespace SemWeb.Query {
 		public override bool Add(VariableBinding[] result) {
 			output.WriteLine("<tr>");
 			foreach (VariableBinding var in result) {
-				if (var.Variable.Uri == null) continue;
+				if (var.Name == null) continue;
 				string t = var.Target.ToString();
 				if (var.Target is Literal) t = ((Literal)var.Target).Value;
 				output.WriteLine("<td>" + t + "</td>");
@@ -196,23 +206,19 @@ namespace SemWeb.Query {
 			return "TEXT";
 		}
 		
-		public override void Init(Entity[] variables) {
+		public override void Init(VariableBinding[] variables) {
 			output.Write("CREATE TABLE " + table + " (");
 			
 			bool f = true;
-			foreach (Entity var in variables) {
-				if (var.Uri == null) continue;
-				string name;
-				int hash = var.Uri.LastIndexOf("#");
-				if (hash == -1) name = "`" + var.Uri + "`";
-				else name = var.Uri.Substring(hash+1);
+			foreach (VariableBinding var in variables) {
+				if (var.Name == null) continue;
 				
 				string type = "BLOB";
 				//if (var.Target is Literal && ((Literal)var.Target).DataType != null)
 				//	type = GetFieldType(((Literal)var.Target).DataType);
 
 				if (!f)  { output.Write(", "); } f = false; 
-				output.Write(name + " " + type);
+				output.Write(var.Name + " " + type);
 			}
 			
 			output.WriteLine(");");
@@ -222,7 +228,7 @@ namespace SemWeb.Query {
 			output.Write("INSERT INTO " + table + " VALUES (");
 			bool firstx = true;
 			foreach (VariableBinding var in result) {
-				if (var.Variable.Uri == null) continue;
+				if (var.Name == null) continue;
 				
 				if (!firstx)  { output.Write(", "); } firstx = false;
 				if (var.Target == null)
@@ -257,7 +263,6 @@ namespace SemWeb.Query {
 
 	public class SparqlXmlQuerySink : QueryResultSink {
 		System.Xml.XmlWriter output;
-		string variableNamespace;
 		
 		int blankNodeCounter = 0;
 		Hashtable blankNodes = new Hashtable();
@@ -268,31 +273,22 @@ namespace SemWeb.Query {
 			return w;
 		}
 		
-		public SparqlXmlQuerySink(TextWriter output, string variableNamespace)
-		 : this(GetWriter(output), variableNamespace) {
+		public SparqlXmlQuerySink(TextWriter output)
+		 : this(GetWriter(output)) {
 		}
 
-		public SparqlXmlQuerySink(System.Xml.XmlWriter output, string variableNamespace) {
+		public SparqlXmlQuerySink(System.Xml.XmlWriter output) {
 			this.output = output;
-			this.variableNamespace = variableNamespace;
 			output.WriteStartElement("sparql");
 			output.WriteAttributeString("xmlns", "http://www.w3.org/2001/sw/DataAccess/rf1/result");
 			output.WriteStartElement("head");
 		}
 		
-		string GetName(string uri) {
-			if (uri.StartsWith(variableNamespace))
-				uri = uri.Substring(variableNamespace.Length);
-			if (uri.StartsWith("?") || uri.StartsWith("$"))
-				uri = uri.Substring(1);
-			return uri;
-		}
-		
-		public override void Init(Entity[] variables) {
-			foreach (Entity var in variables) {
-				if (var.Uri == null) continue;
+		public override void Init(VariableBinding[] variables) {
+			foreach (VariableBinding var in variables) {
+				if (var.Name == null) continue;
 				output.WriteStartElement("variable");
-				output.WriteAttributeString("name", GetName(var.Uri));
+				output.WriteAttributeString("name", var.Name);
 				output.WriteEndElement();
 			}
 			output.WriteEndElement(); // head
@@ -302,9 +298,9 @@ namespace SemWeb.Query {
 		public override bool Add(VariableBinding[] result) {
 			output.WriteStartElement("result");
 			foreach (VariableBinding var in result) {
-				if (var.Variable.Uri == null) continue;
+				if (var.Name == null) continue;
 				
-				output.WriteStartElement(GetName(var.Variable.Uri));
+				output.WriteStartElement(var.Name);
 				if (var.Target == null) {
 					output.WriteAttributeString("bound", "false");
 				} else if (var.Target.Uri != null) {

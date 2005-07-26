@@ -36,7 +36,7 @@ namespace SemWeb.Stores {
 			
 			public ResourceKey(int id) { ResId = id; }
 			
-			public override int GetHashCode() { return ResId; }
+			public override int GetHashCode() { return ResId.GetHashCode(); }
 			public override bool Equals(object other) { return (other is ResourceKey) && ((ResourceKey)other).ResId == ResId; }
 		}
 		
@@ -624,6 +624,7 @@ namespace SemWeb.Stores {
 		private int AsInt(object r) {
 			if (r is int) return (int)r;
 			if (r is uint) return (int)(uint)r;
+			if (r is long) return (int)(long)r;
 			if (r is string) return int.Parse((string)r);
 			throw new ArgumentException(r.ToString());
 		}
