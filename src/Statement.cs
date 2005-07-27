@@ -9,6 +9,8 @@ namespace SemWeb {
 		
 		public static Entity DefaultMeta = new Entity(null);
 		
+		public static Statement All = new Statement(null, null, null, null);
+		
 		public Statement(Entity subject, Entity predicate, Resource @object)
 		: this(subject, predicate, @object, DefaultMeta) {
 		}

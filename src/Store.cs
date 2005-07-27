@@ -156,7 +156,7 @@ namespace SemWeb {
 		}
 		
 		public void Select(StatementSink result) {
-			Select(new Statement(null,null,null), result);
+			Select(Statement.All, result);
 		}
 		
 		public void Select(Statement template, StatementSink result) {
@@ -261,7 +261,7 @@ namespace SemWeb {
 		}
 		
 		public void Write(RdfWriter writer) {
-			Select(new Statement(null,null,null), writer);
+			Select(Statement.All, writer);
 		}
 		
 		public void Write(System.IO.TextWriter writer) {

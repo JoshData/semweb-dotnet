@@ -53,7 +53,7 @@ namespace SemWeb.Query {
 			
 			// Add all statements except the query predicates and value filters into a
 			// new store with just the statements relevant to the search.
-			foreach (Statement s in queryModel.Select(new Statement(null,null,null))) {
+			foreach (Statement s in queryModel.Select(Statement.All)) {
 				if (IsQueryPredicate(s.Predicate)) continue;
 				
 				if (s.Predicate.Uri != null && extraValueFilters != null && extraValueFilters.Contains(s.Predicate.Uri)) {
