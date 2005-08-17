@@ -96,7 +96,7 @@ namespace SemWeb {
 				list1 = list2;
 		}
 		
-		public override void Select(Statement template, SelectPartialFilter partialFilter, StatementSink result) {
+		public override void Select(Statement template, StatementSink result) {
 			IList source = statements;
 			
 			// The first time select is called, turn indexing on for the store.
@@ -122,7 +122,7 @@ namespace SemWeb {
 			}
 		}
 
-		public override void Select(Statement[] templates, SelectPartialFilter partialFilter, StatementSink result) {
+		public override void Select(Statement[] templates, StatementSink result) {
 			foreach (Statement t in templates)
 				Select(t, result);
 		}

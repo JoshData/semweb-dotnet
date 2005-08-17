@@ -92,9 +92,8 @@ namespace SemWeb {
 		}
 	}
 	
-	public struct SelectPartialFilter {
+	internal struct SelectPartialFilter {
 		bool s, p, o, m;
-		bool first;
 		
 		public static readonly SelectPartialFilter All = new SelectPartialFilter(true, true, true, true);
 		
@@ -103,8 +102,6 @@ namespace SemWeb {
 			p = predicate;
 			o = @object;
 			m = meta;
-			
-			first = false;
 		}
 		
 		public bool Subject { get { return s; } }
@@ -114,8 +111,6 @@ namespace SemWeb {
 		
 		public bool SelectAll { get { return s && p && o && m; } }
 		public bool SelectNone { get { return !s && !p && !o && !m; } }
-		
-		public bool SelectFirst { get { return first; } set { first = value; } }
 		
 		public override string ToString() {
 			if (SelectAll) return "All";

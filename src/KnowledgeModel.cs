@@ -40,12 +40,12 @@ namespace SemWeb.Stores {
 			return mainstore.Contains(statement);
 		}
 		
-		public override void Select(Statement template, SelectPartialFilter partialFilter, StatementSink result) {
-			mainstore.Select(template, partialFilter, result);
+		public override void Select(Statement template, StatementSink result) {
+			mainstore.Select(template, result);
 		}
 		
-		public override void Select(Statement[] templates, SelectPartialFilter partialFilter, StatementSink result) {
-			mainstore.Select(templates, partialFilter, result);
+		public override void Select(Statement[] templates, StatementSink result) {
+			mainstore.Select(templates, result);
 		}
 
 		public override int StatementCount { get { return stores.StatementCount; } }

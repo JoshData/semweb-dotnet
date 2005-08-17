@@ -7,7 +7,7 @@ using SemWeb;
 using SemWeb.Stores;
 
 namespace SemWeb.Query {
-	public class RSquary : QueryEngine {
+	public class RSquary : GraphMatch {
 		
 		// TODO: Optional statements
 		// TODO: Grouping and disjunctions

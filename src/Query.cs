@@ -15,7 +15,7 @@ namespace SemWeb.Query {
 		}
 	}
 	
-	public class QueryEngine {
+	public class GraphMatch {
 		// Setup information
 	
 		Hashtable variableNames = new Hashtable();
@@ -78,11 +78,15 @@ namespace SemWeb.Query {
 		
 		class QueryResult {
 			public ResSet[] Bindings;
-			public QueryResult(QueryEngine q) {
+			public bool[] StatementMatched;
+			
+			public QueryResult(GraphMatch q) {
 				Bindings = new ResSet[q.variables.Length];
+				StatementMatched = new bool[q.statements.Length];
 			}
-			private QueryResult(int x) {
+			private QueryResult(int x, int y) {
 				Bindings = new ResSet[x];
+				StatementMatched = new bool[y];
 			}
 			public void Add(QueryStatement qs, Statement bs) {
 				if (qs.Subject.IsVariable) Add(qs.Subject.VarIndex, bs.Subject);
@@ -109,10 +113,12 @@ namespace SemWeb.Query {
 				Bindings[varIndex].Add(binding);
 			}
 			public QueryResult Clone() {
-				QueryResult r = new QueryResult(Bindings.Length);
+				QueryResult r = new QueryResult(Bindings.Length, StatementMatched.Length);
 				for (int i = 0; i < Bindings.Length; i++)
 					if (Bindings[i] != null)
 						r.Bindings[i] = Bindings[i].Clone();
+				for (int i = 0; i < StatementMatched.Length; i++)
+					r.StatementMatched[i] = StatementMatched[i];
 				return r;
 			}
 		}
@@ -121,7 +127,7 @@ namespace SemWeb.Query {
 			public ArrayList Results = new ArrayList();
 			public QueryResult Union;
 			
-			public BindingSet(QueryEngine q) {
+			public BindingSet(GraphMatch q) {
 				Union = new QueryResult(q);
 			}
 		}
@@ -181,11 +187,12 @@ namespace SemWeb.Query {
 			result.Init(finalbindings);
 			
 			BindingSet bindings = new BindingSet(this);
-			foreach (QueryStatement[] group in statements) {
+			for (int group = 0; group < statements.Length; group++) {
 				bool ret = Query(group, bindings, targetModel);
 				if (!ret) {
 					// A false return value indicates the query
-					// certainly failed.
+					// certainly failed -- a non-optional statement
+					// failed to match at all.
 					result.Finished();
 					return;
 				}
@@ -204,6 +211,7 @@ namespace SemWeb.Query {
 				} while (permutation.Next());
 				if (ctr == start+limit) break;	
 			}
+
 			
 			result.Finished();
 		}
@@ -281,7 +289,9 @@ namespace SemWeb.Query {
 			}
 		}
 
-		private bool Query(QueryStatement[] group, BindingSet bindings, Store targetModel) {
+		private bool Query(int groupindex, BindingSet bindings, Store targetModel) {
+			QueryStatement[] group = statements[groupindex];
+			
 			if (group.Length == 1) {
 				QueryStatement qs = group[0];
 				
@@ -310,9 +320,16 @@ namespace SemWeb.Query {
 					// the multiply bound variable with the matching
 					// statements.
 					
-					MemoryStore matches1 = targetModel.Select((Statement[])templates.ToArray(typeof(Statement)));
+					SelectResult matches1 = targetModel.Select((Statement[])templates.ToArray(typeof(Statement)));
 					
 					Debug("\t" + matches1.StatementCount + " Matches");
+					
+					if (matches1.StatementCount == 0) {
+						// This statement doesn't match any of
+						// the existing bindings.  If this was
+						// optional, preserve the bindings.
+						return qs.Optional;
+					}
 					
 					// The memory store that we get back from a select
 					// won't do indexing, but indexing will help.
@@ -329,13 +346,16 @@ namespace SemWeb.Query {
 						while (enumer2.MoveNext(out s, out p, out o)) {
 							// Get the matching statements from the union query
 							Statement bs = new Statement(s, p, o);
-							MemoryStore innermatches = matches.Select(bs);
+							MemoryStore innermatches = matches.Select(bs).Load();
 							
 							// If no matches, the binding didn't match the filter.
 							if (innermatches.StatementCount == 0) {
 								if (qs.Optional) {
 									// Preserve the binding.
-									newbindings.Add(binding);
+									QueryResult bc = binding.Clone();
+									bc.Set(qs, bs);
+									newbindings.Add(bc);
+									continue;
 								} else {
 									// Toss out the binding.
 									continue;
@@ -344,13 +364,18 @@ namespace SemWeb.Query {
 							
 							foreach (Statement m in innermatches) {
 								if (!MatchesFilters(m, qs, targetModel)) {
-									if (qs.Optional) newbindings.Add(binding);
+									if (qs.Optional) {
+										QueryResult bc = binding.Clone();
+										bc.Set(qs, bs);
+										newbindings.Add(bc);
+									}
 									continue;
 								}
 								bindings.Union.Add(qs, m);
 								
 								QueryResult r = binding.Clone();
 								r.Set(qs, m);
+								r.StatementMatched[groupindex] = true;
 								newbindings.Add(r);
 							}
 						}
@@ -385,9 +410,13 @@ namespace SemWeb.Query {
 						
 						// All variables are singly bound already.
 						// We can just test if the statement exists.
-						if (!targetModel.Contains(s)
-							&& !qs.Optional)
-							return false;
+						if (targetModel.Contains(s)) {
+							// Mark each binding that it matched this statement.
+							foreach (QueryResult r in bindings.Results)
+								r.StatementMatched[groupindex] = true;
+						} else {
+							return qs.Optional;
+						}
 					
 					} else if (numUnbound == 1) {
 						Debug(qs.ToString() + " 1 Unbound");
@@ -434,6 +463,7 @@ namespace SemWeb.Query {
 							if (qs.Object.IsVariable && !ounbound && r.Bindings[qs.Object.VarIndex] == null) continue;
 						
 							r.Bindings[varIndex] = values;
+							r.StatementMatched[groupindex] = true;
 						}
 						
 					} else {
@@ -470,6 +500,7 @@ namespace SemWeb.Query {
 							
 								QueryResult r2 = r.Clone();
 								r2.Add(qs, match);
+								r2.StatementMatched[groupindex] = true;
 								newbindings.Add(r2);
 							}
 						}
@@ -582,6 +613,9 @@ namespace SemWeb.Query {
 			// Get the list of variables, which is the set
 			// of anonymous nodes in the statements to match.
 			ArrayList setupVariables = new ArrayList();
+			
+			if (setupStatements.Count == 0)
+				throw new InvalidOperationException("A query must have at least one non-optional statement.");
 			
 			foreach (Statement s in setupStatements) {
 				InitAnonVariable(s.Subject, setupVariables);

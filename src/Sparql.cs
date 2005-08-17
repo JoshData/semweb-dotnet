@@ -55,8 +55,8 @@ namespace SemWeb.Query {
 			Ask
 		}
 		
-		public QueryEngine CreateQuery() {
-			QueryEngine query = new QueryEngine();
+		public GraphMatch CreateQuery() {
+			GraphMatch query = new GraphMatch();
 			
 			foreach (DictionaryEntry entry in variableNames)
 				query.SetVariableName((Entity)entry.Key, (string)entry.Value);

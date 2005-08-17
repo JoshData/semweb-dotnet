@@ -86,6 +86,10 @@ namespace SemWeb {
 					} else {
 						return new N3Reader(spec);
 					}
+				case "file":
+					if (spec == "") throw new ArgumentException("Use: format:filename");
+					if (output) throw new ArgumentException("The FileStore does not support writing.");
+					return new SemWeb.Stores.FileStore(spec);
 				case "sqlite":
 				case "mysql":
 					if (spec == "") throw new ArgumentException("Use: sqlite|mysql:table:connection-string");
@@ -122,8 +126,8 @@ namespace SemWeb {
 		public Entity[] GetEntitiesOfType(Entity type) {
 			ArrayList entities = new ArrayList();
 			
-			MemoryStore result = Select(new Statement(null, rdfType, type));
-			foreach (Statement s in result.Statements) {
+			IEnumerable result = Select(new Statement(null, rdfType, type));
+			foreach (Statement s in result) {
 				entities.Add(s.Subject);
 			}
 			
@@ -149,9 +153,7 @@ namespace SemWeb {
 		
 		public virtual bool Contains(Statement statement) {
 			StatementExistsSink sink = new StatementExistsSink();
-			SelectPartialFilter filter = SelectPartialFilter.All;
-			filter.SelectFirst = true;
-			Select(statement, filter, sink);
+			Select(statement, sink);
 			return sink.Exists;
 		}
 		
@@ -159,50 +161,28 @@ namespace SemWeb {
 			Select(Statement.All, result);
 		}
 		
-		public void Select(Statement template, StatementSink result) {
-			Select(template, SelectPartialFilter.All, result);
+		public abstract void Select(Statement template, StatementSink result);
+		
+		public abstract void Select(Statement[] templates, StatementSink result);
+		
+		public SelectResult Select(Statement template) {
+			return new SelectResult.Single(this, template);
 		}
 		
-		public void Select(Statement[] templates, StatementSink result) {
-			Select(templates, SelectPartialFilter.All, result);
-		}
-		
-		public abstract void Select(Statement template, SelectPartialFilter partialFilter, StatementSink result);
-		
-		public abstract void Select(Statement[] templates, SelectPartialFilter partialFilter, StatementSink result);
-		
-		public MemoryStore Select(Statement template) {
-			return Select(template, SelectPartialFilter.All);
-		}
-		
-		public MemoryStore Select(Statement template, SelectPartialFilter partialFilter) {
-			MemoryStore ms = new MemoryStore();
-			ms.allowIndexing = false;
-			Select(template, partialFilter, ms);
-			return ms;
-		}
-		
-		public MemoryStore Select(Statement[] templates) {
-			return Select(templates, SelectPartialFilter.All);
-		}
-		
-		public MemoryStore Select(Statement[] templates, SelectPartialFilter partialFilter) {
-			MemoryStore ms = new MemoryStore();
-			ms.allowIndexing = false;
-			Select(templates, partialFilter, ms);
-			return ms;
+		public SelectResult Select(Statement[] templates) {
+			return new SelectResult.Multi(this, templates);
 		}
 		
 		public Resource[] SelectObjects(Entity subject, Entity predicate) {
 			Hashtable resources = new Hashtable();
-			foreach (Statement s in Select(new Statement(subject, predicate, null), new SelectPartialFilter(false, false, true, false)))
+			foreach (Statement s in Select(new Statement(subject, predicate, null)))
 				if (!resources.ContainsKey(s.Object))
 					resources[s.Object] = s.Object;
 			return (Resource[])new ArrayList(resources.Keys).ToArray(typeof(Resource));
 		}
 		public Entity[] SelectSubjects(Entity predicate, Resource @object) {
 			Hashtable resources = new Hashtable();
-			foreach (Statement s in Select(new Statement(null, predicate, @object), new SelectPartialFilter(true, false, false, false)))
+			foreach (Statement s in Select(new Statement(null, predicate, @object)))
 				if (!resources.ContainsKey(s.Subject))
 					resources[s.Subject] = s.Subject;
 			return (Entity[])new ArrayList(resources.Keys).ToArray(typeof(Entity));
@@ -279,6 +259,48 @@ namespace SemWeb {
 		}
 		
 	}
+
+	public abstract class SelectResult : StatementSource, IEnumerable {
+		MemoryStore ms;
+		internal SelectResult() { }
+		public abstract void Select(StatementSink sink);
+		public IEnumerator GetEnumerator() {
+			return Buffer().Statements.GetEnumerator();
+		}
+		public long StatementCount { get { return Buffer().StatementCount; } }
+		public MemoryStore Load() { return Buffer(); }
+		private MemoryStore Buffer() {
+			if (ms != null) return ms;
+			ms = new MemoryStore();
+			ms.allowIndexing = false;
+			Select(ms);
+			return ms;
+		}
+		
+		internal class Single : SelectResult {
+			Store source;
+			Statement template;
+			public Single(Store source, Statement template) {
+				this.source = source;
+				this.template = template;
+			}
+			public override void Select(StatementSink sink) {
+				source.Select(template, sink);
+			}
+		}
+		
+		internal class Multi : SelectResult {
+			Store source;
+			Statement[] templates;
+			public Multi(Store source, Statement[] templates) {
+				this.source = source;
+				this.templates = templates;
+			}
+			public override void Select(StatementSink sink) {
+				source.Select(templates, sink);
+			}
+		}
+	}
 }
 
 namespace SemWeb.Stores {
@@ -341,14 +363,14 @@ namespace SemWeb.Stores {
 			
 		public override void Remove(Statement statement) { throw new InvalidOperationException("Add is not a valid operation on a MultiStore."); }
 		
-		public override void Select(Statement template, SelectPartialFilter partialFilter, StatementSink result) {
+		public override void Select(Statement template, StatementSink result) {
 			foreach (Store s in stores)
-				s.Select(template, partialFilter, result);
+				s.Select(template, result);
 		}
 		
-		public override void Select(Statement[] templates, SelectPartialFilter partialFilter, StatementSink result) {
+		public override void Select(Statement[] templates, StatementSink result) {
 			foreach (Store s in stores)
-				s.Select(templates, partialFilter, result);
+				s.Select(templates, result);
 		}
 
 		public override void Replace(Entity a, Entity b) {

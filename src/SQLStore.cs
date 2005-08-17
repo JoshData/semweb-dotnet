@@ -97,11 +97,18 @@ namespace SemWeb.Stores {
 		}
 		
 		public override void Clear() {
+			// Drop the tables, if they exist.
+			try { RunCommand("DROP TABLE " + table + "_statements;"); } catch (Exception e) { }
+			try { RunCommand("DROP TABLE " + table + "_literals;"); } catch (Exception e) { }
+			try { RunCommand("DROP TABLE " + table + "_entities;"); } catch (Exception e) { }
+			firstUse = true;
+		
 			Init();
 			if (addStatementBuffer != null) addStatementBuffer.Clear();
-			RunCommand("DELETE FROM " + table + "_statements;");
-			RunCommand("DELETE FROM " + table + "_literals;");
-			RunCommand("DELETE FROM " + table + "_entities;");
+
+			//RunCommand("DELETE FROM " + table + "_statements;");
+			//RunCommand("DELETE FROM " + table + "_literals;");
+			//RunCommand("DELETE FROM " + table + "_entities;");
 		}
 		
 		private int GetLiteralId(Literal literal, bool create, bool cacheIsComplete, StringBuilder buffer, bool insertCombined) {
@@ -409,11 +416,12 @@ namespace SemWeb.Stores {
 				IDataReader reader = RunReader(cmd.ToString());
 				try {
 					while (reader.Read()) {
-						int literalid = AsInt(reader[0]);
-						
+						//int literalid = AsInt(reader[0]);	
+						int literalid = reader.GetInt32(0);
 						string val = AsString(reader[1]);
 						string lang = AsString(reader[2]);
 						string dt = AsString(reader[3]);
+
 						Literal lit = new Literal(val, lang, dt);
 						
 						literalCache[lit] = literalid;
@@ -511,8 +519,9 @@ namespace SemWeb.Stores {
 				IDataReader reader = RunReader("SELECT " + col + ", value FROM " + table + "_statements LEFT JOIN " + table + "_entities ON " + col + "=id " + (col == "object" ? " WHERE objecttype=0" : "") + " GROUP BY " + col + ";");
 				try {
 					while (reader.Read()) {
-						int id = AsInt(reader[0]);
-						if (id <= 1) continue; // don't return DefaultMeta.
+						//int id = AsInt(reader[0]);
+						int id = reader.GetInt32(0);
+						if (id == 1 && col == "meta") continue; // don't return DefaultMeta in meta column.
 						
 						if (seen.ContainsKey(id)) continue;
 						seen[id] = seen;
@@ -661,7 +670,7 @@ namespace SemWeb.Stores {
 			if (partialFilter.Meta) { AppendComma(cmd, "q.meta, muri.value", !f); f = false; }
 		}
 		
-		public override void Select(Statement[] templates, SelectPartialFilter partialFilter, StatementSink result) {
+		public override void Select(Statement[] templates, StatementSink result) {
 			if (templates == null) throw new ArgumentNullException();
 			if (result == null) throw new ArgumentNullException();
 			if (templates.Length == 0) return;
@@ -690,19 +699,19 @@ namespace SemWeb.Stores {
 			}
 			
 			if (!sm && !pm && !om && !mm) {
-				Select(templates[0], partialFilter, result);
+				Select(templates[0], result);
 				return;
 			} else if (sm && !pm && !om && !mm) {
-				Select(new MultiRes(sl), pv, ov, mv, partialFilter, result);
+				Select(new MultiRes(sl), pv, ov, mv, result);
 			} else if (!sm && pm && !om && !mm) {
-				Select(sv, new MultiRes(pl), ov, mv, partialFilter, result);
+				Select(sv, new MultiRes(pl), ov, mv, result);
 			} else if (!sm && !pm && om && !mm) {
-				Select(sv, pv, new MultiRes(ol), mv, partialFilter, result);
+				Select(sv, pv, new MultiRes(ol), mv, result);
 			} else if (!sm && !pm && !om && mm) {
-				Select(sv, pv, ov, new MultiRes(ml), partialFilter, result);
+				Select(sv, pv, ov, new MultiRes(ml), result);
 			} else {
 				foreach (Statement template in templates)
-					Select(template, partialFilter, result);
+					Select(template, result);
 			}
 		}
 		
@@ -712,25 +721,25 @@ namespace SemWeb.Stores {
 			public override string Uri { get { return null; } }
 		}
 		
-		public override void Select(Statement template, SelectPartialFilter partialFilter, StatementSink result) {
+		public override void Select(Statement template, StatementSink result) {
 			if (result == null) throw new ArgumentNullException();
-			Select(template.Subject, template.Predicate, template.Object, template.Meta, partialFilter, result);
+			Select(template.Subject, template.Predicate, template.Object, template.Meta, result);
 		}
 
-		private void Select(Resource templateSubject, Resource templatePredicate, Resource templateObject, Resource templateMeta, SelectPartialFilter partialFilter, StatementSink result) {
+		private void Select(Resource templateSubject, Resource templatePredicate, Resource templateObject, Resource templateMeta, StatementSink result) {
 			if (result == null) throw new ArgumentNullException();
 	
 			Init();
 			RunAddBuffer();
 			
-			bool limitOne = partialFilter.SelectFirst;
+			bool limitOne = false;
 			
 			// Don't select on columns that we already know from the template
-			partialFilter = new SelectPartialFilter(
-				(partialFilter.Subject && templateSubject == null) || templateSubject is MultiRes,
-				(partialFilter.Predicate && templatePredicate == null) || templatePredicate is MultiRes,
-				(partialFilter.Object && templateObject == null) || templateObject is MultiRes,
-				(partialFilter.Meta && templateMeta == null) || templateMeta is MultiRes
+			SelectPartialFilter partialFilter = new SelectPartialFilter(
+				(templateSubject == null) || templateSubject is MultiRes,
+				(templatePredicate == null) || templatePredicate is MultiRes,
+				(templateObject == null) || templateObject is MultiRes,
+				(templateMeta == null) || templateMeta is MultiRes
 				);
 			
 			if (partialFilter.SelectNone)
@@ -809,10 +818,14 @@ namespace SemWeb.Stores {
 					int sid = -1, pid = -1, ot = -1, oid = -1, mid = -1;
 					string suri = null, puri = null, ouri = null, muri = null;
 					
-					if (partialFilter.Subject) { sid = AsInt(reader[col++]); suri = AsString(reader[col++]); }
-					if (partialFilter.Predicate) { pid = AsInt(reader[col++]); puri = AsString(reader[col++]); }
-					if (partialFilter.Object) { ot = AsInt(reader[col++]); oid = AsInt(reader[col++]); ouri = AsString(reader[col++]); }
-					if (partialFilter.Meta) { mid = AsInt(reader[col++]); muri = AsString(reader[col++]); }
+					//if (partialFilter.Subject) { sid = AsInt(reader[col++]); suri = AsString(reader[col++]); }
+					//if (partialFilter.Predicate) { pid = AsInt(reader[col++]); puri = AsString(reader[col++]); }
+					//if (partialFilter.Object) { ot = AsInt(reader[col++]); oid = AsInt(reader[col++]); ouri = AsString(reader[col++]); }
+					//if (partialFilter.Meta) { mid = AsInt(reader[col++]); muri = AsString(reader[col++]); }
+					if (partialFilter.Subject) { sid = reader.GetInt32(col++); suri = AsString(reader[col++]); }
+					if (partialFilter.Predicate) { pid = reader.GetInt32(col++); puri = AsString(reader[col++]); }
+					if (partialFilter.Object) { ot = reader.GetInt32(col++); oid = reader.GetInt32(col++); ouri = AsString(reader[col++]); }
+					if (partialFilter.Meta) { mid = reader.GetInt32(col++); muri = AsString(reader[col++]); }
 					
 					string lv = null, ll = null, ld = null;
 					if (ot == 1 && partialFilter.Object) {
@@ -891,7 +904,7 @@ namespace SemWeb.Stores {
 			IDataReader reader = RunReader("SELECT id, value from " + table + "_entities;");			
 			try {
 				while (reader.Read())
-					lockedIdCache[AsString(reader[1])] = AsInt(reader[0]);
+					lockedIdCache[AsString(reader[1])] = reader.GetInt32(0);
 			} finally {
 				reader.Close();
 			}
@@ -1075,7 +1088,7 @@ namespace SemWeb.Stores {
 			Hashtable seen = new Hashtable();
 			try {
 				while (reader.Read()) {
-					int id = AsInt(reader[0]);
+					int id = reader.GetInt32(0);
 					string uri = AsString(reader[1]);
 					if (seen.ContainsKey(id)) continue;
 					seen[id] = seen;
@@ -1148,6 +1161,7 @@ namespace SemWeb.Stores {
 				try {
 					RunCommand(cmd);
 				} catch (Exception e) {
+					if (Debug) Console.Error.WriteLine(e);
 				}
 			}
 		}
@@ -1157,6 +1171,7 @@ namespace SemWeb.Stores {
 				try {
 					RunCommand(cmd);
 				} catch (Exception e) {
+					if (Debug) Console.Error.WriteLine(e);
 				}
 			}
 		}
