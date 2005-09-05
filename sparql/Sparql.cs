@@ -11,9 +11,13 @@ using name.levering.ryan.sparql.common;
 
 namespace SemWeb.Query {
 
-	public class Sparql {
+	public class Sparql : SemWeb.Query.Query {
 
 		name.levering.ryan.sparql.model.Query query;
+		
+		public Sparql(TextReader query)
+			: this(query.ReadToEnd()) {
+		}
 	
 		public Sparql(string query) {
 			try {
@@ -21,13 +25,17 @@ namespace SemWeb.Query {
 			} catch (ParseException e) {
 				throw new Exception("SPARQL syntax error at: " + e.currentToken);
 			}
-			if (!(query is SelectQuery))
-				throw new NotSupportedException("Only SELECT queries are supported at the moment.");
+			if (!(this.query is SelectQuery))
+				throw new NotSupportedException("Only SELECT queries are supported at the moment (" + query.GetType() + ").");
 		}
 	
-		public void Query(QueryableSource source, QueryResultSink resultsink) {
+		public override string GetExplanation() {
+			return query.ToString();
+		}
+	
+		public override void Run(QueryableSource source, QueryResultSink resultsink) {
 			SelectQuery squery = (SelectQuery)query;
-			RdfSourceWrapper sourcewrapper = new RdfSourceWrapper(source);
+			RdfSourceWrapper sourcewrapper = new RdfSourceWrapper(source, QueryMeta);
 			RdfBindingSet results = squery.execute(sourcewrapper);
 			
 			java.util.List vars = results.getVariables();
@@ -39,6 +47,7 @@ namespace SemWeb.Query {
 			resultsink.Init(bindings);
 			
 			java.util.Iterator iter = results.iterator();
+			long ctr = -1, ctr2 = 0;
 			while (iter.hasNext()) {
 				RdfBindingRow row = (RdfBindingRow)iter.next();
 				for (int i = 0; i < bindings.Length; i++) {
@@ -47,7 +56,13 @@ namespace SemWeb.Query {
 						bindings[i].Variable, v.getName(),
 						sourcewrapper.ToResource(row.getValue(v)));
 				}
+				
+				ctr++;
+				if (ctr < ReturnStart && ReturnStart != -1) continue;
 				resultsink.Add(bindings);
+
+				ctr2++;
+				if (ctr2 >= ReturnLimit && ReturnLimit != -1) break;
 			}
 			
 			resultsink.Finished();
@@ -56,9 +71,11 @@ namespace SemWeb.Query {
 		class RdfSourceWrapper : RdfSource, org.openrdf.model.ValueFactory {
 			QueryableSource source;
 			Hashtable bnodes = new Hashtable();
+			Entity QueryMeta;
 			
-			public RdfSourceWrapper(QueryableSource source) {
+			public RdfSourceWrapper(QueryableSource source, Entity meta) {
 				this.source = source;
+				QueryMeta = meta;
 			}
 		
 			public java.util.Iterator getDefaultStatements (org.openrdf.model.Value subject, org.openrdf.model.URI predicate, org.openrdf.model.Value @object) {
@@ -67,7 +84,7 @@ namespace SemWeb.Query {
 			}
 			
 			public java.util.Iterator getStatements (org.openrdf.model.Value subject, org.openrdf.model.URI predicate, org.openrdf.model.Value @object) {
-				Statement statement = new Statement(ToEntity(subject), ToEntity(predicate), ToResource(@object));
+				Statement statement = new Statement(ToEntity(subject), ToEntity(predicate), ToResource(@object), QueryMeta);
 				MemoryStore results = new MemoryStore();
 				source.Select(statement, results);
 				return new StatementIterator(results.ToArray());
@@ -90,7 +107,7 @@ namespace SemWeb.Query {
 			}
 			
 			public bool hasStatement (org.openrdf.model.Value subject, org.openrdf.model.URI @predicate, org.openrdf.model.Value @object) {
-				return source.Contains(new Statement(ToEntity(subject), ToEntity(predicate), ToResource(@object)));
+				return source.Contains(new Statement(ToEntity(subject), ToEntity(predicate), ToResource(@object), QueryMeta));
 			}
 	
 			public bool hasStatement (org.openrdf.model.Value subject, org.openrdf.model.URI @predicate, org.openrdf.model.Value @object, org.openrdf.model.URI graph) {

@@ -7,6 +7,23 @@ using SemWeb.Stores;
 using SemWeb.Util;
 
 namespace SemWeb.Query {
+
+	public abstract class Query {
+		int start = -1;
+		int limit = -1;
+		Entity queryMeta = null;
+		
+		public int ReturnStart { get { return start; } set { start = value; } }
+		
+		public int ReturnLimit { get { return limit; } set { limit = value; } }
+		
+		public Entity QueryMeta { get { return queryMeta; } set { queryMeta = value; } }
+		
+		public abstract void Run(QueryableSource source, QueryResultSink resultsink);
+
+		public abstract string GetExplanation();
+	}
+
 	public class QueryException : ApplicationException {
 		public QueryException(string message) : base(message) {
 		}
@@ -15,7 +32,7 @@ namespace SemWeb.Query {
 		}
 	}
 	
-	public class GraphMatch {
+	public class GraphMatch : Query {
 		// Setup information
 	
 		Hashtable variableNames = new Hashtable();
@@ -24,10 +41,6 @@ namespace SemWeb.Query {
 		ArrayList setupValueFilters = new ArrayList();
 		ArrayList setupStatements = new ArrayList();
 		ArrayList setupOptionalStatements = new ArrayList();
-		Entity queryMeta = null;
-		
-		int start = -1;
-		int limit = -1;
 		
 		// Query model information
 		
@@ -166,12 +179,6 @@ namespace SemWeb.Query {
 			setupOptionalStatements.Add(filter);
 		}
 		
-		public int ReturnStart { get { return start; } set { start = value; } }
-		
-		public int ReturnLimit { get { return limit; } set { limit = value; } }
-		
-		public Entity QueryMeta { get { return queryMeta; } set { queryMeta = value; } }
-		
 		private class SetupVariablesDistinct {
 			public Entity a, b;
 		}
@@ -189,7 +196,7 @@ namespace SemWeb.Query {
 			}
 		}
 		
-		public string GetExplanation() {
+		public override string GetExplanation() {
 			CheckInit();
 			string ret = "Query:\n";
 			foreach (Statement s in novariablestatements)
@@ -211,7 +218,7 @@ namespace SemWeb.Query {
 			return ret;
 		}
 		
-		public void Query(QueryableSource targetModel, QueryResultSink result) {
+		public override void Run(QueryableSource targetModel, QueryResultSink result) {
 			CheckInit();
 			
 			foreach (Statement s in novariablestatements)
@@ -243,13 +250,13 @@ namespace SemWeb.Query {
 				Permutation permutation = new Permutation(r.Bindings);
 				do {
 					ctr++;
-					if (ctr < start) continue;
+					if (ctr < ReturnStart) continue;
 					for (int i = 0; i < variables.Length; i++)
 						finalbindings[i].Target = permutation[i];
 					result.Add(finalbindings);
-					if (ctr == start+limit) break;	
+					if (ctr == ReturnStart+ReturnLimit) break;	
 				} while (permutation.Next());
-				if (ctr == start+limit) break;	
+				if (ctr == ReturnStart+ReturnLimit) break;	
 			}
 
 			
@@ -352,7 +359,7 @@ namespace SemWeb.Query {
 					ArrayList templates = new ArrayList();
 					BindingEnumerator enumer = new BindingEnumerator(qs, bindings.Union);
 					while (enumer.MoveNext(out s, out p, out o))
-						templates.Add(new Statement(s, p, o, queryMeta));
+						templates.Add(new Statement(s, p, o, QueryMeta));
 					
 					Debug("\t" + templates.Count + " Templates");
 					
@@ -381,7 +388,7 @@ namespace SemWeb.Query {
 						BindingEnumerator enumer2 = new BindingEnumerator(qs, binding);
 						while (enumer2.MoveNext(out s, out p, out o)) {
 							// Get the matching statements from the union query
-							Statement bs = new Statement(s, p, o, queryMeta);
+							Statement bs = new Statement(s, p, o, QueryMeta);
 							MemoryStore innermatches = matches.Select(bs).Load();
 							
 							// If no matches, the binding didn't match the filter.
@@ -640,7 +647,7 @@ namespace SemWeb.Query {
 			Resource p = GetUniqueBinding(sq.Predicate, bindings);
 			Resource o = GetUniqueBinding(sq.Object, bindings);
 			if (s is Literal || p is Literal) return StatementFailed;
-			return new Statement((Entity)s, (Entity)p, o, queryMeta);
+			return new Statement((Entity)s, (Entity)p, o, QueryMeta);
 		}
 		
 		bool MatchesFilters(Statement s, QueryStatement q, QueryableSource targetModel) {

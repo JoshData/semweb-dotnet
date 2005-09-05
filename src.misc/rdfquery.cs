@@ -14,18 +14,12 @@ using SemWeb.Query;
 
 public class RDFQuery {
 	private class Opts : Mono.GetOptions.Options {
-		[Mono.GetOptions.Option("The {type} of the query: rsquary (default) or sparql.")]
-		public string type = "rsquary";
+		[Mono.GetOptions.Option("The {type} of the query: 'match' to match the N3 graph with the target data or 'sparql' to run a SPARQL SELECT query on the target data.")]
+		public string type = "match";
 		
-		[Mono.GetOptions.Option("The {format} for variable binding output: simple, sql, or html")]
+		[Mono.GetOptions.Option("The {format} for variable binding output (currently only 'xml').")]
 		public string format = "xml";
 		
-		/*[Mono.GetOptions.Option("Use RDFS reasoning.")]
-		public bool rdfs = false;
-
-		[Mono.GetOptions.Option("Use OWL reasoning.")]
-		public bool owl = false;*/
-
 		[Mono.GetOptions.Option("Maximum number of results to report.")]
 		public int limit = 0;
 	}
@@ -55,15 +49,13 @@ public class RDFQuery {
 			return;
 		}
 
-		GraphMatch query;
+		Query query;
 		if (opts.type == "rsquary") {
 			RdfReader queryparser = RdfReader.Create("n3", "-");
 			queryparser.BaseUri = baseuri;
-		
 			query = new RSquary(queryparser);
 		} else if (opts.type == "sparql") {
-			SparqlParser sparql = new SparqlParser(Console.In);
-			query = sparql.CreateQuery();
+			query = new Sparql(Console.In);
 		} else {
 			throw new Exception("Invalid query format: " + opts.type);
 		}
@@ -77,15 +69,12 @@ public class RDFQuery {
 			model.Add(storage);
 		}
 		
-		//if (opts.rdfs) model.AddReasoning(new SemWeb.Reasoning.RDFSReasoning());
-		//if (opts.owl) model.AddReasoning(new SemWeb.Reasoning.OWLReasoning());
-		
 		if (opts.limit > 0)
 			query.ReturnLimit = opts.limit;
 
-		Console.Error.WriteLine(query.GetExplanation());
+		//Console.Error.WriteLine(query.GetExplanation());
 		
-		query.Query(model, qs);
+		query.Run(model, qs);
 		
 		if (qs is IDisposable)
 			((IDisposable)qs).Dispose();
