@@ -69,9 +69,9 @@ namespace SemWeb.Query {
 				}
 				
 				if (s.Meta == Statement.DefaultMeta)
-					AddFilter(s);
+					AddEdge(s);
 				else if (queryNode != null && queryModel.Contains(new Statement(queryNode, qOptional, s.Meta)))
-					AddOptionalFilter(s);
+					AddOptionalEdge(s);
 			}
 		}
 		
@@ -279,12 +279,12 @@ namespace SemWeb.Query {
 
 		public SparqlXmlQuerySink(System.Xml.XmlWriter output) {
 			this.output = output;
-			output.WriteStartElement("sparql");
-			output.WriteAttributeString("xmlns", "http://www.w3.org/2001/sw/DataAccess/rf1/result");
-			output.WriteStartElement("head");
 		}
 		
 		public override void Init(VariableBinding[] variables) {
+			output.WriteStartElement("sparql");
+			output.WriteAttributeString("xmlns", "http://www.w3.org/2001/sw/DataAccess/rf1/result");
+			output.WriteStartElement("head");
 			foreach (VariableBinding var in variables) {
 				if (var.Name == null) continue;
 				output.WriteStartElement("variable");

@@ -352,6 +352,7 @@ namespace SemWeb {
 				while (true) {
 					int ci = source.Peek();
 					if (ci == -1) break;
+					if (ci == ']' || ci == ')' || ci == '}') break;
 					
 					// punctuation followed by a space means the punctuation is
 					// punctuation, and not part of this token

@@ -18,7 +18,7 @@ namespace SemWeb.Query {
 		public static Entity qFilterGT = "http://purl.oclc.org/NET/rsquary/gt";
 		public static Entity qFilterGE = "http://purl.oclc.org/NET/rsquary/ge";
 		
-		public abstract bool Filter(Resource resource, Store targetModel);
+		public abstract bool Filter(Resource resource, QueryableSource targetModel);
 
 		public static ValueFilter GetValueFilter(Entity predicate, Resource obj) {
 			if (predicate == qFilterStringContains && obj is Literal)
@@ -76,7 +76,7 @@ namespace SemWeb.Query {
 		public StringCompareFilter(Literal res, int compareResult, bool orEqual) : base(res) { compare = compareResult; eq = orEqual; }
 		public StringCompareFilter(string pattern, int compareResult, bool orEqual) : base(pattern) { compare = compareResult; eq = orEqual; }
 		
-		public override bool Filter(Resource resource, Store targetModel) {
+		public override bool Filter(Resource resource, QueryableSource targetModel) {
 			string v = ((Literal)resource).Value;
 			int c = v.CompareTo(pattern);
 			if (compare == 0) return (c == 0) ^ !eq;
@@ -88,7 +88,7 @@ namespace SemWeb.Query {
 		public StringContainsFilter(Literal res) : base(res) { }
 		public StringContainsFilter(string pattern) : base(pattern) { }
 		
-		public override bool Filter(Resource resource, Store targetModel) {
+		public override bool Filter(Resource resource, QueryableSource targetModel) {
 			string v = ((Literal)resource).Value;
 			return v.IndexOf(pattern) != -1;
 		}
@@ -108,7 +108,7 @@ namespace SemWeb.Query {
 		public NumericCompareFilter(Literal res, int compareResult, bool orEqual) : base(res) { compare = compareResult; eq = orEqual; }
 		public NumericCompareFilter(Decimal number, int compareResult, bool orEqual) : base(number) { compare = compareResult; eq = orEqual; }
 		
-		public override bool Filter(Resource resource, Store targetModel) {
+		public override bool Filter(Resource resource, QueryableSource targetModel) {
 			string v = ((Literal)resource).Value;
 			try {
 				Decimal i = Decimal.Parse(v);
@@ -135,7 +135,7 @@ namespace SemWeb.Query {
 		public DateTimeCompareFilter(Literal res, int compareResult, bool orEqual) : base(res) { compare = compareResult; eq = orEqual; }
 		public DateTimeCompareFilter(DateTime datetime, int compareResult, bool orEqual) : base(datetime) { compare = compareResult; eq = orEqual; }
 		
-		public override bool Filter(Resource resource, Store targetModel) {
+		public override bool Filter(Resource resource, QueryableSource targetModel) {
 			string v = ((Literal)resource).Value;
 			try {
 				DateTime i = DateTime.Parse(v);
@@ -162,7 +162,7 @@ namespace SemWeb.Query {
 		public TimeSpanCompareFilter(Literal res, int compareResult, bool orEqual) : base(res) { compare = compareResult; eq = orEqual; }
 		public TimeSpanCompareFilter(TimeSpan timespan, int compareResult, bool orEqual) : base(timespan) { compare = compareResult; eq = orEqual; }
 		
-		public override bool Filter(Resource resource, Store targetModel) {
+		public override bool Filter(Resource resource, QueryableSource targetModel) {
 			string v = ((Literal)resource).Value;
 			try {
 				TimeSpan i = TimeSpan.Parse(v);

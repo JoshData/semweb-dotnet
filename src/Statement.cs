@@ -40,10 +40,10 @@ namespace SemWeb {
 		}
 		
 		public bool Matches(Statement statement) {
-			if (Subject != null && Subject != statement.Subject) return false;
-			if (Predicate != null && Predicate != statement.Predicate) return false;
-			if (Object != null && Object != statement.Object) return false;
-			if (Meta != null && Meta != statement.Meta) return false;
+			if (Subject != null && Subject != statement.Subject && statement.Subject != null) return false;
+			if (Predicate != null && Predicate != statement.Predicate && statement.Predicate != null) return false;
+			if (Object != null && Object != statement.Object && statement.Object != null) return false;
+			if (Meta != null && Meta != statement.Meta && statement.Meta != null) return false;
 			return true;
 		}
 		
@@ -90,6 +90,7 @@ namespace SemWeb {
 		public static bool operator !=(Statement a, Statement b) {
 			return !(a == b);
 		}
+
 	}
 	
 	internal struct SelectPartialFilter {

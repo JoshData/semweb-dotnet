@@ -62,7 +62,7 @@ namespace SemWeb.Query {
 				query.SetVariableName((Entity)entry.Key, (string)entry.Value);
 			
 			foreach (Statement s in graph)
-				query.AddFilter(s);
+				query.AddEdge(s);
 			
 			//graph.Select(new N3Writer(Console.Out));
 			

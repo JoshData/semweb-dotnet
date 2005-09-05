@@ -19,10 +19,12 @@ namespace SemWeb.Query {
 		// Setup information
 	
 		Hashtable variableNames = new Hashtable();
+		Hashtable nonvariables = new Hashtable();
 		ArrayList setupVariablesDistinct = new ArrayList();
 		ArrayList setupValueFilters = new ArrayList();
 		ArrayList setupStatements = new ArrayList();
 		ArrayList setupOptionalStatements = new ArrayList();
+		Entity queryMeta = null;
 		
 		int start = -1;
 		int limit = -1;
@@ -34,6 +36,7 @@ namespace SemWeb.Query {
 		Variable[] variables;
 		Entity[] variableEntities;
 		QueryStatement[][] statements;
+		ArrayList novariablestatements = new ArrayList();
 		
 		// contains functional and inverse functional properties
 		ResSet fps = new ResSet(),
@@ -131,7 +134,12 @@ namespace SemWeb.Query {
 				Union = new QueryResult(q);
 			}
 		}
-					
+		
+		public void SetNonVariable(Entity anonymousnode) {
+			if (anonymousnode.Uri != null) throw new ArgumentException("anonymousnode should be an anonymous nodes.  Named nodes are never variables to begin with.");
+			nonvariables[anonymousnode] = anonymousnode;
+		}
+		
 		public void SetVariableName(Entity variable, string name) {
 			variableNames[variable] = name;
 		}
@@ -150,17 +158,19 @@ namespace SemWeb.Query {
 			setupValueFilters.Add(d);
 		}
 		
-		public void AddFilter(Statement filter) {
+		public void AddEdge(Statement filter) {
 			setupStatements.Add(filter);
 		}
 
-		public void AddOptionalFilter(Statement filter) {
+		public void AddOptionalEdge(Statement filter) {
 			setupOptionalStatements.Add(filter);
 		}
 		
 		public int ReturnStart { get { return start; } set { start = value; } }
 		
 		public int ReturnLimit { get { return limit; } set { limit = value; } }
+		
+		public Entity QueryMeta { get { return queryMeta; } set { queryMeta = value; } }
 		
 		private class SetupVariablesDistinct {
 			public Entity a, b;
@@ -170,13 +180,43 @@ namespace SemWeb.Query {
 			public ValueFilter b;
 		}
 		
-		public void Query(Store targetModel, QueryResultSink result) {
+		private void CheckInit() {
 			lock (sync) {
 				if (!init) {
 					Init();
 					init = true;
 				}
 			}
+		}
+		
+		public string GetExplanation() {
+			CheckInit();
+			string ret = "Query:\n";
+			foreach (Statement s in novariablestatements)
+				ret += " Check: " + s + "\n";
+			foreach (QueryStatement[] sgroup in statements) {
+				ret += " ";
+				if (sgroup.Length != 1)
+					ret += "{";
+				foreach (QueryStatement s in sgroup) {
+					ret += s.ToString();
+					if (s.Optional) ret += " (Optional)";
+					if (sgroup.Length != 1)
+						ret += " & ";
+				}
+				if (sgroup.Length != 1)
+					ret += "}";
+				ret += "\n";
+			}
+			return ret;
+		}
+		
+		public void Query(QueryableSource targetModel, QueryResultSink result) {
+			CheckInit();
+			
+			foreach (Statement s in novariablestatements)
+				if (!targetModel.Contains(s))
+					return;
 			
 			VariableBinding[] finalbindings = new VariableBinding[variables.Length];
 			for (int i = 0; i < variables.Length; i++) {
@@ -289,7 +329,7 @@ namespace SemWeb.Query {
 			}
 		}
 
-		private bool Query(int groupindex, BindingSet bindings, Store targetModel) {
+		private bool Query(int groupindex, BindingSet bindings, QueryableSource targetModel) {
 			QueryStatement[] group = statements[groupindex];
 			
 			if (group.Length == 1) {
@@ -312,7 +352,7 @@ namespace SemWeb.Query {
 					ArrayList templates = new ArrayList();
 					BindingEnumerator enumer = new BindingEnumerator(qs, bindings.Union);
 					while (enumer.MoveNext(out s, out p, out o))
-						templates.Add(new Statement(s, p, o));
+						templates.Add(new Statement(s, p, o, queryMeta));
 					
 					Debug("\t" + templates.Count + " Templates");
 					
@@ -320,22 +360,18 @@ namespace SemWeb.Query {
 					// the multiply bound variable with the matching
 					// statements.
 					
-					SelectResult matches1 = targetModel.Select((Statement[])templates.ToArray(typeof(Statement)));
+					MemoryStore matches = new MemoryStore();
+					targetModel.Select((Statement[])templates.ToArray(typeof(Statement)), matches);
 					
-					Debug("\t" + matches1.StatementCount + " Matches");
+					Debug("\t" + matches.StatementCount + " Matches");
 					
-					if (matches1.StatementCount == 0) {
+					if (matches.StatementCount == 0) {
 						// This statement doesn't match any of
 						// the existing bindings.  If this was
 						// optional, preserve the bindings.
 						return qs.Optional;
 					}
 					
-					// The memory store that we get back from a select
-					// won't do indexing, but indexing will help.
-					MemoryStore matches = new MemoryStore();
-					matches.Import(matches1);
-
 					ArrayList newbindings = new ArrayList();
 					
 					if (!qs.Optional) bindings.Union.Clear(qs);
@@ -345,7 +381,7 @@ namespace SemWeb.Query {
 						BindingEnumerator enumer2 = new BindingEnumerator(qs, binding);
 						while (enumer2.MoveNext(out s, out p, out o)) {
 							// Get the matching statements from the union query
-							Statement bs = new Statement(s, p, o);
+							Statement bs = new Statement(s, p, o, queryMeta);
 							MemoryStore innermatches = matches.Select(bs).Load();
 							
 							// If no matches, the binding didn't match the filter.
@@ -429,7 +465,9 @@ namespace SemWeb.Query {
 						// be the values of the variable for matching results.
 						
 						ResSet values = new ResSet();
-						foreach (Statement match in targetModel.Select(s)) {
+						MemoryStore ms = new MemoryStore();
+						targetModel.Select(s, ms);
+						foreach (Statement match in ms) {
 							if (!MatchesFilters(match, qs, targetModel)) continue;
 							if (sunbound) values.Add(match.Subject);
 							if (punbound) values.Add(match.Predicate);
@@ -477,7 +515,9 @@ namespace SemWeb.Query {
 							bindings.Results.Add(new QueryResult(this));
 							
 						ArrayList newbindings = new ArrayList();
-						foreach (Statement match in targetModel.Select(s)) {
+						MemoryStore ms = new MemoryStore();
+						targetModel.Select(s, ms);
+						foreach (Statement match in ms) {
 							if (!MatchesFilters(match, qs, targetModel)) continue;
 							bindings.Union.Add(qs, match);
 							foreach (QueryResult r in bindings.Results) {
@@ -535,7 +575,15 @@ namespace SemWeb.Query {
 				}
 				
 				ResSet values = new ResSet();
-				foreach (Entity r in targetModel.FindEntities((Statement[])findstatements.ToArray(typeof(Statement)))) {
+				
+				Statement[] findstatementsarray = (Statement[])findstatements.ToArray(typeof(Statement));
+				Entity[] targetentities;
+				if (targetModel is Store)
+					targetentities = ((Store)targetModel).FindEntities(findstatementsarray);
+				else
+					targetentities = Store.FindEntities(targetModel, findstatementsarray);
+				
+				foreach (Entity r in targetentities) {
 					if (!MatchesFilters(r, var, targetModel)) continue;
 					values.Add(r);
 				}
@@ -592,16 +640,16 @@ namespace SemWeb.Query {
 			Resource p = GetUniqueBinding(sq.Predicate, bindings);
 			Resource o = GetUniqueBinding(sq.Object, bindings);
 			if (s is Literal || p is Literal) return StatementFailed;
-			return new Statement((Entity)s, (Entity)p, o);
+			return new Statement((Entity)s, (Entity)p, o, queryMeta);
 		}
 		
-		bool MatchesFilters(Statement s, QueryStatement q, Store targetModel) {
+		bool MatchesFilters(Statement s, QueryStatement q, QueryableSource targetModel) {
 			return MatchesFilters(s.Subject, q.Subject, targetModel)
 				&& MatchesFilters(s.Predicate, q.Predicate, targetModel)
 				&& MatchesFilters(s.Object, q.Object, targetModel);
 		}
 		
-		bool MatchesFilters(Resource e, VarOrAnchor var, Store targetModel) {
+		bool MatchesFilters(Resource e, VarOrAnchor var, QueryableSource targetModel) {
 			if (!var.IsVariable) return true;
 			foreach (ValueFilter f in variables[var.VarIndex].Filters) {
 				if (!f.Filter(e, targetModel)) return false;
@@ -671,7 +719,7 @@ namespace SemWeb.Query {
 		}
 		
 		private void InitAnonVariable(Resource r, ArrayList setupVariables) {
-			if (r is Entity && r.Uri == null && !setupVariables.Contains(r))
+			if (r is Entity && r.Uri == null && !setupVariables.Contains(r) && !nonvariables.Contains(r))
 				setupVariables.Add(r);
 		}
 		
@@ -684,11 +732,11 @@ namespace SemWeb.Query {
 			
 			qs.Optional = optional;
 			
-			// If this statement has no variables, just drop it.
+			// If this statement has no variables, add it to a separate list.
 			if (!qs.Subject.IsVariable && !qs.Predicate.IsVariable && !qs.Object.IsVariable)
-				return;
-
-			statements.Add(qs);
+				novariablestatements.Add(st);
+			else
+				statements.Add(qs);
 		}
 		
 		private void InitSetStatement(Resource ent, ref VarOrAnchor st, Hashtable varIndex) {
@@ -840,12 +888,20 @@ namespace SemWeb.Query {
 		}
 	}
 	
+	public class QueryResultBufferSink : QueryResultSink {
+		public ArrayList Bindings = new ArrayList();
+		public override bool Add(VariableBinding[] result) {
+			Bindings.Add(result.Clone());
+			return true;
+		}
+	}
+
 	public struct VariableBinding {
 		Entity v;
 		string n;
 		Resource t;
 		
-		internal VariableBinding(Entity variable, string name, Resource target) {
+		public VariableBinding(Entity variable, string name, Resource target) {
 			v = variable;
 			n = name;
 			t = target;
@@ -854,6 +910,19 @@ namespace SemWeb.Query {
 		public Entity Variable { get { return v; } internal set { v = value; } }
 		public string Name { get { return n; } internal set { n = value; } }
 		public Resource Target { get { return t; } internal set { t = value; } }
+
+		public static Statement Substitute(VariableBinding[] variables, Statement template) {
+			// This may throw an InvalidCastException if a variable binds
+			// to a literal but was used as the subject, predicate, or meta
+			// of the template.
+			foreach (VariableBinding v in variables) {
+				if (v.Variable == template.Subject) template = new Statement((Entity)v.Target, template.Predicate, template.Object, template.Meta);
+				if (v.Variable == template.Predicate) template = new Statement(template.Subject, (Entity)v.Target, template.Object, template.Meta);
+				if (v.Variable == template.Object) template = new Statement(template.Subject, template.Predicate, v.Target, template.Meta);
+				if (v.Variable == template.Meta) template = new Statement(template.Subject, template.Predicate, template.Object, (Entity)v.Target);
+			}
+			return template;
+		}
 	}
 }	
 

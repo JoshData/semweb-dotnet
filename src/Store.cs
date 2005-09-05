@@ -8,6 +8,12 @@ namespace SemWeb {
 		void Select(StatementSink sink);
 	}
 	
+	public interface QueryableSource {
+		bool Contains(Statement template);
+		void Select(Statement template, StatementSink sink);
+		void Select(Statement[] templates, StatementSink sink);
+	}
+
 	public interface StatementSink {
 		bool Add(Statement statement);
 	}
@@ -34,7 +40,7 @@ namespace SemWeb {
 		}
 	}
 
-	public abstract class Store : StatementSource, StatementSink {
+	public abstract class Store : StatementSource, QueryableSource, StatementSink {
 		
 		Entity rdfType;
 		
@@ -151,9 +157,13 @@ namespace SemWeb {
 		
 		public abstract Entity[] GetAllPredicates();
 		
-		public virtual bool Contains(Statement statement) {
+		public virtual bool Contains(Statement template) {
+			return Contains(this, template);
+		}
+
+		internal static bool Contains(QueryableSource source, Statement template) {
 			StatementExistsSink sink = new StatementExistsSink();
-			Select(statement, sink);
+			source.Select(template, sink);
 			return sink.Exists;
 		}
 		
@@ -193,11 +203,15 @@ namespace SemWeb {
 		public abstract void Replace(Statement find, Statement replacement);
 		
 		public virtual Entity[] FindEntities(Statement[] filters) {
+			return FindEntities(this, filters);
+		}
+		
+		internal static Entity[] FindEntities(QueryableSource source, Statement[] filters) {
 			Hashtable ents = new Hashtable();
-			Select(filters[0], new FindEntitiesSink(ents, spom(filters[0])));
+			source.Select(filters[0], new FindEntitiesSink(ents, spom(filters[0])));
 			for (int i = 1; i < filters.Length; i++) {
 				Hashtable ents2 = new Hashtable();
-				Select(filters[i], new FindEntitiesSink(ents2, spom(filters[i])));
+				source.Select(filters[i], new FindEntitiesSink(ents2, spom(filters[i])));
 
 				Hashtable ents3 = new Hashtable();
 				if (ents.Count < ents2.Count) {
@@ -217,7 +231,7 @@ namespace SemWeb {
 			return (Entity[])ret.ToArray(typeof(Entity));
 		}
 		
-		private int spom(Statement s) {
+		private static int spom(Statement s) {
 			if (s.Subject == null) return 0;
 			if (s.Predicate == null) return 1;
 			if (s.Object == null) return 2;

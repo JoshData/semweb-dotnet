@@ -19,6 +19,10 @@ namespace SemWeb {
 		public MemoryStore(StatementSource source) {
 			Import(source);
 		}
+		
+		public Statement[] ToArray() {
+			return (Statement[])statements.ToArray(typeof(Statement));
+		}
 
 		public IList Statements { get { return ArrayList.ReadOnly(statements); } }
 		  
