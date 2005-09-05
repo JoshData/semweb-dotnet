@@ -55,7 +55,7 @@ public class RDFQuery {
 			return;
 		}
 
-		QueryEngine query;
+		GraphMatch query;
 		if (opts.type == "rsquary") {
 			RdfReader queryparser = RdfReader.Create("n3", "-");
 			queryparser.BaseUri = baseuri;
@@ -82,6 +82,8 @@ public class RDFQuery {
 		
 		if (opts.limit > 0)
 			query.ReturnLimit = opts.limit;
+
+		Console.Error.WriteLine(query.GetExplanation());
 		
 		query.Query(model, qs);
 		

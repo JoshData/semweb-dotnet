@@ -78,5 +78,25 @@ namespace SemWeb.Stores {
 			RunCommand("END");
 		}
 		
+		protected override void CreateIndexes() {
+			foreach (string cmd in GetCreateIndexCommands(TableName)) {
+				try {
+					RunCommand(cmd);
+				} catch (Exception e) {
+					if (debug) Console.Error.WriteLine(e);
+				}
+			}
+		}
+		static string[] GetCreateIndexCommands(string table) {
+			return new string[] {
+				"CREATE INDEX subject_index ON " + table + "_statements(subject);",
+				"CREATE INDEX predicate_index ON " + table + "_statements(predicate);",
+				"CREATE INDEX object_index ON " + table + "_statements(objecttype, object);",
+				"CREATE INDEX meta_index ON " + table + "_statements(meta);",
+			
+				"CREATE INDEX literal_index ON " + table + "_literals(value);",
+				"CREATE UNIQUE INDEX entity_index ON " + table + "_entities(value);"
+				};
+		}
 	}
 }
