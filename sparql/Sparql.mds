@@ -1,0 +1,16 @@
+<Combine name="Sparql" fileversion="2.0">
+  <Configurations active="Debug">
+    <Configuration name="Debug" ctype="CombineConfiguration">
+      <Entry configuration="Debug" build="True" name="Sparql" />
+    </Configuration>
+    <Configuration name="Release" ctype="CombineConfiguration">
+      <Entry configuration="Debug" build="True" name="Sparql" />
+    </Configuration>
+  </Configurations>
+  <StartMode startupentry="Sparql" single="True">
+    <Execute type="None" entry="Sparql" />
+  </StartMode>
+  <Entries>
+    <Entry filename="./Sparql.mdp" />
+  </Entries>
+</Combine>
