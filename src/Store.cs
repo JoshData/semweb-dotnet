@@ -92,10 +92,10 @@ namespace SemWeb {
 					} else {
 						return new N3Reader(spec);
 					}
-				case "file":
+				/*case "file":
 					if (spec == "") throw new ArgumentException("Use: format:filename");
 					if (output) throw new ArgumentException("The FileStore does not support writing.");
-					return new SemWeb.Stores.FileStore(spec);
+					return new SemWeb.Stores.FileStore(spec);*/
 				case "sqlite":
 				case "mysql":
 					if (spec == "") throw new ArgumentException("Use: sqlite|mysql:table:connection-string");
