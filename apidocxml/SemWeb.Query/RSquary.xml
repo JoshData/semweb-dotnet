@@ -1,56 +1,14 @@
 <Type Name="RSquary" FullName="SemWeb.Query.RSquary">
-  <TypeSignature Language="C#" Value="public class RSquary : SemWeb.Query.QueryEngine" />
+  <TypeSignature Language="C#" Value="public class RSquary : SemWeb.Query.GraphMatch" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
     <AssemblyVersion>0.5.0.2</AssemblyVersion>
   </AssemblyInfo>
   <Base>
-    <BaseTypeName>SemWeb.Query.QueryEngine</BaseTypeName>
+    <BaseTypeName>SemWeb.Query.GraphMatch</BaseTypeName>
   </Base>
   <Interfaces />
   <Members>
-    <Member MemberName=".ctor">
-      <MemberSignature Language="C#" Value="public RSquary (SemWeb.Store queryModel, string queryUri);" />
-      <MemberType>Constructor</MemberType>
-      <Parameters>
-        <Parameter Name="queryModel" Type="SemWeb.Store" />
-        <Parameter Name="queryUri" Type="System.String" />
-      </Parameters>
-      <Docs>
-        <param name="queryModel">To be added.</param>
-        <param name="queryUri">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
-      </Docs>
-    </Member>
-    <Member MemberName=".ctor">
-      <MemberSignature Language="C#" Value="public RSquary (SemWeb.Store queryModel, string queryUri, System.Collections.Hashtable extraValueFilters);" />
-      <MemberType>Constructor</MemberType>
-      <Parameters>
-        <Parameter Name="queryModel" Type="SemWeb.Store" />
-        <Parameter Name="queryUri" Type="System.String" />
-        <Parameter Name="extraValueFilters" Type="System.Collections.Hashtable" />
-      </Parameters>
-      <Docs>
-        <param name="queryModel">To be added.</param>
-        <param name="queryUri">To be added.</param>
-        <param name="extraValueFilters">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
-      </Docs>
-    </Member>
-    <Member MemberName="qSelect">
-      <MemberSignature Language="C#" Value="public static SemWeb.Entity qSelect;" />
-      <MemberType>Field</MemberType>
-      <ReturnValue>
-        <ReturnType>SemWeb.Entity</ReturnType>
-      </ReturnValue>
-      <Docs>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
-      </Docs>
-    </Member>
-    
     <Member MemberName="qLimit">
       <MemberSignature Language="C#" Value="public static SemWeb.Entity qLimit;" />
       <MemberType>Field</MemberType>
@@ -84,9 +42,7 @@
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
-    
-    
-  <Member MemberName="ReturnStart">
+    <Member MemberName="ReturnStart">
       <MemberSignature Language="C#" Value="public int ReturnStart { set; get; };" />
       <MemberType>Property</MemberType>
       <ReturnValue>
@@ -98,7 +54,7 @@
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
-  <Member MemberName="ReturnLimit">
+    <Member MemberName="ReturnLimit">
       <MemberSignature Language="C#" Value="public int ReturnLimit { set; get; };" />
       <MemberType>Property</MemberType>
       <ReturnValue>
@@ -110,9 +66,63 @@
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
-  
-  <Member MemberName="qOptional">
+    <Member MemberName="qOptional">
       <MemberSignature Language="C#" Value="public static SemWeb.Entity qOptional;" />
+      <MemberType>Field</MemberType>
+      <ReturnValue>
+        <ReturnType>SemWeb.Entity</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public RSquary (SemWeb.RdfReader query);" />
+      <MemberType>Constructor</MemberType>
+      <Parameters>
+        <Parameter Name="query" Type="SemWeb.RdfReader" />
+      </Parameters>
+      <Docs>
+        <param name="query">To be added.</param>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public RSquary (SemWeb.Store queryModel, SemWeb.Entity queryNode);" />
+      <MemberType>Constructor</MemberType>
+      <Parameters>
+        <Parameter Name="queryModel" Type="SemWeb.Store" />
+        <Parameter Name="queryNode" Type="SemWeb.Entity" />
+      </Parameters>
+      <Docs>
+        <param name="queryModel">To be added.</param>
+        <param name="queryNode">To be added.</param>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public RSquary (SemWeb.Store queryModel, SemWeb.Entity queryNode, System.Collections.IDictionary variableNames, System.Collections.IDictionary extraValueFilters);" />
+      <MemberType>Constructor</MemberType>
+      <Parameters>
+        <Parameter Name="queryModel" Type="SemWeb.Store" />
+        <Parameter Name="queryNode" Type="SemWeb.Entity" />
+        <Parameter Name="variableNames" Type="System.Collections.IDictionary" />
+        <Parameter Name="extraValueFilters" Type="System.Collections.IDictionary" />
+      </Parameters>
+      <Docs>
+        <param name="queryModel">To be added.</param>
+        <param name="queryNode">To be added.</param>
+        <param name="variableNames">To be added.</param>
+        <param name="extraValueFilters">To be added.</param>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="qName">
+      <MemberSignature Language="C#" Value="public static SemWeb.Entity qName;" />
       <MemberType>Field</MemberType>
       <ReturnValue>
         <ReturnType>SemWeb.Entity</ReturnType>

@@ -1,0 +1,73 @@
+<Type Name="QueryableSource" FullName="SemWeb.QueryableSource">
+  <TypeSignature Language="C#" Value="public interface QueryableSource" />
+  <AssemblyInfo>
+    <AssemblyName>SemWeb</AssemblyName>
+    <AssemblyVersion>0.5.0.2</AssemblyVersion>
+  </AssemblyInfo>
+  <Interfaces />
+  <Members>
+    <Member MemberName="Contains">
+      <MemberSignature Language="C#" Value="public bool Contains (SemWeb.Statement template);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Boolean</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="template" Type="SemWeb.Statement" />
+      </Parameters>
+      <Docs>
+        <param name="template">The statement to search for, or a statement template.</param>
+        <summary>Returns whether the store contains a statement, or any
+statement that matches the template.</summary>
+        <returns>
+          <see langword="true" /> if the store contains the statement or
+any statement matching the template.</returns>
+        <remarks>None.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Select">
+      <MemberSignature Language="C#" Value="public void Select (SemWeb.Statement template, SemWeb.StatementSink sink);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="template" Type="SemWeb.Statement" />
+        <Parameter Name="sink" Type="SemWeb.StatementSink" />
+      </Parameters>
+      <Docs>
+        <param name="template">A statement template.  Use <see cref="F:SemWeb.Statement.All" /> to select all statements in the store, or a statement with <see langword="null" /> fields to select statements that match the non-<see langword="null" /> parts of the statement.</param>
+        <param name="sink">A StatementSink to which each matching statement will be added.</param>
+        <summary>Queries the story for matching statements, and writes the statements to a <see cref="T:SemWeb.StatementSink" />.</summary>
+        <remarks>
+          <para>Each statement in the store matching <paramref name="template" /> is added to <paramref name="sink" /> with a call to <see cref="M:SemWeb.StatementSink.Add(SemWeb.Statement)" />.  If the call to Add returns <see langword="false" />, the select operation is aborted and returns immediately.</para>
+          <para>
+            <paramref name="template" /> is a statement template, which means any field in <paramref name="template" /> may be <see langword="null" />, and those fields are excluded from the statement filter. For example, setting the Subject and Predicate fields but leaving the Object and Meta fields <see langword="null" /> will match all statements in the store that have the given Subject and Predicate, and anything in their Object and Meta fields.</para>
+        </remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Select">
+      <MemberSignature Language="C#" Value="public void Select (SemWeb.Statement[] templates, SemWeb.StatementSink sink);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="templates" Type="SemWeb.Statement[]" />
+        <Parameter Name="sink" Type="SemWeb.StatementSink" />
+      </Parameters>
+      <Docs>
+        <param name="templates">An array of statement templates.  Statements matching any of the templates are returned to <paramref name="result" />.</param>
+        <param name="sink">A StatementSink to which each matching statement will be added.</param>
+        <summary>Queries the story for statements matching one of many templates, and writes the statements to a <see cref="T:SemWeb.StatementSink" />.</summary>
+        <remarks>
+          <para>This method performs the same task as <see cref="M:SemWeb.Store.Select(SemWeb.Statement,SemWeb.StatementSink)" />, but with an array of templates that are applied in one call.  See <see cref="M:SemWeb.Store.Select(SemWeb.Statement,SemWeb.StatementSink)" /> for more information.</para>
+        </remarks>
+      </Docs>
+    </Member>
+  </Members>
+  <Docs>
+    <summary>An interface implemented by RDF sources that supports Select operations.</summary>
+    <remarks>Classes that implement this interface support the <see cref="M:SemWeb.QueryableSource.Contains(SemWeb.Statement)" /> which returns whether any statement matches the given statement template, and <see cref="M:SemWeb.QueryableSource.Select(SemWeb.Statement,SemWeb.StatementSink)" /> and <see cref="M:SemWeb.QueryableSource.Select(SemWeb.Statement[],SemWeb.StatementSink)" /> which searches for statements matching the given template(s).</remarks>
+  </Docs>
+</Type>

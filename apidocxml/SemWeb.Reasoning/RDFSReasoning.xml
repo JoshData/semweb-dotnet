@@ -200,7 +200,7 @@
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
-  <Member MemberName="rdfProperty">
+    <Member MemberName="rdfProperty">
       <MemberSignature Language="C#" Value="public static readonly SemWeb.Entity rdfProperty;" />
       <MemberType>Field</MemberType>
       <ReturnValue>

@@ -18,7 +18,6 @@
         <remarks>None.</remarks>
       </Docs>
     </Member>
-    
     <Member MemberName=".ctor">
       <MemberSignature Language="C#" Value="public KnowledgeModel (SemWeb.RdfReader parser);" />
       <MemberType>Constructor</MemberType>
@@ -45,11 +44,10 @@
         <summary>Adds a store into the KnowledgeModel.</summary>
         <remarks>
           <para>The statements in <paramref name="store" /> become available through calls to this KnowledgeModel's select and contains methods.</para>
-
-<para>The store should have been created passing this KnowledgeModel to its constructor so that the store is associated with this KnowledgeModel.</para></remarks>
+          <para>The store should have been created passing this KnowledgeModel to its constructor so that the store is associated with this KnowledgeModel.</para>
+        </remarks>
       </Docs>
     </Member>
-    
     <Member MemberName="Storage">
       <MemberSignature Language="C#" Value="public SemWeb.Stores.MultiStore Storage { get; };" />
       <MemberType>Property</MemberType>
@@ -61,11 +59,11 @@
         <value>The list of stores within this KnowledgeModel.</value>
         <remarks>
           <para>It is safe to manipulate the object returned by this property to change the stores associated with the KnowledgeModel.</para>
-<para>Calls to Contains and Select on the MultiStore reflect the contents of the stores contained in it without the application of the KnowledgeModel's inference engines.</para></remarks>
+          <para>Calls to Contains and Select on the MultiStore reflect the contents of the stores contained in it without the application of the KnowledgeModel's inference engines.</para>
+        </remarks>
       </Docs>
     </Member>
-    
-  <Member MemberName="AddReasoning">
+    <Member MemberName="AddReasoning">
       <MemberSignature Language="C#" Value="public void AddReasoning (SemWeb.Reasoning.ReasoningEngine engine);" />
       <MemberType>Method</MemberType>
       <ReturnValue>

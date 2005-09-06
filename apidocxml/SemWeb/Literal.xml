@@ -21,7 +21,6 @@
         <remarks>None.</remarks>
       </Docs>
     </Member>
-    
     <Member MemberName=".ctor">
       <MemberSignature Language="C#" Value="public Literal (string value, string language, string dataType);" />
       <MemberType>Constructor</MemberType>
@@ -35,11 +34,9 @@
         <param name="language">A language identifier, or <see langword="null" /> to leave the language unspecified.</param>
         <param name="dataType">The URI that gives the datatype of the literal, or <see langword="null" /> to leave the specific datatype unspecified.</param>
         <summary>Creates a new Literal with the given value, language, and datatype.</summary>
-        <remarks>None.</remarks>
+        <remarks>A language and datatype cannot both be specified according to the RDF standard; however, SemWeb will accept such literals.</remarks>
       </Docs>
     </Member>
-    
-    
     <Member MemberName="Value">
       <MemberSignature Language="C#" Value="public string Value { get; };" />
       <MemberType>Property</MemberType>
@@ -76,7 +73,7 @@
         <remarks>None.</remarks>
       </Docs>
     </Member>
-  <Member MemberName="Parse">
+    <Member MemberName="Parse">
       <MemberSignature Language="C#" Value="public static SemWeb.Literal Parse (string literal, SemWeb.NamespaceManager namespaces);" />
       <MemberType>Method</MemberType>
       <ReturnValue>
@@ -94,7 +91,7 @@
         <remarks>The encoded literal is in the form of:   "value"[^^datatypeURI|@langcode].</remarks>
       </Docs>
     </Member>
-  <Member MemberName="op_Explicit">
+    <Member MemberName="op_Explicit">
       <MemberSignature Language="C#" Value="public static SemWeb.Literal op_Explicit (string value);" />
       <MemberType>Method</MemberType>
       <ReturnValue>
@@ -113,6 +110,7 @@
   </Members>
   <Docs>
     <summary>A literal (text string) node in an RDF graph.</summary>
-    <remarks>Literals are string values optionally with a language string or datatype URI.</remarks>
+    <remarks><para>Literals are string values optionally with a language string or datatype URI.</para>
+<para>An implicit conversion operator is defined from strings to literals.  The operator converts the string to a literal by returning a literal with that value, and <see langword="null" /> language and datatype.</para></remarks>
   </Docs>
 </Type>

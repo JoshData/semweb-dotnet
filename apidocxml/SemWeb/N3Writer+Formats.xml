@@ -17,12 +17,12 @@
       <Docs>
         <summary>
           <para>The N3Writer will write in NTriples notation, which has the following format for each statement:</para>
-
-<para>
+          <para>
             <c>
 &lt;subjectURI&gt; &lt;predicateURI&gt; &lt;objectURI&gt; .
 </c>
-          </para></summary>
+          </para>
+        </summary>
       </Docs>
     </Member>
     <Member MemberName="Turtle">

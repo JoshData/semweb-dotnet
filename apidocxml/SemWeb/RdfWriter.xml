@@ -25,7 +25,6 @@
         <remarks>None.</remarks>
       </Docs>
     </Member>
-    
     <Member MemberName="Add">
       <MemberSignature Language="C#" Value="public void Add (SemWeb.Statement statement);" />
       <MemberType>Method</MemberType>
@@ -41,8 +40,6 @@
         <remarks>None.</remarks>
       </Docs>
     </Member>
-    
-    
     <Member MemberName="WriteStatement">
       <MemberSignature Language="C#" Value="public abstract void WriteStatement (string subj, string pred, string obj);" />
       <MemberType>Method</MemberType>
@@ -81,7 +78,6 @@
         <remarks>In place of either of the URIs, a value returned by <see cref="M:SemWeb.RdfWriter.CreateAnonymousEntity()" /> can be used to indicate an anonymous node.</remarks>
       </Docs>
     </Member>
-    
     <Member MemberName="Close">
       <MemberSignature Language="C#" Value="public virtual void Close ();" />
       <MemberType>Method</MemberType>
@@ -94,7 +90,6 @@
         <remarks>None.</remarks>
       </Docs>
     </Member>
-    
     <Member MemberName="Namespaces">
       <MemberSignature Language="C#" Value="public abstract SemWeb.NamespaceManager Namespaces { get; };" />
       <MemberType>Property</MemberType>
@@ -107,7 +102,7 @@
         <remarks>For some parsers, it is necessary to give a prefix for all namespaces that occur in the data model being written before the writing begins.</remarks>
       </Docs>
     </Member>
-  <Member MemberName="BaseUri">
+    <Member MemberName="BaseUri">
       <MemberSignature Language="C#" Value="public string BaseUri { set; get; };" />
       <MemberType>Property</MemberType>
       <ReturnValue>
@@ -119,7 +114,7 @@
         <remarks>A writer may choose to abbreviate URIs in the output according to the base URI.</remarks>
       </Docs>
     </Member>
-  <Member MemberName="GetResourceKey">
+    <Member MemberName="GetResourceKey">
       <MemberSignature Language="C#" Value="protected object GetResourceKey (SemWeb.Resource resource);" />
       <MemberType>Method</MemberType>
       <ReturnValue>
@@ -135,7 +130,7 @@
         <remarks>See <see cref="M:SemWeb.Store.GetResourceKey(SemWeb.Resource)" />.</remarks>
       </Docs>
     </Member>
-  <Member MemberName="SetResourceKey">
+    <Member MemberName="SetResourceKey">
       <MemberSignature Language="C#" Value="protected void SetResourceKey (SemWeb.Resource resource, object value);" />
       <MemberType>Method</MemberType>
       <ReturnValue>
@@ -152,8 +147,7 @@
         <remarks>See <see cref="M:SemWeb.Store.SetResourceKey(SemWeb.Resource)" />.</remarks>
       </Docs>
     </Member>
-  
-  <Member MemberName="CreateAnonymousEntity">
+    <Member MemberName="CreateAnonymousEntity">
       <MemberSignature Language="C#" Value="public abstract string CreateAnonymousEntity ();" />
       <MemberType>Method</MemberType>
       <ReturnValue>
@@ -171,6 +165,7 @@
     <summary>The base class of types that write statements to a stream.</summary>
     <remarks>
       <para>This is an abstract class. Implementations of writers are provided in this namespace and in <see cref="N:SemWeb.IO" />.</para>
-<para>This class is a <see cref="T:SemWeb.StatementSinkEx" /> which allows the output of calls to Select on stores to be written directly to a stream.</para></remarks>
+      <para>This class is a <see cref="T:SemWeb.StatementSinkEx" /> which allows the output of calls to Select on stores to be written directly to a stream.</para>
+    </remarks>
   </Docs>
 </Type>

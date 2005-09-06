@@ -1,5 +1,5 @@
 <Type Name="Store" FullName="SemWeb.Store">
-  <TypeSignature Language="C#" Value="public abstract class Store : SemWeb.StatementSink, SemWeb.StatementSource" />
+  <TypeSignature Language="C#" Value="public abstract class Store : SemWeb.QueryableSource, SemWeb.StatementSink, SemWeb.StatementSource" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
     <AssemblyVersion>0.5.0.2</AssemblyVersion>
@@ -9,6 +9,9 @@
   </Base>
   <Interfaces>
     <Interface>
+      <InterfaceName>SemWeb.QueryableSource</InterfaceName>
+    </Interface>
+    <Interface>
       <InterfaceName>SemWeb.StatementSink</InterfaceName>
     </Interface>
     <Interface>
@@ -16,9 +19,6 @@
     </Interface>
   </Interfaces>
   <Members>
-    
-    
-    
     <Member MemberName="Clear">
       <MemberSignature Language="C#" Value="public abstract void Clear ();" />
       <MemberType>Method</MemberType>
@@ -31,10 +31,6 @@
         <remarks>The store is empty after a call to Clear.</remarks>
       </Docs>
     </Member>
-    
-    
-    
-    
     <Member MemberName="GetEntitiesOfType">
       <MemberSignature Language="C#" Value="public SemWeb.Entity[] GetEntitiesOfType (SemWeb.Entity type);" />
       <MemberType>Method</MemberType>
@@ -93,20 +89,20 @@
       <Docs>
         <param name="source">The source whose statements will be added into the store.</param>
         <summary>Loads the contents of a StatementSource into the store.</summary>
-        <remarks>This method wraps a call to <see cref="M:SemWeb.StatementSource.Select(SemWeb.StatementSink" /> in store-specific code that prepares the store for receiving many statements.  The store may make itself locked for access by other processes to make the parsing faster.  To avoid this, call <see cref="M:SemWeb.StatementSource.Select(SemWeb.StatementSink)" /> directly.</remarks>
+        <remarks>This method wraps a call to <see cref="M:SemWeb.StatementSource.Select(SemWeb.StatementSink)" /> in store-specific code that prepares the store for receiving many statements.  The store may make itself locked for access by other processes to make the parsing faster.  To avoid this, call <see cref="M:SemWeb.StatementSource.Select(SemWeb.StatementSink)" /> directly.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Contains">
-      <MemberSignature Language="C#" Value="public virtual bool Contains (SemWeb.Statement statement);" />
+      <MemberSignature Language="C#" Value="public virtual bool Contains (SemWeb.Statement template);" />
       <MemberType>Method</MemberType>
       <ReturnValue>
         <ReturnType>System.Boolean</ReturnType>
       </ReturnValue>
       <Parameters>
-        <Parameter Name="statement" Type="SemWeb.Statement" />
+        <Parameter Name="template" Type="SemWeb.Statement" />
       </Parameters>
       <Docs>
-        <param name="statement">The statement to search for, or a statement template.</param>
+        <param name="template">The statement to search for, or a statement template.</param>
         <summary>Returns whether the store contains a statement, or any
 statement that matches the template.</summary>
         <returns>
@@ -116,7 +112,7 @@ any statement matching the template.</returns>
       </Docs>
     </Member>
     <Member MemberName="Select">
-      <MemberSignature Language="C#" Value="public void Select (SemWeb.Statement template, SemWeb.StatementSink result);" />
+      <MemberSignature Language="C#" Value="public abstract void Select (SemWeb.Statement template, SemWeb.StatementSink result);" />
       <MemberType>Method</MemberType>
       <ReturnValue>
         <ReturnType>System.Void</ReturnType>
@@ -126,14 +122,18 @@ any statement matching the template.</returns>
         <Parameter Name="result" Type="SemWeb.StatementSink" />
       </Parameters>
       <Docs>
-        <param name="template">A statement template.  Use <see cref="F:SemWeb.Statement.Empty" /> to select all statements in the store, or a statement with <see langword="null" /> fields to select statements that match the non-<see langword="null" /> parts of the statement.</param>
+        <param name="template">A statement template.  Use <see cref="F:SemWeb.Statement.All" /> to select all statements in the store, or a statement with <see langword="null" /> fields to select statements that match the non-<see langword="null" /> parts of the statement.</param>
         <param name="result">A StatementSink to which each matching statement will be added.</param>
         <summary>Queries the story for matching statements, and writes the statements to a <see cref="T:SemWeb.StatementSink" />.</summary>
-        <remarks>This method calls <see cref="M:SemWeb.Store.Select(SemWeb.Statement,SemWeb.SelectPartialFilter,SemWeb.StatementSink)" /> with <see cref="F:SemWeb.SelectPartialFilter.All" />.</remarks>
+        <remarks>
+          <para>Each statement in the store matching <paramref name="template" /> is added to <paramref name="result" /> with a call to <see cref="M:SemWeb.StatementSink.Add(SemWeb.Statement)" />.  If the call to Add returns <see langword="false" />, the select operation is aborted and returns immediately.</para>
+          <para>
+            <paramref name="template" /> is a statement template, which means any field in <paramref name="template" /> may be <see langword="null" />, and those fields are excluded from the statement filter. For example, setting the Subject and Predicate fields but leaving the Object and Meta fields <see langword="null" /> will match all statements in the store that have the given Subject and Predicate, and anything in their Object and Meta fields.</para>
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName="Select">
-      <MemberSignature Language="C#" Value="public void Select (SemWeb.Statement[] templates, SemWeb.StatementSink result);" />
+      <MemberSignature Language="C#" Value="public abstract void Select (SemWeb.Statement[] templates, SemWeb.StatementSink result);" />
       <MemberType>Method</MemberType>
       <ReturnValue>
         <ReturnType>System.Void</ReturnType>
@@ -146,10 +146,11 @@ any statement matching the template.</returns>
         <param name="templates">An array of statement templates.  Statements matching any of the templates are returned to <paramref name="result" />.</param>
         <param name="result">A StatementSink to which each matching statement will be added.</param>
         <summary>Queries the story for statements matching one of many templates, and writes the statements to a <see cref="T:SemWeb.StatementSink" />.</summary>
-        <remarks>This method calls <see cref="M:SemWeb.Store.Select(SemWeb.Statement[],SemWeb.SelectPartialFilter,SemWeb.StatementSink)" /> with <see cref="F:SemWeb.SelectPartialFilter.All" />.</remarks>
+        <remarks>
+          <para>This method performs the same task as <see cref="M:SemWeb.Store.Select(SemWeb.Statement,SemWeb.StatementSink)" />, but with an array of templates that are applied in one call.  See <see cref="M:SemWeb.Store.Select(SemWeb.Statement,SemWeb.StatementSink)" /> for more information.</para>
+        </remarks>
       </Docs>
     </Member>
-    
     <Member MemberName="SelectObjects">
       <MemberSignature Language="C#" Value="public SemWeb.Resource[] SelectObjects (SemWeb.Entity subject, SemWeb.Entity predicate);" />
       <MemberType>Method</MemberType>
@@ -167,8 +168,8 @@ any statement matching the template.</returns>
         <returns>An array of the entities found as the object of the matching statements, excluding literal values.  An entity occurs in the array at most once.</returns>
         <remarks>
           <block subset="none" type="note">
-  <para>This method is not recommended when the store can contain a large number of statements, as every matching entity must be loaded into memory before this method returns.</para>
-</block>
+            <para>This method is not recommended when the store can contain a large number of statements, as every matching entity must be loaded into memory before this method returns.</para>
+          </block>
         </remarks>
       </Docs>
     </Member>
@@ -189,8 +190,8 @@ any statement matching the template.</returns>
         <returns>An array of the entities found as the subject of the matching statements.  An entity occurs in the array at most once.</returns>
         <remarks>
           <block subset="none" type="note">
-  <para>This method is not recommended when the store can contain a large number of statements, as every matching entity must be loaded into memory before this method returns.</para>
-</block>
+            <para>This method is not recommended when the store can contain a large number of statements, as every matching entity must be loaded into memory before this method returns.</para>
+          </block>
         </remarks>
       </Docs>
     </Member>
@@ -209,9 +210,6 @@ any statement matching the template.</returns>
         <remarks>None.</remarks>
       </Docs>
     </Member>
-    
-    
-    
     <Member MemberName="StatementCount">
       <MemberSignature Language="C#" Value="public abstract int StatementCount { get; };" />
       <MemberType>Property</MemberType>
@@ -224,7 +222,7 @@ any statement matching the template.</returns>
         <remarks>None.</remarks>
       </Docs>
     </Member>
-  <Member MemberName="Write">
+    <Member MemberName="Write">
       <MemberSignature Language="C#" Value="public void Write (System.IO.TextWriter writer);" />
       <MemberType>Method</MemberType>
       <ReturnValue>
@@ -239,8 +237,7 @@ any statement matching the template.</returns>
         <remarks>None.</remarks>
       </Docs>
     </Member>
-  
-  <Member MemberName="GetAllEntities">
+    <Member MemberName="GetAllEntities">
       <MemberSignature Language="C#" Value="public abstract SemWeb.Entity[] GetAllEntities ();" />
       <MemberType>Method</MemberType>
       <ReturnValue>
@@ -253,7 +250,7 @@ any statement matching the template.</returns>
         <remarks>None.</remarks>
       </Docs>
     </Member>
-  <Member MemberName="GetAllPredicates">
+    <Member MemberName="GetAllPredicates">
       <MemberSignature Language="C#" Value="public abstract SemWeb.Entity[] GetAllPredicates ();" />
       <MemberType>Method</MemberType>
       <ReturnValue>
@@ -266,7 +263,7 @@ any statement matching the template.</returns>
         <remarks>None.</remarks>
       </Docs>
     </Member>
-  <Member MemberName="GetResourceKey">
+    <Member MemberName="GetResourceKey">
       <MemberSignature Language="C#" Value="protected object GetResourceKey (SemWeb.Resource resource);" />
       <MemberType>Method</MemberType>
       <ReturnValue>
@@ -282,7 +279,7 @@ any statement matching the template.</returns>
         <remarks>None.</remarks>
       </Docs>
     </Member>
-  <Member MemberName="SetResourceKey">
+    <Member MemberName="SetResourceKey">
       <MemberSignature Language="C#" Value="protected void SetResourceKey (SemWeb.Resource resource, object value);" />
       <MemberType>Method</MemberType>
       <ReturnValue>
@@ -300,57 +297,7 @@ any statement matching the template.</returns>
           <paramref name="value" /> is stored in a Hashtable within <paramref name="resource" />.  To retreive the value later, use <see cref="M:SemWeb.Store.GetResourceKey" />.</remarks>
       </Docs>
     </Member>
-  <Member MemberName="Select">
-      <MemberSignature Language="C#" Value="public abstract void Select (SemWeb.Statement template, SemWeb.SelectPartialFilter partialFilter, SemWeb.StatementSink result);" />
-      <MemberType>Method</MemberType>
-      <ReturnValue>
-        <ReturnType>System.Void</ReturnType>
-      </ReturnValue>
-      <Parameters>
-        <Parameter Name="template" Type="SemWeb.Statement" />
-        <Parameter Name="partialFilter" Type="SemWeb.SelectPartialFilter" />
-        <Parameter Name="result" Type="SemWeb.StatementSink" />
-      </Parameters>
-      <Docs>
-        <param name="template">A statement template.  Use <see cref="F:SemWeb.Statement.Empty" /> to select all statements in the store, or a statement with <see langword="null" /> fields to select statements that match the non-<see langword="null" /> parts of the statement.</param>
-        <param name="partialFilter">A partial filter, indicating which fields in the resulting statements are of interest. Use <see cref="F:SemWeb.SelectPartialFilter.All" /> when all fields are of interest.</param>
-        <param name="result">A StatementSink to which each matching statement will be added.</param>
-        <summary>Queries the story for matching statements, according to a partial filter, and writes the statements to a <see cref="T:SemWeb.StatementSink" />.</summary>
-        <remarks>
-          <para>Each statement in the store matching <paramref name="template" /> is added to <paramref name="result" /> with a call to <see cref="M:SemWeb.StatementSink.Add(SemWeb.Statement)" />.  If the call to Add returns <see langword="false" />, the select operation is aborted and returns immediately.</para>
-
-<para>
-            <paramref name="template" /> is a statement template, which means any field in <paramref name="template" /> may be <see langword="null" />, and those fields are excluded from the statement filter. For example, setting the Subject and Predicate fields but leaving the Object and Meta fields <see langword="null" /> will match all statements in the store that have the given Subject and Predicate, and anything in their Object and Meta fields.</para>
-
-<para>
-            <paramref name="partialFilter" /> indicates which fields in the matching statements are of interest.  Normally <see cref="F:SemWeb.SelectPartialFilter.All" /> is used, indicating full statements should be returned.  Setting fields in <paramref name="partialFilter" /> to <see langword="false" /> indicates that those fields are not important, and the matching statements will have their corresponding fields set to <see langword="null" />.  For example, if <paramref name="partialFilter" />.Predicate == <see langword="false" />, then the Predicate fields in the statements sent to <paramref name="result" /> will all be <see langword="null" />.  If <see cref="F:SemWeb.SelectPartialFilter.All" /> is used, the Subject, Predicate, and Object fields of resulting statements are guaranteed to never be <see langword="null" />.</para>
-
-<para>The partial filter is used to increase the speed of select operations when only partial information is desired. The benefit of using a partial filter depends on the store implementation.</para></remarks>
-      </Docs>
-    </Member>
-  <Member MemberName="Select">
-      <MemberSignature Language="C#" Value="public abstract void Select (SemWeb.Statement[] templates, SemWeb.SelectPartialFilter partialFilter, SemWeb.StatementSink result);" />
-      <MemberType>Method</MemberType>
-      <ReturnValue>
-        <ReturnType>System.Void</ReturnType>
-      </ReturnValue>
-      <Parameters>
-        <Parameter Name="templates" Type="SemWeb.Statement[]" />
-        <Parameter Name="partialFilter" Type="SemWeb.SelectPartialFilter" />
-        <Parameter Name="result" Type="SemWeb.StatementSink" />
-      </Parameters>
-      <Docs>
-        <param name="templates">An array of statement templates.  Statements matching any of the templates are returned to <paramref name="result" />.</param>
-        <param name="partialFilter">A partial filter, indicating which fields in the resulting statements are of interest. Use <see cref="F:SemWeb.SelectPartialFilter.All" /> when all fields are of interest.</param>
-        <param name="result">A StatementSink to which each matching statement will be added.</param>
-        <summary>Queries the story for statements matching one of many templates, according to a partial filter, and writes the statements to a <see cref="T:SemWeb.StatementSink" />.</summary>
-        <remarks>
-          <para>This method performs the same task as <see cref="M:SemWeb.Store.Select(SemWeb.Statement,SemWeb.SelectPartialFilter,SemWeb.StatementSink)" />, but with an array of templates that are applied in one call.  See <see cref="M:SemWeb.Store.Select(SemWeb.Statement,SemWeb.SelectPartialFilter,SemWeb.StatementSink)" /> for more information.</para>
-</remarks>
-      </Docs>
-    </Member>
-  
-  <Member MemberName="Replace">
+    <Member MemberName="Replace">
       <MemberSignature Language="C#" Value="public abstract void Replace (SemWeb.Entity find, SemWeb.Entity replacement);" />
       <MemberType>Method</MemberType>
       <ReturnValue>
@@ -367,7 +314,7 @@ any statement matching the template.</returns>
         <remarks>All occurences of <paramref name="a" /> in statements in the store are replaced with references to <paramref name="b" />.</remarks>
       </Docs>
     </Member>
-  <Member MemberName=".ctor">
+    <Member MemberName=".ctor">
       <MemberSignature Language="C#" Value="protected Store ();" />
       <MemberType>Constructor</MemberType>
       <Parameters />
@@ -376,7 +323,7 @@ any statement matching the template.</returns>
         <remarks>None.</remarks>
       </Docs>
     </Member>
-  <Member MemberName="CreateForInput">
+    <Member MemberName="CreateForInput">
       <MemberSignature Language="C#" Value="public static SemWeb.StatementSource CreateForInput (string spec);" />
       <MemberType>Method</MemberType>
       <ReturnValue>
@@ -391,43 +338,43 @@ any statement matching the template.</returns>
         <returns>A StatementSource from which statements can be read.  A RdfReader or Store is returned.</returns>
         <remarks>
           <para>The specifier string is in one of the following formats.  When a filename is expected, a dash can be used to indicate standard input.</para>
-
-<list type="table">
-  <listheader>
-    <term>
+          <list type="table">
+            <listheader>
+              <term>
                 <paramref name="spec" />
               </term>
-    <description>Meaning</description>
-  </listheader>
-  <item>
-    <term>mem</term>
-    <description>A new <see cref="T:SemWeb.MemoryStore" />.</description>
-  </item>
-  <item>
-    <term>xml:[filename]</term>
-    <description>A <see cref="T:SemWeb.RdfXmlReader" /> to read the RDF/XML file.</description>
-  </item>
-  <item>
-    <term>
+              <description>Meaning</description>
+            </listheader>
+            <item>
+              <term>mem</term>
+              <description>A new <see cref="T:SemWeb.MemoryStore" />.</description>
+            </item>
+            <item>
+              <term>xml:[filename]</term>
+              <description>A <see cref="T:SemWeb.RdfXmlReader" /> to read the RDF/XML file.</description>
+            </item>
+            <item>
+              <term>
                 <para>n3:[filename]</para>
                 <para>turtle:[filename]</para>
                 <para>nt:[filename]</para>
                 <para>ntriples:[filename]</para>
               </term>
-    <description>A <see cref="T:SemWeb.N3Reader" /> to read the N3/Turtle/NTriples file.</description>
-  </item>
-  <item>
-    <term>sqlite:[table]:[connection string]</term>
-    <description>A <see cref="T:SemWeb.Stores.SQLStore" /> connected to the SQLite database given in the connection string, using the tables prefixed by the table parameter.</description>
-  </item>
-  <item>
-    <term>mysql:[table]:[connection string]</term>
-    <description>A <see cref="T:SemWeb.Stores.SQLStore" /> connected to the MySQL database given in the connection string, using the tables prefixed by the table parameter.</description>
-  </item>
-</list></remarks>
+              <description>A <see cref="T:SemWeb.N3Reader" /> to read the N3/Turtle/NTriples file.</description>
+            </item>
+            <item>
+              <term>sqlite:[table]:[connection string]</term>
+              <description>A <see cref="T:SemWeb.Stores.SQLStore" /> connected to the SQLite database given in the connection string, using the tables prefixed by the table parameter.</description>
+            </item>
+            <item>
+              <term>mysql:[table]:[connection string]</term>
+              <description>A <see cref="T:SemWeb.Stores.SQLStore" /> connected to the MySQL database given in the connection string, using the tables prefixed by the table parameter.</description>
+            </item>
+          </list>
+        </remarks>
       </Docs>
     </Member>
-  <Member MemberName="CreateForOutput">
+    <Member MemberName="CreateForOutput">
       <MemberSignature Language="C#" Value="public static SemWeb.StatementSink CreateForOutput (string spec);" />
       <MemberType>Method</MemberType>
       <ReturnValue>
@@ -442,96 +389,78 @@ any statement matching the template.</returns>
         <returns>A StatementSink.</returns>
         <remarks>
           <para>The specifier string is in one of the following formats.  When a filename is expected, a dash can be used to indicate standard output.</para>
-
-<list type="table">
-  <listheader>
-    <term>
+          <list type="table">
+            <listheader>
+              <term>
                 <paramref name="spec" />
               </term>
-    <description>Meaning</description>
-  </listheader>
-  <item>
-    <term>mem</term>
-    <description>A new <see cref="T:SemWeb.MemoryStore" />.</description>
-  </item>
-  <item>
-    <term>xml:[filename]</term>
-    <description>A <see cref="T:SemWeb.RdfXmlWriter" /> opened on the given file.</description>
-  </item>
-  <item>
-    <term>
+              <description>Meaning</description>
+            </listheader>
+            <item>
+              <term>mem</term>
+              <description>A new <see cref="T:SemWeb.MemoryStore" />.</description>
+            </item>
+            <item>
+              <term>xml:[filename]</term>
+              <description>A <see cref="T:SemWeb.RdfXmlWriter" /> opened on the given file.</description>
+            </item>
+            <item>
+              <term>
                 <para>n3:[filename]</para>
                 <para>turtle:[filename]</para>
                 <para>nt:[filename]</para>
                 <para>ntriples:[filename]</para>
               </term>
-    <description>A <see cref="T:SemWeb.N3Writer" /> opened on the given file, writing in the indicated format.</description>
-  </item>
-  <item>
-    <term>sql:[table]</term>
-    <description>A <see cref="T:SemWeb.IO.SQLWriter" /> writing to standard output, using the given table prefix.  SQL writers write SQL statements which can be loaded into a database that can be used by the <see cref="T:SemWeb.Stores.SQLStore" />.</description>
-  </item>
-  <item>
-    <term>sqlite:[table]:[connection string]</term>
-    <description>A <see cref="T:SemWeb.Stores.SQLStore" /> connected to the SQLite database given in the connection string, using the tables prefixed by the table parameter.</description>
-  </item>
-  <item>
-    <term>mysql:[table]:[connection string]</term>
-    <description>A <see cref="T:SemWeb.Stores.SQLStore" /> connected to the MySQL database given in the connection string, using the tables prefixed by the table parameter.</description>
-  </item>
-</list></remarks>
+              <description>A <see cref="T:SemWeb.N3Writer" /> opened on the given file, writing in the indicated format.</description>
+            </item>
+            <item>
+              <term>sql:[table]</term>
+              <description>A <see cref="T:SemWeb.IO.SQLWriter" /> writing to standard output, using the given table prefix.  SQL writers write SQL statements which can be loaded into a database that can be used by the <see cref="T:SemWeb.Stores.SQLStore" />.</description>
+            </item>
+            <item>
+              <term>sqlite:[table]:[connection string]</term>
+              <description>A <see cref="T:SemWeb.Stores.SQLStore" /> connected to the SQLite database given in the connection string, using the tables prefixed by the table parameter.</description>
+            </item>
+            <item>
+              <term>mysql:[table]:[connection string]</term>
+              <description>A <see cref="T:SemWeb.Stores.SQLStore" /> connected to the MySQL database given in the connection string, using the tables prefixed by the table parameter.</description>
+            </item>
+          </list>
+        </remarks>
       </Docs>
     </Member>
-  <Member MemberName="Select">
-      <MemberSignature Language="C#" Value="public SemWeb.MemoryStore Select (SemWeb.Statement template);" />
+    <Member MemberName="Select">
+      <MemberSignature Language="C#" Value="public SemWeb.SelectResult Select (SemWeb.Statement template);" />
       <MemberType>Method</MemberType>
       <ReturnValue>
-        <ReturnType>SemWeb.MemoryStore</ReturnType>
+        <ReturnType>SemWeb.SelectResult</ReturnType>
       </ReturnValue>
       <Parameters>
         <Parameter Name="template" Type="SemWeb.Statement" />
       </Parameters>
       <Docs>
-        <param name="template">A statement template.  Use <see cref="F:SemWeb.Statement.Empty" /> to select all statements in the store, or a statement with <see langword="null" /> fields to select statements that match the non-<see langword="null" /> parts of the statement.</param>
-        <summary>Queries the store for matching statements and holds the resulting statements in memory.</summary>
-        <returns>A <see cref="T:SemWeb.MemoryStore" /> cotnaining the matching statements.</returns>
-        <remarks>
-          <para>Each statement in the store matching <paramref name="template" /> is added to the <see cref="T:SemWeb.MemoryStore" /> that is returned.</para>
+        <param name="template">A statement template.  Use <see cref="F:SemWeb.Statement.All" /> to select all statements in the store, or a statement with <see langword="null" /> fields to select statements that match the non-<see langword="null" /> parts of the statement.</param>
+        <summary>Retuns a <see cref="T:SemWeb.SelectResult" /> object that represents the result of matching a statement template against the store.</summary>
+        <returns>A <see cref="T:SemWeb.SelectResult" /> representing the matching statements.</returns>
+        <remarks><para>On calling this method, the data in this store is not immediately accessed.  The matching statements are loaded the first time they are requested through the returned <see cref="T:SemWeb.SelectResult" /> object.  Those statements are accessed in one of three ways:</para>
 
-<para>
-            <paramref name="template" /> is a statement template, which means any field in <paramref name="template" /> may be <see langword="null" />, and those fields are excluded from the statement filter. For example, setting the Subject and Predicate fields but leaving the Object and Meta fields <see langword="null" /> will match all statements in the store that have the given Subject and Predicate, and anything in their Object and Meta fields.</para>
+<para><see cref="T:SemWeb.SelectResult" /> implements <see cref="T:System.Collections.IEnumerable" />, so the result object can be used in <see langword="foreach" /> loops, shown in this example:</para>
 
+<code lang="C#">foreach (Statement s in mystore.Select(Statement.All)) {
+    Console.WriteLine(s.ToString());
+}</code>
 
-<block subset="none" type="note">
-  <para>This method is not advised when the store may contain a large number of statements, as the entire result of the query must be loaded into memory before the method returns.</para>
-</block></remarks>
+<para>The drawback of this method is that all of the matching statements are loaded into memory before the loop begins, and so this method is not recommended when the number of matching statements may be very large.</para>
+
+<para>The <see cref="M:SemWeb.SelectResult.Load()" /> method loads all of the matching statements into a <see cref="T:SemWeb.MemoryStore" />.  The MemoryStore can then be used to perform further Selects, or to get the matching statements as an array.  This method is not advised when the number of matching statements may be very large.</para>
+
+<para><see cref="T:SemWeb.SelectResult" /> implements <see cref="T:SemWeb.StatementSource" />, and the <see cref="M:SemWeb.StatementSource.Select(SemWeb.StatementSink)" /> method on the returned object will stream the matching statements directly from this store to the provided <see cref="T:SemWeb.StatementSink" /> without keeping the statements in memory.</para>
+
+<para><paramref name="template" /> is a statement template, which means any field in <paramref name="template" /> may be <see langword="null" />, and those fields are excluded from the statement filter. For example, setting the Subject and Predicate fields but leaving the Object and Meta fields <see langword="null" /> will match all statements in the store that have the given Subject and Predicate, and anything in their Object and Meta fields.</para>
+</remarks>
       </Docs>
     </Member>
-  <Member MemberName="Select">
-      <MemberSignature Language="C#" Value="public SemWeb.MemoryStore Select (SemWeb.Statement template, SemWeb.SelectPartialFilter partialFilter);" />
-      <MemberType>Method</MemberType>
-      <ReturnValue>
-        <ReturnType>SemWeb.MemoryStore</ReturnType>
-      </ReturnValue>
-      <Parameters>
-        <Parameter Name="template" Type="SemWeb.Statement" />
-        <Parameter Name="partialFilter" Type="SemWeb.SelectPartialFilter" />
-      </Parameters>
-      <Docs>
-        <param name="template">A statement template.  Use <see cref="F:SemWeb.Statement.Empty" /> to select all statements in the store, or a statement with <see langword="null" /> fields to select statements that match the non-<see langword="null" /> parts of the statement.</param>
-        <param name="partialFilter">A partial filter, indicating which fields in the resulting statements are of interest. Use <see cref="F:SemWeb.SelectPartialFilter.All" /> when all fields are of interest.</param>
-        <summary>Queries the store for matching statements according to a partial filter and holds the resulting statements in memory.</summary>
-        <returns>A <see cref="T:SemWeb.MemoryStore" /> cotnaining the matching statements.</returns>
-        <remarks>
-          <para>See <see cref="M:SemWeb.Store.Select(SemWeb.Statement,SemWeb.SelectPartialFilter,SemWeb.StatementSink)" /> for more information on the use of partial filters. </para>
-
-<block subset="none" type="note">
-  <para>This method is not advised when the store may contain a large number of statements, as the entire result of the query must be loaded into memory before the method returns.</para>
-</block></remarks>
-      </Docs>
-    </Member>
-  
-  <Member MemberName="FindEntities">
+    <Member MemberName="FindEntities">
       <MemberSignature Language="C#" Value="public virtual SemWeb.Entity[] FindEntities (SemWeb.Statement[] filters);" />
       <MemberType>Method</MemberType>
       <ReturnValue>
@@ -541,13 +470,13 @@ any statement matching the template.</returns>
         <Parameter Name="filters" Type="SemWeb.Statement[]" />
       </Parameters>
       <Docs>
-        <param name="filters">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
+        <param name="filters">A graph pattern to match in the store.</param>
+        <summary>Finds all entities that match a simple graph pattern.</summary>
+        <returns>An array of entities matching the pattern.</returns>
+        <remarks>The graph pattern must consist of a single variable node which is represented by <see langword="null" />.  Each statement in the graph pattern must have <see langword="null" /> in its subject, predicate, object, or meta fields (or more than one of those fields).  This method returns all entities that can be substituted into all of the <see langword="null" /> fields in the graph pattern such that the graph pattern is found in the store.</remarks>
       </Docs>
     </Member>
-  <Member MemberName="Select">
+    <Member MemberName="Select">
       <MemberSignature Language="C#" Value="public void Select (SemWeb.StatementSink result);" />
       <MemberType>Method</MemberType>
       <ReturnValue>
@@ -562,7 +491,7 @@ any statement matching the template.</returns>
         <remarks>The <see cref="M:SemWeb.StatementSink.Add(SemWeb.Statement)" /> method is called on <paramref name="result" /> for each statement in this store.</remarks>
       </Docs>
     </Member>
-  <Member MemberName="Replace">
+    <Member MemberName="Replace">
       <MemberSignature Language="C#" Value="public abstract void Replace (SemWeb.Statement find, SemWeb.Statement replacement);" />
       <MemberType>Method</MemberType>
       <ReturnValue>
@@ -579,38 +508,20 @@ any statement matching the template.</returns>
         <remarks>Store implementations may choose to optimize this method over a call to Remove followed by Add.</remarks>
       </Docs>
     </Member>
-  <Member MemberName="Select">
-      <MemberSignature Language="C#" Value="public SemWeb.MemoryStore Select (SemWeb.Statement[] templates);" />
+    <Member MemberName="Select">
+      <MemberSignature Language="C#" Value="public SemWeb.SelectResult Select (SemWeb.Statement[] templates);" />
       <MemberType>Method</MemberType>
       <ReturnValue>
-        <ReturnType>SemWeb.MemoryStore</ReturnType>
+        <ReturnType>SemWeb.SelectResult</ReturnType>
       </ReturnValue>
       <Parameters>
         <Parameter Name="templates" Type="SemWeb.Statement[]" />
       </Parameters>
       <Docs>
-        <param name="templates">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
-      </Docs>
-    </Member>
-  <Member MemberName="Select">
-      <MemberSignature Language="C#" Value="public SemWeb.MemoryStore Select (SemWeb.Statement[] templates, SemWeb.SelectPartialFilter partialFilter);" />
-      <MemberType>Method</MemberType>
-      <ReturnValue>
-        <ReturnType>SemWeb.MemoryStore</ReturnType>
-      </ReturnValue>
-      <Parameters>
-        <Parameter Name="templates" Type="SemWeb.Statement[]" />
-        <Parameter Name="partialFilter" Type="SemWeb.SelectPartialFilter" />
-      </Parameters>
-      <Docs>
-        <param name="templates">To be added.</param>
-        <param name="partialFilter">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
+        <param name="templates">An array of statement templates.  Statements matching any of the templates are returned to <paramref name="result" />.</param>
+        <summary>Retuns a <see cref="T:SemWeb.SelectResult" /> object that represents the result of matching statement templates against the store.</summary>
+        <returns>A <see cref="T:SemWeb.SelectResult" /> representing the statements in the store that matched any of the templates.</returns>
+        <remarks>See <see cref="M:SemWeb.Store.Select(SemWeb.Statement)" />.</remarks>
       </Docs>
     </Member>
   </Members>

@@ -25,7 +25,7 @@
         <remarks>None.</remarks>
       </Docs>
     </Member>
-  <Member MemberName=".ctor">
+    <Member MemberName=".ctor">
       <MemberSignature Language="C#" Value="public XPathSemWebNavigator (SemWeb.Store model, SemWeb.NamespaceManager namespaces);" />
       <MemberType>Constructor</MemberType>
       <Parameters>

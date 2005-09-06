@@ -34,29 +34,29 @@
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
-  <Member MemberName="Init">
-      <MemberSignature Language="C#" Value="public abstract void Init (SemWeb.Entity[] variables);" />
-      <MemberType>Method</MemberType>
-      <ReturnValue>
-        <ReturnType>System.Void</ReturnType>
-      </ReturnValue>
-      <Parameters>
-        <Parameter Name="variables" Type="SemWeb.Entity[]" />
-      </Parameters>
-      <Docs>
-        <param name="variables">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
-      </Docs>
-    </Member>
-  <Member MemberName="Finished">
-      <MemberSignature Language="C#" Value="public abstract void Finished ();" />
+    <Member MemberName="Finished">
+      <MemberSignature Language="C#" Value="public virtual void Finished ();" />
       <MemberType>Method</MemberType>
       <ReturnValue>
         <ReturnType>System.Void</ReturnType>
       </ReturnValue>
       <Parameters />
       <Docs>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Init">
+      <MemberSignature Language="C#" Value="public virtual void Init (SemWeb.Query.VariableBinding[] variables);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="variables" Type="SemWeb.Query.VariableBinding[]" />
+      </Parameters>
+      <Docs>
+        <param name="variables">To be added.</param>
         <summary>To be added.</summary>
         <remarks>To be added.</remarks>
       </Docs>

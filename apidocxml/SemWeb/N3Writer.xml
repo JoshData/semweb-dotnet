@@ -61,9 +61,7 @@
         <remarks>A "@prefix" directive is written for each prefix in the NamespaceManager, and other N3 syntactic constructs are used, if <see cref="P:SemWeb.N3Writer.Format" /> is Notation3, which is the default. The NamespaceManager should not be modified once statements have been written.</remarks>
       </Docs>
     </Member>
-  
-  
-  <Member MemberName="Format">
+    <Member MemberName="Format">
       <MemberSignature Language="C#" Value="public SemWeb.N3Writer+Formats Format { set; get; };" />
       <MemberType>Property</MemberType>
       <ReturnValue>

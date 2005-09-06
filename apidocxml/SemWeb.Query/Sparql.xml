@@ -1,0 +1,41 @@
+<Type Name="Sparql" FullName="SemWeb.Query.Sparql">
+  <TypeSignature Language="C#" Value="public class Sparql : SemWeb.Query.Query" />
+  <AssemblyInfo>
+    <AssemblyName>SemWeb.Sparql</AssemblyName>
+    <AssemblyVersion>0.5.0.2</AssemblyVersion>
+  </AssemblyInfo>
+  <Base>
+    <BaseTypeName>SemWeb.Query.Query</BaseTypeName>
+  </Base>
+  <Interfaces />
+  <Members>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public Sparql (string query);" />
+      <MemberType>Constructor</MemberType>
+      <Parameters>
+        <Parameter Name="query" Type="System.String" />
+      </Parameters>
+      <Docs>
+        <param name="query">To be added.</param>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public Sparql (System.IO.TextReader query);" />
+      <MemberType>Constructor</MemberType>
+      <Parameters>
+        <Parameter Name="query" Type="System.IO.TextReader" />
+      </Parameters>
+      <Docs>
+        <param name="query">To be added.</param>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+  </Members>
+  <Docs>
+    <summary>To be added.</summary>
+    <remarks>To be added.</remarks>
+  </Docs>
+</Type>

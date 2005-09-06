@@ -13,8 +13,6 @@
     </Interface>
   </Interfaces>
   <Members>
-    
-    
     <Member MemberName="Statements">
       <MemberSignature Language="C#" Value="public System.Collections.IList Statements { get; };" />
       <MemberType>Property</MemberType>
@@ -33,12 +31,11 @@ foreach (Statement s in memoryStore.Statements)
 // equivalent to:
 foreach (Statement s in memoryStore)
   Console.WriteLine(s);
-</code>
-</example>
+</code></example>
         </remarks>
       </Docs>
     </Member>
-  <Member MemberName=".ctor">
+    <Member MemberName=".ctor">
       <MemberSignature Language="C#" Value="public MemoryStore ();" />
       <MemberType>Constructor</MemberType>
       <Parameters />
@@ -47,7 +44,7 @@ foreach (Statement s in memoryStore)
         <remarks>None.</remarks>
       </Docs>
     </Member>
-  <Member MemberName=".ctor">
+    <Member MemberName=".ctor">
       <MemberSignature Language="C#" Value="public MemoryStore (SemWeb.StatementSource source);" />
       <MemberType>Constructor</MemberType>
       <Parameters>
@@ -59,9 +56,22 @@ foreach (Statement s in memoryStore)
         <remarks>None.</remarks>
       </Docs>
     </Member>
+    <Member MemberName="ToArray">
+      <MemberSignature Language="C#" Value="public SemWeb.Statement[] ToArray ();" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>SemWeb.Statement[]</ReturnType>
+      </ReturnValue>
+      <Parameters />
+      <Docs>
+        <summary>Returns the contents of the store as an array of Statements.</summary>
+        <returns>An array of Statements that make up the contents of the store.</returns>
+        <remarks>None.</remarks>
+      </Docs>
+    </Member>
   </Members>
   <Docs>
-    <summary>A store of statements held in memory.</summary>
-    <remarks>In addition to an array of statements, the statements are indexed by subject and object to speed Select queries.</remarks>
+    <summary>A graph of statements held in memory.</summary>
+    <remarks>In addition to storing the statements as an array, the statements are indexed by subject and object to speed Select queries.</remarks>
   </Docs>
 </Type>

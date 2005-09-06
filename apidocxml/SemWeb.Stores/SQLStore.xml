@@ -10,7 +10,6 @@
   <Interfaces>
   </Interfaces>
   <Members>
-    
     <Member MemberName="RunCommand">
       <MemberSignature Language="C#" Value="protected abstract void RunCommand (string sql);" />
       <MemberType>Method</MemberType>
@@ -58,8 +57,6 @@
         <remarks>Inheritors must implement this method.</remarks>
       </Docs>
     </Member>
-    
-    
     <Member MemberName="CreateTable">
       <MemberSignature Language="C#" Value="protected virtual void CreateTable ();" />
       <MemberType>Method</MemberType>
@@ -120,7 +117,7 @@
         <remarks>This property is protected and read-only.</remarks>
       </Docs>
     </Member>
-  <Member MemberName=".ctor">
+    <Member MemberName=".ctor">
       <MemberSignature Language="C#" Value="protected SQLStore (string table);" />
       <MemberType>Constructor</MemberType>
       <Parameters>
@@ -132,7 +129,7 @@
         <remarks>The two tables used by this store will be <paramref name="table" />_statements and <paramref name="table" />_literals.</remarks>
       </Docs>
     </Member>
-  <Member MemberName="CreateNullTest">
+    <Member MemberName="CreateNullTest">
       <MemberSignature Language="C#" Value="protected abstract string CreateNullTest (string column);" />
       <MemberType>Method</MemberType>
       <ReturnValue>
@@ -150,7 +147,7 @@
         </remarks>
       </Docs>
     </Member>
-  <Member MemberName="EscapedAppend">
+    <Member MemberName="EscapedAppend">
       <MemberSignature Language="C#" Value="protected virtual void EscapedAppend (System.Text.StringBuilder b, string str);" />
       <MemberType>Method</MemberType>
       <ReturnValue>
@@ -167,7 +164,7 @@
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
-  <Member MemberName="SupportsInsertCombined">
+    <Member MemberName="SupportsInsertCombined">
       <MemberSignature Language="C#" Value="protected abstract bool SupportsInsertCombined { get; };" />
       <MemberType>Property</MemberType>
       <ReturnValue>
@@ -179,7 +176,7 @@
         <remarks>None.</remarks>
       </Docs>
     </Member>
-  <Member MemberName="SupportsUseIndex">
+    <Member MemberName="SupportsUseIndex">
       <MemberSignature Language="C#" Value="protected abstract bool SupportsUseIndex { get; };" />
       <MemberType>Property</MemberType>
       <ReturnValue>
@@ -191,7 +188,7 @@
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
-  <Member MemberName="SupportsFastJoin">
+    <Member MemberName="SupportsFastJoin">
       <MemberSignature Language="C#" Value="protected virtual bool SupportsFastJoin { get; };" />
       <MemberType>Property</MemberType>
       <ReturnValue>
@@ -203,17 +200,33 @@
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
+    <Member MemberName="EscapedAppend">
+      <MemberSignature Language="C#" Value="protected virtual void EscapedAppend (System.Text.StringBuilder b, string str, bool quotes);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="b" Type="System.Text.StringBuilder" />
+        <Parameter Name="str" Type="System.String" />
+        <Parameter Name="quotes" Type="System.Boolean" />
+      </Parameters>
+      <Docs>
+        <param name="b">To be added.</param>
+        <param name="str">To be added.</param>
+        <param name="quotes">To be added.</param>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
   </Members>
   <Docs>
     <summary>A store that holds statements in an SQL database.</summary>
     <remarks>
       <para>This class is abstract and is inherited by classes for particular database backends.  Backends are provided for MySQL and SQLite in separate assemblies.  Rather than referencing those assemblies and using their constructors to create stores for those databases, it is easier to use <see cref="M:SemWeb.Store.CreateForInput(string)" /> or <see cref="M:SemWeb.Store.CreateForOutput(string)" />.  Both methods return SQLStores that can be used for both reading and writing.</para>
-
-<para>The SQLStore uses three tables, one containing the statement triples (actually quadruples with meta information) using numeric identifiers for each resource, one mapping entity identifiers to URIs, and the last mapping literal identifiers to string/language/datatype triples.  The CREATE statements for the tables, which are automatically executed by the SQLStore when needed, are:</para>
-
-
-<example>
-  <code lang="SQL">
+      <para>The SQLStore uses three tables, one containing the statement triples (actually quadruples with meta information) using numeric identifiers for each resource, one mapping entity identifiers to URIs, and the last mapping literal identifiers to string/language/datatype triples.  The CREATE statements for the tables, which are automatically executed by the SQLStore when needed, are:</para>
+      <example>
+        <code lang="SQL">
 CREATE TABLE TABLEPREFIX_statements (subject int UNSIGNED NOT NULL,
        predicate int UNSIGNED NOT NULL, objecttype int NOT NULL, object int UNSIGNED NOT NULL,
        meta int UNSIGNED NOT NULL);
@@ -224,20 +237,16 @@ CREATE TABLE TABLEPREFIX_entities (id INT NOT NULL, value BLOB NOT NULL,
 CREATE TABLE TABLEPREFIX_literals (id INT NOT NULL, value BLOB NOT NULL,
       language TEXT, datatype TEXT, PRIMARY KEY(id));
 </code>
-</example>
-
-<para>Indexes are created on the subject, predicate, and object/objecttype columns in the statements table, and on the value columns in the entities and literals table.  Because MySQL before version 4.1.2 supported text indexes of length up to 255 bytes, URIs in the SQLStore are limited to this length.</para>
-
-<para>Each resource stored in the tables is given an ID starting at 1 which is used as the value of the subject, predicate, object, and meta columns when the entity appears in a statement.  The value 0 is used for statements with no meta information.  When the object of a statement is an entity, objecttype is 0 and object contains the ID of the entity.  When the object of a statement is a literal, objecttype is 1 and the object column contains the value of the id column in the literals table for the literal value.  Literals in the literals table can be referenced by more than one statement.</para>
-
-<para>Anonymous entities (blank nodes) are simply those entities mentioned in the statements table that have no entry giving their URI in the entities table.</para>
-
-<block subset="none" type="note">
-  <para>
+      </example>
+      <para>Indexes are created on the subject, predicate, and object/objecttype columns in the statements table, and on the value columns in the entities and literals table.  Because MySQL before version 4.1.2 supported text indexes of length up to 255 bytes, URIs in the SQLStore are limited to this length.</para>
+      <para>Each resource stored in the tables is given an ID starting at 1 which is used as the value of the subject, predicate, object, and meta columns when the entity appears in a statement.  The value 0 is used for statements with no meta information.  When the object of a statement is an entity, objecttype is 0 and object contains the ID of the entity.  When the object of a statement is a literal, objecttype is 1 and the object column contains the value of the id column in the literals table for the literal value.  Literals in the literals table can be referenced by more than one statement.</para>
+      <para>Anonymous entities (blank nodes) are simply those entities mentioned in the statements table that have no entry giving their URI in the entities table.</para>
+      <block subset="none" type="note">
+        <para>
      While it is safe to use many SQLStores to read from the same store, it is not safe to use multiple SQLStores to write to the same store concurrently.
   </para>
-</block>
-
-<para>Inheritors must implement <see cref="M:SemWeb.Stores.SQLStore.RunCommand(string)" />, <see cref="M:SemWeb.Stores.SQLStore.RunReader(string)" />, and <see cref="M:SemWeb.Stores.SQLStore.RunScalar(string)" />.</para></remarks>
+      </block>
+      <para>Inheritors must implement <see cref="M:SemWeb.Stores.SQLStore.RunCommand(string)" />, <see cref="M:SemWeb.Stores.SQLStore.RunReader(string)" />, and <see cref="M:SemWeb.Stores.SQLStore.RunScalar(string)" />.</para>
+    </remarks>
   </Docs>
 </Type>

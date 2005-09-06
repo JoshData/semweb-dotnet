@@ -9,7 +9,6 @@
   </Base>
   <Interfaces />
   <Members>
-    
     <Member MemberName="Add">
       <MemberSignature Language="C#" Value="public void Add (SemWeb.Store store);" />
       <MemberType>Method</MemberType>
@@ -57,7 +56,7 @@
         <remarks>None.</remarks>
       </Docs>
     </Member>
-  <Member MemberName=".ctor">
+    <Member MemberName=".ctor">
       <MemberSignature Language="C#" Value="public MultiStore ();" />
       <MemberType>Constructor</MemberType>
       <Parameters />
@@ -71,6 +70,7 @@
     <summary>A store that combines the statements of multiple stores.</summary>
     <remarks>
       <para>The class groups together multiple stores.  It is used by the <see cref="T:SemWeb.KnowledgeModel" /> class.</para>
-<para>The MultiStore does not support the Clear, Add, and Remove methods.</para></remarks>
+      <para>The MultiStore does not support the Clear, Add, and Remove methods.</para>
+    </remarks>
   </Docs>
 </Type>

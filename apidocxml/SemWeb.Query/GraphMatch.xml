@@ -1,16 +1,16 @@
-<Type Name="QueryEngine" FullName="SemWeb.Query.QueryEngine">
-  <TypeSignature Language="C#" Value="public class QueryEngine" />
+<Type Name="GraphMatch" FullName="SemWeb.Query.GraphMatch">
+  <TypeSignature Language="C#" Value="public class GraphMatch : SemWeb.Query.Query" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
     <AssemblyVersion>0.5.0.2</AssemblyVersion>
   </AssemblyInfo>
   <Base>
-    <BaseTypeName>System.Object</BaseTypeName>
+    <BaseTypeName>SemWeb.Query.Query</BaseTypeName>
   </Base>
   <Interfaces />
   <Members>
     <Member MemberName=".ctor">
-      <MemberSignature Language="C#" Value="public QueryEngine ();" />
+      <MemberSignature Language="C#" Value="public GraphMatch ();" />
       <MemberType>Constructor</MemberType>
       <Parameters />
       <Docs>
@@ -18,22 +18,6 @@
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
-    <Member MemberName="Select">
-      <MemberSignature Language="C#" Value="public void Select (SemWeb.Entity entity);" />
-      <MemberType>Method</MemberType>
-      <ReturnValue>
-        <ReturnType>System.Void</ReturnType>
-      </ReturnValue>
-      <Parameters>
-        <Parameter Name="entity" Type="SemWeb.Entity" />
-      </Parameters>
-      <Docs>
-        <param name="entity">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
-      </Docs>
-    </Member>
-    
     <Member MemberName="MakeDistinct">
       <MemberSignature Language="C#" Value="public void MakeDistinct (SemWeb.Entity a, SemWeb.Entity b);" />
       <MemberType>Method</MemberType>
@@ -68,51 +52,40 @@
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
-    
-    <Member MemberName="Query">
-      <MemberSignature Language="C#" Value="public void Query (SemWeb.Store targetModel, SemWeb.Query.QueryResultSink result);" />
+    <Member MemberName="SetNonVariable">
+      <MemberSignature Language="C#" Value="public void SetNonVariable (SemWeb.Entity anonymousnode);" />
       <MemberType>Method</MemberType>
       <ReturnValue>
         <ReturnType>System.Void</ReturnType>
       </ReturnValue>
       <Parameters>
-        <Parameter Name="targetModel" Type="SemWeb.Store" />
-        <Parameter Name="result" Type="SemWeb.Query.QueryResultSink" />
+        <Parameter Name="anonymousnode" Type="SemWeb.Entity" />
       </Parameters>
       <Docs>
-        <param name="targetModel">To be added.</param>
-        <param name="result">To be added.</param>
+        <param name="anonymousnode">To be added.</param>
         <summary>To be added.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
-    
-    <Member MemberName="ReturnStart">
-      <MemberSignature Language="C#" Value="public int ReturnStart { set; get; };" />
-      <MemberType>Property</MemberType>
+    <Member MemberName="SetVariableName">
+      <MemberSignature Language="C#" Value="public void SetVariableName (SemWeb.Entity variable, string name);" />
+      <MemberType>Method</MemberType>
       <ReturnValue>
-        <ReturnType>System.Int32</ReturnType>
+        <ReturnType>System.Void</ReturnType>
       </ReturnValue>
+      <Parameters>
+        <Parameter Name="variable" Type="SemWeb.Entity" />
+        <Parameter Name="name" Type="System.String" />
+      </Parameters>
       <Docs>
+        <param name="variable">To be added.</param>
+        <param name="name">To be added.</param>
         <summary>To be added.</summary>
-        <value>To be added.</value>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
-    <Member MemberName="ReturnLimit">
-      <MemberSignature Language="C#" Value="public int ReturnLimit { set; get; };" />
-      <MemberType>Property</MemberType>
-      <ReturnValue>
-        <ReturnType>System.Int32</ReturnType>
-      </ReturnValue>
-      <Docs>
-        <summary>To be added.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
-      </Docs>
-    </Member>
-  <Member MemberName="AddFilter">
-      <MemberSignature Language="C#" Value="public void AddFilter (SemWeb.Statement filter);" />
+    <Member MemberName="AddEdge">
+      <MemberSignature Language="C#" Value="public void AddEdge (SemWeb.Statement filter);" />
       <MemberType>Method</MemberType>
       <ReturnValue>
         <ReturnType>System.Void</ReturnType>
@@ -126,8 +99,8 @@
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
-  <Member MemberName="AddOptionalFilter">
-      <MemberSignature Language="C#" Value="public void AddOptionalFilter (SemWeb.Statement filter);" />
+    <Member MemberName="AddOptionalEdge">
+      <MemberSignature Language="C#" Value="public void AddOptionalEdge (SemWeb.Statement filter);" />
       <MemberType>Method</MemberType>
       <ReturnValue>
         <ReturnType>System.Void</ReturnType>

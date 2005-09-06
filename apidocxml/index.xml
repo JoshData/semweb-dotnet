@@ -16,7 +16,6 @@
       <Type Name="Entity" />
       <Type Name="Literal" />
       <Type Name="Statement" />
-      <Type Name="SelectPartialFilter" />
       <Type Name="MemoryStore" />
       <Type Name="RdfReader" />
       <Type Name="N3Reader" />
@@ -25,22 +24,22 @@
       <Type Name="RdfXmlWriter" />
       <Type Name="StatementSource" />
       <Type Name="N3Writer+Formats" />
+      <Type Name="QueryableSource" />
+      <Type Name="SelectResult" />
     </Namespace>
     <Namespace Name="SemWeb.Query">
       <Type Name="QueryException" />
       <Type Name="RSquary" />
       <Type Name="QueryResultSink" />
-      <Type Name="PrintQuerySink" />
-      <Type Name="HTMLQuerySink" />
-      <Type Name="SQLQuerySink" />
       <Type Name="VariableBinding" />
       <Type Name="ValueFilter" />
       <Type Name="LiteralValueFilter" />
-      <Type Name="QueryEngine" />
       <Type Name="SparqlXmlQuerySink" />
       <Type Name="ValueFilterFactory" />
-      <Type Name="SparqlParser" />
-      <Type Name="SparqlParser+SparqlQuestion" />
+      <Type Name="GraphMatch" />
+      <Type Name="QueryResultBufferSink" />
+      <Type Name="Sparql" />
+      <Type Name="Query" />
     </Namespace>
     <Namespace Name="SemWeb.Stores">
       <Type Name="MultiStore" />
@@ -89,6 +88,34 @@
         </Attribute>
         <Attribute>
           <AttributeName>System.Reflection.AssemblyTitle(Title="SemWeb")</AttributeName>
+        </Attribute>
+      </Attributes>
+    </Assembly>
+    <Assembly Name="SemWeb.Sparql" Version="0.5.0.2">
+      <Attributes>
+        <Attribute>
+          <AttributeName>System.Reflection.AssemblyCulture(Culture="")</AttributeName>
+        </Attribute>
+        <Attribute>
+          <AttributeName>System.Reflection.AssemblyTrademark(Trademark="")</AttributeName>
+        </Attribute>
+        <Attribute>
+          <AttributeName>System.Reflection.AssemblyCopyright(Copyright="")</AttributeName>
+        </Attribute>
+        <Attribute>
+          <AttributeName>System.Reflection.AssemblyProduct(Product="")</AttributeName>
+        </Attribute>
+        <Attribute>
+          <AttributeName>System.Reflection.AssemblyCompany(Company="")</AttributeName>
+        </Attribute>
+        <Attribute>
+          <AttributeName>System.Reflection.AssemblyConfiguration(Configuration="")</AttributeName>
+        </Attribute>
+        <Attribute>
+          <AttributeName>System.Reflection.AssemblyDescription(Description="A SPARQL engine for SemWeb, based on Ryan Levering's SPARQL implementation in Java.")</AttributeName>
+        </Attribute>
+        <Attribute>
+          <AttributeName>System.Reflection.AssemblyTitle(Title="SemWeb SPARQL Engine")</AttributeName>
         </Attribute>
       </Attributes>
     </Assembly>

@@ -1,4 +1,4 @@
-<Type Name="ReaderException" FullName="SemWeb.ReaderException">
+<Type Name="ParserException" FullName="SemWeb.ParserException">
   <TypeSignature Language="C#" Value="public class ParserException : System.ApplicationException" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
@@ -16,8 +16,22 @@
         <Parameter Name="message" Type="System.String" />
       </Parameters>
       <Docs>
-        <param name="message">To be added.</param>
-        <summary>Creates a new ReaderException.</summary>
+        <param name="message">A text message indicating the parsing exception that occurred.</param>
+        <summary>Creates a new ParserException.</summary>
+        <remarks>None.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public ParserException (string message, Exception cause);" />
+      <MemberType>Constructor</MemberType>
+      <Parameters>
+        <Parameter Name="message" Type="System.String" />
+        <Parameter Name="cause" Type="System.Exception" />
+      </Parameters>
+      <Docs>
+        <param name="message">A text message indicating the parsing exception that occurred.</param>
+        <param name="cause">A thrown exception that caused the parsing exception.</param>
+        <summary>Creates a new ParserException.</summary>
         <remarks>None.</remarks>
       </Docs>
     </Member>

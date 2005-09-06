@@ -23,7 +23,7 @@
     </Member>
   </Members>
   <Docs>
-    <summary>A StatementSource is a source of statements, such as a RdfReader or a Store.</summary>
+    <summary>A source of statements, such as a RdfReader or a Store.</summary>
     <remarks>Access to the statements in this source is provided through calling Select.</remarks>
   </Docs>
 </Type>

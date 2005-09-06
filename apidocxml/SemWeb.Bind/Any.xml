@@ -59,7 +59,7 @@
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
-  <Member MemberName="AddValue">
+    <Member MemberName="AddValue">
       <MemberSignature Language="C#" Value="protected void AddValue (SemWeb.Entity predicate, object value, bool forward);" />
       <MemberType>Method</MemberType>
       <ReturnValue>
@@ -78,7 +78,7 @@
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
-  <Member MemberName="RemoveValue">
+    <Member MemberName="RemoveValue">
       <MemberSignature Language="C#" Value="protected void RemoveValue (SemWeb.Entity predicate, object value, bool forward);" />
       <MemberType>Method</MemberType>
       <ReturnValue>
@@ -97,7 +97,7 @@
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
-  <Member MemberName="SetFuncProperty">
+    <Member MemberName="SetFuncProperty">
       <MemberSignature Language="C#" Value="protected void SetFuncProperty (SemWeb.Entity predicate, object value, bool forward);" />
       <MemberType>Method</MemberType>
       <ReturnValue>
@@ -116,7 +116,7 @@
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
-  <Member MemberName="SetNonFuncProperty">
+    <Member MemberName="SetNonFuncProperty">
       <MemberSignature Language="C#" Value="protected void SetNonFuncProperty (SemWeb.Entity predicate, object[] values, bool forward);" />
       <MemberType>Method</MemberType>
       <ReturnValue>

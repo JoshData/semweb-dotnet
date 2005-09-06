@@ -95,24 +95,6 @@
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
-    <Member MemberName="Filter">
-      <MemberSignature Language="C#" Value="public abstract bool Filter (SemWeb.Resource resource, SemWeb.Store targetModel);" />
-      <MemberType>Method</MemberType>
-      <ReturnValue>
-        <ReturnType>System.Boolean</ReturnType>
-      </ReturnValue>
-      <Parameters>
-        <Parameter Name="resource" Type="SemWeb.Resource" />
-        <Parameter Name="targetModel" Type="SemWeb.Store" />
-      </Parameters>
-      <Docs>
-        <param name="resource">To be added.</param>
-        <param name="targetModel">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
-      </Docs>
-    </Member>
     <Member MemberName="GetValueFilter">
       <MemberSignature Language="C#" Value="public static SemWeb.Query.ValueFilter GetValueFilter (SemWeb.Entity predicate, SemWeb.Resource obj);" />
       <MemberType>Method</MemberType>
@@ -126,6 +108,24 @@
       <Docs>
         <param name="predicate">To be added.</param>
         <param name="obj">To be added.</param>
+        <summary>To be added.</summary>
+        <returns>To be added.</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Filter">
+      <MemberSignature Language="C#" Value="public abstract bool Filter (SemWeb.Resource resource, SemWeb.QueryableSource targetModel);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Boolean</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="resource" Type="SemWeb.Resource" />
+        <Parameter Name="targetModel" Type="SemWeb.QueryableSource" />
+      </Parameters>
+      <Docs>
+        <param name="resource">To be added.</param>
+        <param name="targetModel">To be added.</param>
         <summary>To be added.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>

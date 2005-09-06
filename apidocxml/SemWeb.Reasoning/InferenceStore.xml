@@ -9,7 +9,6 @@
   </Base>
   <Interfaces />
   <Members>
-    
     <Member MemberName="Source">
       <MemberSignature Language="C#" Value="public SemWeb.Store Source { get; };" />
       <MemberType>Property</MemberType>
@@ -34,7 +33,7 @@
         <remarks>None.</remarks>
       </Docs>
     </Member>
-  <Member MemberName=".ctor">
+    <Member MemberName=".ctor">
       <MemberSignature Language="C#" Value="public InferenceStore (SemWeb.Store store, SemWeb.Reasoning.ReasoningEngine engine);" />
       <MemberType>Constructor</MemberType>
       <Parameters>
@@ -53,10 +52,8 @@
     <summary>A store that draws interences using reasoning engines.</summary>
     <remarks>
       <para>Reasoning engines are implemented in the <see cref="N:SemWeb.Reasoning" /> namespace.</para>
-
-<para>This class overrides the Contains and Select methods to augment the corresponding methods in the underlying data model with inferences.</para>
-
-<para>The underlying data store should not be modified once it is passed to the constructor of InferenceStore.</para>
-</remarks>
+      <para>This class overrides the Contains and Select methods to augment the corresponding methods in the underlying data model with inferences.</para>
+      <para>The underlying data store should not be modified once it is passed to the constructor of InferenceStore.</para>
+    </remarks>
   </Docs>
 </Type>

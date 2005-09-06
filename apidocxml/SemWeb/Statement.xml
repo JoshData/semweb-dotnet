@@ -22,7 +22,8 @@
         <param name="predicate">The predicate of the statement.</param>
         <param name="object">The object of the statement.</param>
         <summary>Creates a new Statement.</summary>
-        <remarks>None.</remarks>
+        <remarks><para>No arguments to this constructor may be <see langword="null" /> if this statement will be used in a call to the Add method of <see cref="T:SemWeb.Store" /> or <see cref="T:SemWeb.StatementSink" />.  Any of the arguments may be <see langword="null" /> if the statement will be used as a template for calls to a Contains or Select method of <see cref="T:SemWeb.Store" /> or <see cref="T:SemWeb.QueryableSource" />.</para>
+<para>The value of the <see cref="P:SemWeb.Statement.Meta" /> is set to <see cref="P:SemWeb.Statement.DefaultMeta" />.</para></remarks>
       </Docs>
     </Member>
     <Member MemberName=".ctor">
@@ -38,9 +39,9 @@
         <param name="subject">The subject of the statement.</param>
         <param name="predicate">The predicate of the statement.</param>
         <param name="object">The object of the statement.</param>
-        <param name="meta">An entity with meta-information about the statement.  May be null.</param>
+        <param name="meta">An entity with meta-information about the statement.</param>
         <summary>Creates a new Statement with a meta entity.</summary>
-        <remarks>None.</remarks>
+        <remarks><para>No arguments to this constructor may be <see langword="null" /> if this statement will be used in a call to the Add method of <see cref="T:SemWeb.Store" /> or <see cref="T:SemWeb.StatementSink" />.  Any of the arguments may be <see langword="null" /> if the statement will be used as a template for calls to a Contains or Select method of <see cref="T:SemWeb.Store" /> or <see cref="T:SemWeb.QueryableSource" />.</para></remarks>
       </Docs>
     </Member>
     <Member MemberName="Invert">
@@ -53,7 +54,7 @@
       <Docs>
         <summary>Returns a new statement with the same predicate but with subject and object reversed.</summary>
         <returns>The inverse of this statement.</returns>
-        <remarks>None.</remarks>
+        <remarks>A <see cref="System.ArgumentException" /> is thrown if the object of the statement is not an entity, since subjects can only be entities.</remarks>
       </Docs>
     </Member>
     <Member MemberName="op_Equality">
@@ -142,7 +143,7 @@
         <remarks>The use of this property is up to the application.</remarks>
       </Docs>
     </Member>
-  <Member MemberName="Matches">
+    <Member MemberName="Matches">
       <MemberSignature Language="C#" Value="public bool Matches (SemWeb.Statement statement);" />
       <MemberType>Method</MemberType>
       <ReturnValue>
@@ -158,13 +159,35 @@
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
+    <Member MemberName="DefaultMeta">
+      <MemberSignature Language="C#" Value="public static SemWeb.Entity DefaultMeta;" />
+      <MemberType>Field</MemberType>
+      <ReturnValue>
+        <ReturnType>SemWeb.Entity</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>The entity used for the <see cref="P:SemWeb.Statement.Meta" /> field of statements when a Meta value is not given by the caller.</summary>
+        <remarks>None.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="All">
+      <MemberSignature Language="C#" Value="public static SemWeb.Statement All;" />
+      <MemberType>Field</MemberType>
+      <ReturnValue>
+        <ReturnType>SemWeb.Statement</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>A statement whose fields are all <see langword="null" />.</summary>
+        <remarks>This statement is provided as a convience to easily select all statements in a source by a call to Select.</remarks>
+      </Docs>
+    </Member>
   </Members>
   <Docs>
     <summary>A statement, comprising a subject, predicate, and object.</summary>
     <remarks>
       <para>RDF requires that subjects and predicates be entities (non-literals).</para>
-<para>The <see cref="P:SemWeb.Statement.Meta" /> property optionally contains an entity that has meta-information about the statement.  The use of the Meta property is left up to application writers.</para>
-
-<para>The subject, predicate, and object fields should not normally be <see langword="null" />.  They may be <see langword="null" /> when the Statement is returned from a call to <see cref="M:SemWeb.Store.Select" /> when a <see cref="T:SemWeb.SelectPartialFilter" /> is used.  They must not be <see langword="null" /> in a call to <see cref="M:SemWeb.Store.Add(SemWeb.Statement)" /></para></remarks>
+      <para>The <see cref="P:SemWeb.Statement.Meta" /> property optionally contains an entity that has meta-information about the statement.  The use of the Meta property is left up to application writers.</para>
+      <para>The subject, predicate, and object fields should not normally be <see langword="null" />.  They may be <see langword="null" /> when the Statement is returned from a call to <see cref="M:SemWeb.Store.Select" />.  They must not be <see langword="null" /> in a call to <see cref="M:SemWeb.Store.Add(SemWeb.Statement)" /></para>
+</remarks>
   </Docs>
 </Type>

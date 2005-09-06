@@ -25,7 +25,6 @@
         <remarks>None.</remarks>
       </Docs>
     </Member>
-    
     <Member MemberName="Dispose">
       <MemberSignature Language="C#" Value="public virtual void Dispose ();" />
       <MemberType>Method</MemberType>
@@ -54,31 +53,30 @@
         <summary>Creates a reader in the factory paradigm.</summary>
         <returns>
           <para>The type of reader returned is given in the following table.</para>
-
-<list type="table">
-  <listheader>
-    <term>
+          <list type="table">
+            <listheader>
+              <term>
                 <paramref name="type" />
               </term>
-    <description>Reader</description>
-  </listheader>
-  <item>
-    <term>"xml" or "text/xml"</term>
-    <description>
+              <description>Reader</description>
+            </listheader>
+            <item>
+              <term>"xml" or "text/xml"</term>
+              <description>
                 <see cref="T:SemWeb.RdfXmlReader" />
               </description>
-  </item>
-  <item>
-    <term>"n3" or "text/n3"</term>
-    <description>
+            </item>
+            <item>
+              <term>"n3" or "text/n3"</term>
+              <description>
                 <see cref="T:SemWeb.N3Reader" />
               </description>
-  </item>
-</list></returns>
+            </item>
+          </list>
+        </returns>
         <remarks>None.</remarks>
       </Docs>
     </Member>
-    
     <Member MemberName="Meta">
       <MemberSignature Language="C#" Value="public SemWeb.Entity Meta { set; get; };" />
       <MemberType>Property</MemberType>
@@ -87,8 +85,10 @@
       </ReturnValue>
       <Docs>
         <summary>An entity to assign as the meta entity for statements loaded by this reader.</summary>
-        <value>An entity to use for meta information, or <see langword="null" />.</value>
-        <remarks>The value of this property is used as the meta argument in calls to <see cref="C:SemWeb.Statement(SemWeb.Entity,SemWeb.Entity,SemWeb.Resource,SemWeb.Entity)" />.  The use of <see cref="P:SemWeb.Statement.Meta" /> is up to the application.</remarks>
+        <value>An entity to use for meta information.  Cannot be <see langword="null" />.</value>
+        <remarks><para>The value of this property is used as the meta argument in calls to <see cref="C:SemWeb.Statement(SemWeb.Entity,SemWeb.Entity,SemWeb.Resource,SemWeb.Entity)" />.  The use of <see cref="P:SemWeb.Statement.Meta" /> is up to the application.</para>
+
+<para>The default value of this property is <see cref="P:SemWeb.Statement.DefaultMeta" />, which is also the meta value used in the three-arg constructor for <see cref="T:SemWeb.Statement" />.  If the meta field is not important for the application, this field should be left unchanged.</para></remarks>
       </Docs>
     </Member>
     <Member MemberName="BaseUri">
@@ -103,7 +103,7 @@
         <remarks>When this property is <see langword="null" />, the reader will not correctly resolve relative URIs in the stream.  Always set this property before beginning reading when the base URI of the document is known.</remarks>
       </Docs>
     </Member>
-  <Member MemberName="OnWarning">
+    <Member MemberName="OnWarning">
       <MemberSignature Language="C#" Value="protected void OnWarning (string message);" />
       <MemberType>Method</MemberType>
       <ReturnValue>
@@ -118,20 +118,19 @@
         <remarks>This is not currently used for anything.</remarks>
       </Docs>
     </Member>
-  
-  <Member MemberName="Variables">
-      <MemberSignature Language="C#" Value="public System.Collections.ICollection Variables { get; };" />
+    <Member MemberName="Variables">
+      <MemberSignature Language="C#" Value="public System.Collections.IDictionary Variables { get; };" />
       <MemberType>Property</MemberType>
       <ReturnValue>
-        <ReturnType>System.Collections.ICollection</ReturnType>
+        <ReturnType>System.Collections.IDictionary</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>A list of <see cref="T:SemWeb.Entity" /> objects found in the stream that were marked as being variables (e.g. for queries).</summary>
-        <value>A list of <see cref="T:SemWeb.Entity" /> objects found in the strem that were marked as being variables (e.g. for queries).</value>
-        <remarks>The list of variables is set by the reader implementation.  Not all readers support variables.  (N3-formatted RDF does, but XML formatted RDF doesn't.)</remarks>
+        <summary>A mapping of <see cref="T:SemWeb.Entity" />s found in the stream that were marked as being variables (e.g. for queries) to their string names.</summary>
+        <value>A dictionary whose keys are anonymous <see cref="T:SemWeb.Entity" />s found in the stream that were marked as being variables and whose values are the string names of those variables in the stream.</value>
+        <remarks>The mapping of variables is set by the reader implementation.  Not all readers support variables.  (N3-formatted RDF does, but XML formatted RDF doesn't.)</remarks>
       </Docs>
     </Member>
-  <Member MemberName="Select">
+    <Member MemberName="Select">
       <MemberSignature Language="C#" Value="public abstract void Select (SemWeb.StatementSink sink);" />
       <MemberType>Method</MemberType>
       <ReturnValue>
@@ -146,22 +145,7 @@
         <remarks>User code should call <see cref="M:SemWeb.Store.Import(SemWeb.StatementSource)" /> rather than calling this method directly.</remarks>
       </Docs>
     </Member>
-  <Member MemberName="AddVariable">
-      <MemberSignature Language="C#" Value="protected void AddVariable (SemWeb.Entity variable);" />
-      <MemberType>Method</MemberType>
-      <ReturnValue>
-        <ReturnType>System.Void</ReturnType>
-      </ReturnValue>
-      <Parameters>
-        <Parameter Name="variable" Type="SemWeb.Entity" />
-      </Parameters>
-      <Docs>
-        <param name="variable">An entity that was marked as being a variable.</param>
-        <summary>Called by parser implementations to indicate that the entity was marked in the stream as being a variable for a query.</summary>
-        <remarks>None.</remarks>
-      </Docs>
-    </Member>
-  <Member MemberName="ReuseEntities">
+    <Member MemberName="ReuseEntities">
       <MemberSignature Language="C#" Value="public bool ReuseEntities { set; get; };" />
       <MemberType>Property</MemberType>
       <ReturnValue>
@@ -173,16 +157,33 @@
         <remarks>Setting this property to true may slow down the performance of the reader, as it may need to consult a hashtable each time a URI is read mapping the URI to an Entity it has previously created.</remarks>
       </Docs>
     </Member>
-  <Member MemberName="DuplicateCheck">
+    <Member MemberName="DuplicateCheck">
       <MemberSignature Language="C#" Value="public bool DuplicateCheck { set; get; };" />
       <MemberType>Property</MemberType>
       <ReturnValue>
         <ReturnType>System.Boolean</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
+        <summary>Gets/sets whether the reader checks for duplicate statements found in the stream and ignores duplicates.</summary>
+        <value>If <see langword="true" />, for each statement read, the RdfReader checks that the statement has not already been sent to the StatementSink, or if the StatementSink is a Store, is not already present in the Store.</value>
+        <remarks>DuplicateCheck is by default <see langword="false" />.  Setting this property to <see langword="true" /> will significantly degrade performance.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="AddVariableName">
+      <MemberSignature Language="C#" Value="protected void AddVariableName (SemWeb.Entity variable, string name);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="variable" Type="SemWeb.Entity" />
+        <Parameter Name="name" Type="System.String" />
+      </Parameters>
+      <Docs>
+        <param name="variable">An anonymous resource in the stream used as a variable.</param>
+        <param name="name">The name of the variable found in the stream.</param>
+        <summary>This method is used by implementions of RdfReader to indicate an anonymous node in the stream used as a variable was associated with a name.</summary>
+        <remarks>See <see cref="P:SemWeb.RdfReader.Variables" />.</remarks>
       </Docs>
     </Member>
   </Members>
@@ -190,6 +191,6 @@
     <summary>The base class of types that read statements from streams.</summary>
     <remarks>
       <para>This is an abstract class. Implementations of readers are provided in this namespace and in <see cref="N:SemWeb.IO" />.</para>
-</remarks>
+    </remarks>
   </Docs>
 </Type>

@@ -9,8 +9,6 @@
   </Base>
   <Interfaces />
   <Members>
-    
-    
     <Member MemberName="Uri">
       <MemberSignature Language="C#" Value="public abstract string Uri { get; };" />
       <MemberType>Property</MemberType>
@@ -23,11 +21,7 @@
         <remarks>None.</remarks>
       </Docs>
     </Member>
-    
-    
-    
-  
-  <Member MemberName="op_Equality">
+    <Member MemberName="op_Equality">
       <MemberSignature Language="C#" Value="public static bool op_Equality (SemWeb.Resource a, SemWeb.Resource b);" />
       <MemberType>Method</MemberType>
       <ReturnValue>
@@ -45,7 +39,7 @@
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
-  <Member MemberName="op_Inequality">
+    <Member MemberName="op_Inequality">
       <MemberSignature Language="C#" Value="public static bool op_Inequality (SemWeb.Resource a, SemWeb.Resource b);" />
       <MemberType>Method</MemberType>
       <ReturnValue>
@@ -66,6 +60,9 @@
   </Members>
   <Docs>
     <summary>The base class of <see cref="T:SemWeb.Entity" /> and <see cref="T:SemWeb.Literal" /> -- the nodes in an RDF graph.</summary>
-    <remarks>The <see cref="T:SemWeb.Entity" /> and <see cref="T:SemWeb.Literal" /> classes inherit from this class.  This class cannot be inherited in user code.</remarks>
+    <remarks><para>The <see cref="T:SemWeb.Entity" /> and <see cref="T:SemWeb.Literal" /> classes inherit from this class.  This class cannot be inherited in user code.</para>
+
+<para>The == and != operators have been overloaded for Resources.  Two resources are equal if they are both <see cref="T:SemWeb.Entity" /> objects and the <see cref="T:SemWeb.Entity" /> overloaded == operator returns true, or if they are both <see cref="T:SemWeb.Literal" /> objects with equal values for Value, Language, and DataType.</para>
+</remarks>
   </Docs>
 </Type>

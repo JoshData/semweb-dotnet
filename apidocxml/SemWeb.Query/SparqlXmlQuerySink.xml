@@ -10,15 +10,25 @@
   <Interfaces />
   <Members>
     <Member MemberName=".ctor">
-      <MemberSignature Language="C#" Value="public SparqlXmlQuerySink (System.Xml.XmlWriter output, string variableNamespace);" />
+      <MemberSignature Language="C#" Value="public SparqlXmlQuerySink (System.IO.TextWriter output);" />
       <MemberType>Constructor</MemberType>
       <Parameters>
-        <Parameter Name="output" Type="System.Xml.XmlWriter" />
-        <Parameter Name="variableNamespace" Type="System.String" />
+        <Parameter Name="output" Type="System.IO.TextWriter" />
       </Parameters>
       <Docs>
         <param name="output">To be added.</param>
-        <param name="variableNamespace">To be added.</param>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public SparqlXmlQuerySink (System.Xml.XmlWriter output);" />
+      <MemberType>Constructor</MemberType>
+      <Parameters>
+        <Parameter Name="output" Type="System.Xml.XmlWriter" />
+      </Parameters>
+      <Docs>
+        <param name="output">To be added.</param>
         <summary>To be added.</summary>
         <remarks>To be added.</remarks>
       </Docs>
