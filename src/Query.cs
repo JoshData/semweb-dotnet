@@ -895,7 +895,7 @@ namespace SemWeb.Query {
 		}
 	}
 	
-	public class QueryResultBufferSink : QueryResultSink {
+	internal class QueryResultBufferSink : QueryResultSink {
 		public ArrayList Bindings = new ArrayList();
 		public override bool Add(VariableBinding[] result) {
 			Bindings.Add(result.Clone());

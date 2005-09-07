@@ -95,6 +95,13 @@ namespace SemWeb {
 			return (Entity[])new ArrayList(h.Keys).ToArray(typeof(Entity));
 		}
 
+		public override Entity[] GetAllMetas() {
+			Hashtable h = new Hashtable();
+			foreach (Statement s in Statements)
+				h[s.Meta] = h;
+			return (Entity[])new ArrayList(h.Keys).ToArray(typeof(Entity));
+		}
+
 		private void ShorterList(ref IList list1, IList list2) {
 			if (list2.Count < list1.Count)
 				list1 = list2;

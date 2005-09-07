@@ -36,6 +36,8 @@ namespace SemWeb.Stores {
 		
 		public override Entity[] GetAllPredicates() { return stores.GetAllPredicates(); }
 		
+		public override Entity[] GetAllMetas() { return stores.GetAllMetas(); }
+		
 		public override bool Contains(Statement statement) {
 			return mainstore.Contains(statement);
 		}

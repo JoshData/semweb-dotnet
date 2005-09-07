@@ -40,7 +40,7 @@ namespace SemWeb {
 		public void Add(Statement statement) {
 			if (statement.AnyNull)
 				throw new ArgumentNullException();
-
+				
 			string s = getUri(statement.Subject);
 			string p = getUri(statement.Predicate);
 			
@@ -71,6 +71,10 @@ namespace SemWeb {
 		public virtual void Close() {
 			if (closed) return;
 			closed = true;
+		}
+		
+		public virtual void Write(StatementSource source) {
+			source.Select(this);
 		}
 		
 		void IDisposable.Dispose() {

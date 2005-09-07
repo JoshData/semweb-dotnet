@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.IO;
 using System.Text;
 
@@ -48,7 +49,7 @@ namespace SemWeb {
 		public override string CreateAnonymousEntity() {
 			return "_:anon" + (anonCounter++);
 		}
-			
+
 		public override void Close() {
 			base.Close();
 			if (closed) return;

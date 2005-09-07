@@ -157,6 +157,8 @@ namespace SemWeb {
 		
 		public abstract Entity[] GetAllPredicates();
 		
+		public abstract Entity[] GetAllMetas();
+		
 		public virtual bool Contains(Statement template) {
 			return Contains(this, template);
 		}
@@ -255,7 +257,7 @@ namespace SemWeb {
 		}
 		
 		public void Write(RdfWriter writer) {
-			Select(Statement.All, writer);
+			writer.Write(this);
 		}
 		
 		public void Write(System.IO.TextWriter writer) {
@@ -362,6 +364,14 @@ namespace SemWeb.Stores {
 			Hashtable h = new Hashtable();
 			foreach (Store s in stores)
 				foreach (Resource r in s.GetAllPredicates())
+					h[r] = h;
+			return (Entity[])new ArrayList(h.Keys).ToArray(typeof(Entity));
+		}
+
+		public override Entity[] GetAllMetas() {
+			Hashtable h = new Hashtable();
+			foreach (Store s in stores)
+				foreach (Resource r in s.GetAllMetas())
 					h[r] = h;
 			return (Entity[])new ArrayList(h.Keys).ToArray(typeof(Entity));
 		}

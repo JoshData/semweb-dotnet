@@ -42,6 +42,7 @@ namespace SemWeb.Stores {
 		
 		private static readonly string[] fourcols = new string[] { "subject", "predicate", "object", "meta" };
 		private static readonly string[] predcol = new string[] { "predicate" };
+		private static readonly string[] metacol = new string[] { "meta" };
 
 		protected SQLStore(string table) {
 			this.table = table;
@@ -511,6 +512,10 @@ namespace SemWeb.Stores {
 			return GetAllEntities(predcol);
 		}
 		
+		public override Entity[] GetAllMetas() {
+			return GetAllEntities(metacol);
+		}
+
 		private Entity[] GetAllEntities(string[] cols) {
 			RunAddBuffer();
 			ArrayList ret = new ArrayList();
