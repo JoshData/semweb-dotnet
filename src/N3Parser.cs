@@ -596,15 +596,24 @@ namespace SemWeb {
 			if (str == ")")
 				return null; // Should I use a more precise end-of-list return value?
 			
-			// REIFICATION
+			// FORMULA
 			
 			if (str == "{") {
-				// Embedded resource
+				// ParseContext is a struct, so this gives us a clone.
 				ParseContext newcontext = context;
+				
+				// The formula is denoted by a blank node
 				newcontext.meta = new Entity(null);
+				
+				// According to the spec, _:xxx anonymous nodes are
+				// local to the formula.  But ?$variables (which aren't
+				// mentioned in the spec) are treated as global names.
+				newcontext.anonymous = new Hashtable();
+				
 				while (NextPunc(context.source) != '}' && ReadStatement(newcontext)) { }
 				ReadWhitespace(context.source);
 				if (context.source.Peek() == '}') context.source.Read();
+				
 				return newcontext.meta;
 			}
 			
