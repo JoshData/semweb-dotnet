@@ -233,6 +233,8 @@ namespace SemWeb.Query {
 			
 			result.Init(finalbindings);
 			
+			Debug("Begnning Query");
+			
 			BindingSet bindings = new BindingSet(this);
 			for (int group = 0; group < statements.Length; group++) {
 				bool ret = Query(group, bindings, targetModel);
@@ -551,8 +553,8 @@ namespace SemWeb.Query {
 								newbindings.Add(r2);
 							}
 						}
-						if (qs.Optional && newbindings.Count == 0)
-							return true; // don't clear out bindings
+						if (newbindings.Count == 0)
+							return qs.Optional; // don't clear out bindings if this was optional and it failed
 						bindings.Results = newbindings;
 					}
 				}
@@ -578,6 +580,7 @@ namespace SemWeb.Query {
 				foreach (QueryStatement qs in group) {
 					Statement s = GetStatement(qs, bindings);
 					if (s == StatementFailed) return false;
+					Debug("  " + s);
 					findstatements.Add(s);
 				}
 				
@@ -592,6 +595,7 @@ namespace SemWeb.Query {
 				
 				foreach (Entity r in targetentities) {
 					if (!MatchesFilters(r, var, targetModel)) continue;
+					Debug("  > " + r);
 					values.Add(r);
 				}
 				if (values.Count == 0) return false;

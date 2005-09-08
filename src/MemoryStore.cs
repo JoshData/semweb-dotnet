@@ -163,39 +163,5 @@ namespace SemWeb {
 				break; // should match just one statement anyway
 			}
 		}
-		
-		public override Entity[] FindEntities(Statement[] filters) {
-			ArrayList ents = new ArrayList();
-			foreach (Statement s in Select(filters[0])) {
-				if (s.Subject != null && filters[0].Subject == null)
-					ents.Add(s.Subject);
-				if (s.Predicate != null && filters[0].Predicate == null)
-					ents.Add(s.Predicate);
-				if (s.Object != null && filters[0].Object == null && s.Object is Entity)
-					ents.Add(s.Object);
-				if (s.Meta != null && filters[0].Meta == null)
-					ents.Add(s.Meta);
-			}
-			
-			foreach (Statement f in filters) {
-				if (f == filters[0]) continue;
-				
-				ArrayList e2 = new ArrayList();
-				foreach (Entity e in ents) {
-					Statement fe = new Statement(
-						f.Subject == null ? e : f.Subject,
-						f.Predicate == null ? e : f.Predicate,
-						f.Object == null ? e : f.Object,
-						f.Meta == null ? e : f.Meta);
-					if (Contains(fe))
-						e2.Add(e);
-				}
-				
-				ents = e2;
-			}
-			
-			return (Entity[])ents.ToArray(typeof(Entity));
-		}
-
 	}
 }
