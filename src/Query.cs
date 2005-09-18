@@ -24,14 +24,6 @@ namespace SemWeb.Query {
 		public abstract string GetExplanation();
 	}
 
-	public class QueryException : ApplicationException {
-		public QueryException(string message) : base(message) {
-		}
-			
-		public QueryException(string message, Exception cause) : base(message, cause) {
-		}
-	}
-	
 	public class GraphMatch : Query {
 		// Setup information
 	
@@ -194,6 +186,85 @@ namespace SemWeb.Query {
 					init = true;
 				}
 			}
+		}
+
+		private static Entity qLimit = "http://purl.oclc.org/NET/rsquary/returnLimit";
+		private static Entity qStart = "http://purl.oclc.org/NET/rsquary/returnStart";
+		private static Entity qDistinctFrom = "http://purl.oclc.org/NET/rsquary/distinctFrom";
+		private static Entity qOptional = "http://purl.oclc.org/NET/rsquary/optional";
+		
+		public GraphMatch() {
+		}
+		
+		public GraphMatch(RdfReader query) :
+			this(new MemoryStore(query),
+				query.BaseUri == null ? null : new Entity(query.BaseUri),
+				query.Variables, null) {
+		}
+
+		private GraphMatch(Store queryModel, Entity queryNode) : this(queryModel, queryNode, null, null) {
+		}
+		
+		private GraphMatch(Store queryModel, Entity queryNode, IDictionary variableNames, IDictionary extraValueFilters) {
+			// Find the query options
+			if (queryNode != null) {
+				ReturnStart = GetIntOption(queryModel, queryNode, qStart);
+				ReturnLimit = GetIntOption(queryModel, queryNode, qLimit);
+			}
+
+			if (variableNames != null) {
+				foreach (DictionaryEntry entry in variableNames)
+					SetVariableName((Entity)entry.Key, (string)entry.Value);
+			}
+			
+			// Search the query for 'distinct' predicates between variables.
+			foreach (Statement s in queryModel.Select(new Statement(null, qDistinctFrom, null))) {
+				if (!(s.Object is Entity)) continue;
+				MakeDistinct(s.Subject, (Entity)s.Object);
+			}
+			
+			// Add all statements except the query predicates and value filters into a
+			// new store with just the statements relevant to the search.
+			foreach (Statement s in queryModel.Select(Statement.All)) {
+				if (IsQueryPredicate(s.Predicate)) continue;
+				
+				if (s.Predicate.Uri != null && extraValueFilters != null && extraValueFilters.Contains(s.Predicate.Uri)) {
+					ValueFilterFactory f = (ValueFilterFactory)extraValueFilters[s.Predicate.Uri];
+					AddValueFilter(s.Subject, f.GetValueFilter(s.Predicate.Uri, s.Object));
+					continue;
+				} else {
+					ValueFilter f = ValueFilter.GetValueFilter(s.Predicate, s.Object);
+					if (f != null) {
+						AddValueFilter(s.Subject, f);
+						continue;
+					}
+				}
+				
+				if (s.Meta == Statement.DefaultMeta)
+					AddEdge(s);
+				else if (queryNode != null && queryModel.Contains(new Statement(queryNode, qOptional, s.Meta)))
+					AddOptionalEdge(s);
+			}
+		}
+		
+		private int GetIntOption(Store queryModel, Entity query, Entity predicate) {
+			Resource[] rr = queryModel.SelectObjects(query, predicate);
+			if (rr.Length == 0) return -1;
+			Resource r = rr[0];
+			if (r == null || !(r is Literal)) return -1;
+			try {
+				return int.Parse(((Literal)r).Value);
+			} catch (Exception e) {
+				return -1;
+			}
+		}		
+
+		private bool IsQueryPredicate(Entity e) {
+			if (e == qDistinctFrom) return true;
+			if (e == qLimit) return true;
+			if (e == qStart) return true;
+			if (e == qOptional) return true;
+			return false;
 		}
 		
 		public override string GetExplanation() {
@@ -407,7 +478,8 @@ namespace SemWeb.Query {
 								}
 							}
 							
-							foreach (Statement m in innermatches) {
+							for (int si = 0; si < innermatches.StatementCount; si++) {
+								Statement m = innermatches[si];
 								if (!MatchesFilters(m, qs, targetModel)) {
 									if (qs.Optional) {
 										QueryResult bc = binding.Clone();
@@ -476,7 +548,8 @@ namespace SemWeb.Query {
 						ResSet values = new ResSet();
 						MemoryStore ms = new MemoryStore();
 						targetModel.Select(s, ms);
-						foreach (Statement match in ms) {
+						for (int si = 0; si < ms.StatementCount; si++) {
+							Statement match = ms[si];
 							if (!MatchesFilters(match, qs, targetModel)) continue;
 							if (sunbound) values.Add(match.Subject);
 							if (punbound) values.Add(match.Predicate);
@@ -526,7 +599,8 @@ namespace SemWeb.Query {
 						ArrayList newbindings = new ArrayList();
 						MemoryStore ms = new MemoryStore();
 						targetModel.Select(s, ms);
-						foreach (Statement match in ms) {
+						for (int si = 0; si < ms.StatementCount; si++) {
+							Statement match = ms[si];
 							if (!MatchesFilters(match, qs, targetModel)) continue;
 							bindings.Union.Add(qs, match);
 							foreach (QueryResult r in bindings.Results) {

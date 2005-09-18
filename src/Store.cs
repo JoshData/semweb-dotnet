@@ -163,7 +163,7 @@ namespace SemWeb {
 			return Contains(this, template);
 		}
 
-		internal static bool Contains(QueryableSource source, Statement template) {
+		public static bool Contains(QueryableSource source, Statement template) {
 			StatementExistsSink sink = new StatementExistsSink();
 			source.Select(template, sink);
 			return sink.Exists;
@@ -187,17 +187,28 @@ namespace SemWeb {
 		
 		public Resource[] SelectObjects(Entity subject, Entity predicate) {
 			Hashtable resources = new Hashtable();
-			foreach (Statement s in Select(new Statement(subject, predicate, null)))
-				if (!resources.ContainsKey(s.Object))
-					resources[s.Object] = s.Object;
+			ResourceCollector collector = new ResourceCollector();
+			collector.SPO = 2;
+			collector.Table = resources;
+			Select(new Statement(subject, predicate, null), collector);
 			return (Resource[])new ArrayList(resources.Keys).ToArray(typeof(Resource));
 		}
 		public Entity[] SelectSubjects(Entity predicate, Resource @object) {
 			Hashtable resources = new Hashtable();
-			foreach (Statement s in Select(new Statement(null, predicate, @object)))
-				if (!resources.ContainsKey(s.Subject))
-					resources[s.Subject] = s.Subject;
+			ResourceCollector collector = new ResourceCollector();
+			collector.SPO = 0;
+			collector.Table = resources;
+			Select(new Statement(null, predicate, @object), collector);
 			return (Entity[])new ArrayList(resources.Keys).ToArray(typeof(Entity));
+		}
+		class ResourceCollector : StatementSink {
+			public Hashtable Table;
+			public int SPO;
+			public bool Add(Statement s) {
+				if (SPO == 0) Table[s.Subject] = Table;
+				if (SPO == 2) Table[s.Object] = Table;
+				return true;
+			}
 		}
 		
 		public abstract void Replace(Entity find, Entity replacement);

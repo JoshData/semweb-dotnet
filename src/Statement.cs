@@ -28,7 +28,7 @@ namespace SemWeb {
 		
 		public Entity Meta { get { return m; } }
 		
-		internal bool AnyNull {
+		public bool AnyNull {
 			get {
 				return Subject == null || Predicate == null || Object == null || Meta == null;
 			}

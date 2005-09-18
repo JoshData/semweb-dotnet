@@ -2,10 +2,11 @@ using System;
 using System.Collections;
 
 using SemWeb;
+using SemWeb.Util;
 
 namespace SemWeb {
 	public class MemoryStore : Store, IEnumerable {
-		ArrayList statements = new ArrayList();
+		StatementList statements = new StatementList();
 		
 		Hashtable statementsAboutSubject = new Hashtable();
 		Hashtable statementsAboutObject = new Hashtable();
@@ -24,9 +25,16 @@ namespace SemWeb {
 			return (Statement[])statements.ToArray(typeof(Statement));
 		}
 
-		public IList Statements { get { return ArrayList.ReadOnly(statements); } }
+		//public IList Statements { get { return ArrayList.ReadOnly(statements); } }
+		public IList Statements { get { return statements.ToArray(); } }
 		  
 		public override int StatementCount { get { return statements.Count; } }
+		
+		public Statement this[int index] {
+			get {
+				return statements[index];
+			}
+		}
 		
 		IEnumerator IEnumerable.GetEnumerator() {
 			return statements.GetEnumerator();
@@ -38,10 +46,10 @@ namespace SemWeb {
 			statementsAboutObject.Clear();
 		}
 		
-		private ArrayList GetIndexArray(Hashtable from, Resource entity) {
-			ArrayList ret = (ArrayList)from[entity];
+		private StatementList GetIndexArray(Hashtable from, Resource entity) {
+			StatementList ret = (StatementList)from[entity];
 			if (ret == null) {
-				ret = new ArrayList();
+				ret = new StatementList();
 				from[entity] = ret;
 			}
 			return ret;
@@ -102,20 +110,21 @@ namespace SemWeb {
 			return (Entity[])new ArrayList(h.Keys).ToArray(typeof(Entity));
 		}
 
-		private void ShorterList(ref IList list1, IList list2) {
+		private void ShorterList(ref StatementList list1, StatementList list2) {
 			if (list2.Count < list1.Count)
 				list1 = list2;
 		}
 		
 		public override void Select(Statement template, StatementSink result) {
-			IList source = statements;
+			StatementList source = statements;
 			
 			// The first time select is called, turn indexing on for the store.
 			// TODO: Perform this index in a background thread if there are a lot
 			// of statements.
 			if (!isIndexed && allowIndexing) {
 				isIndexed = true;
-				foreach (Statement statement in statements) {
+				for (int i = 0; i < StatementCount; i++) {
+					Statement statement = this[i];
 					GetIndexArray(statementsAboutSubject, statement.Subject).Add(statement);
 					GetIndexArray(statementsAboutObject, statement.Object).Add(statement);
 				}
@@ -126,7 +135,8 @@ namespace SemWeb {
 			
 			if (source == null) return;
 			
-			foreach (Statement statement in source) {
+			for (int i = 0; i < source.Count; i++) {
+				Statement statement = source[i];
 				if (!template.Matches(statement))
 					continue;
 				if (!result.Add(statement)) return;

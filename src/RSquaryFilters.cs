@@ -9,14 +9,14 @@ namespace SemWeb.Query {
 	}
 	
 	public abstract class ValueFilter {
-		public static Entity qFilterStringContains = "http://purl.oclc.org/NET/rsquary/string-contains";
+		static Entity qFilterStringContains = "http://purl.oclc.org/NET/rsquary/string-contains";
 		
-		public static Entity qFilterLT = "http://purl.oclc.org/NET/rsquary/lt";
-		public static Entity qFilterLE = "http://purl.oclc.org/NET/rsquary/le";
-		public static Entity qFilterNE = "http://purl.oclc.org/NET/rsquary/ne";
-		public static Entity qFilterEQ = "http://purl.oclc.org/NET/rsquary/eq";
-		public static Entity qFilterGT = "http://purl.oclc.org/NET/rsquary/gt";
-		public static Entity qFilterGE = "http://purl.oclc.org/NET/rsquary/ge";
+		static Entity qFilterLT = "http://purl.oclc.org/NET/rsquary/lt";
+		static Entity qFilterLE = "http://purl.oclc.org/NET/rsquary/le";
+		static Entity qFilterNE = "http://purl.oclc.org/NET/rsquary/ne";
+		static Entity qFilterEQ = "http://purl.oclc.org/NET/rsquary/eq";
+		static Entity qFilterGT = "http://purl.oclc.org/NET/rsquary/gt";
+		static Entity qFilterGE = "http://purl.oclc.org/NET/rsquary/ge";
 		
 		public abstract bool Filter(Resource resource, QueryableSource targetModel);
 
@@ -48,7 +48,7 @@ namespace SemWeb.Query {
 		
 	}
 	
-	public abstract class LiteralValueFilter : ValueFilter {
+	internal abstract class LiteralValueFilter : ValueFilter {
 	}
 
 	internal abstract class StringFilter : LiteralValueFilter {
