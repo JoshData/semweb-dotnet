@@ -1,6 +1,8 @@
 <Namespace Name="SemWeb.Query">
   <Docs>
     <summary>This namespace contains classes for performing queries on stores.</summary>
-    <remarks>The types in this namespace are experimental.</remarks>
+    <remarks><para>Several implementations of the abstract <see cref="T:SemWeb.Query.Query" /> class are provided in this namespace.  A Query class implements an algorithm to return all of the ways a set of variables may bind to resources in a <see cref="T:SemWeb.Store" />, subject to different types of constraints.</para>
+<para>The <see cref="T:SemWeb.Query.GraphMatch" /> class implements a basic graph-matching algorithm.  This algorithm takes two graphs and matches the variables in the query graph to resources in the target graph.  Each of the ways a variable can bind to a resource is returned as an array of <see cref="T:SemWeb.Query.VariableBinding" />s.</para>
+<para>The <see cref="T:SemWeb.Query.Sparql" /> class implements the SPARQL query specification.  This class wraps the SPARQL Engine for Sesame found at <a href="http://sourceforge.net/projects/sparql/">http://sourceforge.net/projects/sparql/</a> (via IKVM).</para></remarks>
   </Docs>
 </Namespace>

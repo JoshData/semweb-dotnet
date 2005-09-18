@@ -85,7 +85,8 @@
     <remarks>
       <para>Entities can have URIs, or they can be anonymous, in which case their URI is <see langword="null" />.</para>
       <para>Specialized stores will attach caching information to Entity objects to make interaction with the store faster.  It is therefore better to reusing existing Entity objects where possible.</para>
-    <para>The == and != operators have been overloaded for entities.  Two named entities are equal when they both have the same URI.  Two anonymous Entity objects are equal if they were created by the same Store and were assigned the same resource key.</para>
-    <para>An implicit conversion operator is defined from strings to entities.  The operator converts the string to an entity by returning an entity with that URI.</para></remarks>
+      <para>The == and != operators have been overloaded for entities.  Two named entities are equal when they both have the same URI.  Two anonymous Entity objects are equal if they were created by the same Store and were assigned the same resource key.</para>
+      <para>An implicit conversion operator is defined from strings to entities.  The operator converts the string to an entity by returning an entity with that URI.</para>
+    </remarks>
   </Docs>
 </Type>

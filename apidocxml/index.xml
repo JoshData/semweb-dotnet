@@ -28,32 +28,22 @@
       <Type Name="SelectResult" />
     </Namespace>
     <Namespace Name="SemWeb.Query">
-      <Type Name="QueryException" />
-      <Type Name="RSquary" />
       <Type Name="QueryResultSink" />
       <Type Name="VariableBinding" />
       <Type Name="ValueFilter" />
-      <Type Name="LiteralValueFilter" />
       <Type Name="SparqlXmlQuerySink" />
       <Type Name="ValueFilterFactory" />
       <Type Name="GraphMatch" />
-      <Type Name="QueryResultBufferSink" />
       <Type Name="Sparql" />
       <Type Name="Query" />
     </Namespace>
     <Namespace Name="SemWeb.Stores">
       <Type Name="MultiStore" />
       <Type Name="SQLStore" />
-      <Type Name="KnowledgeModel" />
-    </Namespace>
-    <Namespace Name="SemWeb.Reasoning">
-      <Type Name="RDFSReasoning" />
-      <Type Name="OWLReasoning" />
-      <Type Name="InferenceStore" />
-      <Type Name="ReasoningEngine" />
     </Namespace>
     <Namespace Name="SemWeb.Util">
       <Type Name="XPathSemWebNavigator" />
+      <Type Name="StatementList" />
     </Namespace>
     <Namespace Name="SemWeb.Bind">
       <Type Name="Any" />

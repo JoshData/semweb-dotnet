@@ -335,7 +335,7 @@ any statement matching the template.</returns>
       <Docs>
         <param name="spec">A specifier string, whose format is given below.</param>
         <summary>Creates a store from which statements will be read.</summary>
-        <returns>A StatementSource from which statements can be read.  A RdfReader or Store is returned.</returns>
+        <returns>A StatementSource from which statements can be read.  An <see cref="T:SemWeb.RdfReader" /> or <see cref="T:SemWeb.Store" /> is returned.  Cast the value to <see cref="T:SemWeb.Store" /> when appropriate.</returns>
         <remarks>
           <para>The specifier string is in one of the following formats.  When a filename is expected, a dash can be used to indicate standard input.</para>
           <list type="table">
@@ -351,7 +351,8 @@ any statement matching the template.</returns>
             </item>
             <item>
               <term>xml:[filename]</term>
-              <description>A <see cref="T:SemWeb.RdfXmlReader" /> to read the RDF/XML file.</description>
+              <description>A <see cref="T:SemWeb.RdfXmlReader" /> to read the RDF/XML file.
+Example:  "xml:mydata.rdf" </description>
             </item>
             <item>
               <term>
@@ -360,15 +361,18 @@ any statement matching the template.</returns>
                 <para>nt:[filename]</para>
                 <para>ntriples:[filename]</para>
               </term>
-              <description>A <see cref="T:SemWeb.N3Reader" /> to read the N3/Turtle/NTriples file.</description>
+              <description>A <see cref="T:SemWeb.N3Reader" /> to read the N3/Turtle/NTriples file.
+Example:  "n3:mydata.n3"</description>
             </item>
             <item>
               <term>sqlite:[table]:[connection string]</term>
-              <description>A <see cref="T:SemWeb.Stores.SQLStore" /> connected to the SQLite database given in the connection string, using the tables prefixed by the table parameter.</description>
+              <description>
+                <para>A <see cref="T:SemWeb.Stores.SQLStore" /> connected to the SQLite database given in the connection string, using the tables prefixed by the table parameter.  The returned store can be both read from and written to, despite the name of this method.  Example:  "sqlite:rdf:Uri=file:mydatabase.sqlite;Version=3"</para>
+              </description>
             </item>
             <item>
               <term>mysql:[table]:[connection string]</term>
-              <description>A <see cref="T:SemWeb.Stores.SQLStore" /> connected to the MySQL database given in the connection string, using the tables prefixed by the table parameter.</description>
+              <description>A <see cref="T:SemWeb.Stores.SQLStore" /> connected to the MySQL database given in the connection string, using the tables prefixed by the table parameter.  The returned store can be both read from and written to, despite the name of this method.  Example:  "mysql:rdf:Database=databasename;Server=localhost;User Id=username"</description>
             </item>
           </list>
         </remarks>
@@ -386,7 +390,7 @@ any statement matching the template.</returns>
       <Docs>
         <param name="spec">A specification string whose format is given below.</param>
         <summary>Creates a <see cref="T:SemWeb.StatementSink" /> into which statements will be added.</summary>
-        <returns>A StatementSink.</returns>
+        <returns>A StatementSink.  An <see cref="T:SemWeb.RdfWriter" /> or <see cref="T:SemWeb.Store" /> is returned.  Cast the value to <see cref="T:SemWeb.Store" /> when appropriate.</returns>
         <remarks>
           <para>The specifier string is in one of the following formats.  When a filename is expected, a dash can be used to indicate standard output.</para>
           <list type="table">
@@ -402,7 +406,8 @@ any statement matching the template.</returns>
             </item>
             <item>
               <term>xml:[filename]</term>
-              <description>A <see cref="T:SemWeb.RdfXmlWriter" /> opened on the given file.</description>
+              <description>A <see cref="T:SemWeb.RdfXmlWriter" /> opened on the given file.
+Example:  "xml:mydata.rdf"</description>
             </item>
             <item>
               <term>
@@ -411,19 +416,18 @@ any statement matching the template.</returns>
                 <para>nt:[filename]</para>
                 <para>ntriples:[filename]</para>
               </term>
-              <description>A <see cref="T:SemWeb.N3Writer" /> opened on the given file, writing in the indicated format.</description>
-            </item>
-            <item>
-              <term>sql:[table]</term>
-              <description>A <see cref="T:SemWeb.IO.SQLWriter" /> writing to standard output, using the given table prefix.  SQL writers write SQL statements which can be loaded into a database that can be used by the <see cref="T:SemWeb.Stores.SQLStore" />.</description>
+              <description>A <see cref="T:SemWeb.N3Writer" /> opened on the given file, writing in the indicated format.
+Example:  "turtle:mydata.turtle"</description>
             </item>
             <item>
               <term>sqlite:[table]:[connection string]</term>
-              <description>A <see cref="T:SemWeb.Stores.SQLStore" /> connected to the SQLite database given in the connection string, using the tables prefixed by the table parameter.</description>
+              <description>
+                <para>A <see cref="T:SemWeb.Stores.SQLStore" /> connected to the SQLite database given in the connection string, using the tables prefixed by the table parameter.  The returned store can be both read from and written to, despite the name of this method.  Example:  "sqlite:rdf:Uri=file:mydatabase.sqlite;Version=3"</para>
+              </description>
             </item>
             <item>
               <term>mysql:[table]:[connection string]</term>
-              <description>A <see cref="T:SemWeb.Stores.SQLStore" /> connected to the MySQL database given in the connection string, using the tables prefixed by the table parameter.</description>
+              <description>A <see cref="T:SemWeb.Stores.SQLStore" /> connected to the MySQL database given in the connection string, using the tables prefixed by the table parameter.  The returned store can be both read from and written to, despite the name of this method.  Example:  "mysql:rdf:Database=databasename;Server=localhost;User Id=username"</description>
             </item>
           </list>
         </remarks>
@@ -442,22 +446,20 @@ any statement matching the template.</returns>
         <param name="template">A statement template.  Use <see cref="F:SemWeb.Statement.All" /> to select all statements in the store, or a statement with <see langword="null" /> fields to select statements that match the non-<see langword="null" /> parts of the statement.</param>
         <summary>Retuns a <see cref="T:SemWeb.SelectResult" /> object that represents the result of matching a statement template against the store.</summary>
         <returns>A <see cref="T:SemWeb.SelectResult" /> representing the matching statements.</returns>
-        <remarks><para>On calling this method, the data in this store is not immediately accessed.  The matching statements are loaded the first time they are requested through the returned <see cref="T:SemWeb.SelectResult" /> object.  Those statements are accessed in one of three ways:</para>
-
-<para><see cref="T:SemWeb.SelectResult" /> implements <see cref="T:System.Collections.IEnumerable" />, so the result object can be used in <see langword="foreach" /> loops, shown in this example:</para>
-
-<code lang="C#">foreach (Statement s in mystore.Select(Statement.All)) {
+        <remarks>
+          <para>On calling this method, the data in this store is not immediately accessed.  The matching statements are loaded the first time they are requested through the returned <see cref="T:SemWeb.SelectResult" /> object.  Those statements are accessed in one of three ways:</para>
+          <para>
+            <see cref="T:SemWeb.SelectResult" /> implements <see cref="T:System.Collections.IEnumerable" />, so the result object can be used in <see langword="foreach" /> loops, shown in this example:</para>
+          <code lang="C#">foreach (Statement s in mystore.Select(Statement.All)) {
     Console.WriteLine(s.ToString());
 }</code>
-
-<para>The drawback of this method is that all of the matching statements are loaded into memory before the loop begins, and so this method is not recommended when the number of matching statements may be very large.</para>
-
-<para>The <see cref="M:SemWeb.SelectResult.Load()" /> method loads all of the matching statements into a <see cref="T:SemWeb.MemoryStore" />.  The MemoryStore can then be used to perform further Selects, or to get the matching statements as an array.  This method is not advised when the number of matching statements may be very large.</para>
-
-<para><see cref="T:SemWeb.SelectResult" /> implements <see cref="T:SemWeb.StatementSource" />, and the <see cref="M:SemWeb.StatementSource.Select(SemWeb.StatementSink)" /> method on the returned object will stream the matching statements directly from this store to the provided <see cref="T:SemWeb.StatementSink" /> without keeping the statements in memory.</para>
-
-<para><paramref name="template" /> is a statement template, which means any field in <paramref name="template" /> may be <see langword="null" />, and those fields are excluded from the statement filter. For example, setting the Subject and Predicate fields but leaving the Object and Meta fields <see langword="null" /> will match all statements in the store that have the given Subject and Predicate, and anything in their Object and Meta fields.</para>
-</remarks>
+          <para>The drawback of this method is that all of the matching statements are loaded into memory before the loop begins, and so this method is not recommended when the number of matching statements may be very large.</para>
+          <para>The <see cref="M:SemWeb.SelectResult.Load()" /> method loads all of the matching statements into a <see cref="T:SemWeb.MemoryStore" />.  The MemoryStore can then be used to perform further Selects, or to get the matching statements as an array.  This method is not advised when the number of matching statements may be very large.</para>
+          <para>
+            <see cref="T:SemWeb.SelectResult" /> implements <see cref="T:SemWeb.StatementSource" />, and the <see cref="M:SemWeb.StatementSource.Select(SemWeb.StatementSink)" /> method on the returned object will stream the matching statements directly from this store to the provided <see cref="T:SemWeb.StatementSink" /> without keeping the statements in memory.</para>
+          <para>
+            <paramref name="template" /> is a statement template, which means any field in <paramref name="template" /> may be <see langword="null" />, and those fields are excluded from the statement filter. For example, setting the Subject and Predicate fields but leaving the Object and Meta fields <see langword="null" /> will match all statements in the store that have the given Subject and Predicate, and anything in their Object and Meta fields.</para>
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName="FindEntities">
@@ -522,6 +524,37 @@ any statement matching the template.</returns>
         <summary>Retuns a <see cref="T:SemWeb.SelectResult" /> object that represents the result of matching statement templates against the store.</summary>
         <returns>A <see cref="T:SemWeb.SelectResult" /> representing the statements in the store that matched any of the templates.</returns>
         <remarks>See <see cref="M:SemWeb.Store.Select(SemWeb.Statement)" />.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="GetAllMetas">
+      <MemberSignature Language="C#" Value="public abstract SemWeb.Entity[] GetAllMetas ();" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>SemWeb.Entity[]</ReturnType>
+      </ReturnValue>
+      <Parameters />
+      <Docs>
+        <summary>Returns an array of all entities used in the Meta field of any statement in the store.</summary>
+        <returns>An array of entities used in the Meta field of statements in the store.</returns>
+        <remarks>None.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Contains">
+      <MemberSignature Language="C#" Value="public static bool Contains (SemWeb.QueryableSource source, SemWeb.Statement template);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Boolean</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="source" Type="SemWeb.QueryableSource" />
+        <Parameter Name="template" Type="SemWeb.Statement" />
+      </Parameters>
+      <Docs>
+        <param name="source">To be added.</param>
+        <param name="template">To be added.</param>
+        <summary>To be added.</summary>
+        <returns>To be added.</returns>
+        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

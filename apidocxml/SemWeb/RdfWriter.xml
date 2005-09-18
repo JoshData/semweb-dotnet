@@ -160,6 +160,21 @@
         <remarks>Call this method once for each anonymous node to be written to ths stream.</remarks>
       </Docs>
     </Member>
+    <Member MemberName="Write">
+      <MemberSignature Language="C#" Value="public virtual void Write (SemWeb.StatementSource source);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="source" Type="SemWeb.StatementSource" />
+      </Parameters>
+      <Docs>
+        <param name="source">To be added.</param>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
   </Members>
   <Docs>
     <summary>The base class of types that write statements to a stream.</summary>

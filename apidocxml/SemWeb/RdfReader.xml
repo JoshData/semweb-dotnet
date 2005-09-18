@@ -86,9 +86,10 @@
       <Docs>
         <summary>An entity to assign as the meta entity for statements loaded by this reader.</summary>
         <value>An entity to use for meta information.  Cannot be <see langword="null" />.</value>
-        <remarks><para>The value of this property is used as the meta argument in calls to <see cref="C:SemWeb.Statement(SemWeb.Entity,SemWeb.Entity,SemWeb.Resource,SemWeb.Entity)" />.  The use of <see cref="P:SemWeb.Statement.Meta" /> is up to the application.</para>
-
-<para>The default value of this property is <see cref="P:SemWeb.Statement.DefaultMeta" />, which is also the meta value used in the three-arg constructor for <see cref="T:SemWeb.Statement" />.  If the meta field is not important for the application, this field should be left unchanged.</para></remarks>
+        <remarks>
+          <para>The value of this property is used as the meta argument in calls to <see cref="C:SemWeb.Statement(SemWeb.Entity,SemWeb.Entity,SemWeb.Resource,SemWeb.Entity)" />.  The use of <see cref="P:SemWeb.Statement.Meta" /> is up to the application.</para>
+          <para>The default value of this property is <see cref="P:SemWeb.Statement.DefaultMeta" />, which is also the meta value used in the three-arg constructor for <see cref="T:SemWeb.Statement" />.  If the meta field is not important for the application, this field should be left unchanged.</para>
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName="BaseUri">
@@ -184,6 +185,22 @@
         <param name="name">The name of the variable found in the stream.</param>
         <summary>This method is used by implementions of RdfReader to indicate an anonymous node in the stream used as a variable was associated with a name.</summary>
         <remarks>See <see cref="P:SemWeb.RdfReader.Variables" />.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="LoadFromUri">
+      <MemberSignature Language="C#" Value="public static SemWeb.RdfReader LoadFromUri (Uri webresource);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>SemWeb.RdfReader</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="webresource" Type="System.Uri" />
+      </Parameters>
+      <Docs>
+        <param name="webresource">To be added.</param>
+        <summary>To be added.</summary>
+        <returns>To be added.</returns>
+        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

@@ -69,9 +69,30 @@ foreach (Statement s in memoryStore)
         <remarks>None.</remarks>
       </Docs>
     </Member>
+    <Member MemberName="Item">
+      <MemberSignature Language="C#" Value="public SemWeb.Statement Item[int index] { get; };" />
+      <MemberType>Property</MemberType>
+      <ReturnValue>
+        <ReturnType>SemWeb.Statement</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="index" Type="System.Int32" />
+      </Parameters>
+      <Docs>
+        <param name="index">To be added.</param>
+        <summary>To be added.</summary>
+        <value>To be added.</value>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
   </Members>
   <Docs>
     <summary>A graph of statements held in memory.</summary>
     <remarks>In addition to storing the statements as an array, the statements are indexed by subject and object to speed Select queries.</remarks>
   </Docs>
+  <Attributes>
+    <Attribute>
+      <AttributeName>System.Reflection.DefaultMember(MemberName="Item")</AttributeName>
+    </Attribute>
+  </Attributes>
 </Type>

@@ -110,7 +110,9 @@
   </Members>
   <Docs>
     <summary>A literal (text string) node in an RDF graph.</summary>
-    <remarks><para>Literals are string values optionally with a language string or datatype URI.</para>
-<para>An implicit conversion operator is defined from strings to literals.  The operator converts the string to a literal by returning a literal with that value, and <see langword="null" /> language and datatype.</para></remarks>
+    <remarks>
+      <para>Literals are string values optionally with a language string or datatype URI.</para>
+      <para>An implicit conversion operator is defined from strings to literals.  The operator converts the string to a literal by returning a literal with that value, and <see langword="null" /> language and datatype.</para>
+    </remarks>
   </Docs>
 </Type>

@@ -29,10 +29,10 @@
         <Parameter Name="resultsink" Type="SemWeb.Query.QueryResultSink" />
       </Parameters>
       <Docs>
-        <param name="source">To be added.</param>
-        <param name="resultsink">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
+        <param name="source">The target graph to run the query against.</param>
+        <param name="resultsink">The sink to which each set of variable bindings will be returned.</param>
+        <summary>Runs the query.</summary>
+        <remarks>Callers should first create a class implementing the <see cref="T:SemWeb.Query.QueryResultSink" /> class, and then pass an instance of that class to this method.  One implementation of QueryResultSink is provided.  The <see cref="T:SemWeb.Query.SparqlXmlQuerySink" /> class writes out variable bindings to a <see cref="System.IO.TextWriter" /> in the SPARQL XML Result Format.</remarks>
       </Docs>
     </Member>
     <Member MemberName="GetExplanation">
@@ -43,9 +43,9 @@
       </ReturnValue>
       <Parameters />
       <Docs>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
+        <summary>Returns a textual explanation of the query.</summary>
+        <returns>A textual string describing the query or how the query will be performed.</returns>
+        <remarks>This method is provided for debugging or for users to be able to optimize the query based on the information in the returned string.</remarks>
       </Docs>
     </Member>
     <Member MemberName="ReturnStart">
@@ -55,9 +55,9 @@
         <ReturnType>System.Int32</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
+        <summary>The index of the first binding to return.</summary>
+        <value>The index of the first binding to return.  The value of this property is 1-based.</value>
+        <remarks>The first binding returned is by default the first binding.</remarks>
       </Docs>
     </Member>
     <Member MemberName="ReturnLimit">
@@ -67,9 +67,9 @@
         <ReturnType>System.Int32</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
+        <summary>The number of bindings to return.</summary>
+        <value>The maximum number of bindings to return, or -1 to return all bindings.</value>
+        <remarks>All bindings are returned by default.</remarks>
       </Docs>
     </Member>
     <Member MemberName="QueryMeta">
@@ -79,14 +79,17 @@
         <ReturnType>SemWeb.Entity</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
+        <summary>A filter on the Meta value of statements in the target graph considered by the query.</summary>
+        <value>The value of this property is <see langword="null" /> by default, meaning the Meta field of statements in the target graph is ignored for the purposes of the query.  Otherwise, the query is restricted to statements with the given entity as a Meta value.</value>
+        <remarks>None.</remarks>
       </Docs>
     </Member>
   </Members>
   <Docs>
-    <summary>To be added.</summary>
-    <remarks>To be added.</remarks>
+    <summary>A Query is something that returns all of the ways a set of variables may bind to a graph.  This is the abstract base class of several query methods.</summary>
+    <remarks>
+      <para>The <see cref="T:SemWeb.Query.GraphMatch" /> class provides a query algorithm to match a graph with variables against another graph.</para>
+      <para>The <see cref="T:SemWeb.Query.Sparql" /> class provides a SPARQL query engine.</para>
+    </remarks>
   </Docs>
 </Type>

@@ -89,7 +89,7 @@
     </Member>
   </Members>
   <Docs>
-    <summary>To be added.</summary>
+    <summary>Writes RDF statements to an RDF/XML file.</summary>
     <remarks>
       <para>The RdfXmlWriter buffers the entire output document in memory, before writing the document to the stream when Close is called.</para>
       <para>The namespaces used in the output data must be registered with the NamespaceManager in the <see cref="P:SemWeb.RdfWriter.Namespaces" /> property before the first call to Add or WriteStatement.  Failure to do so may prevent the document from being written to the stream, as not all URIs can be automatically converted into an XML qualified name.</para>

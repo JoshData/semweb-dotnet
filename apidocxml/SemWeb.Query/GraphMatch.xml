@@ -14,8 +14,8 @@
       <MemberType>Constructor</MemberType>
       <Parameters />
       <Docs>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
+        <summary>Creates an empty GraphMatch object.</summary>
+        <remarks>Set up the GraphMatch with calls to <see cref="M:SemWeb.Query.GraphMatch.AddEdge(SemWeb.Statement)" />.</remarks>
       </Docs>
     </Member>
     <Member MemberName="MakeDistinct">
@@ -29,10 +29,10 @@
         <Parameter Name="b" Type="SemWeb.Entity" />
       </Parameters>
       <Docs>
-        <param name="a">To be added.</param>
-        <param name="b">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
+        <param name="a">A variable.</param>
+        <param name="b">Another variable.</param>
+        <summary>Indicates that two variables must have distinct bindings.</summary>
+        <remarks>Bindings returned will not return the same value for these two variables.  (I'm not sure if this is implemented...)</remarks>
       </Docs>
     </Member>
     <Member MemberName="AddValueFilter">
@@ -46,10 +46,10 @@
         <Parameter Name="filter" Type="SemWeb.Query.ValueFilter" />
       </Parameters>
       <Docs>
-        <param name="entity">To be added.</param>
-        <param name="filter">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
+        <param name="entity">The variable to which the filter is applied.</param>
+        <param name="filter">The value filter.</param>
+        <summary>Adds a value filter.</summary>
+        <remarks>Value filters are used to filter out bindings for variables.  They can be used to restrict numeric literal bindings to be greater than a certain number, for instance.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SetNonVariable">
@@ -62,9 +62,9 @@
         <Parameter Name="anonymousnode" Type="SemWeb.Entity" />
       </Parameters>
       <Docs>
-        <param name="anonymousnode">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
+        <param name="anonymousnode">An anonymous node that is not to be considered a variable.</param>
+        <summary>Indicates that an anonymous node in the graph is not to be considered a variable.</summary>
+        <remarks>Anonymous nodes in the graph are considered variables unless they are passed to this method.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SetVariableName">
@@ -78,10 +78,10 @@
         <Parameter Name="name" Type="System.String" />
       </Parameters>
       <Docs>
-        <param name="variable">To be added.</param>
-        <param name="name">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
+        <param name="variable">The variable (anonymous node) in the query graph.</param>
+        <param name="name">The name of the variable.</param>
+        <summary>Assigns a name to a variable.</summary>
+        <remarks>Variable names do not affect the graph matching algorithm.  They are merely passed on in the results in <see cref="P:SemWeb.Query.VariableBinding.Name" />.</remarks>
       </Docs>
     </Member>
     <Member MemberName="AddEdge">
@@ -94,9 +94,9 @@
         <Parameter Name="filter" Type="SemWeb.Statement" />
       </Parameters>
       <Docs>
-        <param name="filter">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
+        <param name="filter">A statement.</param>
+        <summary>Adds a required edge to the query graph.</summary>
+        <remarks>For each binding returned by the algorithm, <paramref name="filter" /> will be found in the target data model when the variables in <paramref name="filter" /> are replaced by their values.  The variables are the anonymous entities in <paramref name="filter" />, except those passed to <see cref="M:SemWeb.Query.GraphMatch.SetNonVariable(SemWeb.Entity)" />.</remarks>
       </Docs>
     </Member>
     <Member MemberName="AddOptionalEdge">
@@ -109,14 +109,45 @@
         <Parameter Name="filter" Type="SemWeb.Statement" />
       </Parameters>
       <Docs>
-        <param name="filter">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
+        <param name="filter">A statement.</param>
+        <summary>Adds an optional edge to the query graph.</summary>
+        <remarks>For each binding returned by the algorithm, <paramref name="filter" /> may or may not be found in the target data model when the variables in <paramref name="filter" /> are replaced by their values.  The variables are the anonymous entities in <paramref name="filter" />, except those passed to <see cref="M:SemWeb.Query.GraphMatch.SetNonVariable(SemWeb.Entity)" />.  Variables used only in optional edges may be returned bound or unbound in each binding set.  When a variable is not bound, the value of <see cref="P:SemWeb.Query.VariableBinding.Target" /> is <see langword="null" />.
+</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public GraphMatch (SemWeb.RdfReader query);" />
+      <MemberType>Constructor</MemberType>
+      <Parameters>
+        <Parameter Name="query" Type="SemWeb.RdfReader" />
+      </Parameters>
+      <Docs>
+        <param name="query">An RDF reader (normally a <see cref="T:SemWeb.N3Reader" />) containing the query.</param>
+        <summary>Creates a query based on an RDF file.</summary>
+        <remarks><para>The contents of the RDF stream are read.  Statements in the stream are passed to <see cref="M:SemWeb.Query.GraphMatch.AddEdge(SemWeb.Statement)" />.</para>
+
+<para>All of the anonymous nodes in the stream are considered variables, but only the N3 format allows anonymous nodes to be named variables.  Thus the N3 format is recommended.  Although variable names are not required by the GraphMatch class, they may be needed by whatever processes the query results.</para>
+
+<para>The following is an example query:</para>
+
+<code>?person rdf:type foaf:Agent .
+?person foaf:name ?name .</code>
+
+<para>The <see cref="P:SemWeb.Query.ReturnStart" /> and <see cref="P:SemWeb.Query.ReturnLimit" /> properties can be set within the query with the following statements:</para>
+
+<code>: &lt;http://purl.oclc.org/NET/rsquary/returnStart&gt; "50" .
+: &lt;http://purl.oclc.org/NET/rsquary/returnLimit&gt; "25" .</code>
+
+<para>The colon refers to the entity whose URI is the BaseUri of the document.  The <see cref="P:SemWeb.RdfReader.BaseUri" /> property of the reader must be set.</para></remarks>
       </Docs>
     </Member>
   </Members>
   <Docs>
-    <summary>To be added.</summary>
-    <remarks>To be added.</remarks>
+    <summary>The GraphMatch class implements an algorithm for determining all of the ways the variables in one graph can be bound to resources in another graph.</summary>
+    <remarks>
+      <para>GraphMatch implements an algorithm for comparing two graphs.  The query graph is made up of a set of required edges (statements) and, possibly, optional edges.  All anonymous nodes in the query graph are considered variables (unless <see cref="M:SemWeb.Query.GraphMatch.SetNonVariable(SemWeb.Entity)" /> is called for the entity).</para>
+      <para>The GraphMatch algorithm determines all ways the variables in the graph can bind to entities in the target data.  Each way in which the variables can be bound is returned through a call to <see cref="M:SemWeb.Query.QueryResultSink.Add(SemWeb.Query.VariableBinding[])" /> of the <see cref="T:SemWeb.Query.QueryResultSink" /> passed to <see cref="M:SemWeb.Query.GraphMatch.Run(SemWeb.QueryableSource,SemWeb.Query.QueryResultSink)" />.</para>
+      <para>Optional edges are evaluated last.  Variables used only in optional edges may be returned bound or unbound in each binding set.  When a variable is not bound, the value of <see cref="P:SemWeb.Query.VariableBinding.Target" /> is <see langword="null" />.</para>
+    </remarks>
   </Docs>
 </Type>
