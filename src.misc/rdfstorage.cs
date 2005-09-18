@@ -27,7 +27,7 @@ public class RDFStorage {
 		
 		[Mono.GetOptions.Option("The default base {URI} for the input streams.")]
 		public string baseuri = null;
-		
+
 		[Mono.GetOptions.Option("Quiet mode: Don't emit status information.")]
 		public bool quiet = false;
 	}
@@ -99,7 +99,7 @@ public class RDFStorage {
 					
 			foreach (string infile in files) {
 				if (!quiet)
-					Console.Error.Write(infile);
+					Console.Error.Write(infile + " ");
 				
 				try {
 					DateTime start = DateTime.Now;
