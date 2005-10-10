@@ -73,49 +73,82 @@ namespace SemWeb.Query {
 			Hashtable bnodes = new Hashtable();
 			Entity QueryMeta;
 			
+			bool debug = false;
+			
 			public RdfSourceWrapper(QueryableSource source, Entity meta) {
 				this.source = source;
 				QueryMeta = meta;
 			}
 		
-			public java.util.Iterator getDefaultStatements (org.openrdf.model.Value subject, org.openrdf.model.URI predicate, org.openrdf.model.Value @object) {
-				// What is this method supposed to do?
-				return getStatements(subject, predicate, @object);
+			private StatementIterator GetIterator(Statement statement) {
+				if (debug) Console.Error.WriteLine("ASK: " + statement);
+				MemoryStore results = new MemoryStore();
+				DupChecker dupchecker = new DupChecker();
+				dupchecker.store = results;
+				source.Select(statement, dupchecker);
+				return new StatementIterator(results.ToArray());
 			}
 			
-			public java.util.Iterator getStatements (org.openrdf.model.Value subject, org.openrdf.model.URI predicate, org.openrdf.model.Value @object) {
-				Statement statement = new Statement(ToEntity(subject), ToEntity(predicate), ToResource(@object), QueryMeta);
-				MemoryStore results = new MemoryStore();
-				source.Select(statement, results);
-				return new StatementIterator(results.ToArray());
+		    /**
+		     * Gets all the statements that come from the default graph and have a
+		     * certain subject, predicate, and object. Any of the parameters can be
+		     * null, in which case it assumes these are "wildcards" and all statements
+		     * that match the remainding parameters will be returned.
+     		 */ 
+     		public java.util.Iterator getDefaultStatements (org.openrdf.model.Value subject, org.openrdf.model.URI predicate, org.openrdf.model.Value @object) {
+				return GetIterator( new Statement(ToEntity(subject), ToEntity(predicate), ToResource(@object), QueryMeta) );
+			}
+			
+		    /**
+		     * Gets all the statements that come from any graph and have a certain
+		     * subject, predicate, and object. Any of the parameters can be null, in
+		     * which case it assumes these are "wildcards" and all statements that match
+		     * the remainding parameters will be returned.
+		     * 
+		     * @param the subj the subject to match statements against
+		     * @param pred the predicate to match statements against
+		     * @param obj the object to match statements against
+		     * @return an Iterator over the matching statements
+		     */
+     		public java.util.Iterator getStatements (org.openrdf.model.Value subject, org.openrdf.model.URI predicate, org.openrdf.model.Value @object) {
+				return GetIterator(  new Statement(ToEntity(subject), ToEntity(predicate), ToResource(@object), null) );
 			}
 	
-			public java.util.Iterator getStatements (org.openrdf.model.Value subject, org.openrdf.model.URI predicate, org.openrdf.model.Value @object, org.openrdf.model.URI graph) {
-				Statement statement = new Statement(ToEntity(subject), ToEntity(predicate), ToResource(@object), ToEntity(graph));
-				MemoryStore results = new MemoryStore();
-				source.Select(statement, results);
-				return new StatementIterator(results.ToArray());
+		    /**
+		     * Gets all the statements that come from a particular named graph and have
+		     * a certain subject, predicate, and object. Any of the parameters can be
+		     * null, in which case it assumes these are "wildcards" and all statements
+		     * that match the remainding parameters will be returned.
+		     */
+     		public java.util.Iterator getStatements (org.openrdf.model.Value subject, org.openrdf.model.URI predicate, org.openrdf.model.Value @object, org.openrdf.model.URI graph) {
+				return GetIterator( new Statement(ToEntity(subject), ToEntity(predicate), ToResource(@object), ToEntity(graph)) );
 			}
 			
 			public org.openrdf.model.ValueFactory getValueFactory() {
 				return this;
 			}
 			
+			private bool has(Statement statement) {
+				if (debug) Console.Error.WriteLine("ASK CONTAINS: " + statement);
+				return source.Contains(statement);
+			}
+			
 			public bool hasDefaultStatement (org.openrdf.model.Value subject, org.openrdf.model.URI @predicate, org.openrdf.model.Value @object) {
-				// What is this method supposed to do?
-				return source.Contains(new Statement(ToEntity(subject), ToEntity(predicate), ToResource(@object)));
+				return has(new Statement(ToEntity(subject), ToEntity(predicate), ToResource(@object), QueryMeta));
 			}
 			
 			public bool hasStatement (org.openrdf.model.Value subject, org.openrdf.model.URI @predicate, org.openrdf.model.Value @object) {
-				return source.Contains(new Statement(ToEntity(subject), ToEntity(predicate), ToResource(@object), QueryMeta));
+				return has(new Statement(ToEntity(subject), ToEntity(predicate), ToResource(@object), null));
 			}
 	
 			public bool hasStatement (org.openrdf.model.Value subject, org.openrdf.model.URI @predicate, org.openrdf.model.Value @object, org.openrdf.model.URI graph) {
-				return source.Contains(new Statement(ToEntity(subject), ToEntity(predicate), ToResource(@object), ToEntity(graph)));
+				return has(new Statement(ToEntity(subject), ToEntity(predicate), ToResource(@object), ToEntity(graph)));
 			}
 	
 			public Entity ToEntity(org.openrdf.model.Value ent) {
 				if (ent == null) return null;
+				if (ent is BNodeWrapper) return ((BNodeWrapper)ent).r;
+				if (ent is URIWrapper) return ((URIWrapper)ent).r;
 				if (ent is org.openrdf.model.BNode) {
 					org.openrdf.model.BNode bnode = (org.openrdf.model.BNode)ent;
 					Entity r = (Entity)bnodes[bnode.getID()];
@@ -132,6 +165,7 @@ namespace SemWeb.Query {
 			
 			public Resource ToResource(org.openrdf.model.Value value) {
 				if (value == null) return null;
+				if (value is LiteralWrapper) return ((LiteralWrapper)value).r;
 				if (value is org.openrdf.model.Literal) {
 					org.openrdf.model.Literal literal = (org.openrdf.model.Literal)value;
 					return new Literal(literal.getLabel(), literal.getLanguage(), literal.getDatatype() == null ? null : literal.getDatatype().toString());
@@ -144,7 +178,7 @@ namespace SemWeb.Query {
 				return new BNodeWrapper(new Entity(null));
 			}
 			public org.openrdf.model.BNode createBNode(string id) {
-				return new BNodeWrapper(new Entity(null));
+				throw new Exception(id);
 			}
 			public org.openrdf.model.Literal createLiteral(string value, string lang) {
 				return new LiteralWrapper(new Literal(value, lang, null));
@@ -177,6 +211,15 @@ namespace SemWeb.Query {
 				public org.openrdf.model.Resource getSubject() { return subject; }
 				public org.openrdf.model.URI getPredicate() { return predicate; }
 				public org.openrdf.model.Value getObject() { return @object; }
+			}
+			
+			class DupChecker : StatementSink {
+				public MemoryStore store;
+				public bool Add(Statement s) {
+					if (!store.Contains(s))
+						store.Add(s);
+					return true;
+				}
 			}
 		}
 		
@@ -234,38 +277,39 @@ namespace SemWeb.Query {
 			}
 		}
 		
-		class BNodeWrapper : org.openrdf.model.BNode {
+		class BNodeWrapper : java.lang.Object, org.openrdf.model.BNode {
 			public Entity r;
 			public BNodeWrapper(Entity res) { r = res; }
 			public string getID() { throw new NotSupportedException(); }
-			public override bool Equals(object other) {
+			public override bool equals(object other) {
 				return r.Equals(((BNodeWrapper)other).r);
 			}
-			public override int GetHashCode() { return r.GetHashCode(); } // just suppresses a compiler warning
+			public override int hashCode() { return r.GetHashCode(); }
 		}
 	
-		class URIWrapper : org.openrdf.model.URI {
+		class URIWrapper : java.lang.Object, org.openrdf.model.URI {
 			public Entity r;
 			public URIWrapper(Entity res) { r = res; }
 			public string getLocalName() { return ""; }
 			public string getNamespace() { return r.Uri; }
-			public string toString() { return r.Uri; }
-			public override bool Equals(object other) {
+			string org.openrdf.model.URI.toString() { return r.Uri; }
+			public override string toString() { return r.Uri; }
+			public override bool equals(object other) {
 				return r.Equals(((URIWrapper)other).r);
 			}
-			public override int GetHashCode() { return r.GetHashCode(); } // just suppresses a compiler warning
+			public override int hashCode() { return r.GetHashCode(); }
 		}
 	
-		class LiteralWrapper : org.openrdf.model.Literal {
+		class LiteralWrapper : java.lang.Object, org.openrdf.model.Literal {
 			public Literal r;
 			public LiteralWrapper(Literal res) { r = res; }
 			public org.openrdf.model.URI getDatatype() { return new URIWrapper(r.DataType); }
 			public string getLabel() { return r.Value; }
 			public string getLanguage() { return r.Language; }
-			public override bool Equals(object other) {
+			public override bool equals(object other) {
 				return r.Equals(((LiteralWrapper)other).r);
 			}
-			public override int GetHashCode() { return r.GetHashCode(); } // just suppresses a compiler warning
+			public override int hashCode() { return r.GetHashCode(); }
 		}
 	}
 }
