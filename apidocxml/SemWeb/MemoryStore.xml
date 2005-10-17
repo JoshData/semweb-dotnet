@@ -79,10 +79,10 @@ foreach (Statement s in memoryStore)
         <Parameter Name="index" Type="System.Int32" />
       </Parameters>
       <Docs>
-        <param name="index">To be added.</param>
-        <summary>To be added.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
+        <param name="index">The 0-based index to a statement in the store.</param>
+        <summary>Returns a statement in the store by index.</summary>
+        <value>A <see cref="T:SemWeb.Statement" />.</value>
+        <remarks>None.</remarks>
       </Docs>
     </Member>
   </Members>

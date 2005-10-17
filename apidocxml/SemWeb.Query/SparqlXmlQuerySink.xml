@@ -16,9 +16,9 @@
         <Parameter Name="output" Type="System.IO.TextWriter" />
       </Parameters>
       <Docs>
-        <param name="output">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
+        <param name="output">The TextWriter to write results to.</param>
+        <summary>Creates the sink to write the results to a TextWriter.</summary>
+        <remarks>None.</remarks>
       </Docs>
     </Member>
     <Member MemberName=".ctor">
@@ -28,14 +28,14 @@
         <Parameter Name="output" Type="System.Xml.XmlWriter" />
       </Parameters>
       <Docs>
-        <param name="output">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
+        <param name="output">The XmlWriter to write results to.</param>
+        <summary>Creates the sink to write the results to an XmlWriter.</summary>
+        <remarks>None.</remarks>
       </Docs>
     </Member>
   </Members>
   <Docs>
-    <summary>To be added.</summary>
-    <remarks>To be added.</remarks>
+    <summary>A QueryResultSink outputting results in the SPARQL output XML format.</summary>
+    <remarks>Although the format was designed for SPARQL queries, it can be used with any Query class.</remarks>
   </Docs>
 </Type>

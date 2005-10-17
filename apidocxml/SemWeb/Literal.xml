@@ -101,10 +101,12 @@
         <Parameter Name="value" Type="System.String" />
       </Parameters>
       <Docs>
-        <param name="value">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
+        <param name="value">The string value to convert to a Literal object.</param>
+        <summary>Converts a string to a Literal object
+        whose language and datatype are null.</summary>
+        <returns>A literal object whose Value is the string,
+        and whose language and datatype are null.</returns>
+        <remarks>None.</remarks>
       </Docs>
     </Member>
   </Members>

@@ -14,8 +14,8 @@
       <MemberType>Constructor</MemberType>
       <Parameters />
       <Docs>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
+        <summary>The constructor used by inherited classes.</summary>
+        <remarks>None.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Add">
@@ -28,10 +28,10 @@
         <Parameter Name="result" Type="SemWeb.Query.VariableBinding[]" />
       </Parameters>
       <Docs>
-        <param name="result">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
+        <param name="result">An array of variable bindings.</param>
+        <summary>This method is called by a Query object to add a new binding result.</summary>
+        <returns>Return <see langword="true" /> to continue processing the query.</returns>
+        <remarks>The VariableBinding array object may be reused between calls.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Finished">
@@ -42,8 +42,8 @@
       </ReturnValue>
       <Parameters />
       <Docs>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
+        <summary>This method is called by a Query object after the last variable binding is added.</summary>
+        <remarks>None.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Init">
@@ -56,9 +56,9 @@
         <Parameter Name="variables" Type="SemWeb.Query.VariableBinding[]" />
       </Parameters>
       <Docs>
-        <param name="variables">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
+        <param name="variables">An array of variables used in the query (anonymous nodes) and their names.</param>
+        <summary>This method is called by a Query object before the first binding is added.</summary>
+        <remarks>The <see cref="P:SemWeb.Query.VariableBinding.Target" /> property of the variable bindings will be <see langword="null" />.</remarks>
       </Docs>
     </Member>
   </Members>

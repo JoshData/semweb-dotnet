@@ -32,11 +32,17 @@
         <Parameter Name="b" Type="SemWeb.Resource" />
       </Parameters>
       <Docs>
-        <param name="a">To be added.</param>
-        <param name="b">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
+        <param name="a">A Resource.</param>
+        <param name="b">A Resource.</param>
+        <summary>Tests two Resources for equality.</summary>
+        <returns>Returns whether the two resources are equal.
+        If both arguments are <see langword="null"/>, returns true;
+        otherwise, if one argument is <see langword="null"/>, returns false.</returns>
+        <remarks>Two resources are equal if they are both entities
+        and either 1) are the same object, 2) have the same URI, or
+        3) are anonymous entities created by the same Store and marked
+        as representing the same entity; or if they are Literals, if
+        they have the same value, language, and datatype.</remarks>
       </Docs>
     </Member>
     <Member MemberName="op_Inequality">
@@ -50,11 +56,11 @@
         <Parameter Name="b" Type="SemWeb.Resource" />
       </Parameters>
       <Docs>
-        <param name="a">To be added.</param>
-        <param name="b">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
+        <param name="a">A Resource.</param>
+        <param name="b">A Resource.</param>
+        <summary>Tests two Resources for inequality.</summary>
+        <returns>The negation of a == b.</returns>
+        <remarks>See the Resource equality operator.</remarks>
       </Docs>
     </Member>
   </Members>

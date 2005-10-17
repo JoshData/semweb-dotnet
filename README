@@ -12,7 +12,9 @@ under the terms of the Creative Commons Attribution License:
 
 The license basically means you can copy, distribute and
 modify this package however you like, but you need to
-give me due credit.  I think that's fair.
+give me due credit.  I think that's fair.  My interpretation
+of this is that it applies to both the source and binary
+form of the library.
 
 For more information, open the README.xhtml file in a
 web browser, or view the API docs in the apidocs directoy,
@@ -25,3 +27,13 @@ throw all of the .cs files in the src directory into a
 VisualStudio project and compile.  Each .cs file in the
 src.misc directory should be compiled into its own
 assembly.
+
+Other included files:
+
+bin/sparql-core.dll is based on the SPARQL Engine by Ryan Levering,
+which is covered by the GNU LGPL.  The original Java JAR was
+coverted to a .NET assembly using IKVM (see below).
+See: http://sourceforge.net/projects/sparql/
+
+bin/IKVM*.dll are auxiliary assemblies for running the SPARQL
+engine.  IKVM was written by Jeroen Frijters.  See http://www.ikvm.net.

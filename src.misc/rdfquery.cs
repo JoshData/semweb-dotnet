@@ -54,7 +54,7 @@ public class RDFQuery {
 		if (opts.type == "rsquary") {
 			RdfReader queryparser = RdfReader.Create("n3", "-");
 			queryparser.BaseUri = baseuri;
-			query = new RSquary(queryparser);
+			query = new GraphMatch(queryparser);
 		} else if (opts.type == "sparql") {
 			query = new Sparql(Console.In);
 		} else {

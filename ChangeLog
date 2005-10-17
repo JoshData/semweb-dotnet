@@ -1,12 +1,23 @@
-	* Simplified the treatment of variables in queries:
-	  N3Reader: Variables come in as anonymous nodes now,
-	  and their names are given in the VariableNames IDictionary
-	  of RdfReader.
-	  QueryEngine: Only anonymous nodes are treated as variables.
-	  RSquary: Variable names are set explicitly, and now it's
-	  impossible to make a named node (i.e. with a uri) a variable.
+	* Renamed QueryEngine to GraphMatch since it does a very limited type
+	  of query, and made the API cleaner.
+	* Added SemWeb.Query.Sparql, a SPARQL query engine powered by
+	  http://sourceforge.net/projects/sparql by Ryan Levering,
+	  and deleted my own barely-functional SPARQL parser.
+	* GraphMatch only allows anonymous nodes to be variables now, and the
+	  N3Reader reads variables as anonymous nodes, but remembers their
+	  names.
+	* Removed the SelectPartialFilter class and the overloads for
+	  Store.Select that took one of those as an argument.
+	* The overloads for Select that returned a MemoryStore rather
+	  than taking a StatementSink as an argument now return a
+	  SelectResult which lazy-loads the results into a MemoryStore
+	  if the statements are requested by IEnumerable.  Otherwise it
+	  can be used as a StatementSource and passed off to other
+	  methods so it won't need to load all of the statements into memory.
+	* SQLStore: Clear the store by dropping the tables, rather than
+	  deleting all of the rows.
 
-2005-07-24 Version 0.503 Posted
+2005-07-24 Version 0.503
 
 	* GetHashCode() for anonmyous resources used to return
 	  zero, which made hashtables of anonymous resources
@@ -20,14 +31,14 @@
 	* The SPARQL parser wasn't reading quoted literals or
 	  numbers properly.
 
-2005-07-01 Version 0.502 Posted
+2005-07-01 Version 0.502
 
 	* More bug fixes.
 	* Query engine totally rewritten, which will
 	  make much more sense once its documented.
 	* Store.Contains now accepts statement templates.
 
-2005-06-20 Version 0.501 Posted
+2005-06-20 Version 0.501
 
 	Just lots of bugs fixed.
 	* New API to replace one statement with another statement in a store.
@@ -44,7 +55,7 @@
 	* The query engine works now, and it's better optimized (but it wasn't working before anyway).
 	* Xml (Sparql) query result output now has nice indentation.
 
-2005-06-10 Version 0.5 Posted
+2005-06-10 Version 0.5
 
 	* First release.
 

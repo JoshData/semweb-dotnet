@@ -26,9 +26,9 @@
         <Parameter Name="sink" Type="SemWeb.StatementSink" />
       </Parameters>
       <Docs>
-        <param name="sink">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
+        <param name="sink">The sink to receive the statements.</param>
+        <summary>Streams the result of this Select call to a StatementSink.</summary>
+        <remarks>If the statements have not yet been loaded into memory, this call will stream the result of the Select call to the sink without loading all of the statements into memory at once.</remarks>
       </Docs>
     </Member>
     <Member MemberName="GetEnumerator">

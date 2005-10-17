@@ -190,7 +190,7 @@ namespace SemWeb {
 			ResourceCollector collector = new ResourceCollector();
 			collector.SPO = 2;
 			collector.Table = resources;
-			Select(new Statement(subject, predicate, null), collector);
+			Select(new Statement(subject, predicate, null, null), collector);
 			return (Resource[])new ArrayList(resources.Keys).ToArray(typeof(Resource));
 		}
 		public Entity[] SelectSubjects(Entity predicate, Resource @object) {
@@ -198,7 +198,7 @@ namespace SemWeb {
 			ResourceCollector collector = new ResourceCollector();
 			collector.SPO = 0;
 			collector.Table = resources;
-			Select(new Statement(null, predicate, @object), collector);
+			Select(new Statement(null, predicate, @object, null), collector);
 			return (Entity[])new ArrayList(resources.Keys).ToArray(typeof(Entity));
 		}
 		class ResourceCollector : StatementSink {

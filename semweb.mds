@@ -1,25 +1,30 @@
-<Combine name="semweb" fileversion="2.0">
-  <Configurations>
+<Combine name="semweb" fileversion="2.0" outputpath="./build/bin">
+  <Configurations active="Debug">
     <Configuration name="Debug" ctype="CombineConfiguration">
-      <Entry build="False" name="semweb" />
-      <Entry build="False" name="MySql" />
-      <Entry build="False" name="rdfstorage" />
+      <Entry configuration="Debug" build="True" name="semweb" />
+      <Entry configuration="Debug" build="True" name="MySql" />
+      <Entry configuration="Debug" build="True" name="rdfstorage" />
+      <Entry configuration="Debug" build="True" name="Sparql" />
     </Configuration>
     <Configuration name="Release" ctype="CombineConfiguration">
-      <Entry build="False" name="semweb" />
-      <Entry build="False" name="MySql" />
-      <Entry build="False" name="rdfstorage" />
+      <Entry configuration="Release" build="True" name="semweb" />
+      <Entry configuration="Release" build="True" name="MySql" />
+      <Entry configuration="Release" build="True" name="rdfstorage" />
+      <Entry configuration="Release" build="True" name="Sparql" />
     </Configuration>
   </Configurations>
   <StartMode startupentry="semweb" single="True">
     <Execute type="None" entry="semweb" />
     <Execute type="None" entry="MySql" />
     <Execute type="None" entry="rdfstorage" />
+    <Execute type="None" entry="rdfbind" />
+    <Execute type="None" entry="Sparql" />
   </StartMode>
   <Entries>
     <Entry filename="./semweb.mdp" />
     <Entry filename="./src.misc/MySql.mdp" />
     <Entry filename="./src.misc/rdfstorage.mdp" />
     <Entry filename="./src.misc/rdfbind.mdp" />
+    <Entry filename="./sparql/Sparql.mdp" />
   </Entries>
 </Combine>

@@ -170,9 +170,9 @@
         <Parameter Name="source" Type="SemWeb.StatementSource" />
       </Parameters>
       <Docs>
-        <param name="source">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
+        <param name="source">A source containing statements to write.</param>
+        <summary>Writes out the contents of the StatementSource.</summary>
+        <remarks>None.</remarks>
       </Docs>
     </Member>
   </Members>

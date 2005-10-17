@@ -16,9 +16,9 @@
         <Parameter Name="query" Type="System.String" />
       </Parameters>
       <Docs>
-        <param name="query">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
+        <param name="query">The SPARQL query.</param>
+        <summary>Initializes the SPARQL query from a string.</summary>
+        <remarks>None.</remarks>
       </Docs>
     </Member>
     <Member MemberName=".ctor">
@@ -28,14 +28,14 @@
         <Parameter Name="query" Type="System.IO.TextReader" />
       </Parameters>
       <Docs>
-        <param name="query">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
+        <param name="query">A TextReader containing the SPARQL query.</param>
+        <summary>Initialized the SPARQL query from a TextReader.</summary>
+        <remarks>None.</remarks>
       </Docs>
     </Member>
   </Members>
   <Docs>
-    <summary>To be added.</summary>
-    <remarks>To be added.</remarks>
+    <summary>A SPARQL query processor, supporting only SELECT at the moment.</summary>
+    <remarks>This class is based on the engine at http://sparql.sourceforge.net/ by Ryan Levering, version 0.6.</remarks>
   </Docs>
 </Type>
