@@ -75,7 +75,12 @@ public class RDFQuery {
 
 		//Console.Error.WriteLine(query.GetExplanation());
 		
-		query.Run(model, qs);
+		if (query is Sparql && ((Sparql)query).Type != Sparql.QueryType.Select) {
+			Sparql sparql = (Sparql)query;
+			sparql.Execute(model, Console.Out);
+		} else {
+			query.Run(model, qs);
+		}
 		
 		if (qs is IDisposable)
 			((IDisposable)qs).Dispose();

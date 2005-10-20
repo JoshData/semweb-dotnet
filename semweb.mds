@@ -2,15 +2,19 @@
   <Configurations active="Debug">
     <Configuration name="Debug" ctype="CombineConfiguration">
       <Entry configuration="Debug" build="True" name="semweb" />
+      <Entry configuration="Debug" build="True" name="sparql" />
     </Configuration>
     <Configuration name="Release" ctype="CombineConfiguration">
       <Entry configuration="Debug" build="True" name="semweb" />
+      <Entry configuration="Debug" build="True" name="sparql" />
     </Configuration>
   </Configurations>
   <StartMode startupentry="semweb" single="True">
     <Execute type="None" entry="semweb" />
+    <Execute type="None" entry="sparql" />
   </StartMode>
   <Entries>
     <Entry filename="./src/semweb.mdp" />
+    <Entry filename="./src/sparql.mdp" />
   </Entries>
 </Combine>

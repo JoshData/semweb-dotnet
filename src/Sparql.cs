@@ -15,6 +15,13 @@ namespace SemWeb.Query {
 
 		name.levering.ryan.sparql.model.Query query;
 		
+		public enum QueryType {
+			Ask,
+			Construct,
+			Describe,
+			Select
+		}
+		
 		public Sparql(TextReader query)
 			: this(query.ReadToEnd()) {
 		}
@@ -25,15 +32,123 @@ namespace SemWeb.Query {
 			} catch (ParseException e) {
 				throw new Exception("SPARQL syntax error at: " + e.currentToken);
 			}
-			if (!(this.query is SelectQuery))
-				throw new NotSupportedException("Only SELECT queries are supported at the moment (" + query.GetType() + ").");
+		}
+		
+		public QueryType Type {
+			get {
+				if (query is AskQuery)
+					return QueryType.Ask;
+				if (query is ConstructQuery)
+					return QueryType.Construct;
+				if (query is DescribeQuery)
+					return QueryType.Describe;
+				if (query is SelectQuery)
+					return QueryType.Select;
+				throw new NotSupportedException("Query is of an unsupported type.");
+			}
 		}
 	
+		public void Execute(SelectableSource source, TextWriter output) {
+			if (query is AskQuery)
+				Ask(source, output);
+			else if (query is ConstructQuery)
+				Construct(source, output);
+			else if (query is DescribeQuery)
+				Describe(source, output);
+			else if (query is SelectQuery)
+				Select(source, output);
+			else
+				throw new NotSupportedException("Query is of an unsupported type.");
+		}
+	
+		public bool Ask(SelectableSource source) {
+			if (!(query is AskQuery))
+				throw new InvalidOperationException("Only ASK queries are supported by this method (" + query.GetType() + ").");
+			AskQuery q = (AskQuery)query;
+			return q.execute(new RdfSourceWrapper(source, QueryMeta));
+		}
+		
+		public void Ask(SelectableSource source, TextWriter output) {
+			bool result = Ask(source);
+			System.Xml.XmlTextWriter w = new System.Xml.XmlTextWriter(output);
+			w.Formatting = System.Xml.Formatting.Indented;
+			w.WriteStartElement("sparql");
+			w.WriteAttributeString("xmlns", "http://www.w3.org/2001/sw/DataAccess/rf1/result");
+			w.WriteStartElement("head");
+			w.WriteEndElement();
+			w.WriteStartElement("results");
+			w.WriteStartElement("boolean");
+			w.WriteString(result ? "true" : "false");
+			w.WriteEndElement();
+			w.WriteEndElement();
+			w.WriteEndElement();
+			w.Close();
+		}
+	
+		public void Construct(SelectableSource source, StatementSink sink) {
+			if (!(query is ConstructQuery))
+				throw new InvalidOperationException("Only CONSTRUCT queries are supported by this method (" + query.GetType() + ").");
+			ConstructQuery q = (ConstructQuery)query;
+			RdfSourceWrapper sourcewrapper = new RdfSourceWrapper(source, QueryMeta);
+			RdfGraph graph = q.execute(sourcewrapper);
+			WriteGraph(graph, sourcewrapper, sink);
+		}
+		
+		void WriteGraph(RdfGraph graph, RdfSourceWrapper sourcewrapper, StatementSink sink) {
+			java.util.Iterator iter = graph.iterator();
+			while (iter.hasNext()) {
+				GraphStatement stmt = (GraphStatement)iter.next();
+				Statement s;
+				if (stmt is GraphStatementWrapper) {
+					s = ((GraphStatementWrapper)stmt).s;
+				} else {
+					s = new Statement(
+						sourcewrapper.ToEntity(stmt.getSubject()),
+						sourcewrapper.ToEntity(stmt.getPredicate()),
+						sourcewrapper.ToResource(stmt.getObject()),
+						sourcewrapper.ToEntity(stmt.getGraphName()));
+				}
+				sink.Add(s);
+			}
+		}
+		
+		public void Construct(SelectableSource source, TextWriter output) {
+			using (RdfWriter w = new N3Writer(output))
+				Construct(source, w);
+		}
+
+		public void Describe(SelectableSource source, StatementSink sink) {
+			if (!(query is DescribeQuery))
+				throw new InvalidOperationException("Only DESCRIBE queries are supported by this method (" + query.GetType() + ").");
+			DescribeQuery q = (DescribeQuery)query;
+			RdfSourceWrapper sourcewrapper = new RdfSourceWrapper(source, QueryMeta);
+			RdfGraph graph = q.execute(sourcewrapper);
+			WriteGraph(graph, sourcewrapper, sink);
+		}
+
+		public void Describe(SelectableSource source, TextWriter output) {
+			using (RdfWriter w = new N3Writer(output))
+				Describe(source, w);
+		}
+
+		public void Select(SelectableSource source, TextWriter output) {
+			Select(source, new SparqlXmlQuerySink(output));
+		}
+
+		public void Select(SelectableSource source, QueryResultSink sink) {
+			if (!(query is SelectQuery))
+				throw new InvalidOperationException("Only SELECT queries are supported by this method (" + query.GetType() + ").");
+			Run(source, sink);
+		}
+
 		public override string GetExplanation() {
 			return query.ToString();
 		}
 	
 		public override void Run(SelectableSource source, QueryResultSink resultsink) {
+			if (!(query is SelectQuery))
+				throw new InvalidOperationException("Only SELECT queries are supported by this method (" + query.GetType() + ").");
+
 			SelectQuery squery = (SelectQuery)query;
 			RdfSourceWrapper sourcewrapper = new RdfSourceWrapper(source, QueryMeta);
 			RdfBindingSet results = squery.execute(sourcewrapper);
@@ -245,7 +360,7 @@ namespace SemWeb.Query {
 		}
 		
 		class GraphStatementWrapper : GraphStatement {
-			Statement s;
+			public readonly Statement s;
 			public GraphStatementWrapper(Statement statement) {
 				s = statement;
 			}

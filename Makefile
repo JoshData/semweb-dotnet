@@ -52,11 +52,11 @@ apidocxml: Makefile
 
 # Generating the release package
 
-semweb-$(VERSION).tgz:
+package:
 	rm -rf package-workspace
 	mkdir -p package-workspace/semweb-$(VERSION)
-	cp -R bin src tools apidocs doc \
-		ChangeLog Makefile README semweb.mds \
+	cp -R bin src tools apidocs \
+		ChangeLog Makefile README.txt semweb.mds \
 		package-workspace/semweb-$(VERSION)
 	tar -czf packages/semweb-$(VERSION).tgz -C package-workspace \
 		--exclude .svn \
