@@ -133,8 +133,32 @@ namespace SemWeb {
 		}
 		
 		private XmlElement GetNode(string uri, string type, XmlElement context) {
-			if (nodeMap.ContainsKey(uri))
-				return (XmlElement)nodeMap[uri];
+			if (nodeMap.ContainsKey(uri)) {
+				XmlElement ret = (XmlElement)nodeMap[uri];
+				if (type == null) return ret;
+				
+				// We have to add type information to the existing node.
+				if (ret.NamespaceURI + ret.LocalName == NS.RDF + "Description") {
+					// Replace the untyped node with a typed node, copying in
+					// all of the children of the old node.
+					string prefix, localname;
+					Normalize(type, out prefix, out localname);
+					XmlElement newnode = doc.CreateElement(prefix + ":" + localname, ns.GetNamespace(prefix));
+					
+					foreach (XmlNode childnode in ret) {
+						newnode.AppendChild(childnode.Clone());
+					}
+					
+					ret.ParentNode.ReplaceChild(newnode, ret);
+					nodeMap[uri] = newnode;
+					return newnode;
+				} else {
+					// The node is already typed, so just add a type predicate.
+					XmlElement prednode = CreatePredicate(ret, NS.RDF + "type");
+					SetAttribute(ret, NS.RDF, ns.GetPrefix(NS.RDF), "resource", type);
+					return ret;
+				}
+			}
 			
 			Start();			
 			
