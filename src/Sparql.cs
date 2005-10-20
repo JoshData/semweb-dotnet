@@ -33,7 +33,7 @@ namespace SemWeb.Query {
 			return query.ToString();
 		}
 	
-		public override void Run(QueryableSource source, QueryResultSink resultsink) {
+		public override void Run(SelectableSource source, QueryResultSink resultsink) {
 			SelectQuery squery = (SelectQuery)query;
 			RdfSourceWrapper sourcewrapper = new RdfSourceWrapper(source, QueryMeta);
 			RdfBindingSet results = squery.execute(sourcewrapper);
@@ -69,13 +69,13 @@ namespace SemWeb.Query {
 		}
 	
 		class RdfSourceWrapper : RdfSource, org.openrdf.model.ValueFactory {
-			QueryableSource source;
+			SelectableSource source;
 			Hashtable bnodes = new Hashtable();
 			Entity QueryMeta;
 			
 			bool debug = false;
 			
-			public RdfSourceWrapper(QueryableSource source, Entity meta) {
+			public RdfSourceWrapper(SelectableSource source, Entity meta) {
 				this.source = source;
 				QueryMeta = meta;
 			}

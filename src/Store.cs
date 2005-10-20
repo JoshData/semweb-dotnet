@@ -8,7 +8,7 @@ namespace SemWeb {
 		void Select(StatementSink sink);
 	}
 	
-	public interface QueryableSource {
+	public interface SelectableSource {
 		bool Contains(Statement template);
 		void Select(Statement template, StatementSink sink);
 		void Select(Statement[] templates, StatementSink sink);
@@ -40,7 +40,7 @@ namespace SemWeb {
 		}
 	}
 
-	public abstract class Store : StatementSource, QueryableSource, StatementSink {
+	public abstract class Store : StatementSource, StatementSink, SelectableSource {
 		
 		Entity rdfType;
 		
@@ -163,7 +163,7 @@ namespace SemWeb {
 			return Contains(this, template);
 		}
 
-		public static bool Contains(QueryableSource source, Statement template) {
+		public static bool Contains(SelectableSource source, Statement template) {
 			StatementExistsSink sink = new StatementExistsSink();
 			source.Select(template, sink);
 			return sink.Exists;
@@ -219,7 +219,7 @@ namespace SemWeb {
 			return FindEntities(this, filters);
 		}
 		
-		internal static Entity[] FindEntities(QueryableSource source, Statement[] filters) {
+		internal static Entity[] FindEntities(SelectableSource source, Statement[] filters) {
 			Hashtable ents = new Hashtable();
 			source.Select(filters[0], new FindEntitiesSink(ents, spom(filters[0])));
 			for (int i = 1; i < filters.Length; i++) {

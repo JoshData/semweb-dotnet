@@ -19,7 +19,7 @@ namespace SemWeb.Query {
 		
 		public Entity QueryMeta { get { return queryMeta; } set { queryMeta = value; } }
 		
-		public abstract void Run(QueryableSource source, QueryResultSink resultsink);
+		public abstract void Run(SelectableSource source, QueryResultSink resultsink);
 
 		public abstract string GetExplanation();
 	}
@@ -289,7 +289,7 @@ namespace SemWeb.Query {
 			return ret;
 		}
 		
-		public override void Run(QueryableSource targetModel, QueryResultSink result) {
+		public override void Run(SelectableSource targetModel, QueryResultSink result) {
 			CheckInit();
 			
 			foreach (Statement s in novariablestatements)
@@ -409,7 +409,7 @@ namespace SemWeb.Query {
 			}
 		}
 
-		private bool Query(int groupindex, BindingSet bindings, QueryableSource targetModel) {
+		private bool Query(int groupindex, BindingSet bindings, SelectableSource targetModel) {
 			QueryStatement[] group = statements[groupindex];
 			
 			if (group.Length == 1) {
@@ -728,13 +728,13 @@ namespace SemWeb.Query {
 			return new Statement((Entity)s, (Entity)p, o, QueryMeta);
 		}
 		
-		bool MatchesFilters(Statement s, QueryStatement q, QueryableSource targetModel) {
+		bool MatchesFilters(Statement s, QueryStatement q, SelectableSource targetModel) {
 			return MatchesFilters(s.Subject, q.Subject, targetModel)
 				&& MatchesFilters(s.Predicate, q.Predicate, targetModel)
 				&& MatchesFilters(s.Object, q.Object, targetModel);
 		}
 		
-		bool MatchesFilters(Resource e, VarOrAnchor var, QueryableSource targetModel) {
+		bool MatchesFilters(Resource e, VarOrAnchor var, SelectableSource targetModel) {
 			if (!var.IsVariable) return true;
 			foreach (ValueFilter f in variables[var.VarIndex].Filters) {
 				if (!f.Filter(e, targetModel)) return false;

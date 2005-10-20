@@ -30,6 +30,9 @@ public class RDFStorage {
 
 		[Mono.GetOptions.Option("Quiet mode: Don't emit status information.")]
 		public bool quiet = false;
+
+		[Mono.GetOptions.Option("Check for duplicate statements.")]
+		public bool dupcheck = false;
 	}
 	
 	public static void Main(string[] args) {
@@ -64,7 +67,7 @@ public class RDFStorage {
 			}
 		}
 		
-		MultiRdfParser multiparser = new MultiRdfParser(opts.RemainingArguments, opts.@in, meta, opts.baseuri, opts.quiet);
+		MultiRdfParser multiparser = new MultiRdfParser(opts.RemainingArguments, opts.@in, meta, opts.baseuri, opts.quiet, opts.dupcheck);
 		
 		if (storage is Store)
 			((Store)storage).Import(multiparser);
@@ -84,13 +87,15 @@ public class RDFStorage {
 		Entity meta;
 		string baseuri;
 		bool quiet;
+		bool dupcheck;
 		
-		public MultiRdfParser(IList files, string format, Entity meta, string baseuri, bool quiet) {
+		public MultiRdfParser(IList files, string format, Entity meta, string baseuri, bool quiet, bool dupcheck) {
 			this.files = files;
 			this.format = format;
 			this.meta = meta;
 			this.baseuri = baseuri;
 			this.quiet = quiet;
+			this.dupcheck = dupcheck;
 		}
 		
 		public override void Select(StatementSink storage) {
@@ -110,6 +115,7 @@ public class RDFStorage {
 						RdfReader parser = RdfReader.Create(format, infile);
 						parser.BaseUri = baseuri;
 						if (meta != null) parser.Meta = meta;
+						parser.DuplicateCheck = dupcheck;
 						parser.Select(filter);
 						parser.Dispose();
 					} else {

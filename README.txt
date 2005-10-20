@@ -24,6 +24,8 @@ Run make if you're in Linux.  Nothing complicated here.  You'll need
 Mono installed (and the ByteFx and Sqlite Client DLLs for SQL database 
 support).
 
+A MonoDevelop solution file (semweb.mds) is included too.
+
 If you're in Windows, I don't have Visual Studio project files for you. 
 Just throw the .cs files in the src directory into a new project and 
 compile. You'll need to reference System.XML, sparql-core.dll in the
