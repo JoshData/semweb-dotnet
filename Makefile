@@ -1,4 +1,4 @@
-VERSION=0.6
+VERSION=0.601
 
 all: bin/SemWeb.dll bin/SemWeb.MySQLStore.dll bin/SemWeb.SqliteStore.dll bin/SemWeb.Sparql.dll bin/rdfstorage.exe bin/rdfquery.exe
 
@@ -52,16 +52,19 @@ apidocxml: Makefile
 
 # Generating the release package
 
-package:
+package: all
 	rm -rf package-workspace
 	mkdir -p package-workspace/semweb-$(VERSION)
 	cp -R bin src tools apidocs \
 		ChangeLog Makefile README.txt semweb.mds \
 		package-workspace/semweb-$(VERSION)
+	mkdir package-workspace/semweb-$(VERSION)/examples
+	cp examples/*.cs examples/Makefile examples/README.txt \
+		package-workspace/semweb-$(VERSION)/examples
 	tar -czf packages/semweb-$(VERSION).tgz -C package-workspace \
 		--exclude .svn \
 		semweb-$(VERSION)
 	rm -rf package-workspace
 	
-deploy: packages/semweb-$(VERSION).tgz
+deploy: package
 	scp packages/semweb-$(VERSION).tgz publius:www/code/semweb

@@ -1,3 +1,5 @@
+2005-10-19 Version 0.6
+
 	* Renamed QueryEngine to GraphMatch since it does a very limited type
 	  of query, and made the API cleaner.
 	* Added SemWeb.Query.Sparql, a SPARQL query engine powered by
@@ -16,6 +18,7 @@
 	  methods so it won't need to load all of the statements into memory.
 	* SQLStore: Clear the store by dropping the tables, rather than
 	  deleting all of the rows.
+	* Various other bug fixes, including to RdfXmlWriter.
 
 2005-07-24 Version 0.503
 
