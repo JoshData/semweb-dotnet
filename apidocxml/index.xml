@@ -24,7 +24,7 @@
       <Type Name="RdfXmlWriter" />
       <Type Name="StatementSource" />
       <Type Name="N3Writer+Formats" />
-      <Type Name="QueryableSource" />
+      <Type Name="SelectableSource" />
       <Type Name="SelectResult" />
     </Namespace>
     <Namespace Name="SemWeb.Query">

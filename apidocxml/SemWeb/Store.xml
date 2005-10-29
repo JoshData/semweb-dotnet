@@ -374,6 +374,10 @@ Example:  "n3:mydata.n3"</description>
               <term>mysql:[table]:[connection string]</term>
               <description>A <see cref="T:SemWeb.Stores.SQLStore" /> connected to the MySQL database given in the connection string, using the tables prefixed by the table parameter.  The returned store can be both read from and written to, despite the name of this method.  Example:  "mysql:rdf:Database=databasename;Server=localhost;User Id=username"</description>
             </item>
+            <item>
+              <term>postgresql:[table]:[connection string]</term>
+              <description>A <see cref="T:SemWeb.Stores.SQLStore" /> connected to the PostgreSQL database given in the connection string, using the tables prefixed by the table parameter.  The returned store can be both read from and written to, despite the name of this method.  Example:  "postgresql:rdf:Server=localhost;Port=5432;Database=SemanticWeb;User Id=user"</description>
+            </item>
           </list>
         </remarks>
       </Docs>
@@ -420,14 +424,9 @@ Example:  "xml:mydata.rdf"</description>
 Example:  "turtle:mydata.turtle"</description>
             </item>
             <item>
-              <term>sqlite:[table]:[connection string]</term>
+              <term>SQL-based stores</term>
               <description>
-                <para>A <see cref="T:SemWeb.Stores.SQLStore" /> connected to the SQLite database given in the connection string, using the tables prefixed by the table parameter.  The returned store can be both read from and written to, despite the name of this method.  Example:  "sqlite:rdf:Uri=file:mydatabase.sqlite;Version=3"</para>
-              </description>
-            </item>
-            <item>
-              <term>mysql:[table]:[connection string]</term>
-              <description>A <see cref="T:SemWeb.Stores.SQLStore" /> connected to the MySQL database given in the connection string, using the tables prefixed by the table parameter.  The returned store can be both read from and written to, despite the name of this method.  Example:  "mysql:rdf:Database=databasename;Server=localhost;User Id=username"</description>
+For Sqlite, MySQL, and PostgreSQL-based stores, use the spec string described in <see cref="M:SemWeb.Store.CreateForInput(string)" />.</description>
             </item>
           </list>
         </remarks>
