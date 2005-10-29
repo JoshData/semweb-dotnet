@@ -1,6 +1,6 @@
 VERSION=0.601
 
-all: bin/SemWeb.dll bin/SemWeb.MySQLStore.dll bin/SemWeb.SqliteStore.dll bin/SemWeb.Sparql.dll bin/rdfstorage.exe bin/rdfquery.exe
+all: bin/SemWeb.dll bin/SemWeb.PostgreSQLStore.dll bin/SemWeb.MySQLStore.dll bin/SemWeb.SqliteStore.dll bin/SemWeb.Sparql.dll bin/rdfstorage.exe bin/rdfquery.exe
 
 # Core Library
 	
@@ -23,6 +23,10 @@ bin/SemWeb.dll: $(MAIN_SOURCES) Makefile
 bin/SemWeb.Sparql.dll: src/Sparql.cs
 	mcs -debug src/Sparql.cs -out:bin/SemWeb.Sparql.dll \
 		-t:library -r:bin/SemWeb.dll -r:bin/sparql-core.dll -r:bin/IKVM.GNU.Classpath.dll
+
+bin/SemWeb.PostgreSQLStore.dll: src/PostgreSQLStore.cs bin/SemWeb.dll
+	mcs -debug src/PostgreSQLStore.cs -out:bin/SemWeb.PostgreSQLStore.dll -t:library\
+	-r:bin/SemWeb.dll -r:System.Data -r:Npgsql
 
 bin/SemWeb.SqliteStore.dll: src/SQLiteStore.cs bin/SemWeb.dll
 	mcs -debug src/SQLiteStore.cs -out:bin/SemWeb.SqliteStore.dll -t:library\

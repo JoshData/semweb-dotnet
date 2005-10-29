@@ -397,7 +397,7 @@ namespace SemWeb.Stores {
 			StringBuilder cmd = new StringBuilder();
 			cmd.Append("SELECT id, value, language, datatype FROM ");
 			cmd.Append(table);
-			cmd.Append("_literals WHERE 0 ");
+			cmd.Append("_literals WHERE ");
 			bool hasLiterals = false;
 			foreach (Statement s in statements) {
 				Literal lit = s.Object as Literal;
@@ -406,11 +406,12 @@ namespace SemWeb.Stores {
 				if (literalCache.ContainsKey(lit))
 					continue;
 				
-				hasLiterals = true;
-				
-				cmd.Append(" or (");
+				if (hasLiterals)
+					cmd.Append(" or ");
+				cmd.Append("(");
 				WhereLiteral(cmd, lit);
 				cmd.Append(")");
+				hasLiterals = true;
 			}
 			if (hasLiterals) {
 				cmd.Append(";");
@@ -866,8 +867,11 @@ namespace SemWeb.Stores {
 			EscapedAppend(b, str, true);
 		}
 
+		protected virtual string GetQuoteChar() {
+			return "\"";
+		}
 		protected virtual void EscapedAppend(StringBuilder b, string str, bool quotes) {
-			if (quotes) b.Append('"');
+			if (quotes) b.Append(GetQuoteChar());
 			for (int i = 0; i < str.Length; i++) {
 				char c = str[i];
 				switch (c) {
@@ -884,7 +888,7 @@ namespace SemWeb.Stores {
 						break;
 				}
 			}
-			if (quotes) b.Append('"');
+			if (quotes) b.Append(GetQuoteChar());
 		}
 		
 		internal static void Escape(StringBuilder b) {

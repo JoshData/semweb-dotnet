@@ -98,10 +98,11 @@ namespace SemWeb {
 					return new SemWeb.Stores.FileStore(spec);*/
 				case "sqlite":
 				case "mysql":
-					if (spec == "") throw new ArgumentException("Use: sqlite|mysql:table:connection-string");
+				case "postgresql":
+					if (spec == "") throw new ArgumentException("Use: sqlite|mysql|postgresql:table:connection-string");
 				
 					c = spec.IndexOf(':');
-					if (c == -1) throw new ArgumentException("Invalid format for sqlite/mysql spec parameter (table:constring).");
+					if (c == -1) throw new ArgumentException("Invalid format for SQL spec parameter (table:constring).");
 					string table = spec.Substring(0, c);
 					spec = spec.Substring(c+1);
 					
@@ -111,6 +112,8 @@ namespace SemWeb {
 						spec = spec.Replace(";", ",");
 					} else if (type == "mysql") {
 						classtype = "SemWeb.Stores.MySQLStore, SemWeb.MySQLStore";
+					} else if (type == "postgresql") {
+						classtype = "SemWeb.Stores.PostgreSQLStore, SemWeb.PostgreSQLStore";
 					}
 					Type ttype = Type.GetType(classtype);
 					if (ttype == null)
