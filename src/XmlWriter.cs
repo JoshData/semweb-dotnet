@@ -137,7 +137,7 @@ namespace SemWeb {
 				XmlElement ret = (XmlElement)nodeMap[uri];
 				if (type == null) return ret;
 				
-				// We have to add type information to the existing node.
+				// Check if we have to add new type information to the existing node.
 				if (ret.NamespaceURI + ret.LocalName == NS.RDF + "Description") {
 					// Replace the untyped node with a typed node, copying in
 					// all of the children of the old node.
@@ -155,7 +155,7 @@ namespace SemWeb {
 				} else {
 					// The node is already typed, so just add a type predicate.
 					XmlElement prednode = CreatePredicate(ret, NS.RDF + "type");
-					SetAttribute(ret, NS.RDF, ns.GetPrefix(NS.RDF), "resource", type);
+					SetAttribute(prednode, NS.RDF, ns.GetPrefix(NS.RDF), "resource", type);
 					return ret;
 				}
 			}

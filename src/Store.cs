@@ -119,6 +119,8 @@ namespace SemWeb {
 					if (ttype == null)
 						throw new NotSupportedException("The storage type in <" + classtype + "> could not be found.");
 					return Activator.CreateInstance(ttype, new object[] { spec, table });
+				case "bdb":
+					return new BDBStore(spec);
 				default:
 					throw new ArgumentException("Unknown parser type: " + type);
 			}
@@ -216,7 +218,10 @@ namespace SemWeb {
 		
 		public abstract void Replace(Entity find, Entity replacement);
 		
-		public abstract void Replace(Statement find, Statement replacement);
+		public virtual void Replace(Statement find, Statement replacement) {
+			Remove(find);
+			Add(replacement);
+		}
 		
 		public virtual Entity[] FindEntities(Statement[] filters) {
 			return FindEntities(this, filters);

@@ -108,8 +108,8 @@ namespace SemWeb.Stores {
 				}
 			}
 		}
-		protected override string GetQuoteChar() {
-			return "'";
+		protected override char GetQuoteChar() {
+			return '\'';
 		}
 	}
 }

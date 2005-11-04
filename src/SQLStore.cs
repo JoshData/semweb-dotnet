@@ -30,6 +30,7 @@ namespace SemWeb.Stores {
 		string 	INSERT_INTO_LITERALS_VALUES,
 				INSERT_INTO_STATEMENTS_VALUES,
 				INSERT_INTO_ENTITIES_VALUES;
+		char quote;
 				
 		private class ResourceKey {
 			public int ResId;
@@ -50,6 +51,8 @@ namespace SemWeb.Stores {
 			INSERT_INTO_LITERALS_VALUES = "INSERT INTO " + table + "_literals VALUES ";
 			INSERT_INTO_STATEMENTS_VALUES = "INSERT INTO " + table + "_statements VALUES ";
 			INSERT_INTO_ENTITIES_VALUES = "INSERT INTO " + table + "_entities VALUES ";
+			
+			quote = GetQuoteChar();
 		}
 		
 		protected string TableName { get { return table; } }
@@ -867,11 +870,11 @@ namespace SemWeb.Stores {
 			EscapedAppend(b, str, true);
 		}
 
-		protected virtual string GetQuoteChar() {
-			return "\"";
+		protected virtual char GetQuoteChar() {
+			return '\"';
 		}
 		protected virtual void EscapedAppend(StringBuilder b, string str, bool quotes) {
-			if (quotes) b.Append(GetQuoteChar());
+			if (quotes) b.Append(quote);
 			for (int i = 0; i < str.Length; i++) {
 				char c = str[i];
 				switch (c) {
@@ -888,7 +891,7 @@ namespace SemWeb.Stores {
 						break;
 				}
 			}
-			if (quotes) b.Append(GetQuoteChar());
+			if (quotes) b.Append(quote);
 		}
 		
 		internal static void Escape(StringBuilder b) {
