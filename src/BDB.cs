@@ -14,6 +14,13 @@ namespace BDB {
 		Queue=4
 	}
 	
+	public enum DataType {
+		Any,
+		UInt,
+		IntArray,
+		String
+	}
+	
 	public class DatabaseException : ApplicationException {
 		public DatabaseException(string message) : base(message) {
 		}
@@ -22,36 +29,35 @@ namespace BDB {
 	public class BDB43 {
 		const string lib = "db-4.3";
 		
-		const int DB_CREATE = 0x0000001;
-		//const int DB_DUP = 0x0000002;
-		const int DB_DUPSORT = 0x0000004;
-		const int DB_THREAD = 0x0000040;
-		const int DB_NOTFOUND = (-30989);/* Key/data pair not found (EOF). */
-		const int DB_KEYEMPTY = (-30997);/* Key/data deleted or never created. */
-		const int DB_KEYEXIST = (-30996);/* The key/data pair already exists. */
-		
+		Env env;
 		IntPtr dbp;
 		dbstruct funcs;
 		bool closed = false;
 		
-		BinaryFormatter binfmt;
+		Serializer binfmt;
 		
-		public BDB43(string file, bool create, DBFormat format, bool allowDuplicates)
-			: this(file, null, create, format, allowDuplicates) {
+		public DataType
+			KeyType = DataType.Any,
+			ValueType = DataType.Any;
+		
+		public BDB43(string file, bool create, DBFormat format, bool allowDuplicates, Env environment)
+			: this(file, null, create, format, allowDuplicates, environment) {
 		}
 		
-		public BDB43(string file, string table, bool create, DBFormat format, bool allowDuplicates) {
-			db_create(out dbp, IntPtr.Zero, 0);
+		public BDB43(string file, string table, bool create, DBFormat format, bool allowDuplicates, Env environment) {
+			this.env = environment;
+			
+			db_create(out dbp, environment.envptr, 0);
 			funcs = (dbstruct)Marshal.PtrToStructure((IntPtr)((int)dbp+268), typeof(dbstruct));
 			
-			uint dbflags = 0;
+			uint dbflags = DB_DIRECT_DB;
 			if (allowDuplicates)
 				dbflags |= DB_DUPSORT; 
 			
 			funcs.set_flags(dbp, dbflags);
 			
 			int type = (int)format;
-			uint flags = 0; //DB_THREAD;
+			uint flags = DB_DIRTY_READ;
 			int chmod_mode = 0;
 			
 			if (create)
@@ -59,13 +65,10 @@ namespace BDB {
 			
 			// if file & database are null, db is held in-memory
 			// on file is taken as UTF8 (is this call right?)
-			int ret = funcs.open(dbp, IntPtr.Zero, file, table, type, flags, chmod_mode);
+			int ret = funcs.open(dbp, env.Txn, file, table, type, flags, chmod_mode);
 			CheckError(ret);
 			
-			binfmt = new BinaryFormatter();
-			binfmt.AssemblyFormat = FormatterAssemblyStyle.Simple;
-			binfmt.TypeFormat = FormatterTypeStyle.TypesWhenNeeded;
-			
+			binfmt = new Serializer();
 		}
 		
 		~BDB43() {
@@ -94,12 +97,12 @@ namespace BDB {
 		private bool Put(object key, object value, uint flags) {
 			Data dkey = new Data(), dvalue = new Data();
 			try {
-				dkey = Data.New(key, binfmt);
-				dvalue = Data.New(value, binfmt);
-				int ret = funcs.put(dbp, IntPtr.Zero, ref dkey, ref dvalue, flags);
-				if (ret == DB_KEYEXIST) { return true; }
+				dkey = Data.New(key, binfmt, KeyType);
+				dvalue = Data.New(value, binfmt, ValueType);
+				int ret = funcs.put(dbp, env.Txn, ref dkey, ref dvalue, flags);
+				if (ret == DB_KEYEXIST) { return false; }
 				CheckError(ret);
-				return false;
+				return true;
 			} finally {
 				dkey.Free();
 				dvalue.Free();
@@ -107,10 +110,10 @@ namespace BDB {
 		}
 		
 		public void Delete(object key) {
-			Data dkey = Data.New(key, binfmt);
+			Data dkey = Data.New(key, binfmt, KeyType);
 			try {
 				uint flags = 0;
-				int ret = funcs.del(dbp, IntPtr.Zero, ref dkey, flags);
+				int ret = funcs.del(dbp, env.Txn, ref dkey, flags);
 				CheckError(ret);
 			} finally {
 				dkey.Free();
@@ -121,13 +124,12 @@ namespace BDB {
 			Data dkey = new Data();
 			Data dvalue = Data.New();
 			try {
-				dkey = Data.New(key, binfmt);
-				uint flags = 0;
-				int ret = funcs.get(dbp, IntPtr.Zero, ref dkey, ref dvalue, flags);
+				dkey = Data.New(key, binfmt, KeyType);
+				int ret = funcs.get(dbp, env.Txn, ref dkey, ref dvalue, 0);
 				if (ret == DB_NOTFOUND || ret == DB_KEYEMPTY)
 					return null;
 				CheckError(ret);
-				return dvalue.GetObject(binfmt);
+				return dvalue.GetObject(binfmt, ValueType);
 			} finally {
 				dkey.Free();
 				dvalue.Free();
@@ -136,7 +138,7 @@ namespace BDB {
 		
 		public long Truncate() {
 			uint recs;
-			int ret = funcs.truncate(dbp, IntPtr.Zero, out recs, 0);
+			int ret = funcs.truncate(dbp, env.Txn, out recs, 0);
 			CheckError(ret);
 			return recs;
 		}
@@ -148,15 +150,15 @@ namespace BDB {
 		
 		public Cursor NewCursor() {
 			IntPtr cursorp;
-	    	int ret = funcs.cursor(dbp, IntPtr.Zero, out cursorp, 0);
+	    	int ret = funcs.cursor(dbp, env.Txn, out cursorp, 0);
 	    	CheckError(ret);
-	    	return new Cursor(cursorp, binfmt);
+	    	return new Cursor(this, cursorp);
 		}
 		
 		public struct Cursor : IDisposable {
 			IntPtr cursorp;
 			cursorstruct funcs;
-			BinaryFormatter binfmt;
+			BDB43 parent;
 			
 			public enum Seek {
 				Current = 7,
@@ -180,9 +182,9 @@ namespace BDB {
 			const uint DB_GET_BOTH = 10;
 			const uint DB_SET = 28;
 			
-			internal Cursor(IntPtr cursorp, BinaryFormatter binfmt) {
+			internal Cursor(BDB43 parent, IntPtr cursorp) {
 				this.cursorp = cursorp;
-				this.binfmt = binfmt;
+				this.parent = parent;
 				funcs = (cursorstruct)Marshal.PtrToStructure((IntPtr)((int)cursorp+188), typeof(cursorstruct));
 			}
 			
@@ -202,7 +204,7 @@ namespace BDB {
 				IntPtr newp;
 				int ret = funcs.dup(cursorp, out newp, 0);
 				CheckError(ret);
-				return new Cursor(newp, binfmt);
+				return new Cursor(parent, newp);
 			}
 			
 			public object MoveTo(object key) {
@@ -217,18 +219,18 @@ namespace BDB {
 				Data dkey = new Data();
 				Data dvalue = new Data();
 				try {
-					dkey = Data.New(key, binfmt);
+					dkey = Data.New(key, parent.binfmt, parent.KeyType);
 					if (!usevalue)
 						dvalue = Data.New();
 					else
-						dvalue = Data.New(value, binfmt);
+						dvalue = Data.New(value, parent.binfmt, parent.ValueType);
 					int ret = funcs.get(cursorp, ref dkey, ref dvalue, !usevalue ? DB_SET : DB_GET_BOTH);
 					if (ret == DB_NOTFOUND || ret == DB_KEYEMPTY)
 						return null;
 					CheckError(ret);
 					if (usevalue)
 						return value;
-					return dvalue.GetObject(binfmt);
+					return dvalue.GetObject(parent.binfmt, parent.ValueType);
 				} finally {
 					dkey.Free();
 					dvalue.Free();
@@ -246,8 +248,8 @@ namespace BDB {
 						return false;
 					}
 					CheckError(ret);
-					key = dkey.GetObject(binfmt);
-					value = dvalue.GetObject(binfmt);
+					key = dkey.GetObject(parent.binfmt, parent.KeyType);
+					value = dvalue.GetObject(parent.binfmt, parent.ValueType);
 					return true;
 				} finally {
 					dkey.Free();
@@ -267,10 +269,10 @@ namespace BDB {
 				Data dkey = new Data(), dvalue = new Data();
 				try {
 					if (key != null)
-						dkey = Data.New(key, binfmt);
+						dkey = Data.New(key, parent.binfmt, parent.KeyType);
 					else
 						dkey = new Data(); // for putwhere == Current
-					dvalue = Data.New(value, binfmt);
+					dvalue = Data.New(value, parent.binfmt, parent.ValueType);
 					int ret = funcs.put(cursorp, ref dkey, ref dvalue, (uint)putwhere);
 					if (ret == DB_KEYEXIST) { return; }
 					CheckError(ret);
@@ -285,13 +287,51 @@ namespace BDB {
 			}
 		}
 
-		/*static IntPtr CreateEnvironment() {
-			IntPtr env;
-			int ret = db_env_create(out env, DB_TREAD);
-			CheckError(ret);
-			return env;
-		}*/
-		
+		public class Env : IDisposable {
+			internal IntPtr envptr;
+			envstruct1 funcs1;
+			envstruct2 funcs2;
+			
+			internal IntPtr Txn = IntPtr.Zero;
+			txnstruct txnfuncs;
+			
+			public Env(string home) {
+				int ret = db_env_create(out envptr, 0);
+				CheckError(ret);
+				
+				funcs1 = (envstruct1)Marshal.PtrToStructure((IntPtr)((int)envptr+276), typeof(envstruct1));
+				funcs2 = (envstruct2)Marshal.PtrToStructure((IntPtr)((int)envptr+712), typeof(envstruct2));
+				
+				ret = funcs1.open(envptr, home, DB_CREATE | DB_INIT_MPOOL | DB_INIT_TXN | DB_PRIVATE, 0);
+				if (ret != 0)
+					funcs1.close(envptr, 0);
+				CheckError(ret);
+			}
+			
+			public void Dispose() {
+				funcs1.close(envptr, 0);
+				envptr = IntPtr.Zero;
+			}
+			
+			public void BeginTransaction() {
+				int ret = funcs2.txn_begin(envptr, Txn, out Txn, DB_DIRTY_READ);
+				CheckError(ret);
+				txnfuncs = (txnstruct)Marshal.PtrToStructure((IntPtr)((int)Txn+100), typeof(txnstruct));
+			}
+			
+			public void Commit() {
+				int ret = txnfuncs.commit(Txn, 0);
+				txnfuncs.commit = null;
+				Txn = IntPtr.Zero;
+				CheckError(ret);
+			}
+			
+			~Env() {
+				if (envptr != IntPtr.Zero)
+					funcs1.close(envptr, 0);
+			}
+		}
+	
 		static void CheckError(int error) {
 			if (error == 0) return;
 			throw new DatabaseException( Marshal.PtrToStringAnsi(db_strerror(error)) );
@@ -299,7 +339,7 @@ namespace BDB {
 		
 		[DllImport(lib)] static extern int db_create(out IntPtr dbp, IntPtr dbenv, uint flags);
 		[DllImport(lib)] static extern IntPtr db_strerror(int error);
-		//[DllImport(lib)] static extern int db_env_create(out IntPtr dbenvp, uint flags);
+		[DllImport(lib)] static extern int db_env_create(out IntPtr dbenvp, uint flags);
 		
 		private struct Data {
 			const uint DB_DBT_MALLOC    =   0x004;
@@ -311,23 +351,30 @@ namespace BDB {
 #pragma warning restore 169
 			public uint flags;
 			
-			// From Mono.Unix.UnixMarshal
-	        /*static IntPtr StringToAlloc (string s, System.Text.Encoding e, out uint bytelength) {
-	            byte[] marshal = new byte [e.GetByteCount (s) + 1];
-	            if (e.GetBytes (s, 0, s.Length, marshal, 0) != (marshal.Length-1))
-	                throw new NotSupportedException ("e.GetBytes() doesn't equal e.GetByteCount()!");
-	            marshal [marshal.Length-1] = 0;
-	            bytelength = (uint)marshal.Length;
-	            return BytesToAlloc(marshal, marshal.Length);
-	        }*/
-	        
-	        static IntPtr BytesToAlloc (byte[] marshal, int length) {
-	            IntPtr mem = UnixMarshal.Alloc (length);
+			static byte[] staticdata;
+			
+			static void staticalloc(int len) {
+				if (staticdata == null) {
+					staticdata = new byte[len];
+				} else if (staticdata.Length < len) {
+					staticdata = new byte[len];
+				}
+			}
+			
+	        static IntPtr BytesToAlloc (Array marshal, int length, int stride) {
+	            IntPtr mem = UnixMarshal.Alloc (length*stride);
 	            if (mem == IntPtr.Zero)
 	                throw new OutOfMemoryException ();
 	            bool copied = false;
 	            try {
-	                Marshal.Copy (marshal, 0, mem, length);
+	            	if (marshal is byte[])
+	                	Marshal.Copy ((byte[])marshal, 0, mem, length);
+	            	else if (marshal is int[])
+	                	Marshal.Copy ((int[])marshal, 0, mem, length);
+	            	else if (marshal is char[])
+	                	Marshal.Copy ((char[])marshal, 0, mem, length);
+	                else
+	                	throw new InvalidOperationException();
 	                copied = true;
 	            }
 	            finally {
@@ -337,55 +384,39 @@ namespace BDB {
 	            return mem;
 	        }
 	        
-       		/*public static Data New(string data) {
+	        public static Data New(object data, Serializer binfmt, DataType datatype) {
 				Data ret = new Data();
-				ret.Ptr = StringToAlloc(data, System.Text.Encoding.UTF8, out ret.Size);
-				ret.ulen = 0;
-				ret.dlen = 0;
-				ret.doff = 0;
-				ret.flags = 0;
-				return ret;
-			}*/
-			
-			static MemoryStream binary;
-       		static BinaryWriter w;
-			
-       		public static Data New(object data, BinaryFormatter binfmt) {
+
        			if (data == null) {
-					Data ret = new Data();
 					ret.Ptr = IntPtr.Zero;
 					ret.Size = 0;
-					return ret;
+				} else if (datatype == DataType.UInt) {
+					staticalloc(4);
+					uint value = (uint)data;
+					byte[] d = staticdata;
+					d[0] = (byte)((value) & 0xFF);
+					d[1] = (byte)((value >> 8) & 0xFF);
+					d[2] = (byte)((value >> 16) & 0xFF);
+					d[3] = (byte)((value >> 24) & 0xFF);
+					ret.Ptr = BytesToAlloc(d, 4, 1);
+					ret.Size = (uint)4;
+				} else if (datatype == DataType.IntArray) {
+					int[] values = (int[])data;
+					ret.Size = (uint)(4*values.Length);
+					ret.Ptr = BytesToAlloc(values, values.Length, 4);
+				} else if (datatype == DataType.String && false) {
+					// Somehow this is slower than the below path.
+					char[] values = ((string)data).ToCharArray();
+					ret.Size = (uint)(2*values.Length);
+					ret.Ptr = BytesToAlloc(values, values.Length, 2);
        			} else {
-       				if (binary == null) {
-       					binary = new MemoryStream();
-       					w = new BinaryWriter(binary);
-       				}
-       				binary.SetLength(0);
-       			
-	       			if (data is string) {
-	       				binary.WriteByte(1);
-	       				w.Write((string)data);
-	       			} else if (data is int) {
-	       				binary.WriteByte(2);
-	       				w.Write((int)data);
-	       			} else if (data is int[]) {
-	       				binary.WriteByte(3);
-	       				int[] d = (int[])data;
-	       				w.Write(d.Length);
-	       				foreach (int di in d)
-	       					w.Write(di);
-	       			} else {
-	       				binary.WriteByte(0);
-		       			binfmt.Serialize(binary, data);
-		       			if (binary.Length > uint.MaxValue)
-		       				throw new ArgumentException("data is too large");
-	       			}
-					Data ret = new Data();
-					ret.Ptr = BytesToAlloc(binary.GetBuffer(), (int)binary.Length);
+       				MemoryStream binary = binfmt.Serialize(data);
+		       		if (binary.Length > uint.MaxValue)
+		       			throw new ArgumentException("data is too large");
+					ret.Ptr = BytesToAlloc(binary.GetBuffer(), (int)binary.Length, 1);
 					ret.Size = (uint)binary.Length;
-					return ret;
 				}
+				return ret;
 			}
 			
 			public static Data New() {
@@ -394,34 +425,24 @@ namespace BDB {
 				return ret;
 			}
 			
-			public object GetObject(BinaryFormatter binfmt) {
+			public object GetObject(Serializer binfmt, DataType datatype) {
 				if (Size == 0) return null;
-				byte[] bytedata = new byte[Size];
-	        	Marshal.Copy(Ptr, bytedata, 0, (int)Size);
-	        	MemoryStream binary = new MemoryStream(bytedata);
-	        	int mode = binary.ReadByte();
-        		BinaryReader r = new BinaryReader(binary);
-	        	switch (mode) {
-	        		case 1:
-	        		return r.ReadString();
-	        		
-	        		case 2:
-	        		return r.ReadInt32();
-	        	
-	        		case 3:
-	        		{
-	        			int len = r.ReadInt32();
-	        			int[] ret = new int[len];
-	        			for (int i = 0; i < len; i++)
-	        				ret[i] = r.ReadInt32();
-	        			return ret;
-	        		}
-	        		
-	        		case 0:
-	        		return binfmt.Deserialize(binary);
-	        		
-	        		default:
-	        		throw new InvalidOperationException();
+	        	if (datatype == DataType.UInt) {
+					staticalloc((int)Size);
+		        	Marshal.Copy(Ptr, staticdata, 0, (int)Size);
+	        		byte[] d = staticdata;
+	        		uint val = (uint)d[0] + ((uint)d[1] << 8) + ((uint)d[2] << 16) + ((uint)d[3] << 24);
+					return val;
+				} else if (datatype == DataType.IntArray) {
+					int[] data = new int[(int)Size/4];
+		        	Marshal.Copy(Ptr, data, 0, data.Length);
+					return data;
+				} else if (datatype == DataType.String && false) {
+					char[] data = new char[(int)Size/2];
+		        	Marshal.Copy(Ptr, data, 0, data.Length);
+					return new String(data);
+	        	} else {
+	        		return binfmt.Deserialize(staticdata);
 	        	}
 			}
 			
@@ -432,7 +453,27 @@ namespace BDB {
 		}
 		
 #pragma warning disable 169
-		[StructLayout(LayoutKind.Sequential)]
+		const int DB_CREATE = 0x0000001;
+		const int DB_DUP = 0x0000002;
+		const int DB_DUPSORT = 0x0000004;
+		const int DB_THREAD = 0x0000040;
+		const int DB_NOTFOUND = (-30989);/* Key/data pair not found (EOF). */
+		const int DB_KEYEMPTY = (-30997);/* Key/data deleted or never created. */
+		const int DB_KEYEXIST = (-30996);/* The key/data pair already exists. */
+		const int DB_INIT_CDB = 0x0001000;	/* Concurrent Access Methods. */
+		const int DB_INIT_LOCK = 0x0002000;	/* Initialize locking. */
+		const int DB_INIT_LOG = 0x0004000;	/* Initialize logging. */
+		const int DB_INIT_MPOOL = 0x0008000;	/* Initialize mpool. */
+		const int DB_INIT_REP = 0x0010000;	/* Initialize replication. */
+		const int DB_INIT_TXN = 0x0020000;	/* Initialize transactions. */
+		const int DB_JOINENV = 0x0040000;	/* Initialize all subsystems present. */
+		const int DB_LOCKDOWN = 0x0080000;	/* Lock memory into physical core. */
+		const int DB_PRIVATE = 0x0100000;	/* DB_ENV is process local. */
+		const int DB_TXN_NOSYNC = 0x0000100;/* Do not sync log on commit. */
+		const int DB_TXN_NOT_DURABLE = 0x0000200;	/* Do not log changes. */
+		const int DB_DIRTY_READ = 0x04000000; /* Dirty Read. */
+		const int DB_DIRECT_DB = 0x00002000;
+		
 		struct dbstruct {
 			IntPtr associate;
 			public db_close_delegate close;
@@ -516,7 +557,30 @@ namespace BDB {
 			IntPtr pget;
 			public c_put_delegate put;
 		}
-#pragma warning restore 169
+		
+		struct envstruct1 {
+			public env_close_delegate close;
+			IntPtr dbremove;
+			IntPtr dbrename;
+			IntPtr err;
+			IntPtr errx;
+			public env_open_delegate open;
+			IntPtr remove;
+			IntPtr stat_print;
+		}
+		
+		struct envstruct2 {
+			public env_tnx_begin_delegate txn_begin;
+		}
+		
+		struct txnstruct {
+			IntPtr abort;
+			public txn_commit_delegate commit;
+			IntPtr discard;
+			IntPtr prepare;
+		}
+		
+	#pragma warning restore 169
     	
     	delegate int db_set_flags_delegate(IntPtr db, uint flags);
 		delegate int db_close_delegate(IntPtr dbp, uint flags);
@@ -533,6 +597,158 @@ namespace BDB {
     	delegate int c_dup_delegate(IntPtr cursorp, out IntPtr newcursorp, uint flags);
     	delegate int c_put_delegate(IntPtr cursorp, ref Data key, ref Data value, uint flags);
     	delegate int c_get_delegate(IntPtr cursorp, ref Data key, ref Data value, uint flags);
+    	delegate int env_close_delegate(IntPtr envp, uint flags);
+    	delegate int env_open_delegate(IntPtr envp, string home, uint flags, int mode);
+    	delegate int env_tnx_begin_delegate(IntPtr envp, IntPtr parenttxn, out IntPtr txnp, uint flags);
+    	delegate int txn_commit_delegate(IntPtr tid, uint flags);
+	}
+	
+	class Serializer {
+		BinaryFormatter binfmt;
+		MemoryStream stream;
+		BinaryWriter writer;
+		
+		public Serializer() {
+			binfmt = new BinaryFormatter();
+			stream = new MemoryStream();
+			writer = new BinaryWriter(stream);
+		}
+		
+		public MemoryStream Serialize(object obj) {
+			// Reuse our memory stream by clearing it.
+			// Not thread safe, obviously.
+			stream.SetLength(0);
+			
+			Type type = obj.GetType();
+			stream.WriteByte((byte)Type.GetTypeCode(type));
+			
+			switch (Type.GetTypeCode (type)) {
+				case TypeCode.Boolean: writer.Write ((bool)obj); break;
+				case TypeCode.Byte: writer.Write ((byte)obj); break;
+				case TypeCode.Char: writer.Write ((char)obj); break;
+				case TypeCode.DateTime: writer.Write (((DateTime)obj).Ticks); break;
+				case TypeCode.Decimal: writer.Write ((decimal)obj); break;
+				case TypeCode.Double: writer.Write ((double)obj); break;
+				case TypeCode.Int16: writer.Write ((short)obj); break;
+				case TypeCode.Int32: writer.Write ((int)obj); break;
+				case TypeCode.Int64: writer.Write ((long)obj); break;
+				case TypeCode.SByte: writer.Write ((sbyte)obj); break;
+				case TypeCode.Single: writer.Write ((float)obj); break;
+				case TypeCode.UInt16: writer.Write ((ushort)obj); break;
+				case TypeCode.UInt32: writer.Write ((uint)obj); break;
+				case TypeCode.UInt64: writer.Write ((ulong)obj); break;
+				case TypeCode.String: writer.Write ((string)obj); break;
+				default: // TypeCode.Object
+					if (type.IsArray
+						&& type.GetArrayRank() == 1
+						&& Type.GetTypeCode(type.GetElementType()) != TypeCode.Object) {
+						int length = ((Array)obj).Length;
+						TypeCode innertype = Type.GetTypeCode(type.GetElementType());
+						stream.WriteByte(0);
+						stream.WriteByte((byte)innertype);
+						writer.Write(length);
+						for (int i = 0; i < length; i++) {
+							switch (innertype) {
+								case TypeCode.Boolean: writer.Write (((bool[])obj)[i]); break;
+								case TypeCode.Byte: writer.Write (((byte[])obj)[i]); break;
+								case TypeCode.Char: writer.Write (((char[])obj)[i]); break;
+								case TypeCode.DateTime: writer.Write ((((DateTime[])obj)[i]).Ticks); break;
+								case TypeCode.Decimal: writer.Write (((decimal[])obj)[i]); break;
+								case TypeCode.Double: writer.Write (((double[])obj)[i]); break;
+								case TypeCode.Int16: writer.Write (((short[])obj)[i]); break;
+								case TypeCode.Int32: writer.Write (((int[])obj)[i]); break;
+								case TypeCode.Int64: writer.Write (((long[])obj)[i]); break;
+								case TypeCode.SByte: writer.Write (((sbyte[])obj)[i]); break;
+								case TypeCode.Single: writer.Write (((float[])obj)[i]); break;
+								case TypeCode.UInt16: writer.Write (((ushort[])obj)[i]); break;
+								case TypeCode.UInt32: writer.Write (((uint[])obj)[i]); break;
+								case TypeCode.UInt64: writer.Write (((ulong[])obj)[i]); break;
+								case TypeCode.String: writer.Write (((string[])obj)[i]); break;
+							}
+						}
+					} else {
+						stream.WriteByte(1);
+		       			binfmt.Serialize(stream, obj);
+					}
+					break;
+			}
+			return stream;
+		}
+		
+		public object Deserialize(byte[] data) {
+			MemoryStream stream = new MemoryStream(data);
+			BinaryReader reader = new BinaryReader(stream);
+			
+			TypeCode typecode = (TypeCode)stream.ReadByte();
+			
+			switch (typecode) {
+				case TypeCode.Boolean: return reader.ReadBoolean ();
+				case TypeCode.Byte: return reader.ReadByte ();
+				case TypeCode.Char: return reader.ReadChar ();
+				case TypeCode.DateTime:  return new DateTime(reader.ReadInt64 ());
+				case TypeCode.Decimal: return reader.ReadDecimal ();
+				case TypeCode.Double: return reader.ReadDouble ();
+				case TypeCode.Int16: return reader.ReadInt16 ();
+				case TypeCode.Int32: return reader.ReadInt32 ();
+				case TypeCode.Int64: return reader.ReadInt64 ();
+				case TypeCode.SByte: return reader.ReadSByte ();
+				case TypeCode.Single: return reader.ReadSingle ();
+				case TypeCode.UInt16: return reader.ReadUInt16 ();
+				case TypeCode.UInt32: return reader.ReadUInt32 ();
+				case TypeCode.UInt64: return reader.ReadUInt64 ();
+				case TypeCode.String: return reader.ReadString ();
+				default: // TypeCode.Object
+					byte objtype = (byte)stream.ReadByte();
+					if (objtype == 0) {
+						int length = reader.ReadInt32();
+						TypeCode innertype = (TypeCode)reader.ReadByte();
+						object obj;
+						switch (typecode) {
+							case TypeCode.Boolean: obj = new Boolean[length]; break;
+							case TypeCode.Byte: obj = new Byte[length]; break;
+							case TypeCode.Char: obj = new Char[length]; break;
+							case TypeCode.DateTime:  obj = new DateTime[length]; break;
+							case TypeCode.Decimal: obj = new Decimal[length]; break;
+							case TypeCode.Double: obj = new Double[length]; break;
+							case TypeCode.Int16: obj = new Int16[length]; break;
+							case TypeCode.Int32: obj = new Int32[length]; break;
+							case TypeCode.Int64: obj = new Int64[length]; break;
+							case TypeCode.SByte: obj = new SByte[length]; break;
+							case TypeCode.Single: obj = new Single[length]; break;
+							case TypeCode.UInt16: obj = new UInt16[length]; break;
+							case TypeCode.UInt32: obj = new UInt32[length]; break;
+							case TypeCode.UInt64: obj = new UInt64[length]; break;
+							case TypeCode.String: obj = new String[length]; break;
+							default: throw new InvalidOperationException();
+						}
+						for (int i = 0; i < length; i++) {
+							switch (innertype) {
+								case TypeCode.Boolean: (((bool[])obj)[i]) = reader.ReadBoolean(); break;
+								case TypeCode.Byte: (((byte[])obj)[i]) = reader.ReadByte(); break;
+								case TypeCode.Char: (((char[])obj)[i]) = reader.ReadChar(); break;
+								case TypeCode.DateTime: (((DateTime[])obj)[i]) = new DateTime(reader.ReadInt32()); break;
+								case TypeCode.Decimal: (((decimal[])obj)[i]) = reader.ReadDecimal(); break;
+								case TypeCode.Double: (((double[])obj)[i]) = reader.ReadDouble(); break;
+								case TypeCode.Int16: (((short[])obj)[i]) = reader.ReadInt16(); break;
+								case TypeCode.Int32: (((int[])obj)[i]) = reader.ReadInt32(); break;
+								case TypeCode.Int64: (((long[])obj)[i]) = reader.ReadInt64(); break;
+								case TypeCode.SByte: (((sbyte[])obj)[i]) = reader.ReadSByte(); break;
+								case TypeCode.Single: (((float[])obj)[i]) = reader.ReadSingle(); break;
+								case TypeCode.UInt16: (((ushort[])obj)[i]) = reader.ReadUInt16(); break;
+								case TypeCode.UInt32: (((uint[])obj)[i]) = reader.ReadUInt32(); break;
+								case TypeCode.UInt64: (((ulong[])obj)[i]) = reader.ReadUInt64(); break;
+								case TypeCode.String: (((string[])obj)[i]) = reader.ReadString(); break;
+							}
+						}
+						return obj;
+					} else if (objtype == 1) {
+						return binfmt.Deserialize(stream);
+					} else {
+						throw new InvalidOperationException();
+					}
+					break;
+			}
+		}
 	}
 	
 }
