@@ -449,7 +449,7 @@ namespace SemWeb {
 					context.anonymous[str] = ret;
 				}
 				return ret;
-			} else if (prefix == "") {
+			} else if (prefix == "" && context.namespaces.GetNamespace(prefix) == null) {
 				return GetResource(context, (BaseUri == null ? "" : BaseUri) + str.Substring(colon+1));
 			} else {
 				string ns = context.namespaces.GetNamespace(prefix);
