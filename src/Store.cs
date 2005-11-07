@@ -216,7 +216,24 @@ namespace SemWeb {
 			}
 		}
 		
-		public abstract void Replace(Entity find, Entity replacement);
+		public virtual void Replace(Entity find, Entity replacement) {
+			MemoryStore deletions = new MemoryStore();
+			MemoryStore additions = new MemoryStore();
+			
+			Select(new Statement(find, null, null, null), deletions);
+			Select(new Statement(null, find, null, null), deletions);
+			Select(new Statement(null, null, find, null), deletions);
+			Select(new Statement(null, null, null, find), deletions);
+			
+			foreach (Statement s in deletions) {
+				Remove(s);
+				additions.Add(s.Replace(find, replacement));
+			}
+			
+			foreach (Statement s in additions) {
+				Add(s);
+			}
+		}
 		
 		public virtual void Replace(Statement find, Statement replacement) {
 			Remove(find);

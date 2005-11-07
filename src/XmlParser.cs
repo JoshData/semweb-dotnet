@@ -129,7 +129,7 @@ namespace SemWeb {
 				entity = GetNamedNode(Unrelativize("#" + ID));
 				
 				if (seenIDs.ContainsKey(entity.Uri))
-					OnError("Two descriptions cannot use the same rdf:ID: <" + entity.Uri + ">");
+					OnWarning("Two descriptions cannot use the same rdf:ID: <" + entity.Uri + ">");
 				seenIDs[entity.Uri] = seenIDs;
 			} else if (nodeID != null)
 				entity = GetBlankNode(nodeID);

@@ -442,6 +442,8 @@ namespace BDB {
 		        	Marshal.Copy(Ptr, data, 0, data.Length);
 					return new String(data);
 	        	} else {
+					staticalloc((int)Size);
+		        	Marshal.Copy(Ptr, staticdata, 0, (int)Size);
 	        		return binfmt.Deserialize(staticdata);
 	        	}
 			}

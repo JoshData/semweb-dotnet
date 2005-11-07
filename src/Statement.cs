@@ -63,6 +63,22 @@ namespace SemWeb {
 			return ret + ".";
 		}
 		
+		public Statement Replace(Resource find, Resource replacement) {
+			if (replacement is Literal) {
+				if (find == Object)
+					return new Statement(Subject, Predicate, replacement, Meta);
+				return this;
+			} else {
+				Entity ent = (Entity)replacement;
+				return new Statement(
+					Subject == find ? ent : Subject,
+					Predicate == find ? ent : Predicate,
+					Object == find ? ent : Object,
+					Meta == find ? ent : Meta
+					);
+			}
+		}
+		
 		public override bool Equals(object other) {
 			return (Statement)other == this;
 		}
