@@ -455,6 +455,8 @@ namespace SemWeb {
 				string ns = context.namespaces.GetNamespace(prefix);
 				if (ns == null)
 					OnError("Prefix is undefined: " + str, loc);
+				if (prefix != "")
+					Namespaces.AddNamespace(ns, prefix);
 				return GetResource(context, ns + str.Substring(colon+1));
 			}
 		}

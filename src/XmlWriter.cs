@@ -68,7 +68,16 @@ namespace SemWeb {
 		
 		private void Normalize(string uri, out string prefix, out string localname) {
 			if (uri == "")
-				throw new InvalidOperationException("The empty URI cannot be used as an element node.");	
+				throw new InvalidOperationException("The empty URI cannot be used as an element node.");
+				
+			if (BaseUri == null && uri.StartsWith("#")) {
+				// This isn't quite right, but it prevents dieing
+				// for something not uncommon in N3.  The hash
+				// gets lost.
+				prefix = "";
+				localname = uri.Substring(1);
+				return;
+			}
 		
 			if (ns.Normalize(uri, out prefix, out localname))
 				return;

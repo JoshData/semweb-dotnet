@@ -77,6 +77,16 @@ namespace SemWeb {
 		}
 		
 		private string CurNode() {
+			if (xml.NamespaceURI == "")
+				OnWarning("Element node must be qualified (" + xml.Name + ")");
+			if (xml.Prefix != "")
+				Namespaces.AddNamespace(xml.NamespaceURI, xml.Prefix);
+
+			// This probably isn't quite right, but compensates
+			// for a corresponding hash issue in XmlWriter.
+			if (xml.NamespaceURI == "" && BaseUri == null)
+				return "#" + xml.LocalName;
+
 			return xml.NamespaceURI + xml.LocalName;
 		}
 		
@@ -120,6 +130,11 @@ namespace SemWeb {
 			string ID = xml.GetAttribute("ID", NS.RDF);
 			if (isset(nodeID) + isset(about) + isset(ID) > 1)
 				OnError("An entity description cannot specify more than one of rdf:nodeID, rdf:about, and rdf:ID");
+
+			if (nodeID != null && !IsValidXmlName(nodeID))
+				OnWarning("'" + nodeID + "' is not a valid XML Name");
+			if (ID != null && !IsValidXmlName(ID))
+				OnWarning("'" + ID + "' is not a valid XML Name");
 				
 			Entity entity;
 			
@@ -139,7 +154,9 @@ namespace SemWeb {
 			// If the name of the element is not rdf:Description,
 			// then the name gives its type.
 			if (CurNode() != NS.RDF + "Description") {
-				if (CurNode() == NS.RDF + "li") OnError("rdf:li cannot be the type of a node");
+				if (IsRestrictedName(CurNode()) || IsDeprecatedName(CurNode()))
+					OnError(xml.Name + " cannot be the type of a resource.");
+				if (CurNode() == NS.RDF + "li") OnError("rdf:li cannot be the type of a resource");
 				storage.Add(new Statement(entity, rdfType, (Entity)CurNode(), Meta));
 			}
 			
@@ -171,14 +188,10 @@ namespace SemWeb {
 				
 				// Properties which are not recognized as property
 				// attributes and should be ignored.
-				if (curnode == NS.RDF + "RDF") continue;
-				if (curnode == NS.RDF + "Description") continue;
-				if (curnode == NS.RDF + "ID") continue;
-				if (curnode == NS.RDF + "about") continue;
-				if (curnode == NS.RDF + "parseType") continue;
-				if (curnode == NS.RDF + "resource") continue;
-				if (curnode == NS.RDF + "nodeID") continue;
-				if (curnode == NS.RDF + "datatype") continue;
+				if (IsRestrictedName(curnode))
+					continue;
+				if (IsDeprecatedName(curnode))
+					OnError(xml.Name + " is deprecated.");
 				
 				// Properties which are invalid as attributes.
 				if (curnode == NS.RDF + "li")
@@ -195,6 +208,7 @@ namespace SemWeb {
 				string lang = xml.XmlLang != "" ? xml.XmlLang : null;
 				storage.Add(new Statement(entity, curnode,
 					new Literal(xml.Value, lang, null), Meta));
+				Namespaces.AddNamespace(xml.NamespaceURI, xml.Prefix);
 				foundAttrs = true;
 					
 			} while (xml.MoveToNextAttribute());
@@ -241,9 +255,19 @@ namespace SemWeb {
 			string predicate = CurNode();
 			if (predicate == NS.RDF + "li")
 				predicate = NS.RDF + "_" + (liIndex++);
-				
+
+			if (IsRestrictedName(predicate))
+				OnError(xml.Name + " cannot be used as a property name.");
+			if (IsDeprecatedName(predicate))
+				OnError(xml.Name + " has been deprecated and cannot be used as a property name.");
+
 			string ID = xml.GetAttribute("ID", NS.RDF);
-			
+
+			if (nodeID != null && !IsValidXmlName(nodeID))
+				OnWarning("'" + nodeID + "' is not a valid XML Name");
+			if (ID != null && !IsValidXmlName(ID))
+				OnWarning("'" + ID + "' is not a valid XML Name");
+				
 			Resource objct = null;
 			if (nodeID != null || resource != null) {
 				if (isset(nodeID) + isset(resource) > 1)
@@ -390,12 +414,53 @@ namespace SemWeb {
 			}
 		}
 		
+		private bool IsRestrictedName(string name) {
+			if (name == NS.RDF + "RDF") return true;
+			if (name == NS.RDF + "Description") return true;
+			if (name == NS.RDF + "ID") return true;
+			if (name == NS.RDF + "about") return true;
+			if (name == NS.RDF + "parseType") return true;
+			if (name == NS.RDF + "resource") return true;
+			if (name == NS.RDF + "nodeID") return true;
+			if (name == NS.RDF + "datatype") return true;
+			return false;
+		}
+		
+		private bool IsDeprecatedName(string name) {
+			if (name == NS.RDF + "bagID") return true;
+			if (name == NS.RDF + "aboutEach") return true;
+			if (name == NS.RDF + "aboutEachPrefix") return true;
+			return false;
+		}
+
+		private bool IsValidXmlName(string name) {
+			// I'm not sure what's supposed to be valid, but this is just for warnings anyway.
+			// CombiningChar and Extender characters are omitted.
+			if (name.Length == 0) return false;
+			char f = name[0];
+			if (!char.IsLetter(f) && f != '_') return false;
+			for (int i = 1; i < name.Length; i++) {
+				f = name[i];
+				if (!char.IsLetter(f) && !char.IsDigit(f) && f != '.' && f != '-' && f != '_')
+					return false;
+			}
+			return true;
+		}
+		
 		private void OnError(string message) {
 			if (xml is IXmlLineInfo && ((IXmlLineInfo)xml).HasLineInfo()) {
 				IXmlLineInfo line = (IXmlLineInfo)xml;
 				message += ", line " + line.LineNumber + " col " + line.LinePosition;
 			}
 			throw new ParserException(message);
+		}
+
+		private new void OnWarning(string message) {
+			if (xml is IXmlLineInfo && ((IXmlLineInfo)xml).HasLineInfo()) {
+				IXmlLineInfo line = (IXmlLineInfo)xml;
+				message += ", line " + line.LineNumber + " col " + line.LinePosition;
+			}
+			base.OnWarning(message);
 		}
 	}
 }

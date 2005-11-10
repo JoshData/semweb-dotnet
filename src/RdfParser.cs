@@ -16,6 +16,7 @@ namespace SemWeb {
 		Hashtable variablenames = new Hashtable();
 		bool reuseentities = false;
 		bool dupcheck = false;
+		NamespaceManager nsmgr = new NamespaceManager();
 
 		public Entity Meta {
 			get {
@@ -53,7 +54,11 @@ namespace SemWeb {
 			}
 		}
 		
+		public NamespaceManager Namespaces { get { return nsmgr; } }
+		
 		public IDictionary Variables { get { return (Hashtable)variablenames.Clone(); } }
+		
+		public IList Warnings { get { return ArrayList.ReadOnly(warnings); } }
 		
 		protected void AddVariableName(Entity variable, string name) {
 			variablenames[variable] = name;
