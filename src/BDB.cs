@@ -362,7 +362,7 @@ namespace BDB {
 			}
 			
 	        static IntPtr BytesToAlloc (Array marshal, int length, int stride) {
-	            IntPtr mem = UnixMarshal.Alloc (length*stride);
+	            IntPtr mem = UnixMarshal.AllocHeap (length*stride);
 	            if (mem == IntPtr.Zero)
 	                throw new OutOfMemoryException ();
 	            bool copied = false;
@@ -379,7 +379,7 @@ namespace BDB {
 	            }
 	            finally {
 	                if (!copied)
-	                    UnixMarshal.Free (mem);
+	                    UnixMarshal.FreeHeap (mem);
 	            }
 	            return mem;
 	        }
@@ -404,11 +404,11 @@ namespace BDB {
 					int[] values = (int[])data;
 					ret.Size = (uint)(4*values.Length);
 					ret.Ptr = BytesToAlloc(values, values.Length, 4);
-				} else if (datatype == DataType.String && false) {
+				/*} else if (datatype == DataType.String && false) {
 					// Somehow this is slower than the below path.
 					char[] values = ((string)data).ToCharArray();
 					ret.Size = (uint)(2*values.Length);
-					ret.Ptr = BytesToAlloc(values, values.Length, 2);
+					ret.Ptr = BytesToAlloc(values, values.Length, 2);*/
        			} else {
        				MemoryStream binary = binfmt.Serialize(data);
 		       		if (binary.Length > uint.MaxValue)
@@ -437,10 +437,10 @@ namespace BDB {
 					int[] data = new int[(int)Size/4];
 		        	Marshal.Copy(Ptr, data, 0, data.Length);
 					return data;
-				} else if (datatype == DataType.String && false) {
+				/*} else if (datatype == DataType.String && false) {
 					char[] data = new char[(int)Size/2];
 		        	Marshal.Copy(Ptr, data, 0, data.Length);
-					return new String(data);
+					return new String(data);*/
 	        	} else {
 					staticalloc((int)Size);
 		        	Marshal.Copy(Ptr, staticdata, 0, (int)Size);
@@ -450,7 +450,7 @@ namespace BDB {
 			
 			public void Free() {
 				if (Ptr != IntPtr.Zero)
-					UnixMarshal.Free(Ptr);
+					UnixMarshal.FreeHeap(Ptr);
 			}
 		}
 		
@@ -748,7 +748,6 @@ namespace BDB {
 					} else {
 						throw new InvalidOperationException();
 					}
-					break;
 			}
 		}
 	}

@@ -85,7 +85,7 @@ namespace SemWeb {
 			}
 		}
 		
-		public override Entity[] GetAllEntities() {
+		public override Entity[] GetEntities() {
 			Hashtable h = new Hashtable();
 			foreach (Statement s in Statements) {
 				if (s.Subject != null) h[s.Subject] = h;
@@ -96,14 +96,14 @@ namespace SemWeb {
 			return (Entity[])new ArrayList(h.Keys).ToArray(typeof(Entity));
 		}
 		
-		public override Entity[] GetAllPredicates() {
+		public override Entity[] GetPredicates() {
 			Hashtable h = new Hashtable();
 			foreach (Statement s in Statements)
 				h[s.Predicate] = h;
 			return (Entity[])new ArrayList(h.Keys).ToArray(typeof(Entity));
 		}
 
-		public override Entity[] GetAllMetas() {
+		public override Entity[] GetMetas() {
 			Hashtable h = new Hashtable();
 			foreach (Statement s in Statements)
 				h[s.Meta] = h;

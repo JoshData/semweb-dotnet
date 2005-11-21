@@ -202,6 +202,9 @@ namespace SemWeb.Query {
 				query.Variables, null) {
 		}
 
+		public GraphMatch(Store queryModel) : this(queryModel, null, null, null) {
+		}
+		
 		private GraphMatch(Store queryModel, Entity queryNode) : this(queryModel, queryNode, null, null) {
 		}
 		
@@ -441,7 +444,7 @@ namespace SemWeb.Query {
 					// statements.
 					
 					MemoryStore matches = new MemoryStore();
-					targetModel.Select((Statement[])templates.ToArray(typeof(Statement)), matches);
+					targetModel.Select((Statement[])templates.ToArray(typeof(Statement)), new ClearMetaDupCheck(matches));
 					
 					Debug("\t" + matches.StatementCount + " Matches");
 					
@@ -461,7 +464,7 @@ namespace SemWeb.Query {
 						BindingEnumerator enumer2 = new BindingEnumerator(qs, binding);
 						while (enumer2.MoveNext(out s, out p, out o)) {
 							// Get the matching statements from the union query
-							Statement bs = new Statement(s, p, o, QueryMeta);
+							Statement bs = new Statement(s, p, o);
 							MemoryStore innermatches = matches.Select(bs).Load();
 							
 							// If no matches, the binding didn't match the filter.
@@ -654,6 +657,8 @@ namespace SemWeb.Query {
 				foreach (QueryStatement qs in group) {
 					Statement s = GetStatement(qs, bindings);
 					if (s == StatementFailed) return false;
+					if (s.Meta == null) // make sure it has DefaultMeta
+						s = new Statement(s.Subject, s.Predicate, s.Object);
 					Debug("  " + s);
 					findstatements.Add(s);
 				}
@@ -740,6 +745,18 @@ namespace SemWeb.Query {
 				if (!f.Filter(e, targetModel)) return false;
 			}
 			return true;
+		}
+		
+		class ClearMetaDupCheck : StatementSink {
+			MemoryStore m;
+			public ClearMetaDupCheck(MemoryStore m) { this.m = m; }
+			public bool Add(Statement s) {
+				// remove meta information
+				s = new Statement(s.Subject, s.Predicate, s.Object);
+				if (!m.Contains(s))
+					m.Add(s);
+				return true;
+			}
 		}
 		
 		private void Init() {

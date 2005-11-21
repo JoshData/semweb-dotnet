@@ -158,11 +158,24 @@ namespace SemWeb {
 			source.Select(this);
 		}
 		
-		public abstract Entity[] GetAllEntities();
+		public void RemoveAll(StatementSource source) {
+			source.Select(new Remover(this));
+		}
 		
-		public abstract Entity[] GetAllPredicates();
+		private class Remover : StatementSink {
+			Store s;
+			public Remover(Store s) { this.s = s; }
+			public bool Add(Statement stmt) {
+				s.Remove(stmt);
+				return true;
+			}
+		}
 		
-		public abstract Entity[] GetAllMetas();
+		public abstract Entity[] GetEntities();
+		
+		public abstract Entity[] GetPredicates();
+		
+		public abstract Entity[] GetMetas();
 		
 		public virtual bool Contains(Statement template) {
 			return Contains(this, template);
@@ -388,26 +401,26 @@ namespace SemWeb.Stores {
 			throw new InvalidOperationException("Clear is not a valid operation on a MultiStore.");
 		}
 		
-		public override Entity[] GetAllEntities() {
+		public override Entity[] GetEntities() {
 			Hashtable h = new Hashtable();
 			foreach (Store s in stores)
-				foreach (Resource r in s.GetAllEntities())
+				foreach (Resource r in s.GetEntities())
 					h[r] = h;
 			return (Entity[])new ArrayList(h.Keys).ToArray(typeof(Entity));
 		}
 		
-		public override Entity[] GetAllPredicates() {
+		public override Entity[] GetPredicates() {
 			Hashtable h = new Hashtable();
 			foreach (Store s in stores)
-				foreach (Resource r in s.GetAllPredicates())
+				foreach (Resource r in s.GetPredicates())
 					h[r] = h;
 			return (Entity[])new ArrayList(h.Keys).ToArray(typeof(Entity));
 		}
 
-		public override Entity[] GetAllMetas() {
+		public override Entity[] GetMetas() {
 			Hashtable h = new Hashtable();
 			foreach (Store s in stores)
-				foreach (Resource r in s.GetAllMetas())
+				foreach (Resource r in s.GetMetas())
 					h[r] = h;
 			return (Entity[])new ArrayList(h.Keys).ToArray(typeof(Entity));
 		}

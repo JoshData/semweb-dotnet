@@ -508,15 +508,15 @@ namespace SemWeb.Stores {
 			RunCommand(cmd.ToString());
 		}
 		
-		public override Entity[] GetAllEntities() {
+		public override Entity[] GetEntities() {
 			return GetAllEntities(fourcols);
 		}
 			
-		public override Entity[] GetAllPredicates() {
+		public override Entity[] GetPredicates() {
 			return GetAllEntities(predcol);
 		}
 		
-		public override Entity[] GetAllMetas() {
+		public override Entity[] GetMetas() {
 			return GetAllEntities(metacol);
 		}
 
@@ -528,7 +528,6 @@ namespace SemWeb.Stores {
 				IDataReader reader = RunReader("SELECT " + col + ", value FROM " + table + "_statements LEFT JOIN " + table + "_entities ON " + col + "=id " + (col == "object" ? " WHERE objecttype=0" : "") + " GROUP BY " + col + ";");
 				try {
 					while (reader.Read()) {
-						//int id = AsInt(reader[0]);
 						int id = reader.GetInt32(0);
 						if (id == 1 && col == "meta") continue; // don't return DefaultMeta in meta column.
 						
