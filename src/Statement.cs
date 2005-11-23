@@ -2,10 +2,10 @@ using System;
 
 namespace SemWeb {
 	public struct Statement {
-		private Entity s;
-		private Entity p;
-		private Resource o;
-		private Entity m;
+		public Entity Subject;
+		public Entity Predicate;
+		public Resource Object;
+		public Entity Meta;
 		
 		public static Entity DefaultMeta = new Entity(null);
 		
@@ -16,17 +16,11 @@ namespace SemWeb {
 		}
 		
 		public Statement(Entity subject, Entity predicate, Resource @object, Entity meta) {
-		  s = subject;
-		  p = predicate;
-		  o = @object;
-		  m = meta;
+		  Subject = subject;
+		  Predicate = predicate;
+		  Object = @object;
+		  Meta = meta;
 		}
-		
-		public Entity Subject { get { return s; } }
-		public Entity Predicate { get { return p; } }
-		public Resource Object { get { return o; } }
-		
-		public Entity Meta { get { return m; } }
 		
 		public bool AnyNull {
 			get {
@@ -85,10 +79,10 @@ namespace SemWeb {
 		
 		public override int GetHashCode() {
 			int ret = 0;
-			if (s != null) ret = unchecked(ret + s.GetHashCode());
-			if (p != null) ret = unchecked(ret + p.GetHashCode());
-			if (o != null) ret = unchecked(ret + o.GetHashCode());
-			if (m != null) ret = unchecked(ret + m.GetHashCode());
+			if (Subject != null) ret = unchecked(ret + Subject.GetHashCode());
+			if (Predicate != null) ret = unchecked(ret + Predicate.GetHashCode());
+			if (Object != null) ret = unchecked(ret + Object.GetHashCode());
+			if (Meta != null) ret = unchecked(ret + Meta.GetHashCode());
 			return ret;
 		}
 		
