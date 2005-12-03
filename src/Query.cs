@@ -64,6 +64,24 @@ namespace SemWeb.Query {
 				else
 					return Anchor.ToString();
 			}
+			
+			public Resource[] GetValues(QueryResult union, bool entities) {
+				if (!IsVariable) {
+					if (entities)
+						return new Entity[] { (Entity)Anchor };
+					else
+						return ArrayOfAnchor;
+				} else {
+					Resource[] res = union.Bindings[VarIndex].ToArray();
+					if (!entities) return res;
+					
+					ArrayList ret = new ArrayList();
+					foreach (Resource r in res)
+						if (r is Entity)
+							ret.Add(r);
+					return (Entity[])ret.ToArray(typeof(Entity));
+				}
+			}
 		}
 		
 		private class QueryStatement { // class because of use with IComparer
@@ -429,22 +447,13 @@ namespace SemWeb.Query {
 					
 					Debug(qs.ToString() + " Something Multiply Bound");
 					
-					Entity s, p;
-					Resource o;
-					
-					ArrayList templates = new ArrayList();
-					BindingEnumerator enumer = new BindingEnumerator(qs, bindings.Union);
-					while (enumer.MoveNext(out s, out p, out o))
-						templates.Add(new Statement(s, p, o, QueryMeta));
-					
-					Debug("\t" + templates.Count + " Templates");
-					
-					// But we still need to preserve the pairings of
-					// the multiply bound variable with the matching
-					// statements.
-					
 					MemoryStore matches = new MemoryStore();
-					targetModel.Select((Statement[])templates.ToArray(typeof(Statement)), new ClearMetaDupCheck(matches));
+					targetModel.Select(
+						(Entity[])qs.Subject.GetValues(bindings.Union, true),
+						(Entity[])qs.Predicate.GetValues(bindings.Union, true),
+						qs.Object.GetValues(bindings.Union, false),
+						QueryMeta == null ? null : new Entity[] { QueryMeta },
+						new ClearMetaDupCheck(matches));
 					
 					Debug("\t" + matches.StatementCount + " Matches");
 					
@@ -455,6 +464,10 @@ namespace SemWeb.Query {
 						return qs.Optional;
 					}
 					
+					// We need to preserve the pairings of
+					// the multiply bound variable with the matching
+					// statements.
+					
 					ArrayList newbindings = new ArrayList();
 					
 					if (!qs.Optional) bindings.Union.Clear(qs);
@@ -462,6 +475,8 @@ namespace SemWeb.Query {
 					foreach (QueryResult binding in bindings.Results) {
 						// Break apart the permutations in this binding.
 						BindingEnumerator enumer2 = new BindingEnumerator(qs, binding);
+						Entity s, p;
+						Resource o;
 						while (enumer2.MoveNext(out s, out p, out o)) {
 							// Get the matching statements from the union query
 							Statement bs = new Statement(s, p, o);

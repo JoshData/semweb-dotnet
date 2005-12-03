@@ -14,6 +14,9 @@ namespace SemWeb.Query {
 		int blankNodeCounter = 0;
 		Hashtable blankNodes = new Hashtable();
 		
+		public bool Ordered = false;
+		public bool Distinct = true;
+		
 		private static System.Xml.XmlWriter GetWriter(System.IO.TextWriter writer) {
 			System.Xml.XmlTextWriter w = new System.Xml.XmlTextWriter(writer);
 			w.Formatting = System.Xml.Formatting.Indented;
@@ -30,7 +33,7 @@ namespace SemWeb.Query {
 		
 		public override void Init(VariableBinding[] variables) {
 			output.WriteStartElement("sparql");
-			output.WriteAttributeString("xmlns", "http://www.w3.org/2001/sw/DataAccess/rf1/result");
+			output.WriteAttributeString("xmlns", "http://www.w3.org/2005/sparql-results#");
 			output.WriteStartElement("head");
 			foreach (VariableBinding var in variables) {
 				if (var.Name == null) continue;
@@ -40,6 +43,10 @@ namespace SemWeb.Query {
 			}
 			output.WriteEndElement(); // head
 			output.WriteStartElement("results");
+			output.WriteAttributeString("ordered", Ordered ? "true" : "false");
+			output.WriteAttributeString("distinct", Distinct ? "true" : "false");
+			
+			// instead of <results>, we might want <boolean>true</boolean>
 		}
 		
 		public override bool Add(VariableBinding[] result) {
@@ -47,18 +54,22 @@ namespace SemWeb.Query {
 			foreach (VariableBinding var in result) {
 				if (var.Name == null) continue;
 				
-				output.WriteStartElement(var.Name);
+				output.WriteStartElement("binding");
+				output.WriteAttributeString("name", var.Name);
 				if (var.Target == null) {
-					output.WriteAttributeString("bound", "false");
+					output.WriteStartElement("unbound");
+					output.WriteEndElement();
 				} else if (var.Target.Uri != null) {
-					output.WriteAttributeString("uri", var.Target.Uri);
+					output.WriteElementString("uri", var.Target.Uri);
 				} else if (var.Target is Literal) {
+					output.WriteStartElement("literal");
 					Literal literal = (Literal)var.Target;
 					if (literal.DataType != null)
 						output.WriteAttributeString("datatype", literal.DataType);
 					if (literal.Language != null)
-						output.WriteAttributeString("language", literal.Language);
-					output.WriteString(literal.Value);				
+						output.WriteAttributeString("xml", "lang", null, literal.Language);
+					output.WriteString(literal.Value);
+					output.WriteEndElement();				
 				} else {
 					string id;
 					if (blankNodes.ContainsKey(var.Target))
@@ -67,7 +78,7 @@ namespace SemWeb.Query {
 						id = "r" + (++blankNodeCounter);
 						blankNodes[var.Target] = id;
 					}
-					output.WriteAttributeString("bnodeid", id);
+					output.WriteElementString("bnode", id);
 				}
 				
 				output.WriteEndElement();

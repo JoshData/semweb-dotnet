@@ -8,10 +8,10 @@ namespace SemWeb {
 		void Select(StatementSink sink);
 	}
 	
-	public interface SelectableSource {
+	public interface SelectableSource : StatementSource {
 		bool Contains(Statement template);
 		void Select(Statement template, StatementSink sink);
-		void Select(Statement[] templates, StatementSink sink);
+		void Select(Entity[] subjects, Entity[] predicates, Resource[] objects, Entity[] metas, StatementSink sink);
 	}
 
 	public interface StatementSink {
@@ -121,6 +121,8 @@ namespace SemWeb {
 					return Activator.CreateInstance(ttype, new object[] { spec, table });
 				case "bdb":
 					return new BDBStore(spec);
+				case "sparql-http":
+					return new SemWeb.Remote.SparqlHttpSource(spec);
 				default:
 					throw new ArgumentException("Unknown parser type: " + type);
 			}
@@ -193,14 +195,14 @@ namespace SemWeb {
 		
 		public abstract void Select(Statement template, StatementSink result);
 		
-		public abstract void Select(Statement[] templates, StatementSink result);
+		public abstract void Select(Entity[] subjects, Entity[] predicates, Resource[] objects, Entity[] metas, StatementSink result);
 		
 		public SelectResult Select(Statement template) {
 			return new SelectResult.Single(this, template);
 		}
 		
-		public SelectResult Select(Statement[] templates) {
-			return new SelectResult.Multi(this, templates);
+		public SelectResult Select(Entity[] subjects, Entity[] predicates, Resource[] objects, Entity[] metas) {
+			return new SelectResult.Multi(this, subjects, predicates, objects, metas);
 		}
 		
 		public Resource[] SelectObjects(Entity subject, Entity predicate) {
@@ -356,13 +358,17 @@ namespace SemWeb {
 		
 		internal class Multi : SelectResult {
 			Store source;
-			Statement[] templates;
-			public Multi(Store source, Statement[] templates) {
+			Entity[] subjects, predicates, metas;
+			Resource[] objects;
+			public Multi(Store source, Entity[] subjects, Entity[] predicates, Resource[] objects, Entity[] metas) {
 				this.source = source;
-				this.templates = templates;
+				this.subjects = subjects;
+				this.predicates = predicates;
+				this.objects = objects;
+				this.metas = metas;
 			}
 			public override void Select(StatementSink sink) {
-				source.Select(templates, sink);
+				source.Select(subjects, predicates, objects, metas, sink);
 			}
 		}
 	}
@@ -441,9 +447,9 @@ namespace SemWeb.Stores {
 				s.Select(template, result);
 		}
 		
-		public override void Select(Statement[] templates, StatementSink result) {
+		public override void Select(Entity[] subjects, Entity[] predicates, Resource[] objects, Entity[] metas, StatementSink result) {
 			foreach (Store s in stores)
-				s.Select(templates, result);
+				s.Select(subjects, predicates, objects, metas, result);
 		}
 
 		public override void Replace(Entity a, Entity b) {

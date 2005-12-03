@@ -12,6 +12,10 @@ namespace SemWeb.Util {
 		public ResSet() {
 		}
 		
+		public ResSet(Resource[] items) {
+			AddRange(items);
+		}
+
 		private ResSet(Hashtable items) {
 			this.items = items;
 		}
@@ -19,7 +23,13 @@ namespace SemWeb.Util {
 		public void Add(Resource res) {
 			items[res] = items;
 			keys = null;
-		}	
+		}
+		
+		public void AddRange(Resource[] items) {
+			foreach (Resource r in items)
+				Add(r);
+		}
+			
 		public void Remove(Resource res) {
 			items.Remove(res);
 			keys = null;
@@ -62,6 +72,12 @@ namespace SemWeb.Util {
 		public void CopyTo(System.Array array, int index) {
 			foreach (Resource r in this)
 				array.SetValue(r, index++);
+		}
+		
+		public Resource[] ToArray() {
+			Resource[] ret = new Resource[Count];
+			CopyTo(ret, 0);
+			return ret;
 		}
 		
 		/*Hashtable Intersect(Hashtable x, Hashtable y) {
@@ -168,8 +184,12 @@ namespace SemWeb.Util {
 			return ret;
 		}
 		
-		public Statement[] ToArray(Type t) {
+		internal Statement[] ToArray(Type t) {
 			return ToArray();
+		}
+		
+		public static implicit operator Statement[](StatementList list) {
+			return list.ToArray();
 		}
 		
 		public IEnumerator GetEnumerator() { return new Enumer(this); }

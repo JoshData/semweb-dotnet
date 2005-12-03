@@ -16,11 +16,14 @@ namespace SemWeb.Algos {
 		public bool Contains(Statement template) {
 			return Store.Contains(this, template);
 		}
+		public void Select(StatementSink sink) {
+			Select(Statement.All, sink);
+		}
 		public void Select(Statement template, StatementSink sink) {
 			a.Select(template, new Tester(b, sink));
 		}
-		public void Select(Statement[] templates, StatementSink sink) {
-			a.Select(templates, new Tester(b, sink));
+		public void Select(Entity[] subjects, Entity[] predicates, Resource[] objects, Entity[] metas, StatementSink sink) {
+			a.Select(subjects, predicates, objects, metas, new Tester(b, sink));
 		}
 		class Tester : StatementSink {
 			SelectableSource b;
@@ -101,15 +104,28 @@ namespace SemWeb.Algos {
 		}
 	
 		public static void MakeLean(Store store, StatementSink removed) {
-			foreach (MSG.Graph msgg in MSG.FindMSGs(store)) {
+			MSG.Graph[] msgs = MSG.FindMSGs(store);
+			
+			MemoryStore painted = new MemoryStore();
+			MSG.PaintStatements(msgs, store, painted);
+		
+			foreach (MSG.Graph msgg in msgs) {
 				// Load the MSG into memory.
-				MemoryStore msg = new MemoryStore(msgg);
+				MemoryStore msg = new MemoryStore(painted.Select(new Statement(null, null, null, msgg.Meta)));
+				msg.Replace(msgg.Meta, Statement.DefaultMeta);
 
 				// Make this MSG lean.
 				MemoryStore msgremoved = new MemoryStore();
-				MakeLeanMSG(store, msg, msgremoved);
+				MakeLeanMSG(store, msg, msgg.GetBNodes(), msgremoved);
+				
+				// Whatever was removed from msg, remove it from the main graph.
 				store.RemoveAll(msgremoved);
+				
+				// And track what was removed.
 				if (removed != null) msgremoved.Select(removed);
+				
+				// If this MSG is now (somehow) empty (shouldn't happen,
+				// but one never knows), don't test for entailment.
 				if (msg.StatementCount == 0) continue;
 
 				// Remove this MSG if it is already entailed.
@@ -127,26 +143,65 @@ namespace SemWeb.Algos {
 			}
 		}
 		
-		private static void MakeLeanMSG(Store graph, Store msg, StatementSink removed) {
-			// For each of the 2^N subgraphs of store
-			// containing all (or not all) of the
-			// statements refering to each blank node,
+		private static void MakeLeanMSG(Store graph, Store msg, ICollection bnodecollection, StatementSink removed) {
+			// For each of the 'connected' subgraphs of msg,
 			// check if the store minus that subgraph
 			// entails the subgraph.
 			
-			Entity[] entities = msg.GetEntities();
+			// If there is only one bnode in the MSG, then
+			// there are no subgraphs to check.
+			if (bnodecollection.Count == 1) return;
+			
+			// Get an array of bnodes in the msg
 			ArrayList bnodes = new ArrayList();
-			foreach (Entity e in entities)
-				if (e.Uri == null)
-					bnodes.Add(e);
-					
+			Hashtable bnodeindex = new Hashtable();
+			foreach (Entity e in bnodecollection) {
+				bnodeindex[e] = bnodes.Count;
+				bnodes.Add(e);
+			}
+				
+			// Build a connectivity map of the bnodes
+			bool[,] connected;
+			Connectivity.Build(msg, out connected, bnodeindex);
+			
+			// Find the mean connectivity of each node.
+			int meancon = 0;
+			for (int i = 0; i < bnodes.Count; i++)
+				for (int j = 0; j < bnodes.Count; j++)
+					if (connected[i,j])
+						meancon++;
+			meancon /= bnodes.Count;
+			
+			// If there's high connectivity, then (I think)
+			// we want to just enumerate the 2^N possible
+			// variable choices.  Otherwise, we expect there
+			// to be far fewer than 2^N contiguous subgraphs,
+			// so we can do a faster but more memory-intensive
+			// enumeration.  What should the mean connectivity
+			// threshold be?
+			Permuter permuter;
+			if (meancon < 5 && bnodes.Count > 5) {
+				// We'll iterate using a memory-hogging algorithm
+				// that uses the connectivity.
+				permuter = new SearchingPermuter(connected);
+			} else {
+				// We'll iterate over the 2^N choices of variables.
+				permuter = new ExponentialPermuter(bnodes.Count);
+			}
+			
+			Console.WriteLine("\nNew MSG: {0}\n", permuter.GetType().ToString());
+			
 			// Set up an array for the permutations.
 			// It would be better to organize this to
 			// minimize the amount of change in the
 			// variables set and the subgraph store
 			// in each iteration.
-			bool[] permute = new bool[bnodes.Count+1];
-			while (!permute[bnodes.Count]) {
+			bool[] permute;
+			int considered = 0;
+			while ((permute = permuter.Next()) != null) {
+				considered++;
+				Console.WriteLine("  considered {0} subgraphs for a {1}-node MSG (2^N={2})", considered, bnodes.Count, Math.Pow(2, bnodes.Count));
+				
 				// Get all of the statements that mention
 				// the bnodes marked as 'true' in this
 				// permutation.
@@ -158,11 +213,12 @@ namespace SemWeb.Algos {
 			
 				MemoryStore subgraph = new MemoryStore();
 				msg.Select(new Sink(variables, subgraph));
-			
-				// We only need to consider this permutation if
-				// the nodes are connected among themselves.  But
-				// we need a really fast way of doing this.				
-			
+				if (subgraph.StatementCount == 0) continue; // things may have been removed, meta entities, etc.
+				//subgraph.Write(Console.Out);
+				
+				// Note that like below, 'msg' should really be 'graph'.
+				if (subgraph.StatementCount > msg.StatementCount/2) continue;
+
 				// Check if subgraph is entailed by (store minus subgraph)
 				GraphMatch match = new GraphMatch(subgraph);
 				
@@ -172,15 +228,6 @@ namespace SemWeb.Algos {
 				for (int i = 0; i < bnodes.Count; i++)
 					if (!permute[i])
 						match.SetNonVariable((Entity)bnodes[i]);
-
-				// Permute before any 'continue' statements.
-				permute[0] = !permute[0];
-				for (int i = 0; i < bnodes.Count; i++) {
-					if (permute[i] == true) break;
-					permute[i+1] = !permute[i+1];
-				}
-
-				if (subgraph.StatementCount == 0) continue; // things may have been removed, meta entities, etc.
 
 				QueryResultBufferSink qsink = new QueryResultBufferSink();
 				
@@ -199,6 +246,110 @@ namespace SemWeb.Algos {
 					if (removed != null) subgraph.Select(removed);
 				}
 				
+			}
+			
+			Console.WriteLine("MSG: Considered {0} subgraphs for a {1}-node MSG (2^N={2})", considered, bnodes.Count, Math.Pow(2, bnodes.Count));
+		}
+		
+		private abstract class Permuter {
+			public abstract bool[] Next();
+		}
+		
+		private class SearchingPermuter : Permuter {
+			// This is based on something I read.
+			// We'll maintain a queue of connected
+			// subgraphs to process.  The queue will
+			// start with a one-node subgraph for each
+			// bnode.  Then each time we process a
+			// subgraph, we'll extend the graph by one
+			// node every way we can and add all of those
+			// new subgraphs into the queue -- unless we've
+			// already processed the subgraph.  
+		
+			int n;
+			bool[,] conn;
+			Queue queue = new Queue();
+			Hashtable processed = new Hashtable();
+			
+			public SearchingPermuter(bool[,] conn) {
+				this.conn = conn;
+				n = conn.GetLength(0);
+				for (int i = 0; i < n; i++)
+					QueueSubgraph(null, i);
+			}
+			
+			void QueueSubgraph(Subgraph a, int b) {
+				Subgraph s = new Subgraph();
+				s.nodes = new bool[n];
+				s.touching = new bool[n];
+				if (a != null) {
+					a.nodes.CopyTo(s.nodes, 0);
+					a.touching.CopyTo(s.touching, 0);
+				}
+				s.nodes[b] = true;
+
+				s.sum = unchecked((a != null ? a.sum : 0) + b);
+				if (processed.ContainsKey(s)) return;
+				
+				for (int i = 0; i < n; i++)
+					if (conn[b,i])
+						s.touching[i] = true;
+						
+				processed[s] = processed;
+				queue.Enqueue(s);
+			}
+			
+			public override bool[] Next() {
+				if (queue.Count == 0) return null;
+				Subgraph s = (Subgraph)queue.Dequeue();
+				
+				// Create a new s for every node touching
+				// s but not in s.
+				for (int i = 0; i < n; i++)
+					if (!s.nodes[i] && s.touching[i])
+						QueueSubgraph(s, i);
+				
+				return s.nodes;
+			}
+			
+			class Subgraph {
+				public bool[] nodes;
+				public bool[] touching;
+				public int sum;
+				
+				public override int GetHashCode() { return sum; }
+				public override bool Equals(object o) {
+					Subgraph g = (Subgraph)o;
+					for (int i = 0; i < nodes.Length; i++)
+						if (nodes[i] != g.nodes[i])
+							return false;
+					return true;
+				}
+			}
+		}
+		
+		private class ExponentialPermuter : Permuter {
+			bool[] state;
+			public ExponentialPermuter(int bnodecount) {
+				state = new bool[bnodecount];
+				state[0] = true; // don't need to do the first
+								 // permutation with no variables
+			}
+			public override bool[] Next() {
+				bool[] ret = (bool[])state.Clone();
+				
+				state[0] = !state[0];
+				for (int i = 0; i < state.Length; i++) {
+					if (state[i] == true) break;
+					if (i == state.Length-1) {
+						// We don't need to do the last
+						// permutation with all true.
+						return null;
+					}
+					state[i+1] = !state[i+1];
+				}
+
+				return ret;
 			}
 		}
 
@@ -274,10 +425,10 @@ namespace SemWeb.Algos {
 		
 		// This method finds all minimal self-contained graphs
 		// by painting nodes colors.  (The colors happen to be
-		// ArrayList objects.)
-		public static Graph[] FindMSGs(StatementSource source) {
+		// objects.)
+		public static Graph[] FindMSGs(SelectableSource source) {
 			FindMSGsSink sink = new FindMSGsSink();
-			source.Select(sink);
+			source.Select(Statement.All, sink);
 			ArrayList graphs = new ArrayList();
 			foreach (ArrayList a in sink.colors.Keys)
 				graphs.Add(new Graph(source, a));
@@ -285,9 +436,10 @@ namespace SemWeb.Algos {
 		}
 		
 		public class Graph : StatementSource {
-			StatementSource source;
+			SelectableSource source;
 			ResSet entities = new ResSet();
-			internal Graph(StatementSource source, ArrayList entities) {
+			Entity meta = new Entity(null);
+			internal Graph(SelectableSource source, ArrayList entities) {
 				this.source = source;
 				foreach (Entity e in entities)
 					this.entities.Add(e);
@@ -295,12 +447,25 @@ namespace SemWeb.Algos {
 			public bool Contains(Entity e) {
 				return entities.Contains(e);
 			}
-			public ICollection GetEntites() {
+			public ICollection GetBNodes() {
 				return entities.Items;
 			}
 			public void Select(StatementSink s) {
-				source.Select(new Sink(this, s));
+				/*StatementList templates = new StatementList();
+				foreach (Entity e in GetBNodes()) {
+					templates.Add(new Statement(e, null, null, null));
+					templates.Add(new Statement(null, e, null, null));
+					templates.Add(new Statement(null, null, e, null));
+				}
+			
+				MemoryStore m = new MemoryStore();
+				m.checkForDuplicates = true;
+				source.Select(templates, m);
+				m.Select(s);*/
+			
+				source.Select(Statement.All, new Sink(this, s));
 			}
+			public Entity Meta { get { return meta; } }
 			private class Sink : StatementSink {
 				Graph g;
 				StatementSink s;
@@ -315,6 +480,32 @@ namespace SemWeb.Algos {
 						return this.s.Add(s);
 					return true;
 				}
+			}
+		}
+		
+		public static void PaintStatements(Graph[] msgs, StatementSource source, StatementSink sink) {
+			Hashtable ents = new Hashtable();
+			foreach (Graph g in msgs) {
+				foreach (Entity e in g.GetBNodes()) {
+					ents[e] = g.Meta;
+				}
+			}
+			source.Select(new PaintMSGsSink(ents, sink));
+		}
+		
+		class PaintMSGsSink : StatementSink {
+			Hashtable ents = new Hashtable();
+			StatementSink sink;
+			public PaintMSGsSink(Hashtable ents, StatementSink sink) {
+				this.ents = ents;
+				this.sink = sink;
+			}
+			public bool Add(Statement s) {
+				if (ents.ContainsKey(s.Subject)) s.Meta = (Entity)ents[s.Subject];
+				else if (ents.ContainsKey(s.Predicate)) s.Meta = (Entity)ents[s.Predicate];
+				else if (ents.ContainsKey(s.Object)) s.Meta = (Entity)ents[s.Object];
+				else return true;
+				return sink.Add(s);
 			}
 		}
 		
@@ -369,6 +560,32 @@ namespace SemWeb.Algos {
 			}
 		}
 		
+	}
+	
+	public static class Connectivity {
+	
+		public static void Build(StatementSource graph, out bool[,] connectivity, Hashtable indexes) {
+			connectivity = new bool[indexes.Count, indexes.Count];
+			graph.Select(new Sink(connectivity, indexes));
+		}
+		
+		class Sink : StatementSink {
+			bool[,] connectivity;
+			Hashtable indexes;
+			public Sink(bool[,] connectivity, Hashtable indexes) {
+				this.connectivity = connectivity;
+				this.indexes = indexes;
+			}
+			public bool Add(Statement st) {
+				int s = indexes.ContainsKey(st.Subject) ? (int)indexes[st.Subject] : -1;
+				int p = indexes.ContainsKey(st.Predicate) ? (int)indexes[st.Predicate] : -1;
+				int o = indexes.ContainsKey(st.Object) ? (int)indexes[st.Object] : -1;
+				if (s != -1 && p != -1) { connectivity[s,p]=true; connectivity[p,s]=true; }
+				if (s != -1 && o != -1) { connectivity[s,o]=true; connectivity[o,s]=true; }
+				if (p != -1 && o != -1) { connectivity[p,o]=true; connectivity[o,p]=true; }
+				return true;
+			}
+		}
 	}
 
 }

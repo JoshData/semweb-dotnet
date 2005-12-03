@@ -604,9 +604,9 @@ namespace SemWeb.Stores {
 		}
 		
 		private bool AppendMultiRes(MultiRes r, StringBuilder cmd) {
-			for (int i = 0; i < r.items.Count; i++) {
+			for (int i = 0; i < r.items.Length; i++) {
 				if (i != 0) cmd.Append(",");
-				int id = GetResourceId((Resource)r.items[i], false);
+				int id = GetResourceId(r.items[i], false);
 				if (id == 0) return false;
 				cmd.Append(id);
 			}
@@ -678,54 +678,24 @@ namespace SemWeb.Stores {
 			if (partialFilter.Meta) { AppendComma(cmd, "q.meta, muri.value", !f); f = false; }
 		}
 		
-		public override void Select(Statement[] templates, StatementSink result) {
-			if (templates == null) throw new ArgumentNullException();
+		public override void Select(Entity[] subjects, Entity[] predicates, Resource[] objects, Entity[] metas, StatementSink result) {
 			if (result == null) throw new ArgumentNullException();
-			if (templates.Length == 0) return;
-	
-			bool first = true;
-			Resource sv = null, pv = null, ov = null, mv = null;
-			bool sm = false, pm = false, om = false, mm = false;
-			ArrayList sl = new ArrayList(), pl = new ArrayList(), ol = new ArrayList(), ml = new ArrayList();
-			foreach (Statement template in templates) {
-				if (first) {
-					first = false;
-					sv = template.Subject;
-					pv = template.Predicate;
-					ov = template.Object;
-					mv = template.Meta;
-				} else {
-					if (sv != template.Subject) sm = true;
-					if (pv != template.Predicate) pm = true;
-					if (ov != template.Object) om = true;
-					if (mv != template.Meta) mm = true;
-				}
-				if (template.Subject != null) sl.Add(template.Subject);
-				if (template.Predicate != null) pl.Add(template.Predicate);
-				if (template.Object != null) ol.Add(template.Object);
-				if (template.Meta != null) ml.Add(template.Meta);
-			}
-			
-			if (!sm && !pm && !om && !mm) {
-				Select(templates[0], result);
-				return;
-			} else if (sm && !pm && !om && !mm) {
-				Select(new MultiRes(sl), pv, ov, mv, result);
-			} else if (!sm && pm && !om && !mm) {
-				Select(sv, new MultiRes(pl), ov, mv, result);
-			} else if (!sm && !pm && om && !mm) {
-				Select(sv, pv, new MultiRes(ol), mv, result);
-			} else if (!sm && !pm && !om && mm) {
-				Select(sv, pv, ov, new MultiRes(ml), result);
-			} else {
-				foreach (Statement template in templates)
-					Select(template, result);
-			}
+			Select(ToMultiRes(subjects),
+				ToMultiRes(predicates),
+				ToMultiRes(objects),
+				ToMultiRes(metas),
+				result);
+		}
+		
+		Resource ToMultiRes(Resource[] r) {
+			if (r == null || r.Length == 0) return null;
+			if (r.Length == 1) return r[0];
+			return new MultiRes(r);
 		}
 		
 		private class MultiRes : Resource {
-			public MultiRes(ArrayList a) { items = a; }
-			public ArrayList items;
+			public MultiRes(Resource[] a) { items = a; }
+			public Resource[] items;
 			public override string Uri { get { return null; } }
 		}
 		
@@ -771,9 +741,9 @@ namespace SemWeb.Stores {
 				// to select for each resource, rather than based on another index (say,
 				// the predicate that the templates share).
 				if (templateSubject is MultiRes) cmd.Append(" USE INDEX(subject_index)");
-				if (templatePredicate is MultiRes) cmd.Append(" USE INDEX(predicate_index)");
-				if (templateObject is MultiRes) cmd.Append(" USE INDEX(object_index)");
-				if (templateMeta is MultiRes) cmd.Append(" USE INDEX(meta_index)");
+				else if (templatePredicate is MultiRes) cmd.Append(" USE INDEX(predicate_index)");
+				else if (templateObject is MultiRes) cmd.Append(" USE INDEX(object_index)");
+				else if (templateMeta is MultiRes) cmd.Append(" USE INDEX(meta_index)");
 			}
 			
 			if (partialFilter.Object) {

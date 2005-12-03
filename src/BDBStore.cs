@@ -31,8 +31,8 @@ namespace SemWeb {
 			db_info = new BDB43("info", create, DBFormat.Hash, false, env);
 			db_entities_id = new BDB43("entities_id", create, DBFormat.Btree, false, env);
 			db_literals_id = new BDB43("literals_id", create, DBFormat.Btree, false, env);
-			db_entities_uri = new BDB43("entities_uri", create, DBFormat.Btree, false, env);
-			db_literals_value = new BDB43("literals_value", create, DBFormat.Btree, false, env);
+			db_entities_uri = new BDB43("entities_uri", create, DBFormat.Hash, false, env);
+			db_literals_value = new BDB43("literals_value", create, DBFormat.Hash, false, env);
 			db_index = new BDB43("index", create, DBFormat.Btree, true, env);
 			db_statements = new BDB43("statements", create, DBFormat.Btree, false, env);
 			
@@ -392,9 +392,8 @@ namespace SemWeb {
 			}
 		}
 		
-		public override void Select(Statement[] templates, StatementSink result) {
-			foreach (Statement s in templates)
-				Select(s, result);
+		public override void Select(Entity[] subjects, Entity[] predicates, Resource[] objects, Entity[] metas, StatementSink result) {
+			throw new NotImplementedException();
 		}
 		
 		/*public override void Select(Statement[] templates, StatementSink result) {

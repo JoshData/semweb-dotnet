@@ -13,6 +13,7 @@ namespace SemWeb {
 		
 		bool isIndexed = false;
 		internal bool allowIndexing = true;
+		internal bool checkForDuplicates = false;
 		
 		public MemoryStore() {
 		}
@@ -57,6 +58,7 @@ namespace SemWeb {
 		
 		public override void Add(Statement statement) {
 			if (statement.AnyNull) throw new ArgumentNullException();
+			if (checkForDuplicates && Contains(statement)) return;
 			statements.Add(statement);
 			if (isIndexed) {
 				GetIndexArray(statementsAboutSubject, statement.Subject).Add(statement);
@@ -143,23 +145,31 @@ namespace SemWeb {
 			}
 		}
 
-		public override void Select(Statement[] templates, StatementSink result) {
-			foreach (Statement t in templates)
-				Select(t, result);
+		public override void Select(Entity[] subjects, Entity[] predicates, Resource[] objects, Entity[] metas, StatementSink result) {
+			ResSet s = subjects == null ? null : new ResSet(subjects),
+				p = predicates == null ? null : new ResSet(predicates),
+				o = objects == null ? null : new ResSet(objects),
+				m = metas == null ? null : new ResSet(metas);
+			foreach (Statement st in statements) {
+				if (s != null && !s.Contains(st.Subject)) continue;
+				if (p != null && !p.Contains(st.Predicate)) continue;
+				if (o != null && !o.Contains(st.Object)) continue;
+				if (m != null && !m.Contains(st.Meta)) continue;
+				if (!result.Add(st)) return;
+			}
 		}
 
 		public override void Replace(Entity a, Entity b) {
+			MemoryStore removals = new MemoryStore();
+			MemoryStore additions = new MemoryStore();
 			foreach (Statement statement in statements) {
 				if ((statement.Subject != null && statement.Subject == a) || (statement.Predicate != null && statement.Predicate == a) || (statement.Object != null && statement.Object == a) || (statement.Meta != null && statement.Meta == a)) {
-					Remove(statement);
-					Add(new Statement(
-						statement.Subject == a ? b : a,
-						statement.Predicate == a ? b : a,
-						statement.Object == a ? b : a,
-						statement.Meta == a ? b : a
-						));
+					removals.Add(statement);
+					additions.Add(statement.Replace(a, b));
 				}
 			}
+			RemoveAll(removals);
+			Import(additions);
 		}
 		
 		public override void Replace(Statement find, Statement replacement) {
