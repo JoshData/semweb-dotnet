@@ -62,25 +62,24 @@ namespace SemWeb.Stores {
 		
 		protected override void RunCommand(string sql) {
 			if (Debug) Console.Error.WriteLine(sql);
-			NpgsqlCommand cmd = new NpgsqlCommand(sql, connection);
-			cmd.ExecuteNonQuery();
-			cmd.Dispose();
+			using (NpgsqlCommand cmd = new NpgsqlCommand(sql, connection))
+				cmd.ExecuteNonQuery();
 		}
 		
 		protected override object RunScalar(string sql) {
-			NpgsqlCommand cmd = new NpgsqlCommand(sql, connection);
+			using (NpgsqlCommand cmd = new NpgsqlCommand(sql, connection)) {
 			object ret = cmd.ExecuteScalar();
-			cmd.Dispose();
 			if (Debug) Console.Error.WriteLine(sql + " => " + ret);
 			return ret;
+			}
 		}
 
 		protected override IDataReader RunReader(string sql) {
 			if (Debug) Console.Error.WriteLine(sql);
-			NpgsqlCommand cmd = new NpgsqlCommand(sql, connection);
+			using (NpgsqlCommand cmd = new NpgsqlCommand(sql, connection)) {
 			IDataReader reader = cmd.ExecuteReader();
-			cmd.Dispose();
 			return reader;
+			}
 		}
 
 		protected override void BeginTransaction() {

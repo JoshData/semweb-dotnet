@@ -418,8 +418,7 @@ namespace SemWeb.Stores {
 			}
 			if (hasLiterals) {
 				cmd.Append(";");
-				IDataReader reader = RunReader(cmd.ToString());
-				try {
+				using (IDataReader reader = RunReader(cmd.ToString())) {
 					while (reader.Read()) {
 						//int literalid = AsInt(reader[0]);	
 						int literalid = reader.GetInt32(0);
@@ -432,8 +431,6 @@ namespace SemWeb.Stores {
 						literalCache[lit] = literalid;
 						literalCacheSize += val.Length;
 					}
-				} finally {
-					reader.Close();
 				}
 			}
 			
@@ -525,8 +522,7 @@ namespace SemWeb.Stores {
 			ArrayList ret = new ArrayList();
 			Hashtable seen = new Hashtable();
 			foreach (string col in cols) {
-				IDataReader reader = RunReader("SELECT " + col + ", value FROM " + table + "_statements LEFT JOIN " + table + "_entities ON " + col + "=id " + (col == "object" ? " WHERE objecttype=0" : "") + " GROUP BY " + col + ";");
-				try {
+				using (IDataReader reader = RunReader("SELECT " + col + ", value FROM " + table + "_statements LEFT JOIN " + table + "_entities ON " + col + "=id " + (col == "object" ? " WHERE objecttype=0" : "") + " GROUP BY " + col + ";")) {
 					while (reader.Read()) {
 						int id = reader.GetInt32(0);
 						if (id == 1 && col == "meta") continue; // don't return DefaultMeta in meta column.
@@ -537,8 +533,6 @@ namespace SemWeb.Stores {
 						string uri = AsString(reader[1]);
 						ret.Add(MakeEntity(id, uri, null));
 					}
-				} finally {
-					reader.Close();
 				}
 			}
 			return (Entity[])ret.ToArray(typeof(Entity));;
@@ -786,11 +780,9 @@ namespace SemWeb.Stores {
 				Console.Error.WriteLine(cmd2);
 			}
 			
-			IDataReader reader = RunReader(cmd.ToString());
-			
 			Hashtable entMap = new Hashtable();
 			
-			try {
+			using (IDataReader reader = RunReader(cmd.ToString())) {
 				while (reader.Read()) {
 					int col = 0;
 					int sid = -1, pid = -1, ot = -1, oid = -1, mid = -1;
@@ -823,8 +815,6 @@ namespace SemWeb.Stores {
 					if (!ret) break;
 
 				}
-			} finally {
-				reader.Close();
 			}
 		}
 		
@@ -882,12 +872,9 @@ namespace SemWeb.Stores {
 			lockedIdCache = new UriMap();
 			addStatementBuffer = new ArrayList(); 
 			
-			IDataReader reader = RunReader("SELECT id, value from " + table + "_entities;");			
-			try {
+			using (IDataReader reader = RunReader("SELECT id, value from " + table + "_entities;")) {
 				while (reader.Read())
 					lockedIdCache[AsString(reader[1])] = reader.GetInt32(0);
-			} finally {
-				reader.Close();
 			}
 			
 			BeginTransaction();
@@ -900,33 +887,6 @@ namespace SemWeb.Stores {
 				
 				lockedIdCache = null;
 				addStatementBuffer = null;
-				
-				// Remove duplicate literals
-				/*
-				while (true) {
-					bool foundDupLiteral = false;
-					StringBuilder litdupremove = new StringBuilder("DELETE FROM " + table + "_literals WHERE id IN (");
-					StringBuilder litdupreplace = new StringBuilder();
-					Console.Error.WriteLine("X");
-					reader = RunReader("select a.id, b.id from " + table + "_literals as a inner join " + table + "_literals as b on a.value=b.value and a.language<=>b.language and a.datatype <=> b.datatype and a.id<b.id LIMIT 10000");
-					while (reader.Read()) {
-						int lit1 = AsInt(reader[0]);
-						int lit2 = AsInt(reader[1]);
-						
-						if (foundDupLiteral) litdupremove.Append(",");
-						litdupremove.Append(lit2);
-						
-						litdupreplace.Append("UPDATE " + table + "_statements SET object = " + lit1 + " WHERE objecttype=1 AND object=" + lit2 + "; ");
-						
-						foundDupLiteral = true;
-					}
-					reader.Close();
-					if (!foundDupLiteral) break;
-					litdupremove.Append(");");
-					RunCommand(litdupremove.ToString());
-					RunCommand(litdupreplace.ToString());
-				}
-				*/
 				
 				literalCache.Clear();
 				literalCacheSize = 0;			
@@ -1064,10 +1024,10 @@ namespace SemWeb.Stores {
 			
 			//Console.Error.WriteLine(cmd.ToString());
 			
-			IDataReader reader = RunReader(cmd.ToString());
 			ArrayList entities = new ArrayList();
 			Hashtable seen = new Hashtable();
-			try {
+
+			using (IDataReader reader = RunReader(cmd.ToString())) {
 				while (reader.Read()) {
 					int id = reader.GetInt32(0);
 					string uri = AsString(reader[1]);
@@ -1075,8 +1035,6 @@ namespace SemWeb.Stores {
 					seen[id] = seen;
  					entities.Add(MakeEntity(id, uri, null));
  				}
-			} finally {
-				reader.Close();
 			}
 			
 			return (Entity[])entities.ToArray(typeof(Entity));

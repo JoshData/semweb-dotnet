@@ -42,32 +42,30 @@ namespace SemWeb.Stores {
 		protected override void RunCommand(string sql) {
 			Yield();
 			if (Debug) Console.Error.WriteLine(sql);
-			MySqlCommand cmd = new MySqlCommand(sql, connection);
-			cmd.ExecuteNonQuery();
-			cmd.Dispose();
+			using (MySqlCommand cmd = new MySqlCommand(sql, connection))
+				cmd.ExecuteNonQuery();
 		}
 		
 		protected override object RunScalar(string sql) {
 			Yield();
-			MySqlCommand cmd = new MySqlCommand(sql, connection);
-			IDataReader reader = cmd.ExecuteReader();
+			using (MySqlCommand cmd = new MySqlCommand(sql, connection)) {
 			object ret = null;
+			using (IDataReader reader = cmd.ExecuteReader()) {
 			if (reader.Read()) {
 				ret = reader[0];
 			}
-			reader.Close();
-			cmd.Dispose();
+			}
 			if (Debug) Console.Error.WriteLine(sql + " => " + ret);
 			return ret;
+			}
 		}
 
 		protected override IDataReader RunReader(string sql) {
 			Yield();
 			if (Debug) Console.Error.WriteLine(sql);
-			MySqlCommand cmd = new MySqlCommand(sql, connection);
-			IDataReader reader = cmd.ExecuteReader();
-			cmd.Dispose();
-			return reader;
+			using (MySqlCommand cmd = new MySqlCommand(sql, connection)) {
+				return cmd.ExecuteReader();
+			}
 		}
 
 		protected override void BeginTransaction() {
