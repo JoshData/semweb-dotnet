@@ -548,7 +548,7 @@ namespace SemWeb.Stores {
 			
 				if (r is MultiRes) {
 					// Assumption that ID space of literals and entities are the same.
-					cmd.Append("( ");
+					cmd.Append("(objecttype IN (0,1) AND ");
 					cmd.Append(col);
 					cmd.Append(" IN (");
 					if (!AppendMultiRes((MultiRes)r, cmd)) return false;
@@ -730,7 +730,7 @@ namespace SemWeb.Stores {
 			cmd.Append(" FROM ");
 			cmd.Append(table);
 			cmd.Append("_statements AS q");
-			if (SupportsUseIndex) {
+			if (SupportsUseIndex && false) {
 				// When selecting on mutliple resources at once, assume that it's faster
 				// to select for each resource, rather than based on another index (say,
 				// the predicate that the templates share).
@@ -743,8 +743,7 @@ namespace SemWeb.Stores {
 			if (partialFilter.Object) {
 				cmd.Append(" LEFT JOIN ");
 				cmd.Append(table);
-				//cmd.Append("_literals AS lit ON q.objecttype=1 AND q.object=lit.id LEFT JOIN ");
-				cmd.Append("_literals AS lit ON q.object=lit.id");
+				cmd.Append("_literals AS lit ON q.objecttype = 1 AND q.object=lit.id");
 			}
 			if (partialFilter.Subject) {
 				cmd.Append(" LEFT JOIN ");
@@ -759,8 +758,7 @@ namespace SemWeb.Stores {
 			if (partialFilter.Object) {
 				cmd.Append(" LEFT JOIN ");
 				cmd.Append(table);
-				//cmd.Append("_entities AS ouri ON q.objecttype=0 AND q.object = ouri.id LEFT JOIN ");
-				cmd.Append("_entities AS ouri ON q.object = ouri.id");
+				cmd.Append("_entities AS ouri ON q.objecttype = 0 AND q.object = ouri.id");
 			}
 			if (partialFilter.Meta) {
 				cmd.Append(" LEFT JOIN ");
