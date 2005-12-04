@@ -6,6 +6,7 @@ using SemWeb;
 using SemWeb.Stores;
 
 using name.levering.ryan.sparql.parser;
+using name.levering.ryan.sparql.parser.model;
 using name.levering.ryan.sparql.model;
 using name.levering.ryan.sparql.common;
 
@@ -139,6 +140,63 @@ namespace SemWeb.Query {
 			if (!(query is SelectQuery))
 				throw new InvalidOperationException("Only SELECT queries are supported by this method (" + query.GetType() + ").");
 			Run(source, sink);
+		}
+		
+		public GraphMatch ToGraphMatch() {
+			if (!(query is SelectQuery))
+				throw new InvalidOperationException("Only SELECT queries are supported by this method (" + query.GetType() + ").");
+			
+			SelectQuery sq = (SelectQuery)query;
+			ASTGroupConstraint gc = sq.getConstraint() as ASTGroupConstraint;
+			if (gc == null) throw new NotSupportedException();
+			
+			GraphMatch gm = new GraphMatch();
+			Hashtable vars = new Hashtable();
+			
+			gm.ReturnLimit = sq.getLimit();
+			gm.ReturnStart = sq.getOffset();
+			
+			for (int i = 0; i < gc.jjtGetNumChildren(); i++) {
+				ASTTripleSet triple = gc.jjtGetChild(i) as ASTTripleSet;
+				if (triple == null) throw new NotSupportedException();
+
+				Resource subj = ToGMMakeRes(triple.jjtGetChild(0), sq, gm, vars);
+				if (!(subj is Entity)) continue;
+				
+				ASTPropertyList props = (ASTPropertyList)triple.jjtGetChild(1);
+				for (int k = 0; k < props.jjtGetNumChildren(); k++) {
+					ASTVerbObject vo = (ASTVerbObject)props.jjtGetChild(k);
+					Resource pred = ToGMMakeRes(vo.jjtGetChild(0), sq, gm, vars);
+					if (!(pred is Entity)) continue;
+					
+					ASTObjectList objs = (ASTObjectList)vo.jjtGetChild(1);
+					for (int j = 0; j < objs.jjtGetNumChildren(); j++) {
+						Resource obj = ToGMMakeRes(objs.jjtGetChild(j), sq, gm, vars);
+						Statement s = new Statement((Entity)subj, (Entity)pred, obj);
+						gm.AddEdge(s);
+					}
+				}
+			}
+			return gm;
+		}
+		Resource ToGMMakeRes(object obj, SelectQuery sq, GraphMatch gm, Hashtable vars) {
+			if (obj is ASTVar) {
+				ASTVar var = (ASTVar)obj;
+				if (vars.ContainsKey(var.getName())) return (Resource)vars[var.getName()];
+				Entity v = new Entity(null);
+				gm.SetVariableName(v, var.getName());
+				vars[var.getName()] = v;
+				return v;
+			} else if (obj is ASTQName) {
+				ASTQName qn = (ASTQName)obj;
+				qn.resolveURI(sq.getPrefixExpansions());
+				return new Entity(qn.getURI());
+			} else if (obj is ASTLiteral) {
+				ASTLiteral lit = (ASTLiteral)obj;
+				return Literal.Parse(lit.toString(), null);
+			} else {
+				throw new Exception(obj.GetType().ToString());
+			}
 		}
 
 		public override string GetExplanation() {

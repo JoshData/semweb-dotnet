@@ -104,7 +104,7 @@ namespace SemWeb {
 					return new N3Reader(new StreamReader(resp.GetResponseStream(), System.Text.Encoding.UTF8));
 			}
 			
-			if (webresource.LocalPath.EndsWith(".xml") || webresource.LocalPath.EndsWith(".rss"))
+			if (webresource.LocalPath.EndsWith(".rdf") || webresource.LocalPath.EndsWith(".xml") || webresource.LocalPath.EndsWith(".rss"))
 				return new RdfXmlReader(resp.GetResponseStream());
 			
 			if (webresource.LocalPath.EndsWith(".n3") || webresource.LocalPath.EndsWith(".ttl") || webresource.LocalPath.EndsWith(".nt"))

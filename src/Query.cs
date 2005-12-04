@@ -72,6 +72,7 @@ namespace SemWeb.Query {
 					else
 						return ArrayOfAnchor;
 				} else {
+					if (union.Bindings[VarIndex] == null) return null;
 					Resource[] res = union.Bindings[VarIndex].ToArray();
 					if (!entities) return res;
 					

@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.IO;
+using System.Text;
 using System.Web;
 using System.Xml;
  
@@ -64,6 +65,10 @@ namespace SemWeb.Remote {
 				query += S(predicates, "predicate");
 				query += " ";
 				query += S(objects, "object");
+				query += " . ";
+				query += SL(subjects, "subject");
+				query += SL(predicates, "predicate");
+				query += SL(objects, "object");
 				query += " }";
 			}
 			
@@ -101,9 +106,35 @@ namespace SemWeb.Remote {
 		}
 		
 		string S(Resource[] r, string v) {
-			if (r == null) return "?" + v;
-			if (r.Length == 1) return S(r[0]);
-			throw new NotImplementedException("Multiple values not supported.");
+			if (r == null || r.Length != 1) return "?" + v;
+			return S(r[0]);
+		}
+		string SL(Resource[] r, string v) {
+			if (r == null || r.Length <= 1) return "";
+			StringBuilder ret = new StringBuilder();
+			ret.Append("FILTER(");
+			for (int i = 0; i < r.Length; i++) {
+				if (i != 0) ret.Append(" || ");
+				if (r[i].Uri == null) continue;
+				ret.Append("(str(?");
+				ret.Append(v);
+				ret.Append(")=\"");
+				ret.Append(Escape(r[i].Uri));
+				ret.Append("\")");
+			}
+			ret.Append(").");
+			return ret.ToString();
+		}
+		
+		string Escape(string s) {
+			if (s.IndexOf('\\') == -1 && s.IndexOf('"') == -1) return s;
+			StringBuilder r = new StringBuilder();
+			foreach (char c in s) {
+				if (c == '\\' || c == '"')
+					r.Append('\\');
+				r.Append(c);
+			}
+			return r.ToString();
 		}
 		
 		string S(Resource r) {
