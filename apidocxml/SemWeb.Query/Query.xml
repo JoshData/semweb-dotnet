@@ -78,10 +78,10 @@
         <Parameter Name="resultsink" Type="SemWeb.Query.QueryResultSink" />
       </Parameters>
       <Docs>
-        <param name="source">To be added.</param>
-        <param name="resultsink">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
+        <param name="source">The data source to query.</param>
+        <param name="resultsink">The sink to which each set of variable bindings is written.</param>
+        <summary>Runs the query on a data source.</summary>
+        <remarks>None.</remarks>
       </Docs>
     </Member>
   </Members>

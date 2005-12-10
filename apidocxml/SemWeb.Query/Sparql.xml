@@ -213,6 +213,6 @@
   </Members>
   <Docs>
     <summary>A SPARQL query processor, supporting only SELECT at the moment.</summary>
-    <remarks>This class is based on the engine at http://sparql.sourceforge.net/ by Ryan Levering, version 0.6.</remarks>
+    <remarks>This class is based on the engine at http://sparql.sourceforge.net/ by Ryan Levering, version 0.7.</remarks>
   </Docs>
 </Type>

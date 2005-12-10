@@ -64,13 +64,16 @@ any statement matching the template.</returns>
         <Parameter Name="sink" Type="SemWeb.StatementSink" />
       </Parameters>
       <Docs>
-        <param name="subjects">To be added.</param>
-        <param name="predicates">To be added.</param>
-        <param name="objects">To be added.</param>
-        <param name="metas">To be added.</param>
-        <param name="sink">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
+        <param name="subjects">An array of entities for matching subjects, or <see langword="null" /> if any subject matches.</param>
+        <param name="predicates">An array of entities for matching predicates, or <see langword="null" /> if any predicate matches.</param>
+        <param name="objects">An array of resources for matching objects, or <see langword="null" /> if any object matches.</param>
+        <param name="metas">An array of entities for matching meta fields, or <see langword="null" /> if any meta field matches.</param>
+        <param name="sink">A StatementSink to which each matching statement will be added.</param>
+        <summary>Queries the store for matching statements, and writes the statements to a <see cref="T:SemWeb.StatementSink" />.</summary>
+        <remarks>
+          <para>Each statement in the store matching the parameters is added to <paramref name="sink" /> with a call to <see cref="M:SemWeb.StatementSink.Add(SemWeb.Statement)" />.  If the call to Add returns <see langword="false" />, the select operation is aborted and returns immediately.</para>
+          <para>None of the argument arrays may be zero-length or contain <see langword="null" />.</para>
+        </remarks>
       </Docs>
     </Member>
   </Members>

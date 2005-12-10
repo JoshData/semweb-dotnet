@@ -175,8 +175,8 @@
         <ReturnType>SemWeb.Entity</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
+        <summary>The subject of the statement.</summary>
+        <remarks>None.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Predicate">
@@ -186,8 +186,8 @@
         <ReturnType>SemWeb.Entity</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
+        <summary>The predicate of the statement.</summary>
+        <remarks>None.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Object">
@@ -197,8 +197,8 @@
         <ReturnType>SemWeb.Resource</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
+        <summary>The object of the statement.</summary>
+        <remarks>Objects can be entities or literals.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Meta">
@@ -208,8 +208,8 @@
         <ReturnType>SemWeb.Entity</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
+        <summary>The meta field for the statement.</summary>
+        <remarks>This field is often left as its default value, which is <see cref="F:SemWeb.Statement.DefaultMeta" />, but the value of this field can be used for any application-specific purpose.  Uses include tracking context and provenance, reification, and for formulas and named graphs.</remarks>
       </Docs>
     </Member>
   </Members>

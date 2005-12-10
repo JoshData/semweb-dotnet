@@ -503,21 +503,6 @@ For Sqlite, MySQL, and PostgreSQL-based stores, use the spec string described in
         <remarks>None.</remarks>
       </Docs>
     </Member>
-    <Member MemberName="RemoveAll">
-      <MemberSignature Language="C#" Value="public void RemoveAll (SemWeb.StatementSource source);" />
-      <MemberType>Method</MemberType>
-      <ReturnValue>
-        <ReturnType>System.Void</ReturnType>
-      </ReturnValue>
-      <Parameters>
-        <Parameter Name="source" Type="SemWeb.StatementSource" />
-      </Parameters>
-      <Docs>
-        <param name="source">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
-      </Docs>
-    </Member>
     <Member MemberName="Contains">
       <MemberSignature Language="C#" Value="public static bool Contains (SemWeb.SelectableSource source, SemWeb.Statement template);" />
       <MemberType>Method</MemberType>
@@ -531,7 +516,7 @@ For Sqlite, MySQL, and PostgreSQL-based stores, use the spec string described in
       <Docs>
         <param name="source">To be added.</param>
         <param name="template">To be added.</param>
-        <summary>To be added.</summary>
+        <summary>A generic implementation of Contains for inheritors of Store.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
       </Docs>
@@ -550,13 +535,15 @@ For Sqlite, MySQL, and PostgreSQL-based stores, use the spec string described in
         <Parameter Name="result" Type="SemWeb.StatementSink" />
       </Parameters>
       <Docs>
-        <param name="subjects">To be added.</param>
-        <param name="predicates">To be added.</param>
-        <param name="objects">To be added.</param>
-        <param name="metas">To be added.</param>
-        <param name="result">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
+        <param name="subjects">An array of entities for matching subjects, or <see langword="null" /> if any subject matches.</param>
+        <param name="predicates">An array of entities for matching predicates, or <see langword="null" /> if any predicate matches.</param>
+        <param name="objects">An array of resources for matching objects, or <see langword="null" /> if any object matches.</param>
+        <param name="metas">An array of entities for matching meta fields, or <see langword="null" /> if any meta field matches.</param>
+        <param name="result">A sink to which each matching statement is written.</param>
+        <summary>Queries the store for matching statements, and writes the statements to a <see cref="T:SemWeb.StatementSink" />.</summary>
+        <remarks>          <para>Each statement in the store matching the parameters is added to <paramref name="result" /> with a call to <see cref="M:SemWeb.StatementSink.Add(SemWeb.Statement)" />.  If the call to Add returns <see langword="false" />, the select operation is aborted and returns immediately.</para>
+          <para>None of the argument arrays may be zero-length or contain <see langword="null" />.</para>
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName="Select">
@@ -572,13 +559,13 @@ For Sqlite, MySQL, and PostgreSQL-based stores, use the spec string described in
         <Parameter Name="metas" Type="SemWeb.Entity[]" />
       </Parameters>
       <Docs>
-        <param name="subjects">To be added.</param>
-        <param name="predicates">To be added.</param>
-        <param name="objects">To be added.</param>
-        <param name="metas">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
+        <param name="subjects">An array of entities for matching subjects, or <see langword="null" /> if any subject matches.</param>
+        <param name="predicates">An array of entities for matching predicates, or <see langword="null" /> if any predicate matches.</param>
+        <param name="objects">An array of resources for matching objects, or <see langword="null" /> if any object matches.</param>
+        <param name="metas">An array of entities for matching meta fields, or <see langword="null" /> if any meta field matches.</param>
+        <summary>Retuns a <see cref="T:SemWeb.SelectResult" /> object that represents matching statements in the store.</summary>
+        <returns>A SelectResult representing the result of the select statement.  See <see cref="M:SemWeb.Store.Select(SemWeb.Statement)" />.</returns>
+        <remarks><para>None of the argument arrays may be zero-length or contain <see langword="null" />.</para></remarks>
       </Docs>
     </Member>
     <Member MemberName="Query">
@@ -596,6 +583,21 @@ For Sqlite, MySQL, and PostgreSQL-based stores, use the spec string described in
         <param name="sink">To be added.</param>
         <summary>To be added.</summary>
         <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="RemoveAll">
+      <MemberSignature Language="C#" Value="public void RemoveAll (SemWeb.Statement[] templates);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="templates" Type="SemWeb.Statement[]" />
+      </Parameters>
+      <Docs>
+        <param name="templates">An array of statement templates.  Statement templates may contain a <see langword="null" /> subject, predicate, object, and/or meta.</param>
+        <summary>Removes all statements matching an array of templates.</summary>
+        <remarks>None.</remarks>
       </Docs>
     </Member>
   </Members>
