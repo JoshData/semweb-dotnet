@@ -1,0 +1,129 @@
+<Type Name="SparqlProtocol" FullName="SemWeb.Query.SparqlProtocol">
+  <TypeSignature Language="C#" Value="public class SparqlProtocol : System.Web.IHttpHandler" />
+  <AssemblyInfo>
+    <AssemblyName>SemWeb.Sparql</AssemblyName>
+    <AssemblyVersion>0.0.0.0</AssemblyVersion>
+  </AssemblyInfo>
+  <Base>
+    <BaseTypeName>System.Object</BaseTypeName>
+  </Base>
+  <Interfaces>
+    <Interface>
+      <InterfaceName>System.Web.IHttpHandler</InterfaceName>
+    </Interface>
+  </Interfaces>
+  <Members>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public SparqlProtocol ();" />
+      <MemberType>Constructor</MemberType>
+      <Parameters />
+      <Docs>
+        <summary>Creates a new SPARQL Protocol implementation class.</summary>
+        <remarks>This class does not listen on an HTTP port by itself.  It is meant to be embedded in an ASP.NET site.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="MaximumLimit">
+      <MemberSignature Language="C#" Value="public int MaximumLimit;" />
+      <MemberType>Field</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Int32</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>The maximum number of bindings to return for any query.</summary>
+        <remarks>Set to -1, the default, to have no limit.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="MimeType">
+      <MemberSignature Language="C#" Value="public string MimeType;" />
+      <MemberType>Field</MemberType>
+      <ReturnValue>
+        <ReturnType>System.String</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>The MIME type of query responses.</summary>
+        <remarks>The default MIME type is "application/sparql-results+xml".</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="ProcessRequest">
+      <MemberSignature Language="C#" Value="public void ProcessRequest (System.Web.HttpContext context);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="context" Type="System.Web.HttpContext" />
+      </Parameters>
+      <Docs>
+        <param name="context">The request context.</param>
+        <summary>Processes an HTTP request from the ASP.NET subsystem.</summary>
+        <remarks>This method is not meant to be called from user code.</remarks>
+      </Docs>
+    </Member>
+  </Members>
+  <Docs>
+    <summary>Implements a SPARQL Protocol server for ASP.NET.</summary>
+    <remarks>
+      <para>This class implements the <see cref="T:System.Web.IHttpHandler" /> interface to provide a SPARQL Protocol query server over HTTP.</para>
+      <para>To activate the SPARQL server in your ASP.NET site, place the SemWeb.dll and SemWeb.Sparql.dll assemblies in the bin directory of your site.  Then add the following to your web.config file.  Note that you must specify a spec string to a data source to serve, as described in <see cref="M:SemWeb.Store.CreateForInput(string)" />.</para>
+      <example>
+        <code>&lt;configuration&gt;
+     &lt;configSections&gt;
+          &lt;section name="sparqlSources" type="System.Configuration.NameValueSectionHandler,System"/&gt;
+     &lt;/configSections&gt;
+
+     &lt;system.web&gt;
+          &lt;httpHandlers&gt;
+               &lt;!-- This line associates the SPARQL Protocol implementation with a path on your
+                    website. With this, you get a SPARQL server at http://yourdomain.com/sparql.  --&gt;
+               &lt;add verb="*" path="sparql" type="SemWeb.Query.SparqlProtocol, SemWeb.Sparql" /&gt;
+          &lt;/httpHandlers&gt;
+     &lt;/system.web&gt;
+
+     &lt;sparqlSources&gt;
+          &lt;!-- This line configures the data source associated with each SPARQL server added above.
+                  This sets the server to query the RDF/XML file at the given path.  You can use any
+                  spec string described in SemWeb.Store.CreateForInput(). --&gt;
+          &lt;add key="/sparql" value="xml:/home/user/datafile.rdf"/&gt;
+     &lt;/sparqlSources&gt;
+&lt;/configuration&gt;</code>
+      </example>
+      <para>Using Mono's XSP light-weight web server, you can create a standalone SPARQL Protocol server by:</para>
+      <list type="bullet">
+        <item>
+          <term>Creating a new directory for your server.</term>
+        </item>
+        <item>
+          <term>Creating a bin directory within it, and placing the files mentioned above into the directory.</term>
+        </item>
+        <item>
+          <term>Creating a web.config file in the directory using the template above.</term>
+        </item>
+        <item>
+          <term>Running "xsp" from within the directory.</term>
+        </item>
+      </list>
+      <para>You may want to add this index.html file to create a form to experiment with SPARQL queries:</para>
+      <example>
+        <code>&lt;html&gt;
+     &lt;body&gt;
+          &lt;form action="/sparql" method="get"&gt;
+        &lt;input type="hidden" name="outputMimeType" value="text/xml"/&gt;
+        &lt;textarea name="query" rows="10" cols="80"&gt;
+PREFIX rdf: &lt;http://www.w3.org/1999/02/22-rdf-syntax-ns#&gt;
+PREFIX foaf: &lt;http://xmlns.com/foaf/0.1/&gt;
+PREFIX pol: &lt;tag:govshare.info,2005:rdf/politico/&gt;
+SELECT * WHERE {
+?s rdf:type pol:Politician .
+?s foaf:gender "male" .
+?s foaf:name ?name .
+}
+LIMIT 10
+        &lt;/textarea&gt;
+        &lt;p&gt;&lt;input type="submit"/&gt;&lt;/p&gt;
+          &lt;/form&gt;
+     &lt;/body&gt;
+&lt;/html&gt;  </code>
+      </example>
+    </remarks>
+  </Docs>
+</Type>

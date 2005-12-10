@@ -3,6 +3,7 @@
     <para>SemWeb is a C#/.NET library for manipulating RDF data and interacting with the semantic web.
 	SemWeb was written by Joshua Tauberer (tauberer@for.net) and has its home at <a href="http://taubz.for.net/code/semweb">http://taubz.for.net/code/semweb</a>.  It is developed
 	and tested under Mono, but it should run on Windows fine, in principle.</para>
+    <para>For some basic examples, see the documentation page for the SemWeb.MemoryStore class.</para>
   </Remarks>
   <Copyright>See <a href="http://taubz.for.net/code/semweb">http://taubz.for.net/code/semweb</a>.</Copyright>
   <Types>
@@ -26,8 +27,8 @@
       <Type Name="N3Writer+Formats" />
       <Type Name="SelectableSource" />
       <Type Name="SelectResult" />
-      <Type Name="BDBStore" />
       <Type Name="QueryableSource" />
+      <Type Name="ModifiableSource" />
     </Namespace>
     <Namespace Name="SemWeb.Query">
       <Type Name="QueryResultSink" />
@@ -41,26 +42,18 @@
       <Type Name="Sparql+QueryType" />
       <Type Name="QueryFormatException" />
       <Type Name="QueryExecutionException" />
+      <Type Name="SparqlProtocol" />
     </Namespace>
     <Namespace Name="SemWeb.Stores">
       <Type Name="MultiStore" />
       <Type Name="SQLStore" />
+      <Type Name="MySQLStore" />
+      <Type Name="PostgreSQLStore" />
+      <Type Name="SqliteStore" />
     </Namespace>
     <Namespace Name="SemWeb.Util">
       <Type Name="XPathSemWebNavigator" />
       <Type Name="StatementList" />
-    </Namespace>
-    <Namespace Name="SemWeb.Bind">
-      <Type Name="Any" />
-    </Namespace>
-    <Namespace Name="BDB">
-      <Type Name="DatabaseException" />
-      <Type Name="BDB43" />
-      <Type Name="BDB43+Cursor" />
-      <Type Name="BDB43+Cursor+Seek" />
-      <Type Name="BDB43+Env" />
-      <Type Name="DBFormat" />
-      <Type Name="DataType" />
     </Namespace>
     <Namespace Name="SemWeb.Algos">
       <Type Name="Lean" />
@@ -70,6 +63,9 @@
     </Namespace>
     <Namespace Name="SemWeb.Remote">
       <Type Name="SparqlHttpSource" />
+    </Namespace>
+    <Namespace Name="SemWeb.Util.Bind">
+      <Type Name="Any" />
     </Namespace>
   </Types>
   <Assemblies>
@@ -102,6 +98,9 @@
       </Attributes>
     </Assembly>
     <Assembly Name="SemWeb.Sparql" Version="0.0.0.0" />
+    <Assembly Name="SemWeb.MySQLStore" Version="0.0.0.0" />
+    <Assembly Name="SemWeb.PostgreSQLStore" Version="0.0.0.0" />
+    <Assembly Name="SemWeb.SqliteStore" Version="0.0.0.0" />
   </Assemblies>
   <Title>SemWeb</Title>
 </Overview>

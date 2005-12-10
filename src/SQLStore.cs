@@ -12,6 +12,7 @@ namespace SemWeb.Stores {
 	
 	public abstract class SQLStore : Store {
 		string table;
+		string uuid;
 		
 		bool firstUse = true;
 		IDictionary lockedIdCache = null;

@@ -88,7 +88,44 @@ foreach (Statement s in memoryStore)
   </Members>
   <Docs>
     <summary>A graph of statements held in memory.</summary>
-    <remarks>In addition to storing the statements as an array, the statements are indexed by subject and object to speed Select queries.</remarks>
+    <remarks>
+      <para>The MemoryStore is the main storage mechanism for small amounts of data.  Here are some examples of using a MemoryStore:</para>
+      <example>
+        <code lang="C#">// Load data from mydata.rdf file
+MemoryStore store = new MemoryStore(new RdfXmlReader("mydata.rdf"));
+
+// Add some statements
+store.Add(new Statement("http://www.mysite.com", "http://purl.org/dc/elements/1.1/title", (Literal)"My Web Site"));
+store.Add(new Statement("http://www.mysite.com", "http://purl.org/dc/elements/1.1/description",
+     (Literal)"My site is all about me."));
+
+// You can also use Entity and Literal objects
+Entity othersite = new Entity("http://www.anothersite.com");
+Entity dctitle = new Entity("http://purl.org/dc/elements/1.1/title");
+store.Add(new Statement(othersite, dctitle, new Literal("Create a literal object."));
+
+// Get the statements back by looping through the store
+foreach (Statement statement in store) {
+    Console.WriteLine(statement);
+}
+
+// Or by streaming them to a StatementSink
+using (StatementSink sink = new N3Writer(Console.Out))
+    store.Write(sink);
+
+// You can get statements back selectively by filtering.  This just gets
+// statements about othersite.
+using (StatementSink sink = new N3Writer(Console.Out))
+    store.Select(new Statement(othersite, null, null), sink);
+
+// And there are some utility functions like this:
+foreach (Resource res in store.SelectObjects(othersite, dctitle)) {
+    if (res is Literal) // might also be an Entity
+        Console.WriteLine("Other site's title: " + ((Literal)res).Value);
+}
+  </code>
+      </example>
+    </remarks>
   </Docs>
   <Attributes>
     <Attribute>

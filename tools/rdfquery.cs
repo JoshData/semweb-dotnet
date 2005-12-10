@@ -11,7 +11,7 @@ using SemWeb.Query;
 [assembly: AssemblyCopyright("Copyright (c) 2005 Joshua Tauberer <tauberer@for.net>\nreleased under the GPL.")]
 [assembly: AssemblyDescription("A tool for querying RDF data.")]
 
-[assembly: Mono.UsageComplement("data1 data2 ... < query.rdf")]
+[assembly: Mono.UsageComplement("n3:datafile.n3 < query.rdf")]
 
 public class RDFQuery {
 	private class Opts : Mono.GetOptions.Options {
@@ -29,7 +29,7 @@ public class RDFQuery {
 		Opts opts = new Opts();
 		opts.ProcessArgs(args);
 
-		if (opts.RemainingArguments.Length == 0) {
+		if (opts.RemainingArguments.Length != 1) {
 			opts.DoHelp();
 			return;
 		}
@@ -57,18 +57,22 @@ public class RDFQuery {
 			query = new GraphMatch(queryparser);
 		} else if (opts.type == "sparql") {
 			query = new Sparql(Console.In);
+			
+			// My graph match is more efficient when it's
+			// applicable.
+			try {
+				//query = ((Sparql)query).ToGraphMatch();
+			} catch (NotSupportedException e) {
+			}
 		} else {
 			throw new Exception("Invalid query format: " + opts.type);
 		}
 
-		MultiStore model = new MultiStore();
-		foreach (string arg in opts.RemainingArguments) {
-			StatementSource source = Store.CreateForInput(arg);
-			Store storage;
-			if (source is Store) storage = (Store)source;
-			else storage = new MemoryStore(source);
-			model.Add(storage);
-		}
+		SelectableSource model;
+
+		StatementSource source = Store.CreateForInput(opts.RemainingArguments[0]);
+		if (source is SelectableSource) model = (SelectableSource)source;
+		else model = new MemoryStore(source);
 		
 		if (opts.limit > 0)
 			query.ReturnLimit = opts.limit;
@@ -104,6 +108,7 @@ public class HTMLQuerySink : QueryResultSink {
 	public HTMLQuerySink(TextWriter output) { this.output = output; }
 
 	public override void Init(VariableBinding[] variables) {
+		output.WriteLine("<table>");
 		output.WriteLine("<tr>");
 		foreach (VariableBinding var in variables) {
 			if (var.Name == null) continue;
@@ -112,7 +117,9 @@ public class HTMLQuerySink : QueryResultSink {
 		output.WriteLine("</tr>");
 	}
 	
-	public override void Finished() { }
+	public override void Finished() {
+		output.WriteLine("</table>");
+	}
 	
 	public override bool Add(VariableBinding[] result) {
 		output.WriteLine("<tr>");

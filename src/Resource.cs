@@ -39,7 +39,7 @@ namespace SemWeb {
 			return !(a == b);
 		}
 		
-		internal object GetResourceKey(object key) {
+		public object GetResourceKey(object key) {
 			if (extraKeys == null) return null;
 			for (int i = 0; i < extraKeys.Count; i++) {
 				Resource.ExtraKey ekey = (Resource.ExtraKey)extraKeys[i];
@@ -48,7 +48,7 @@ namespace SemWeb {
 			}
 			return null;
 		}
-		internal void SetResourceKey(object key, object value) {
+		public void SetResourceKey(object key, object value) {
 			if (extraKeys == null) extraKeys = new ArrayList();
 			
 			foreach (Resource.ExtraKey ekey in extraKeys)
@@ -334,7 +334,7 @@ namespace SemWeb {
 	*/
 }
 
-namespace SemWeb.Bind {
+namespace SemWeb.Util.Bind {
 	public class Any {
 		Entity ent;
 		Store model;

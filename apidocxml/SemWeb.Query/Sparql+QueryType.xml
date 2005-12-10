@@ -1,0 +1,56 @@
+<Type Name="Sparql+QueryType" FullName="SemWeb.Query.Sparql+QueryType">
+  <TypeSignature Language="C#" Value="public enum QueryType" />
+  <AssemblyInfo>
+    <AssemblyName>SemWeb.Sparql</AssemblyName>
+    <AssemblyVersion>0.0.0.0</AssemblyVersion>
+  </AssemblyInfo>
+  <Base>
+    <BaseTypeName>System.Enum</BaseTypeName>
+  </Base>
+  <Members>
+    <Member MemberName="Select">
+      <MemberSignature Language="C#" Value="Select" />
+      <MemberType>Field</MemberType>
+      <ReturnValue>
+        <ReturnType>SemWeb.Query.Sparql+QueryType</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Represents a SELECT query.</summary>
+      </Docs>
+    </Member>
+    <Member MemberName="Describe">
+      <MemberSignature Language="C#" Value="Describe" />
+      <MemberType>Field</MemberType>
+      <ReturnValue>
+        <ReturnType>SemWeb.Query.Sparql+QueryType</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Represents a DESCRIBE query.</summary>
+      </Docs>
+    </Member>
+    <Member MemberName="Ask">
+      <MemberSignature Language="C#" Value="Ask" />
+      <MemberType>Field</MemberType>
+      <ReturnValue>
+        <ReturnType>SemWeb.Query.Sparql+QueryType</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Represents an ASK query.</summary>
+      </Docs>
+    </Member>
+    <Member MemberName="Construct">
+      <MemberSignature Language="C#" Value="Construct" />
+      <MemberType>Field</MemberType>
+      <ReturnValue>
+        <ReturnType>SemWeb.Query.Sparql+QueryType</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Represents a CONSTRUCT query.</summary>
+      </Docs>
+    </Member>
+  </Members>
+  <Docs>
+    <summary>The types of a SPARQL query.</summary>
+    <remarks>There are four types of SPARQL queries, each returning a different type of answer.</remarks>
+  </Docs>
+</Type>

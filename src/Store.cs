@@ -23,6 +23,15 @@ namespace SemWeb {
 		bool Add(Statement statement);
 	}
 
+	public interface ModifiableSource : StatementSink {
+		void Clear();
+		void Import(StatementSource source);
+		void Remove(Statement template);
+		void RemoveAll(Statement[] templates);
+		void Replace(Entity find, Entity replacement);
+		void Replace(Statement find, Statement replacement);
+	}
+	
 	internal class StatementCounterSink : StatementSink {
 		int counter = 0;
 		
@@ -46,7 +55,7 @@ namespace SemWeb {
 	}
 
 	public abstract class Store : StatementSource, StatementSink,
-		SelectableSource, QueryableSource {
+		SelectableSource, QueryableSource, ModifiableSource {
 		
 		Entity rdfType;
 		

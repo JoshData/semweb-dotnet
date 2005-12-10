@@ -26,10 +26,10 @@
 					
 					.Section { font-size: 125%; font-weight: bold }
 					.SectionBox { margin-left: 2em }
-					.NamespaceName { display: block; font-size: 105%; font-weight: bold; color: #000066; border-bottom: 1px solid black }
+					.NamespaceName { display: block; font-weight: bold; color: #000066; }
 					.NamespaceName:hover { font-style: italic }
 					.NamespaceSumary { }
-					.MemberName { font-size: 115%; font-weight: bold; margin-top: 1em }
+					.MemberName { font-size: 130%; font-weight: bold; margin-top: 1em }
 					.MemberSignature { font-family: monospace; margin-top: 1em; }
 					.MemberBox { }
 					.Subsection { font-size: 105%; font-weight: bold }

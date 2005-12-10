@@ -1,3 +1,21 @@
+	* RdfReaders have a new Namespaces property to expose what
+	  namespace prefixes were found in the stream.
+	* Added PostgreSQL and BDB (ver 4.3 only) stores.  SQL store
+	  performance improvement for Select().
+	* There's a new SemWeb.Algos namespace containing a class to
+	  find Minimun Self-Contained Graphs and to make a store
+	  'lean' by removing redundant subgraphs (but exponentially slow).
+	* New method Store::RemoveAll.
+	* N3Reader: If a BaseUri was set, overriding it with @prefix :
+	  did not work.  Changed an error in RdfXmlReader to a warning;
+	* RdfXmlReader now passes all W3C tests (positive & negative).
+	* A GraphMatch bug was fixed.
+	* Store::GetAllEntities/AllPredicates/AllMetas renamed to just
+	  GetEntities/Predicates/Metas. 
+	* Statement's Subj/Pred/Obj/Meta properties are now read/write
+	  fields.
+	* Store::Select(Statement[]) is replaced with something else.
+
 2005-10-19 Version 0.6
 
 	* Renamed QueryEngine to GraphMatch since it does a very limited type

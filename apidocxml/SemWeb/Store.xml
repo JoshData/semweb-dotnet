@@ -1,5 +1,5 @@
 <Type Name="Store" FullName="SemWeb.Store">
-  <TypeSignature Language="C#" Value="public abstract class Store : SemWeb.QueryableSource, SemWeb.SelectableSource, SemWeb.StatementSink" />
+  <TypeSignature Language="C#" Value="public abstract class Store : SemWeb.ModifiableSource, SemWeb.QueryableSource, SemWeb.SelectableSource" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
     <AssemblyVersion>0.5.0.2</AssemblyVersion>
@@ -9,13 +9,13 @@
   </Base>
   <Interfaces>
     <Interface>
+      <InterfaceName>SemWeb.ModifiableSource</InterfaceName>
+    </Interface>
+    <Interface>
       <InterfaceName>SemWeb.QueryableSource</InterfaceName>
     </Interface>
     <Interface>
       <InterfaceName>SemWeb.SelectableSource</InterfaceName>
-    </Interface>
-    <Interface>
-      <InterfaceName>SemWeb.StatementSink</InterfaceName>
     </Interface>
   </Interfaces>
   <Members>
@@ -359,6 +359,10 @@ Example:  "n3:mydata.n3"</description>
               <term>postgresql:[table]:[connection string]</term>
               <description>A <see cref="T:SemWeb.Stores.SQLStore" /> connected to the PostgreSQL database given in the connection string, using the tables prefixed by the table parameter.  The returned store can be both read from and written to, despite the name of this method.  Example:  "postgresql:rdf:Server=localhost;Port=5432;Database=SemanticWeb;User Id=user"</description>
             </item>
+            <item>
+              <term>sparql-http:URL</term>
+              <description>A <see cref="T:SemWeb.Remote.SparqlHttpSource" />, which accesses a remote data source using the SPARQL Protocol.</description>
+            </item>
           </list>
         </remarks>
       </Docs>
@@ -541,7 +545,8 @@ For Sqlite, MySQL, and PostgreSQL-based stores, use the spec string described in
         <param name="metas">An array of entities for matching meta fields, or <see langword="null" /> if any meta field matches.</param>
         <param name="result">A sink to which each matching statement is written.</param>
         <summary>Queries the store for matching statements, and writes the statements to a <see cref="T:SemWeb.StatementSink" />.</summary>
-        <remarks>          <para>Each statement in the store matching the parameters is added to <paramref name="result" /> with a call to <see cref="M:SemWeb.StatementSink.Add(SemWeb.Statement)" />.  If the call to Add returns <see langword="false" />, the select operation is aborted and returns immediately.</para>
+        <remarks>
+          <para>Each statement in the store matching the parameters is added to <paramref name="result" /> with a call to <see cref="M:SemWeb.StatementSink.Add(SemWeb.Statement)" />.  If the call to Add returns <see langword="false" />, the select operation is aborted and returns immediately.</para>
           <para>None of the argument arrays may be zero-length or contain <see langword="null" />.</para>
         </remarks>
       </Docs>
@@ -565,7 +570,9 @@ For Sqlite, MySQL, and PostgreSQL-based stores, use the spec string described in
         <param name="metas">An array of entities for matching meta fields, or <see langword="null" /> if any meta field matches.</param>
         <summary>Retuns a <see cref="T:SemWeb.SelectResult" /> object that represents matching statements in the store.</summary>
         <returns>A SelectResult representing the result of the select statement.  See <see cref="M:SemWeb.Store.Select(SemWeb.Statement)" />.</returns>
-        <remarks><para>None of the argument arrays may be zero-length or contain <see langword="null" />.</para></remarks>
+        <remarks>
+          <para>None of the argument arrays may be zero-length or contain <see langword="null" />.</para>
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName="Query">

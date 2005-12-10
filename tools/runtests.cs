@@ -5,7 +5,8 @@ using SemWeb;
 
 public class N3Test {
 
-	public static string basepath;
+	static string basepath;
+	static int total = 0, error = 0, badpass = 0, badfail = 0;
 	
 	public static void Main(string[] args) {
 		if (args.Length != 2) {
@@ -36,10 +37,16 @@ public class N3Test {
 			RunTest(testlist, test, true, 1);
 		foreach (Entity test in testlist.GetEntitiesOfType("http://www.w3.org/2004/11/n3test#NegativeParserTest"))
 			RunTest(testlist, test, false, 1);
+			
+		Console.WriteLine("Total Tests:\t{0}", total);
+		Console.WriteLine("Total Failures:\t{0} ({1}%)", badfail+badpass, (int)(100*(float)(badpass+badfail)/total));
+		Console.WriteLine("Positive Fails:\t{0}", badfail);
+		Console.WriteLine("Negative Fails:\t{0}", badpass);
+		Console.WriteLine("Test Errors:\t{0}", error);
 	}
 	
 	
-	private static void RunTest(Store testlist, Entity test, bool shouldSucceed, int mode) {
+	static void RunTest(Store testlist, Entity test, bool shouldSucceed, int mode) {
 		string inputpath = null, outputpath = null,
 			inputformat = null, outputformat = null,
 			inputbase = null, outputbase = null;		
@@ -83,12 +90,19 @@ public class N3Test {
 		}
 		
 		try {
+			total++;
+		
 			RdfReader reader = RdfReader.Create(inputformat, Path.Combine(basepath, inputpath));
 			reader.BaseUri = inputbase;
 			
 			MemoryStore inputmodel = new MemoryStore(reader);
+			if (reader.Warnings.Count > 0) {
+				string warnings = String.Join("; ", (string[])((ArrayList)reader.Warnings).ToArray(typeof(string)));
+				throw new ParserException(warnings);
+			}
 			if (!shouldSucceed) {
 				Console.WriteLine(desc + ": Should Not Have Passed **\n");
+				badpass++;
 				return;
 			}
 		
@@ -98,22 +112,23 @@ public class N3Test {
 				MemoryStore outputmodel = new MemoryStore(reader2);
 				
 				CompareModels(inputmodel, outputmodel);
-				
 			}
-			
-			Console.WriteLine(inputpath + " Passed");
 		} catch (System.IO.FileNotFoundException ex) {
 			Console.WriteLine(inputpath + " Not Found");
+			error++;
 		} catch (System.IO.DirectoryNotFoundException ex) {
 			Console.WriteLine(inputpath + " Not Found");
+			error++;
 		} catch (ParserException ex) {
-			if (shouldSucceed)
+			if (shouldSucceed) {
 				Console.WriteLine(desc + ": " + ex.Message + " **");
 				Console.WriteLine();
+				badfail++;
+			}
 		}
 	}
 
-	private static Statement Replace(Statement s, Hashtable map) {
+	static Statement Replace(Statement s, Hashtable map) {
 		return new Statement(
 			map.ContainsKey(s.Subject) ? (Entity)map[s.Subject] : s.Subject,
 			map.ContainsKey(s.Predicate) ? (Entity)map[s.Predicate] : s.Predicate,
@@ -121,14 +136,14 @@ public class N3Test {
 			);
 	}
 	
-	private static ArrayList GetBlankNodes(Store s) {
+	static ArrayList GetBlankNodes(Store s) {
 		ArrayList ret = new ArrayList();
 		foreach (Entity e in s.GetAllEntities())
 			if (e.Uri == null) ret.Add(e);
 		return ret;
 	}
 	
-	private static bool Permute(int[] nodemap, int b) {
+	static bool Permute(int[] nodemap, int b) {
 		if (nodemap.Length == 0) return false;
 		nodemap[0]++;
 		for (int i = 0; i < nodemap.Length; i++) {
@@ -140,7 +155,7 @@ public class N3Test {
 		return false;
 	}
 	
-	private static void CompareModels(Store a, Store b) {
+	static void CompareModels(Store a, Store b) {
 		string failures = "";
 		
 		ArrayList abnodes = GetBlankNodes(a);

@@ -4,6 +4,7 @@ using System.IO;
 using System.Reflection;
 
 using SemWeb;
+using SemWeb.Algos;
 
 [assembly: AssemblyTitle("RDFStorage - Move RDF Data Between Storage Types")]
 [assembly: AssemblyCopyright("Copyright (c) 2005 Joshua Tauberer <tauberer@for.net>\nreleased under the GPL.")]
@@ -33,6 +34,9 @@ public class RDFStorage {
 
 		[Mono.GetOptions.Option("Check for duplicate statements.")]
 		public bool dupcheck = false;
+		
+		[Mono.GetOptions.Option("Make the output lean.")]
+		public bool makelean = false;
 	}
 	
 	public static void Main(string[] args) {
@@ -45,6 +49,9 @@ public class RDFStorage {
 			opts.DoHelp();
 			return;
 		}
+		
+		if (opts.@out == "xml:-" || opts.@out == "n3:-")
+			opts.quiet = true;
 		
 		StatementSink storage = Store.CreateForOutput(opts.@out);
 		
@@ -69,10 +76,17 @@ public class RDFStorage {
 		
 		MultiRdfParser multiparser = new MultiRdfParser(opts.RemainingArguments, opts.@in, meta, opts.baseuri, opts.quiet, opts.dupcheck);
 		
-		if (storage is Store)
+		if (storage is Store) {
 			((Store)storage).Import(multiparser);
-		else
-			multiparser.Select(storage);
+		} else {
+			if (!opts.makelean) {
+				multiparser.Select(storage);
+			} else {
+				MemoryStore st = new MemoryStore(multiparser);
+				Lean.MakeLean(st);
+				st.Select(storage);
+			}
+		}
 		
 		if (storage is IDisposable) ((IDisposable)storage).Dispose();
 		

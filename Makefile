@@ -1,4 +1,4 @@
-VERSION=0.601
+VERSION=0.61
 
 all: bin/SemWeb.dll bin/SemWeb.PostgreSQLStore.dll bin/SemWeb.MySQLStore.dll bin/SemWeb.SqliteStore.dll bin/SemWeb.Sparql.dll bin/rdfstorage.exe bin/rdfquery.exe
 
@@ -12,17 +12,19 @@ MAIN_SOURCES = \
 	src/RdfParser.cs src/XmlParser.cs src/N3Parser.cs \
 	src/RdfWriter.cs src/XmlWriter.cs src/N3Writer.cs \
 	src/RSquary.cs src/RSquaryFilters.cs src/Query.cs \
+	src/Algos.cs src/Remote.cs \
 	src/XPathSemWebNavigator.cs
 
 bin/SemWeb.dll: $(MAIN_SOURCES) Makefile
 	mcs -debug $(MAIN_SOURCES) -out:bin/SemWeb.dll -t:library \
-		-r:System.Data
+		-r:System.Data -r:System.Web -r:Mono.Posix
 
 # Auxiliary Assemblies
 
 bin/SemWeb.Sparql.dll: src/Sparql.cs
 	mcs -debug src/Sparql.cs -out:bin/SemWeb.Sparql.dll \
-		-t:library -r:bin/SemWeb.dll -r:bin/sparql-core.dll -r:bin/IKVM.GNU.Classpath.dll
+		-t:library -r:bin/SemWeb.dll -r:bin/sparql-core.dll -r:bin/IKVM.GNU.Classpath.dll \
+		-r:System.Web
 
 bin/SemWeb.PostgreSQLStore.dll: src/PostgreSQLStore.cs bin/SemWeb.dll
 	mcs -debug src/PostgreSQLStore.cs -out:bin/SemWeb.PostgreSQLStore.dll -t:library\
@@ -47,12 +49,13 @@ bin/rdfquery.exe: tools/rdfquery.cs bin/SemWeb.dll
 # Generating documentation files
 
 apidocxml: Makefile
-	mono /usr/lib/monodoc/monodocer.exe \
+	monodocer \
 		-assembly:bin/SemWeb.dll -assembly:bin/SemWeb.Sparql.dll \
-		-path:apidocxml #--delete
+		-assembly:bin/SemWeb.MySQLStore.dll -assembly:bin/SemWeb.PostgreSQLStore.dll -assembly:bin/SemWeb.SqliteStore.dll \
+		-path:apidocxml --delete
 	#mono /usr/lib/monodoc/monodocs2slashdoc.exe doc > SemWeb.docs.xml
 	mkdir -p apidocs
-	mono /usr/lib/monodoc/monodocs2html.exe -source:apidocxml -dest:apidocs -template:docstemplate.xsl
+	monodocs2html -source:apidocxml -dest:apidocs -template:docstemplate.xsl
 
 # Generating the release package
 
@@ -68,7 +71,9 @@ package: all
 	tar -czf packages/semweb-$(VERSION).tgz -C package-workspace \
 		--exclude .svn \
 		semweb-$(VERSION)
+	rm -f packages/semweb.zip
+	cd package-workspace/semweb-$(VERSION); cp -R ../../apidocxml monodoc; zip -r -q ../../packages/semweb.zip * -x "*.svn*"
 	rm -rf package-workspace
 	
 deploy: package
-	scp packages/semweb-$(VERSION).tgz publius:www/code/semweb
+	scp packages/semweb-$(VERSION).tgz packages/semweb.zip publius:www/code/semweb

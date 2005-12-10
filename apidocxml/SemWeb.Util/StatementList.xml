@@ -23,8 +23,8 @@
       <MemberType>Constructor</MemberType>
       <Parameters />
       <Docs>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
+        <summary>Creates a new empty array of statements.</summary>
+        <remarks>None.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Add">
@@ -37,10 +37,10 @@
         <Parameter Name="value" Type="SemWeb.Statement" />
       </Parameters>
       <Docs>
-        <param name="value">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
+        <param name="value">The statement to add to the end of the array.</param>
+        <summary>Adds a statement to the end of the array.</summary>
+        <returns>The index of the newly added statement.</returns>
+        <remarks>None.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Remove">
@@ -53,9 +53,9 @@
         <Parameter Name="s" Type="SemWeb.Statement" />
       </Parameters>
       <Docs>
-        <param name="s">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
+        <param name="s">The statement to remove.</param>
+        <summary>Removes a statement from the array.</summary>
+        <remarks>The statement is removed by linearly searching for it in the array.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Clear">
@@ -66,8 +66,8 @@
       </ReturnValue>
       <Parameters />
       <Docs>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
+        <summary>Clears the array.</summary>
+        <remarks>None.</remarks>
       </Docs>
     </Member>
     <Member MemberName="RemoveAt">
@@ -80,9 +80,9 @@
         <Parameter Name="index" Type="System.Int32" />
       </Parameters>
       <Docs>
-        <param name="index">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
+        <param name="index">The zero-based index at which to remove a statement.</param>
+        <summary>Removes the statement at the given index.</summary>
+        <remarks>None.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Reverse">
@@ -93,8 +93,8 @@
       </ReturnValue>
       <Parameters />
       <Docs>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
+        <summary>Reverses the array.</summary>
+        <remarks>None.</remarks>
       </Docs>
     </Member>
     <Member MemberName="ToArray">
@@ -105,9 +105,9 @@
       </ReturnValue>
       <Parameters />
       <Docs>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
+        <summary>Returns an array containing all of the statements in the list.</summary>
+        <returns>An array of statements.</returns>
+        <remarks>None.</remarks>
       </Docs>
     </Member>
     <Member MemberName="GetEnumerator">
@@ -118,9 +118,9 @@
       </ReturnValue>
       <Parameters />
       <Docs>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
+        <summary>Gets an enumerator over the statements in the array.</summary>
+        <returns>An enumerator over the statements in the array.</returns>
+        <remarks>None.</remarks>
       </Docs>
     </Member>
     <Member MemberName="CopyTo">
@@ -134,10 +134,10 @@
         <Parameter Name="start" Type="System.Int32" />
       </Parameters>
       <Docs>
-        <param name="dest">To be added.</param>
-        <param name="start">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
+        <param name="dest">The destination array.</param>
+        <param name="start">The starting index in the destination array.</param>
+        <summary>Copies this array into another array.</summary>
+        <remarks>None.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Count">
@@ -147,9 +147,9 @@
         <ReturnType>System.Int32</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
+        <summary>Gets the number of statements in the list.</summary>
+        <value>The number of statements in the list.</value>
+        <remarks>None.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SyncRoot">
@@ -159,9 +159,9 @@
         <ReturnType>System.Object</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
+        <summary>Returns null.</summary>
+        <value>Null.</value>
+        <remarks>None.</remarks>
       </Docs>
     </Member>
     <Member MemberName="IsSynchronized">
@@ -171,9 +171,9 @@
         <ReturnType>System.Boolean</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
+        <summary>Returns false.</summary>
+        <value>False.</value>
+        <remarks>None.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Item">
@@ -186,10 +186,10 @@
         <Parameter Name="index" Type="System.Int32" />
       </Parameters>
       <Docs>
-        <param name="index">To be added.</param>
-        <summary>To be added.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
+        <param name="index">A zero-based index.</param>
+        <summary>Gets/sets the statement at the given index.</summary>
+        <value>The statement at the given index.</value>
+        <remarks>This property is the default indexer for the class.</remarks>
       </Docs>
     </Member>
     <Member MemberName="op_Implicit">
@@ -210,7 +210,7 @@
     </Member>
   </Members>
   <Docs>
-    <summary>To be added.</summary>
-    <remarks>To be added.</remarks>
+    <summary>An expandable array of Statements.</summary>
+    <remarks>This utility class is for manipulating an expandable array of <see cref="T:SemWeb.Statement" />s.</remarks>
   </Docs>
 </Type>

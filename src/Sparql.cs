@@ -583,7 +583,7 @@ namespace SemWeb.Query {
 		}
 	}
 	
-	class SparqlProtocol : System.Web.IHttpHandler {
+	public class SparqlProtocol : System.Web.IHttpHandler {
 		public int MaximumLimit = -1;
 		public string MimeType = "application/sparql-results+xml";
 		
