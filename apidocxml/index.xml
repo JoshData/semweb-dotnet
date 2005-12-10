@@ -26,6 +26,8 @@
       <Type Name="N3Writer+Formats" />
       <Type Name="SelectableSource" />
       <Type Name="SelectResult" />
+      <Type Name="BDBStore" />
+      <Type Name="QueryableSource" />
     </Namespace>
     <Namespace Name="SemWeb.Query">
       <Type Name="QueryResultSink" />
@@ -36,6 +38,9 @@
       <Type Name="GraphMatch" />
       <Type Name="Sparql" />
       <Type Name="Query" />
+      <Type Name="Sparql+QueryType" />
+      <Type Name="QueryFormatException" />
+      <Type Name="QueryExecutionException" />
     </Namespace>
     <Namespace Name="SemWeb.Stores">
       <Type Name="MultiStore" />
@@ -48,15 +53,30 @@
     <Namespace Name="SemWeb.Bind">
       <Type Name="Any" />
     </Namespace>
+    <Namespace Name="BDB">
+      <Type Name="DatabaseException" />
+      <Type Name="BDB43" />
+      <Type Name="BDB43+Cursor" />
+      <Type Name="BDB43+Cursor+Seek" />
+      <Type Name="BDB43+Env" />
+      <Type Name="DBFormat" />
+      <Type Name="DataType" />
+    </Namespace>
+    <Namespace Name="SemWeb.Algos">
+      <Type Name="Lean" />
+      <Type Name="MSG" />
+      <Type Name="MSG+Graph" />
+      <Type Name="Connectivity" />
+    </Namespace>
+    <Namespace Name="SemWeb.Remote">
+      <Type Name="SparqlHttpSource" />
+    </Namespace>
   </Types>
   <Assemblies>
     <Assembly Name="SemWeb" Version="0.5.0.2">
       <Attributes>
         <Attribute>
           <AttributeName>System.Reflection.AssemblyKeyName(KeyName="")</AttributeName>
-        </Attribute>
-        <Attribute>
-          <AttributeName>System.Reflection.AssemblyCulture(Culture="")</AttributeName>
         </Attribute>
         <Attribute>
           <AttributeName>System.Reflection.AssemblyTrademark(Trademark="")</AttributeName>
@@ -81,34 +101,7 @@
         </Attribute>
       </Attributes>
     </Assembly>
-    <Assembly Name="SemWeb.Sparql" Version="0.5.0.2">
-      <Attributes>
-        <Attribute>
-          <AttributeName>System.Reflection.AssemblyCulture(Culture="")</AttributeName>
-        </Attribute>
-        <Attribute>
-          <AttributeName>System.Reflection.AssemblyTrademark(Trademark="")</AttributeName>
-        </Attribute>
-        <Attribute>
-          <AttributeName>System.Reflection.AssemblyCopyright(Copyright="")</AttributeName>
-        </Attribute>
-        <Attribute>
-          <AttributeName>System.Reflection.AssemblyProduct(Product="")</AttributeName>
-        </Attribute>
-        <Attribute>
-          <AttributeName>System.Reflection.AssemblyCompany(Company="")</AttributeName>
-        </Attribute>
-        <Attribute>
-          <AttributeName>System.Reflection.AssemblyConfiguration(Configuration="")</AttributeName>
-        </Attribute>
-        <Attribute>
-          <AttributeName>System.Reflection.AssemblyDescription(Description="A SPARQL engine for SemWeb, based on Ryan Levering's SPARQL implementation in Java.")</AttributeName>
-        </Attribute>
-        <Attribute>
-          <AttributeName>System.Reflection.AssemblyTitle(Title="SemWeb SPARQL Engine")</AttributeName>
-        </Attribute>
-      </Attributes>
-    </Assembly>
+    <Assembly Name="SemWeb.Sparql" Version="0.0.0.0" />
   </Assemblies>
   <Title>SemWeb</Title>
 </Overview>

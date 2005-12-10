@@ -1,5 +1,5 @@
 <Type Name="Store" FullName="SemWeb.Store">
-  <TypeSignature Language="C#" Value="public abstract class Store : SemWeb.QueryableSource, SemWeb.StatementSink, SemWeb.StatementSource" />
+  <TypeSignature Language="C#" Value="public abstract class Store : SemWeb.QueryableSource, SemWeb.SelectableSource, SemWeb.StatementSink" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
     <AssemblyVersion>0.5.0.2</AssemblyVersion>
@@ -12,10 +12,10 @@
       <InterfaceName>SemWeb.QueryableSource</InterfaceName>
     </Interface>
     <Interface>
-      <InterfaceName>SemWeb.StatementSink</InterfaceName>
+      <InterfaceName>SemWeb.SelectableSource</InterfaceName>
     </Interface>
     <Interface>
-      <InterfaceName>SemWeb.StatementSource</InterfaceName>
+      <InterfaceName>SemWeb.StatementSink</InterfaceName>
     </Interface>
   </Interfaces>
   <Members>
@@ -132,25 +132,6 @@ any statement matching the template.</returns>
         </remarks>
       </Docs>
     </Member>
-    <Member MemberName="Select">
-      <MemberSignature Language="C#" Value="public abstract void Select (SemWeb.Statement[] templates, SemWeb.StatementSink result);" />
-      <MemberType>Method</MemberType>
-      <ReturnValue>
-        <ReturnType>System.Void</ReturnType>
-      </ReturnValue>
-      <Parameters>
-        <Parameter Name="templates" Type="SemWeb.Statement[]" />
-        <Parameter Name="result" Type="SemWeb.StatementSink" />
-      </Parameters>
-      <Docs>
-        <param name="templates">An array of statement templates.  Statements matching any of the templates are returned to <paramref name="result" />.</param>
-        <param name="result">A StatementSink to which each matching statement will be added.</param>
-        <summary>Queries the story for statements matching one of many templates, and writes the statements to a <see cref="T:SemWeb.StatementSink" />.</summary>
-        <remarks>
-          <para>This method performs the same task as <see cref="M:SemWeb.Store.Select(SemWeb.Statement,SemWeb.StatementSink)" />, but with an array of templates that are applied in one call.  See <see cref="M:SemWeb.Store.Select(SemWeb.Statement,SemWeb.StatementSink)" /> for more information.</para>
-        </remarks>
-      </Docs>
-    </Member>
     <Member MemberName="SelectObjects">
       <MemberSignature Language="C#" Value="public SemWeb.Resource[] SelectObjects (SemWeb.Entity subject, SemWeb.Entity predicate);" />
       <MemberType>Method</MemberType>
@@ -237,8 +218,8 @@ any statement matching the template.</returns>
         <remarks>None.</remarks>
       </Docs>
     </Member>
-    <Member MemberName="GetAllEntities">
-      <MemberSignature Language="C#" Value="public abstract SemWeb.Entity[] GetAllEntities ();" />
+    <Member MemberName="GetEntities">
+      <MemberSignature Language="C#" Value="public abstract SemWeb.Entity[] GetEntities ();" />
       <MemberType>Method</MemberType>
       <ReturnValue>
         <ReturnType>SemWeb.Entity[]</ReturnType>
@@ -250,8 +231,8 @@ any statement matching the template.</returns>
         <remarks>None.</remarks>
       </Docs>
     </Member>
-    <Member MemberName="GetAllPredicates">
-      <MemberSignature Language="C#" Value="public abstract SemWeb.Entity[] GetAllPredicates ();" />
+    <Member MemberName="GetPredicates">
+      <MemberSignature Language="C#" Value="public abstract SemWeb.Entity[] GetPredicates ();" />
       <MemberType>Method</MemberType>
       <ReturnValue>
         <ReturnType>SemWeb.Entity[]</ReturnType>
@@ -298,7 +279,7 @@ any statement matching the template.</returns>
       </Docs>
     </Member>
     <Member MemberName="Replace">
-      <MemberSignature Language="C#" Value="public abstract void Replace (SemWeb.Entity find, SemWeb.Entity replacement);" />
+      <MemberSignature Language="C#" Value="public virtual void Replace (SemWeb.Entity find, SemWeb.Entity replacement);" />
       <MemberType>Method</MemberType>
       <ReturnValue>
         <ReturnType>System.Void</ReturnType>
@@ -493,7 +474,7 @@ For Sqlite, MySQL, and PostgreSQL-based stores, use the spec string described in
       </Docs>
     </Member>
     <Member MemberName="Replace">
-      <MemberSignature Language="C#" Value="public abstract void Replace (SemWeb.Statement find, SemWeb.Statement replacement);" />
+      <MemberSignature Language="C#" Value="public virtual void Replace (SemWeb.Statement find, SemWeb.Statement replacement);" />
       <MemberType>Method</MemberType>
       <ReturnValue>
         <ReturnType>System.Void</ReturnType>
@@ -509,24 +490,8 @@ For Sqlite, MySQL, and PostgreSQL-based stores, use the spec string described in
         <remarks>Store implementations may choose to optimize this method over a call to Remove followed by Add.</remarks>
       </Docs>
     </Member>
-    <Member MemberName="Select">
-      <MemberSignature Language="C#" Value="public SemWeb.SelectResult Select (SemWeb.Statement[] templates);" />
-      <MemberType>Method</MemberType>
-      <ReturnValue>
-        <ReturnType>SemWeb.SelectResult</ReturnType>
-      </ReturnValue>
-      <Parameters>
-        <Parameter Name="templates" Type="SemWeb.Statement[]" />
-      </Parameters>
-      <Docs>
-        <param name="templates">An array of statement templates.  Statements matching any of the templates are returned to <paramref name="result" />.</param>
-        <summary>Retuns a <see cref="T:SemWeb.SelectResult" /> object that represents the result of matching statement templates against the store.</summary>
-        <returns>A <see cref="T:SemWeb.SelectResult" /> representing the statements in the store that matched any of the templates.</returns>
-        <remarks>See <see cref="M:SemWeb.Store.Select(SemWeb.Statement)" />.</remarks>
-      </Docs>
-    </Member>
-    <Member MemberName="GetAllMetas">
-      <MemberSignature Language="C#" Value="public abstract SemWeb.Entity[] GetAllMetas ();" />
+    <Member MemberName="GetMetas">
+      <MemberSignature Language="C#" Value="public abstract SemWeb.Entity[] GetMetas ();" />
       <MemberType>Method</MemberType>
       <ReturnValue>
         <ReturnType>SemWeb.Entity[]</ReturnType>
@@ -538,14 +503,29 @@ For Sqlite, MySQL, and PostgreSQL-based stores, use the spec string described in
         <remarks>None.</remarks>
       </Docs>
     </Member>
+    <Member MemberName="RemoveAll">
+      <MemberSignature Language="C#" Value="public void RemoveAll (SemWeb.StatementSource source);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="source" Type="SemWeb.StatementSource" />
+      </Parameters>
+      <Docs>
+        <param name="source">To be added.</param>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
     <Member MemberName="Contains">
-      <MemberSignature Language="C#" Value="public static bool Contains (SemWeb.QueryableSource source, SemWeb.Statement template);" />
+      <MemberSignature Language="C#" Value="public static bool Contains (SemWeb.SelectableSource source, SemWeb.Statement template);" />
       <MemberType>Method</MemberType>
       <ReturnValue>
         <ReturnType>System.Boolean</ReturnType>
       </ReturnValue>
       <Parameters>
-        <Parameter Name="source" Type="SemWeb.QueryableSource" />
+        <Parameter Name="source" Type="SemWeb.SelectableSource" />
         <Parameter Name="template" Type="SemWeb.Statement" />
       </Parameters>
       <Docs>
@@ -553,6 +533,68 @@ For Sqlite, MySQL, and PostgreSQL-based stores, use the spec string described in
         <param name="template">To be added.</param>
         <summary>To be added.</summary>
         <returns>To be added.</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Select">
+      <MemberSignature Language="C#" Value="public abstract void Select (SemWeb.Entity[] subjects, SemWeb.Entity[] predicates, SemWeb.Resource[] objects, SemWeb.Entity[] metas, SemWeb.StatementSink result);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="subjects" Type="SemWeb.Entity[]" />
+        <Parameter Name="predicates" Type="SemWeb.Entity[]" />
+        <Parameter Name="objects" Type="SemWeb.Resource[]" />
+        <Parameter Name="metas" Type="SemWeb.Entity[]" />
+        <Parameter Name="result" Type="SemWeb.StatementSink" />
+      </Parameters>
+      <Docs>
+        <param name="subjects">To be added.</param>
+        <param name="predicates">To be added.</param>
+        <param name="objects">To be added.</param>
+        <param name="metas">To be added.</param>
+        <param name="result">To be added.</param>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Select">
+      <MemberSignature Language="C#" Value="public SemWeb.SelectResult Select (SemWeb.Entity[] subjects, SemWeb.Entity[] predicates, SemWeb.Resource[] objects, SemWeb.Entity[] metas);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>SemWeb.SelectResult</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="subjects" Type="SemWeb.Entity[]" />
+        <Parameter Name="predicates" Type="SemWeb.Entity[]" />
+        <Parameter Name="objects" Type="SemWeb.Resource[]" />
+        <Parameter Name="metas" Type="SemWeb.Entity[]" />
+      </Parameters>
+      <Docs>
+        <param name="subjects">To be added.</param>
+        <param name="predicates">To be added.</param>
+        <param name="objects">To be added.</param>
+        <param name="metas">To be added.</param>
+        <summary>To be added.</summary>
+        <returns>To be added.</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Query">
+      <MemberSignature Language="C#" Value="public virtual void Query (SemWeb.Statement[] graph, SemWeb.Query.QueryResultSink sink);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="graph" Type="SemWeb.Statement[]" />
+        <Parameter Name="sink" Type="SemWeb.Query.QueryResultSink" />
+      </Parameters>
+      <Docs>
+        <param name="graph">To be added.</param>
+        <param name="sink">To be added.</param>
+        <summary>To be added.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>

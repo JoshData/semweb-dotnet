@@ -69,6 +69,19 @@
         <remarks>Upon accessing this property, all of the matching statements are loaded into memory as if through a call to <see cref="M:SemWeb.SelectResult.Load()" />.</remarks>
       </Docs>
     </Member>
+    <Member MemberName="ToArray">
+      <MemberSignature Language="C#" Value="public SemWeb.Statement[] ToArray ();" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>SemWeb.Statement[]</ReturnType>
+      </ReturnValue>
+      <Parameters />
+      <Docs>
+        <summary>To be added.</summary>
+        <returns>To be added.</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
   </Members>
   <Docs>
     <summary>This class is used to hold the results of a call to Select.</summary>

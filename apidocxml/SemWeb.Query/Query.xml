@@ -18,23 +18,6 @@
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
-    <Member MemberName="Run">
-      <MemberSignature Language="C#" Value="public abstract void Run (SemWeb.QueryableSource source, SemWeb.Query.QueryResultSink resultsink);" />
-      <MemberType>Method</MemberType>
-      <ReturnValue>
-        <ReturnType>System.Void</ReturnType>
-      </ReturnValue>
-      <Parameters>
-        <Parameter Name="source" Type="SemWeb.QueryableSource" />
-        <Parameter Name="resultsink" Type="SemWeb.Query.QueryResultSink" />
-      </Parameters>
-      <Docs>
-        <param name="source">The target graph to run the query against.</param>
-        <param name="resultsink">The sink to which each set of variable bindings will be returned.</param>
-        <summary>Runs the query.</summary>
-        <remarks>Callers should first create a class implementing the <see cref="T:SemWeb.Query.QueryResultSink" /> class, and then pass an instance of that class to this method.  One implementation of QueryResultSink is provided.  The <see cref="T:SemWeb.Query.SparqlXmlQuerySink" /> class writes out variable bindings to a <see cref="System.IO.TextWriter" /> in the SPARQL XML Result Format.</remarks>
-      </Docs>
-    </Member>
     <Member MemberName="GetExplanation">
       <MemberSignature Language="C#" Value="public abstract string GetExplanation ();" />
       <MemberType>Method</MemberType>
@@ -82,6 +65,23 @@
         <summary>A filter on the Meta value of statements in the target graph considered by the query.</summary>
         <value>The value of this property is <see langword="null" /> by default, meaning the Meta field of statements in the target graph is ignored for the purposes of the query.  Otherwise, the query is restricted to statements with the given entity as a Meta value.</value>
         <remarks>None.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Run">
+      <MemberSignature Language="C#" Value="public abstract void Run (SemWeb.SelectableSource source, SemWeb.Query.QueryResultSink resultsink);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="source" Type="SemWeb.SelectableSource" />
+        <Parameter Name="resultsink" Type="SemWeb.Query.QueryResultSink" />
+      </Parameters>
+      <Docs>
+        <param name="source">To be added.</param>
+        <param name="resultsink">To be added.</param>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

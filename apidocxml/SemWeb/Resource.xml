@@ -36,8 +36,8 @@
         <param name="b">A Resource.</param>
         <summary>Tests two Resources for equality.</summary>
         <returns>Returns whether the two resources are equal.
-        If both arguments are <see langword="null"/>, returns true;
-        otherwise, if one argument is <see langword="null"/>, returns false.</returns>
+        If both arguments are <see langword="null" />, returns true;
+        otherwise, if one argument is <see langword="null" />, returns false.</returns>
         <remarks>Two resources are equal if they are both entities
         and either 1) are the same object, 2) have the same URI, or
         3) are anonymous entities created by the same Store and marked

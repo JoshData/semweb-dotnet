@@ -200,9 +200,35 @@
         <param name="webresource">The URI of the RDF document.</param>
         <summary>Loads an RDF document from the Internet.</summary>
         <returns>An RdfReader over the remote document.</returns>
-        <remarks><para>The document is fetched with <see cref="T:System.Net.WebRequest" /> and must be in RDF/XML or Notation3 (NTriples/Turtle/N3) format.</para>
-<para>The format of the document is detected as follows.  If the document has a mime-type of text/xml, application/xml, application/rss+xml, or application/rdf+xml, the document is treated as an RDF/XML document.  If the document has a mime-type of text/rdf+n3, application/n3, application/turtle, or application/x-turtle, the document is treated as a Notation3 document.  If the mime-type is not recognized, the document's file name extension is checked.  If it is .xml or .rss, it is treated as an RDF/XML document.  If it is .n3, .ttl, or .nt, it is treated as a Notation3 document.</para>
-<para>If the format could not be determined, a <see cref="T:System.InvalidOperationException" /> is thrown.</para></remarks>
+        <remarks>
+          <para>The document is fetched with <see cref="T:System.Net.WebRequest" /> and must be in RDF/XML or Notation3 (NTriples/Turtle/N3) format.</para>
+          <para>The format of the document is detected as follows.  If the document has a mime-type of text/xml, application/xml, application/rss+xml, or application/rdf+xml, the document is treated as an RDF/XML document.  If the document has a mime-type of text/rdf+n3, application/n3, application/turtle, or application/x-turtle, the document is treated as a Notation3 document.  If the mime-type is not recognized, the document's file name extension is checked.  If it is .xml or .rss, it is treated as an RDF/XML document.  If it is .n3, .ttl, or .nt, it is treated as a Notation3 document.</para>
+          <para>If the format could not be determined, a <see cref="T:System.InvalidOperationException" /> is thrown.</para>
+        </remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Namespaces">
+      <MemberSignature Language="C#" Value="public SemWeb.NamespaceManager Namespaces { get; };" />
+      <MemberType>Property</MemberType>
+      <ReturnValue>
+        <ReturnType>SemWeb.NamespaceManager</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+        <value>To be added.</value>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Warnings">
+      <MemberSignature Language="C#" Value="public System.Collections.IList Warnings { get; };" />
+      <MemberType>Property</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Collections.IList</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+        <value>To be added.</value>
+        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

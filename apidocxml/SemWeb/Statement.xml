@@ -99,54 +99,6 @@
         meta entities are considered equal, or both are <see langword="null" />.</remarks>
       </Docs>
     </Member>
-    <Member MemberName="Subject">
-      <MemberSignature Language="C#" Value="public SemWeb.Entity Subject { get; };" />
-      <MemberType>Property</MemberType>
-      <ReturnValue>
-        <ReturnType>SemWeb.Entity</ReturnType>
-      </ReturnValue>
-      <Docs>
-        <summary>The subject of the statement.</summary>
-        <value>The subject of the statement.</value>
-        <remarks>None.</remarks>
-      </Docs>
-    </Member>
-    <Member MemberName="Predicate">
-      <MemberSignature Language="C#" Value="public SemWeb.Entity Predicate { get; };" />
-      <MemberType>Property</MemberType>
-      <ReturnValue>
-        <ReturnType>SemWeb.Entity</ReturnType>
-      </ReturnValue>
-      <Docs>
-        <summary>The predicate (verb) of the statement.</summary>
-        <value>The predicate (verb) of the statement.</value>
-        <remarks>None.</remarks>
-      </Docs>
-    </Member>
-    <Member MemberName="Object">
-      <MemberSignature Language="C#" Value="public SemWeb.Resource Object { get; };" />
-      <MemberType>Property</MemberType>
-      <ReturnValue>
-        <ReturnType>SemWeb.Resource</ReturnType>
-      </ReturnValue>
-      <Docs>
-        <summary>The object of the statement.</summary>
-        <value>The object of the statement.</value>
-        <remarks>None.</remarks>
-      </Docs>
-    </Member>
-    <Member MemberName="Meta">
-      <MemberSignature Language="C#" Value="public SemWeb.Entity Meta { get; };" />
-      <MemberType>Property</MemberType>
-      <ReturnValue>
-        <ReturnType>SemWeb.Entity</ReturnType>
-      </ReturnValue>
-      <Docs>
-        <summary>An entity that contains meta information about the statement.</summary>
-        <value>An entity that contains meta information about the statement, or <see langword="null" />.</value>
-        <remarks>The use of this property is up to the application.</remarks>
-      </Docs>
-    </Member>
     <Member MemberName="Matches">
       <MemberSignature Language="C#" Value="public bool Matches (SemWeb.Statement statement);" />
       <MemberType>Method</MemberType>
@@ -193,8 +145,71 @@
       </ReturnValue>
       <Docs>
         <summary>Gets whether any of the Subject, Predicate, Object, or Meta fields are <see langword="null" />.</summary>
-        <value><see langword="true" /> if any of the Subject, Predicate, Object, or Meta fields are <see langword="null" />.</value>
+        <value>
+          <see langword="true" /> if any of the Subject, Predicate, Object, or Meta fields are <see langword="null" />.</value>
         <remarks>This is used to detect whether the Statement is a template.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Replace">
+      <MemberSignature Language="C#" Value="public SemWeb.Statement Replace (SemWeb.Resource find, SemWeb.Resource replacement);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>SemWeb.Statement</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="find" Type="SemWeb.Resource" />
+        <Parameter Name="replacement" Type="SemWeb.Resource" />
+      </Parameters>
+      <Docs>
+        <param name="find">To be added.</param>
+        <param name="replacement">To be added.</param>
+        <summary>To be added.</summary>
+        <returns>To be added.</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Subject">
+      <MemberSignature Language="C#" Value="public SemWeb.Entity Subject;" />
+      <MemberType>Field</MemberType>
+      <ReturnValue>
+        <ReturnType>SemWeb.Entity</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Predicate">
+      <MemberSignature Language="C#" Value="public SemWeb.Entity Predicate;" />
+      <MemberType>Field</MemberType>
+      <ReturnValue>
+        <ReturnType>SemWeb.Entity</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Object">
+      <MemberSignature Language="C#" Value="public SemWeb.Resource Object;" />
+      <MemberType>Field</MemberType>
+      <ReturnValue>
+        <ReturnType>SemWeb.Resource</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Meta">
+      <MemberSignature Language="C#" Value="public SemWeb.Entity Meta;" />
+      <MemberType>Field</MemberType>
+      <ReturnValue>
+        <ReturnType>SemWeb.Entity</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

@@ -37,14 +37,14 @@
       </Docs>
     </Member>
     <Member MemberName="Filter">
-      <MemberSignature Language="C#" Value="public abstract bool Filter (SemWeb.Resource resource, SemWeb.QueryableSource targetModel);" />
+      <MemberSignature Language="C#" Value="public abstract bool Filter (SemWeb.Resource resource, SemWeb.SelectableSource targetModel);" />
       <MemberType>Method</MemberType>
       <ReturnValue>
         <ReturnType>System.Boolean</ReturnType>
       </ReturnValue>
       <Parameters>
         <Parameter Name="resource" Type="SemWeb.Resource" />
-        <Parameter Name="targetModel" Type="SemWeb.QueryableSource" />
+        <Parameter Name="targetModel" Type="SemWeb.SelectableSource" />
       </Parameters>
       <Docs>
         <param name="resource">To be added.</param>

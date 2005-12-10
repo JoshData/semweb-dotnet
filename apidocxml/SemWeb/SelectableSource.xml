@@ -1,10 +1,14 @@
 <Type Name="SelectableSource" FullName="SemWeb.SelectableSource">
-  <TypeSignature Language="C#" Value="public interface SelectableSource" />
+  <TypeSignature Language="C#" Value="public interface SelectableSource : SemWeb.StatementSource" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
     <AssemblyVersion>0.5.0.2</AssemblyVersion>
   </AssemblyInfo>
-  <Interfaces />
+  <Interfaces>
+    <Interface>
+      <InterfaceName>SemWeb.StatementSource</InterfaceName>
+    </Interface>
+  </Interfaces>
   <Members>
     <Member MemberName="Contains">
       <MemberSignature Language="C#" Value="public bool Contains (SemWeb.Statement template);" />
@@ -47,22 +51,26 @@ any statement matching the template.</returns>
       </Docs>
     </Member>
     <Member MemberName="Select">
-      <MemberSignature Language="C#" Value="public void Select (SemWeb.Statement[] templates, SemWeb.StatementSink sink);" />
+      <MemberSignature Language="C#" Value="public void Select (SemWeb.Entity[] subjects, SemWeb.Entity[] predicates, SemWeb.Resource[] objects, SemWeb.Entity[] metas, SemWeb.StatementSink sink);" />
       <MemberType>Method</MemberType>
       <ReturnValue>
         <ReturnType>System.Void</ReturnType>
       </ReturnValue>
       <Parameters>
-        <Parameter Name="templates" Type="SemWeb.Statement[]" />
+        <Parameter Name="subjects" Type="SemWeb.Entity[]" />
+        <Parameter Name="predicates" Type="SemWeb.Entity[]" />
+        <Parameter Name="objects" Type="SemWeb.Resource[]" />
+        <Parameter Name="metas" Type="SemWeb.Entity[]" />
         <Parameter Name="sink" Type="SemWeb.StatementSink" />
       </Parameters>
       <Docs>
-        <param name="templates">An array of statement templates.  Statements matching any of the templates are returned to <paramref name="result" />.</param>
-        <param name="sink">A StatementSink to which each matching statement will be added.</param>
-        <summary>Queries the story for statements matching one of many templates, and writes the statements to a <see cref="T:SemWeb.StatementSink" />.</summary>
-        <remarks>
-          <para>This method performs the same task as <see cref="M:SemWeb.Store.Select(SemWeb.Statement,SemWeb.StatementSink)" />, but with an array of templates that are applied in one call.  See <see cref="M:SemWeb.Store.Select(SemWeb.Statement,SemWeb.StatementSink)" /> for more information.</para>
-        </remarks>
+        <param name="subjects">To be added.</param>
+        <param name="predicates">To be added.</param>
+        <param name="objects">To be added.</param>
+        <param name="metas">To be added.</param>
+        <param name="sink">To be added.</param>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>
