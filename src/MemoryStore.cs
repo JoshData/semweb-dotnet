@@ -146,10 +146,12 @@ namespace SemWeb {
 		}
 
 		public override void Select(Entity[] subjects, Entity[] predicates, Resource[] objects, Entity[] metas, StatementSink result) {
-			ResSet s = subjects == null ? null : new ResSet(subjects),
+			ResSet
+				s = subjects == null ? null : new ResSet(subjects),
 				p = predicates == null ? null : new ResSet(predicates),
 				o = objects == null ? null : new ResSet(objects),
 				m = metas == null ? null : new ResSet(metas);
+				
 			foreach (Statement st in statements) {
 				if (s != null && !s.Contains(st.Subject)) continue;
 				if (p != null && !p.Contains(st.Predicate)) continue;
@@ -168,7 +170,7 @@ namespace SemWeb {
 					additions.Add(statement.Replace(a, b));
 				}
 			}
-			RemoveAll(removals);
+			RemoveAll(removals.ToArray());
 			Import(additions);
 		}
 		

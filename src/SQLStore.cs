@@ -49,14 +49,16 @@ namespace SemWeb.Stores {
 			this.table = table;
 			
 			INSERT_INTO_LITERALS_VALUES = "INSERT INTO " + table + "_literals VALUES ";
-			INSERT_INTO_STATEMENTS_VALUES = "INSERT INTO " + table + "_statements VALUES ";
 			INSERT_INTO_ENTITIES_VALUES = "INSERT INTO " + table + "_entities VALUES ";
+			INSERT_INTO_STATEMENTS_VALUES = "INSERT " + (SupportsInsertIgnore ? "IGNORE " : "") + "INTO " + table + "_statements VALUES ";
 			
 			quote = GetQuoteChar();
 		}
 		
 		protected string TableName { get { return table; } }
 		
+		protected abstract bool SupportsNoDuplicates { get; }
+		protected abstract bool SupportsInsertIgnore { get; }
 		protected abstract bool SupportsInsertCombined { get; }
 		protected abstract bool SupportsUseIndex { get; }
 		protected virtual bool SupportsFastJoin { get { return true; } }
@@ -85,7 +87,7 @@ namespace SemWeb.Stores {
 			
 			CheckMax("select max(subject) from " + table + "_statements", ref nextid);
 			CheckMax("select max(predicate) from " + table + "_statements", ref nextid);
-			CheckMax("select max(object) from " + table + "_statements where objecttype=0", ref nextid);
+			CheckMax("select max(object) from " + table + "_statements", ref nextid);
 			CheckMax("select max(meta) from " + table + "_statements", ref nextid);
 			CheckMax("select max(id) from " + table + "_literals", ref nextid);
 			CheckMax("select max(id) from " + table + "_entities", ref nextid);
@@ -402,12 +404,12 @@ namespace SemWeb.Stores {
 			cmd.Append(table);
 			cmd.Append("_literals WHERE ");
 			bool hasLiterals = false;
+			Hashtable litseen = new Hashtable();
 			foreach (Statement s in statements) {
 				Literal lit = s.Object as Literal;
 				if (lit == null) continue;
-				
-				if (literalCache.ContainsKey(lit))
-					continue;
+				if (litseen.ContainsKey(lit)) continue;
+				if (literalCache.ContainsKey(lit)) continue;
 				
 				if (hasLiterals)
 					cmd.Append(" or ");
@@ -415,6 +417,7 @@ namespace SemWeb.Stores {
 				WhereLiteral(cmd, lit);
 				cmd.Append(")");
 				hasLiterals = true;
+				litseen[lit] = litseen;
 			}
 			if (hasLiterals) {
 				cmd.Append(";");
@@ -542,13 +545,9 @@ namespace SemWeb.Stores {
 			if (and) cmd.Append(" and ");
 			
 			if (col.EndsWith("object")) {
-				string colprefix = "";
-				if (col != "object")
-					colprefix = col.Substring(0, col.Length-"object".Length);
-			
 				if (r is MultiRes) {
 					// Assumption that ID space of literals and entities are the same.
-					cmd.Append("(objecttype IN (0,1) AND ");
+					cmd.Append("(");
 					cmd.Append(col);
 					cmd.Append(" IN (");
 					if (!AppendMultiRes((MultiRes)r, cmd)) return false;
@@ -558,8 +557,6 @@ namespace SemWeb.Stores {
 					int id = GetResourceId(lit, false);
 					if (id == 0) return false;
 					cmd.Append(" (");
-					cmd.Append(colprefix);
-					cmd.Append("objecttype = 1 and ");
 					cmd.Append(col);
 					cmd.Append(" = ");
 					cmd.Append(id);
@@ -568,8 +565,6 @@ namespace SemWeb.Stores {
 					int id = GetResourceId(r, false);
 					if (id == 0) return false;
 					cmd.Append(" (");
-					cmd.Append(colprefix);
-					cmd.Append("objecttype = 0 and ");
 					cmd.Append(col);
 					cmd.Append(" = ");
 					cmd.Append(id);
@@ -720,10 +715,11 @@ namespace SemWeb.Stores {
 			// SQLite has a problem with LEFT JOIN: When a condition is made on the
 			// first table in the ON clause (q.objecttype=0/1), when it fails,
 			// it excludes the row from the first table, whereas it should only
-			// exclude the results of the join, but include the row.  Thus, the space
-			// of IDs between literals and entities must be shared!
-			
+			// exclude the results of the join.
+						
 			System.Text.StringBuilder cmd = new System.Text.StringBuilder("SELECT ");
+			if (!SupportsNoDuplicates)
+				cmd.Append("DISTINCT ");
 			SelectFilter(partialFilter, cmd);
 			if (partialFilter.Object)
 				cmd.Append(", lit.value, lit.language, lit.datatype");
@@ -743,7 +739,7 @@ namespace SemWeb.Stores {
 			if (partialFilter.Object) {
 				cmd.Append(" LEFT JOIN ");
 				cmd.Append(table);
-				cmd.Append("_literals AS lit ON q.objecttype = 1 AND q.object=lit.id");
+				cmd.Append("_literals AS lit ON q.object=lit.id");
 			}
 			if (partialFilter.Subject) {
 				cmd.Append(" LEFT JOIN ");
@@ -758,7 +754,7 @@ namespace SemWeb.Stores {
 			if (partialFilter.Object) {
 				cmd.Append(" LEFT JOIN ");
 				cmd.Append(table);
-				cmd.Append("_entities AS ouri ON q.objecttype = 0 AND q.object = ouri.id");
+				cmd.Append("_entities AS ouri ON q.object = ouri.id");
 			}
 			if (partialFilter.Meta) {
 				cmd.Append(" LEFT JOIN ");
@@ -786,10 +782,6 @@ namespace SemWeb.Stores {
 					int sid = -1, pid = -1, ot = -1, oid = -1, mid = -1;
 					string suri = null, puri = null, ouri = null, muri = null;
 					
-					//if (partialFilter.Subject) { sid = AsInt(reader[col++]); suri = AsString(reader[col++]); }
-					//if (partialFilter.Predicate) { pid = AsInt(reader[col++]); puri = AsString(reader[col++]); }
-					//if (partialFilter.Object) { ot = AsInt(reader[col++]); oid = AsInt(reader[col++]); ouri = AsString(reader[col++]); }
-					//if (partialFilter.Meta) { mid = AsInt(reader[col++]); muri = AsString(reader[col++]); }
 					if (partialFilter.Subject) { sid = reader.GetInt32(col++); suri = AsString(reader[col++]); }
 					if (partialFilter.Predicate) { pid = reader.GetInt32(col++); puri = AsString(reader[col++]); }
 					if (partialFilter.Object) { ot = reader.GetInt32(col++); oid = reader.GetInt32(col++); ouri = AsString(reader[col++]); }
@@ -1131,9 +1123,9 @@ namespace SemWeb.Stores {
 		
 		internal static string[] GetCreateIndexCommands(string table) {
 			return new string[] {
-				"CREATE INDEX subject_index ON " + table + "_statements(subject);",
+				"CREATE UNIQUE INDEX subject_full_index ON " + table + "_statements(subject, predicate, object, meta);",
 				"CREATE INDEX predicate_index ON " + table + "_statements(predicate);",
-				"CREATE INDEX object_index ON " + table + "_statements(objecttype, object);",
+				"CREATE INDEX object_index ON " + table + "_statements(object);",
 				"CREATE INDEX meta_index ON " + table + "_statements(meta);",
 			
 				"CREATE INDEX literal_index ON " + table + "_literals(value(30));",

@@ -30,8 +30,15 @@ namespace SemWeb.Query {
 		public Sparql(string query) {
 			try {
 				this.query = SPARQLParser.parse(new java.io.StringReader(query));
+				if (this.query is SelectQuery) {
+					SelectQuery sq = (SelectQuery)this.query;
+					ReturnLimit = sq.getLimit();
+					ReturnStart = sq.getOffset();
+				}
+			} catch (TokenMgrError e) {
+				throw new QueryFormatException("SPARQL syntax error at: " + e.Message);
 			} catch (ParseException e) {
-				throw new Exception("SPARQL syntax error at: " + e.currentToken);
+				throw new QueryFormatException("SPARQL syntax error at: " + e.currentToken);
 			}
 		}
 		
@@ -153,8 +160,8 @@ namespace SemWeb.Query {
 			GraphMatch gm = new GraphMatch();
 			Hashtable vars = new Hashtable();
 			
-			gm.ReturnLimit = sq.getLimit();
-			gm.ReturnStart = sq.getOffset();
+			gm.ReturnLimit = ReturnLimit;
+			gm.ReturnStart = ReturnStart;
 			
 			for (int i = 0; i < gc.jjtGetNumChildren(); i++) {
 				ASTTripleSet triple = gc.jjtGetChild(i) as ASTTripleSet;
@@ -194,6 +201,9 @@ namespace SemWeb.Query {
 			} else if (obj is ASTLiteral) {
 				ASTLiteral lit = (ASTLiteral)obj;
 				return Literal.Parse(lit.toString(), null);
+			} else if (obj is ASTQuotedIRIref) {
+				ASTQuotedIRIref iri = (ASTQuotedIRIref)obj;
+				return new Entity(iri.getURI());
 			} else {
 				throw new Exception(obj.GetType().ToString());
 			}
@@ -209,13 +219,20 @@ namespace SemWeb.Query {
 
 			SelectQuery squery = (SelectQuery)query;
 			RdfSourceWrapper sourcewrapper = new RdfSourceWrapper(source, QueryMeta);
-			RdfBindingSet results = squery.execute(sourcewrapper);
+			RdfBindingSet results;
+			try {
+				results = squery.execute(sourcewrapper);
+			} catch (java.lang.Exception e) {
+				throw new QueryExecutionException("Error executing query: " + e.Message, e);
+			}
 			
 			java.util.List vars = results.getVariables();
 			VariableBinding[] bindings = new VariableBinding[vars.size()];
+			Entity[] vars2 = new Entity[vars.size()];
 			for (int i = 0; i < bindings.Length; i++) {
 				Variable v = (Variable)vars.get(i);
-				bindings[i] = new VariableBinding(new Entity(null), v.getName(), null);
+				vars2[i] = new Entity(null);
+				bindings[i] = new VariableBinding(vars2[i], v.getName(), null);
 			}
 			resultsink.Init(bindings);
 			
@@ -223,15 +240,15 @@ namespace SemWeb.Query {
 			long ctr = -1, ctr2 = 0;
 			while (iter.hasNext()) {
 				RdfBindingRow row = (RdfBindingRow)iter.next();
-				for (int i = 0; i < bindings.Length; i++) {
-					Variable v = (Variable)row.getVariables().get(i);
-					bindings[i] = new VariableBinding(
-						bindings[i].Variable, v.getName(),
-						sourcewrapper.ToResource(row.getValue(v)));
-				}
-				
+
 				ctr++;
 				if (ctr < ReturnStart && ReturnStart != -1) continue;
+
+				for (int i = 0; i < bindings.Length; i++) {
+					Variable v = (Variable)row.getVariables().get(i);
+					bindings[i] = new VariableBinding(vars2[i], v.getName(), sourcewrapper.ToResource(row.getValue(v)));
+				}
+				
 				resultsink.Add(bindings);
 
 				ctr2++;
@@ -239,14 +256,21 @@ namespace SemWeb.Query {
 			}
 			
 			resultsink.Finished();
+
+			if (true)
+				Console.Error.WriteLine("Selected " + sourcewrapper.NStatements);
 		}
 	
-		class RdfSourceWrapper : RdfSource, org.openrdf.model.ValueFactory {
+		class RdfSourceWrapper : RdfSource, RdfSourceWithMultiValues,
+				org.openrdf.model.ValueFactory {
+				
 			SelectableSource source;
 			Hashtable bnodes = new Hashtable();
 			Entity QueryMeta;
 			
 			bool debug = false;
+			
+			public int NStatements = 0;
 			
 			public RdfSourceWrapper(SelectableSource source, Entity meta) {
 				this.source = source;
@@ -254,12 +278,42 @@ namespace SemWeb.Query {
 			}
 		
 			private StatementIterator GetIterator(Statement statement) {
-				if (debug) Console.Error.WriteLine("ASK: " + statement);
+				return GetIterator(statement.Subject == null ? null : new Entity[] { statement.Subject },
+					statement.Predicate == null ? null : new Entity[] { statement.Predicate },
+					statement.Object == null ? null : new Resource[] { statement.Object },
+					statement.Meta == null ? null : new Entity[] { statement.Meta });
+			}
+			
+			private StatementIterator GetIterator(Entity[] subjects, Entity[] predicates, Resource[] objects, Entity[] metas) {
+				if (debug || true) {
+					Console.Error.WriteLine("ASK: " + ToString(subjects) + " " + ToString(predicates) + " " + ToString(objects));
+				}
+				if (subjects == null && predicates == null && objects == null)
+					throw new QueryExecutionException("Query would select all statements in the store.");
 				MemoryStore results = new MemoryStore();
 				DupChecker dupchecker = new DupChecker();
 				dupchecker.store = results;
-				source.Select(statement, dupchecker);
+				source.Select(subjects, predicates, objects, metas, dupchecker);
+				NStatements  += results.StatementCount;
 				return new StatementIterator(results.ToArray());
+			}
+			
+			private string ToString(Resource[] res) {
+				if (res == null) return "?";
+				System.Text.StringBuilder b = new System.Text.StringBuilder();
+				if (res.Length > 1) b.Append("{ ");
+				foreach (Resource r in res) {
+					if (b.Length > 2) b.Append(", ");
+					if (b.Length > 50) { b.Append("..."); break; }
+					if (r is Entity && r.Uri == null)
+						b.Append("(anon)");
+					if (r is Entity && r.Uri != null)
+						b.Append("<" + r.Uri + ">");
+					if (r is Literal)
+						b.Append(r.ToString());
+				}
+				if (res.Length > 1) b.Append(" }");
+				return b.ToString();
 			}
 			
 		    /**
@@ -271,6 +325,10 @@ namespace SemWeb.Query {
      		public java.util.Iterator getDefaultStatements (org.openrdf.model.Value subject, org.openrdf.model.URI predicate, org.openrdf.model.Value @object) {
 				return GetIterator( new Statement(ToEntity(subject), ToEntity(predicate), ToResource(@object), QueryMeta) );
 			}
+
+     		public java.util.Iterator getDefaultStatements (org.openrdf.model.Value[] subject, org.openrdf.model.Value[] predicate, org.openrdf.model.Value[] @object) {
+				return GetIterator( ToEntities(subject), ToEntities(predicate), ToResources(@object), QueryMeta == null ? null : new Entity[] { QueryMeta } );
+     		}
 			
 		    /**
 		     * Gets all the statements that come from any graph and have a certain
@@ -287,6 +345,10 @@ namespace SemWeb.Query {
 				return GetIterator(  new Statement(ToEntity(subject), ToEntity(predicate), ToResource(@object), null) );
 			}
 	
+     		public java.util.Iterator getStatements (org.openrdf.model.Value[] subject, org.openrdf.model.Value[] predicate, org.openrdf.model.Value[] @object) {
+				return GetIterator(  ToEntities(subject), ToEntities(predicate), ToResources(@object), null );
+     		}
+     		
 		    /**
 		     * Gets all the statements that come from a particular named graph and have
 		     * a certain subject, predicate, and object. Any of the parameters can be
@@ -297,6 +359,10 @@ namespace SemWeb.Query {
 				return GetIterator( new Statement(ToEntity(subject), ToEntity(predicate), ToResource(@object), ToEntity(graph)) );
 			}
 			
+     		public java.util.Iterator getStatements (org.openrdf.model.Value[] subject, org.openrdf.model.Value[] predicate, org.openrdf.model.Value[] @object, org.openrdf.model.URI[] graph) {
+				return GetIterator( ToEntities(subject), ToEntities(predicate), ToResources(@object), ToEntities(graph) );
+     		}
+     		
 			public org.openrdf.model.ValueFactory getValueFactory() {
 				return this;
 			}
@@ -346,6 +412,22 @@ namespace SemWeb.Query {
 					return ToEntity(value);
 				}
 			}
+			
+			public Entity[] ToEntities(org.openrdf.model.Value[] ents) {
+				if (ents == null) return null;
+				ArrayList ret = new ArrayList();
+				for (int i = 0; i < ents.Length; i++)
+					if (!(ents[i] is org.openrdf.model.Literal))
+						ret.Add( ToEntity(ents[i]) );
+				return (Entity[])ret.ToArray(typeof(Entity));
+			}
+			public Resource[] ToResources(org.openrdf.model.Value[] ents) {
+				if (ents == null) return null;
+				Resource[] ret = new Resource[ents.Length];
+				for (int i = 0; i < ents.Length; i++)
+					ret[i] = ToResource(ents[i]);
+				return ret;
+			}
 	
 			public org.openrdf.model.BNode createBNode() {
 				return new BNodeWrapper(new Entity(null));
@@ -389,6 +471,7 @@ namespace SemWeb.Query {
 			class DupChecker : StatementSink {
 				public MemoryStore store;
 				public bool Add(Statement s) {
+					if (s.AnyNull) throw new ArgumentNullException(s.ToString());
 					if (!store.Contains(s))
 						store.Add(s);
 					return true;
@@ -436,7 +519,7 @@ namespace SemWeb.Query {
 	
 			public org.openrdf.model.URI getPredicate() {
 				if (s.Predicate.Uri == null)
-					throw new NotSupportedException("Statement's predicate is a blank node.");
+					throw new QueryExecutionException("Statement's predicate is a blank node.");
 				return new URIWrapper(s.Predicate);
 			}
 	
@@ -468,7 +551,12 @@ namespace SemWeb.Query {
 			string org.openrdf.model.URI.toString() { return r.Uri; }
 			public override string toString() { return r.Uri; }
 			public override bool equals(object other) {
-				return r.Equals(((URIWrapper)other).r);
+				if (other is URIWrapper)
+					return r.Equals(((URIWrapper)other).r);
+				else if (other is org.openrdf.model.URI)
+					return r.Uri == ((org.openrdf.model.URI)other).toString();
+				else
+					return false;
 			}
 			public override int hashCode() { return r.GetHashCode(); }
 		}
@@ -480,9 +568,82 @@ namespace SemWeb.Query {
 			public string getLabel() { return r.Value; }
 			public string getLanguage() { return r.Language; }
 			public override bool equals(object other) {
-				return r.Equals(((LiteralWrapper)other).r);
+				if (other is LiteralWrapper)
+					return r.Equals(((LiteralWrapper)other).r);
+				else if (other is org.openrdf.model.Literal)
+					return r.Equals(GetLiteral((org.openrdf.model.Literal)other));
+				return false;
 			}
 			public override int hashCode() { return r.GetHashCode(); }
+			static Literal GetLiteral(org.openrdf.model.Literal literal) {
+				return new Literal(literal.getLabel(), literal.getLanguage(),
+					literal.getDatatype() == null ? null
+						: literal.getDatatype().toString());
+			}
+		}
+	}
+	
+	class SparqlProtocol : System.Web.IHttpHandler {
+		public int MaximumLimit = -1;
+		public string MimeType = "application/sparql-results+xml";
+		
+		Hashtable sources = new Hashtable();
+	
+		bool System.Web.IHttpHandler.IsReusable { get { return true; } }
+		
+		public void ProcessRequest(System.Web.HttpContext context) {
+			try {
+				string query = context.Request["query"];
+				if (query == null || query.Trim() == "")
+					throw new QueryFormatException("No query provided.");
+				
+				Query sparql = new Sparql(query);
+				if (MaximumLimit != -1 && (sparql.ReturnLimit == -1 || sparql.ReturnLimit > MaximumLimit)) sparql.ReturnLimit = MaximumLimit;
+				
+				string path = context.Request.Path;
+				SelectableSource source;
+				lock (sources) {
+					source = (SelectableSource)sources[path];
+					if (source == null) {
+						System.Collections.Specialized.NameValueCollection config = (System.Collections.Specialized.NameValueCollection)System.Configuration.ConfigurationSettings.GetConfig("sparqlSources");
+						if (config == null)
+							throw new InvalidOperationException("No sparqlSources config section is set up.");
+						string spec = config[path];
+						if (spec == null)
+							throw new InvalidOperationException("No data source is set for the path " + path + ".");
+						StatementSource src = Store.CreateForInput(spec);
+						if (!(src is SelectableSource))
+							src = new MemoryStore(src);
+						source = (SelectableSource)src;
+						sources[path] = source;
+					}
+				}
+				
+				// Buffer the response so that any errors while
+				// executing don't get outputted after the response
+				// has begun.
+				
+				MemoryStream buffer = new MemoryStream();
+				sparql.Run(source, new SparqlXmlQuerySink(new StreamWriter(buffer)));
+				
+				if (context.Request["outputMimeType"] == null)
+					context.Response.ContentType = MimeType;
+				else
+					context.Response.ContentType = context.Request["outputMimeType"];
+
+				context.Response.OutputStream.Write(buffer.GetBuffer(), 0, (int)buffer.Length);
+				
+			} catch (QueryFormatException e) {
+				context.Response.ContentType = "text/plain";
+				context.Response.StatusCode = 400;
+				context.Response.StatusDescription = e.Message;
+				context.Response.Write(e.Message);
+			} catch (QueryExecutionException e) {
+				context.Response.ContentType = "text/plain";
+				context.Response.StatusCode = 500;
+				context.Response.StatusDescription = e.Message;
+				context.Response.Write(e.Message);
+			}
 		}
 	}
 }

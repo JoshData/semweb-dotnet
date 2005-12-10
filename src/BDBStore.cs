@@ -4,7 +4,7 @@ using System.IO;
 using BDB;
 using SemWeb.Util;
 
-namespace SemWeb {
+namespace SemWeb.Stores {
 
 	public class BDBStore : Store, IDisposable {
 		BDB43.Env env;

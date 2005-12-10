@@ -7,7 +7,7 @@ using System.Xml;
  
 namespace SemWeb.Remote {
 
-	public class SparqlHttpSource : SelectableSource {
+	public class SparqlHttpSource : SelectableSource, QueryableSource {
 	
 		string url;
 		
@@ -53,7 +53,7 @@ namespace SemWeb.Remote {
 			if (subjects != null && subjects.Length == 1
 				&& predicates != null && predicates.Length == 1
 				&& objects != null && objects.Length == 1) {
-				query = "ASK WHERE { " + S(subjects[0]) + " " + S(predicates[0]) + " " + S(objects[0]) + "}";
+				query = "ASK WHERE { " + S(subjects[0], null) + " " + S(predicates[0], null) + " " + S(objects[0], null) + "}";
 			} else {
 				if (ask)
 					query = "ASK";
@@ -83,9 +83,6 @@ namespace SemWeb.Remote {
 					sink.Add(new Statement(subjects[0], predicates[0], objects[0]));
 			}
 			
-			if (result.DocumentElement.Name != "sparql")
-				throw new ApplicationException("Invalid sever response: Not a sparql results document.");
-			
 			XmlElement bindings = null;
 			foreach (XmlElement e in result.DocumentElement)
 				if (e.Name == "results")
@@ -107,7 +104,7 @@ namespace SemWeb.Remote {
 		
 		string S(Resource[] r, string v) {
 			if (r == null || r.Length != 1) return "?" + v;
-			return S(r[0]);
+			return S(r[0], null);
 		}
 		string SL(Resource[] r, string v) {
 			if (r == null || r.Length <= 1) return "";
@@ -137,8 +134,10 @@ namespace SemWeb.Remote {
 			return r.ToString();
 		}
 		
-		string S(Resource r) {
-			if (r is Literal)
+		string S(Resource r, string v) {
+			if (r == null)
+				return v;
+			else if (r is Literal)
 				return r.ToString();
 			else if (r.Uri != null) {
 				if (r.Uri.IndexOf('>') != -1)
@@ -189,7 +188,49 @@ namespace SemWeb.Remote {
 			XmlDocument ret = new XmlDocument();
 			ret.Load(new StreamReader(resp.GetResponseStream(), System.Text.Encoding.UTF8));
 						
+			if (ret.DocumentElement.Name != "sparql")
+				throw new ApplicationException("Invalid sever response: Not a sparql results document.");
+			
 			return ret;
+		}
+		
+		public Entity[] FindEntities(Statement[] graph) {
+			string query = "SELECT ?entity WHERE { ";
+			
+			foreach (Statement s in graph) {
+				query += S(s.Subject, "?entity");
+				query += " ";
+				query += S(s.Predicate, "?entity");
+				query += " ";
+				query += S(s.Object, "?entity");
+				query += " . ";
+				if (s.Meta != Statement.DefaultMeta) return new Entity[0];
+			}
+			
+			query += "}";
+			
+			XmlDocument result = Load(query);
+			
+			XmlElement bindings = null;
+			foreach (XmlElement e in result.DocumentElement)
+				if (e.Name == "results")
+					bindings = e;
+			if (bindings == null)
+				throw new ApplicationException("Invalid sever response: No result node.");
+			
+			Hashtable bnodes = new Hashtable();
+			ArrayList ret = new ArrayList();
+			
+			foreach (XmlElement binding in bindings) {
+				Entity e = (Entity)GetBinding(binding, "entity", null, bnodes);
+				ret.Add(e);
+			}
+			
+			return (Entity[])ret.ToArray(typeof(Entity));
+		}
+		
+		public void Query(Statement[] graph, SemWeb.Query.QueryResultSink sink) {
+			throw new NotImplementedException();
 		}
 	}
 }

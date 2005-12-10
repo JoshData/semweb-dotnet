@@ -119,7 +119,7 @@ namespace SemWeb.Algos {
 				MakeLeanMSG(store, msg, msgg.GetBNodes(), msgremoved);
 				
 				// Whatever was removed from msg, remove it from the main graph.
-				store.RemoveAll(msgremoved);
+				store.RemoveAll(msgremoved.ToArray());
 				
 				// And track what was removed.
 				if (removed != null) msgremoved.Select(removed);
@@ -137,7 +137,7 @@ namespace SemWeb.Algos {
 				match.Run(new SubtractionSource(store, msg), sink);
 				if (sink.Bindings.Count > 0) {
 					// This MSG can be removed.
-					store.RemoveAll(msg);
+					store.RemoveAll(msg.ToArray());
 					if (removed != null) msg.Select(removed);
 				}
 			}
@@ -240,7 +240,7 @@ namespace SemWeb.Algos {
 				
 				if (qsink.Bindings.Count > 0) {
 					// This subgraph can be removed.
-					msg.RemoveAll(subgraph);
+					msg.RemoveAll(subgraph.ToArray());
 					
 					// Track which statements were removed.
 					if (removed != null) subgraph.Select(removed);

@@ -91,7 +91,7 @@ namespace SemWeb.Query {
 		public override void Finished() {
 			output.WriteEndElement(); // results
 			output.WriteEndElement(); // sparql
-			output.Close();
+			output.Flush();
 		}
 	}
 

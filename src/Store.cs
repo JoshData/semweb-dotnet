@@ -14,6 +14,11 @@ namespace SemWeb {
 		void Select(Entity[] subjects, Entity[] predicates, Resource[] objects, Entity[] metas, StatementSink sink);
 	}
 
+	public interface QueryableSource {
+		Entity[] FindEntities(Statement[] graph);
+		void Query(Statement[] graph, SemWeb.Query.QueryResultSink sink);
+	}
+	
 	public interface StatementSink {
 		bool Add(Statement statement);
 	}
@@ -40,7 +45,8 @@ namespace SemWeb {
 		}
 	}
 
-	public abstract class Store : StatementSource, StatementSink, SelectableSource {
+	public abstract class Store : StatementSource, StatementSink,
+		SelectableSource, QueryableSource {
 		
 		Entity rdfType;
 		
@@ -119,8 +125,8 @@ namespace SemWeb {
 					if (ttype == null)
 						throw new NotSupportedException("The storage type in <" + classtype + "> could not be found.");
 					return Activator.CreateInstance(ttype, new object[] { spec, table });
-				case "bdb":
-					return new BDBStore(spec);
+				/*case "bdb":
+					return new SemWeb.Stores.BDBStore(spec);*/
 				case "sparql-http":
 					return new SemWeb.Remote.SparqlHttpSource(spec);
 				default:
@@ -160,17 +166,9 @@ namespace SemWeb {
 			source.Select(this);
 		}
 		
-		public void RemoveAll(StatementSource source) {
-			source.Select(new Remover(this));
-		}
-		
-		private class Remover : StatementSink {
-			Store s;
-			public Remover(Store s) { this.s = s; }
-			public bool Add(Statement stmt) {
-				s.Remove(stmt);
-				return true;
-			}
+		public void RemoveAll(Statement[] templates) {
+			foreach (Statement t in templates)
+				Remove(t);
 		}
 		
 		public abstract Entity[] GetEntities();
@@ -307,6 +305,13 @@ namespace SemWeb {
 			}
 		}
 		
+		public virtual void Query(Statement[] graph, SemWeb.Query.QueryResultSink sink) {
+			SemWeb.Query.GraphMatch gm = new SemWeb.Query.GraphMatch();
+			foreach (Statement s in graph)
+				gm.AddEdge(s);
+			gm.Run(this, sink);
+		}
+		
 		public void Write(RdfWriter writer) {
 			writer.Write(this);
 		}
@@ -336,6 +341,7 @@ namespace SemWeb {
 		}
 		public long StatementCount { get { return Buffer().StatementCount; } }
 		public MemoryStore Load() { return Buffer(); }
+		public Statement[] ToArray() { return Load().ToArray(); }
 		private MemoryStore Buffer() {
 			if (ms != null) return ms;
 			ms = new MemoryStore();

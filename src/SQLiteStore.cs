@@ -18,6 +18,8 @@ namespace SemWeb.Stores {
 			dbcon.Open();
 		}
 		
+		protected override bool SupportsNoDuplicates { get { return false; } }
+		protected override bool SupportsInsertIgnore { get { return false; } }
 		protected override bool SupportsInsertCombined { get { return false; } }
 		protected override bool SupportsUseIndex { get { return false; } }
 		protected override bool SupportsFastJoin { get { return false; } }
@@ -89,9 +91,9 @@ namespace SemWeb.Stores {
 		}
 		static string[] GetCreateIndexCommands(string table) {
 			return new string[] {
-				"CREATE INDEX subject_index ON " + table + "_statements(subject);",
+				"CREATE INDEX subject_index ON " + table + "_statements(subject,predicate,object,meta);",
 				"CREATE INDEX predicate_index ON " + table + "_statements(predicate);",
-				"CREATE INDEX object_index ON " + table + "_statements(objecttype, object);",
+				"CREATE INDEX object_index ON " + table + "_statements(object);",
 				"CREATE INDEX meta_index ON " + table + "_statements(meta);",
 			
 				"CREATE INDEX literal_index ON " + table + "_literals(value);",

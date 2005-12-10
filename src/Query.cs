@@ -8,12 +8,22 @@ using SemWeb.Util;
 
 namespace SemWeb.Query {
 
+	public class QueryFormatException : ApplicationException {
+		public QueryFormatException(string message) : base(message) { }
+		public QueryFormatException(string message, Exception cause) : base(message, cause) { }
+	}
+
+	public class QueryExecutionException : ApplicationException {
+		public QueryExecutionException(string message) : base(message) { }
+		public QueryExecutionException(string message, Exception cause) : base(message, cause) { }
+	}
+
 	public abstract class Query {
-		int start = -1;
+		int start = 0;
 		int limit = -1;
 		Entity queryMeta = null;
 		
-		public int ReturnStart { get { return start; } set { start = value; } }
+		public int ReturnStart { get { return start; } set { start = value; if (start < 0) start = 0; } }
 		
 		public int ReturnLimit { get { return limit; } set { limit = value; } }
 		
@@ -349,9 +359,9 @@ namespace SemWeb.Query {
 					for (int i = 0; i < variables.Length; i++)
 						finalbindings[i].Target = permutation[i];
 					result.Add(finalbindings);
-					if (ctr == ReturnStart+ReturnLimit) break;	
+					if (ReturnLimit != -1 && ctr == ReturnStart+ReturnLimit) break;	
 				} while (permutation.Next());
-				if (ctr == ReturnStart+ReturnLimit) break;	
+				if (ReturnLimit != -1 && ctr == ReturnStart+ReturnLimit) break;	
 			}
 
 			
@@ -610,6 +620,9 @@ namespace SemWeb.Query {
 						// third variable being uniquely bound, if bound.
 						// Keep track of the pairing of unbound variables.
 						
+						if (numUnbound == 3)
+							throw new QueryExecutionException("Query would select all statements in the store.");
+						
 						Debug(qs.ToString() + " 2 or 3 Unbound");
 					
 						if (bindings.Results.Count == 0)
@@ -683,8 +696,8 @@ namespace SemWeb.Query {
 				
 				Statement[] findstatementsarray = (Statement[])findstatements.ToArray(typeof(Statement));
 				Entity[] targetentities;
-				if (targetModel is Store)
-					targetentities = ((Store)targetModel).FindEntities(findstatementsarray);
+				if (targetModel is QueryableSource)
+					targetentities = ((QueryableSource)targetModel).FindEntities(findstatementsarray);
 				else
 					targetentities = Store.FindEntities(targetModel, findstatementsarray);
 				
@@ -781,7 +794,7 @@ namespace SemWeb.Query {
 			ArrayList setupVariables = new ArrayList();
 			
 			if (setupStatements.Count == 0)
-				throw new InvalidOperationException("A query must have at least one non-optional statement.");
+				throw new QueryFormatException("A query must have at least one non-optional statement.");
 			
 			foreach (Statement s in setupStatements) {
 				InitAnonVariable(s.Subject, setupVariables);
