@@ -393,27 +393,50 @@ namespace SemWeb.Stores {
 
 	public class MultiStore : Store {
 		ArrayList stores = new ArrayList();
+		Hashtable namedgraphs = new Hashtable();
+		ArrayList allsources = new ArrayList();
 		
 		public MultiStore() { }
 		
-		public void Add(Store store) {
+		public void Add(SelectableSource store) {
 			stores.Add(store);
+			allsources.Add(store);
 		}
 		
-		public void Add(Store store, RdfReader source) {
+		public void Add(string uri, SelectableSource store) {
+			namedgraphs[uri] = store;
+			allsources.Add(store);
+		}
+		
+		public void Add(RdfReader source) {
+			MemoryStore store = new MemoryStore(source);
 			Add(store);
-			store.Import(source);
 		}
 		
-		public void Remove(Store store) {
+		public void Add(string uri, RdfReader source) {
+			MemoryStore store = new MemoryStore(source);
+			Add(uri, store);
+		}
+		
+		public void Remove(SelectableSource store) {
 			stores.Remove(store);
+			allsources.Remove(store);
+		}
+		
+		public void Remove(string uri) {
+			allsources.Remove(namedgraphs[uri]);
+			namedgraphs.Remove(uri);
 		}
 		
 		public override int StatementCount {
 			get {
 				int ret = 0;
-				foreach (Store s in stores)
-					ret += s.StatementCount;
+				foreach (StatementSource s in allsources) {
+					if (s is Store)
+						ret += ((Store)s).StatementCount;
+					else
+						throw new InvalidOperationException("Not all sources are stores supporting StatementCount.");
+				}
 				return ret;
 			}
 		}
@@ -424,66 +447,87 @@ namespace SemWeb.Stores {
 		
 		public override Entity[] GetEntities() {
 			Hashtable h = new Hashtable();
-			foreach (Store s in stores)
-				foreach (Resource r in s.GetEntities())
-					h[r] = h;
+			foreach (StatementSource s in allsources) {
+				if (s is Store) {
+					foreach (Resource r in ((Store)s).GetEntities())
+						h[r] = h;
+				} else {
+					throw new InvalidOperationException("Not all sources are stores supporting GetEntities.");
+				}
+			}
 			return (Entity[])new ArrayList(h.Keys).ToArray(typeof(Entity));
 		}
 		
 		public override Entity[] GetPredicates() {
 			Hashtable h = new Hashtable();
-			foreach (Store s in stores)
-				foreach (Resource r in s.GetPredicates())
-					h[r] = h;
+			foreach (StatementSource s in allsources) {
+				if (s is Store) {
+					foreach (Resource r in ((Store)s).GetPredicates())
+						h[r] = h;
+				} else {
+					throw new InvalidOperationException("Not all sources are stores supporting GetEntities.");
+				}
+			}
 			return (Entity[])new ArrayList(h.Keys).ToArray(typeof(Entity));
 		}
 
 		public override Entity[] GetMetas() {
 			Hashtable h = new Hashtable();
-			foreach (Store s in stores)
-				foreach (Resource r in s.GetMetas())
-					h[r] = h;
+			foreach (StatementSource s in allsources) {
+				if (s is Store) {
+					foreach (Resource r in ((Store)s).GetMetas())
+						h[r] = h;
+				} else {
+					throw new InvalidOperationException("Not all sources are stores supporting GetEntities.");
+				}
+			}
 			return (Entity[])new ArrayList(h.Keys).ToArray(typeof(Entity));
 		}
 
 		public override void Add(Statement statement) { throw new InvalidOperationException("Add is not a valid operation on a MultiStore."); }
 		
+		SelectableSource[] GetSources(Entity graph) {
+			if (graph == null || namedgraphs.Count == 0)
+				return (SelectableSource[])allsources.ToArray(typeof(SelectableSource));
+			else if (graph == Statement.DefaultMeta)
+				return (SelectableSource[])stores.ToArray(typeof(SelectableSource));
+			else if (graph.Uri != null && namedgraphs.ContainsKey(graph.Uri))
+				return new SelectableSource[] { (SelectableSource)namedgraphs[graph.Uri] };
+			else
+				return null;
+		}
+		
 		public override bool Contains(Statement statement) {
-			foreach (Store s in stores)
+			SelectableSource[] sources = GetSources(statement.Meta);
+			if (sources == null) return false;
+			foreach (SelectableSource s in sources)
 				if (s.Contains(statement))
 					return true;
 			return false;
 		}
 			
-		public override void Remove(Statement statement) { throw new InvalidOperationException("Add is not a valid operation on a MultiStore."); }
+		public override void Remove(Statement statement) { throw new InvalidOperationException("Remove is not a valid operation on a MultiStore."); }
 		
 		public override void Select(Statement template, StatementSink result) {
-			foreach (Store s in stores)
+			SelectableSource[] sources = GetSources(template.Meta);
+			if (sources == null) return;
+			foreach (SelectableSource s in sources)
 				s.Select(template, result);
 		}
 		
 		public override void Select(Entity[] subjects, Entity[] predicates, Resource[] objects, Entity[] metas, StatementSink result) {
-			foreach (Store s in stores)
-				s.Select(subjects, predicates, objects, metas, result);
+			if (metas == null || namedgraphs.Count == 0) metas = new Entity[] { null };
+			foreach (Entity meta in metas) {
+				SelectableSource[] sources = GetSources(meta);
+				if (sources == null) continue;
+				foreach (SelectableSource s in sources)
+					s.Select(subjects, predicates, objects, metas, result);
+			}
 		}
 
-		public override void Replace(Entity a, Entity b) {
-			foreach (Store s in stores)
-				s.Replace(a, b);
-		}
+		public override void Replace(Entity a, Entity b) { throw new InvalidOperationException("Replace is not a valid operation on a MultiStore."); }
 		
-		public override void Replace(Statement find, Statement replacement) {
-			foreach (Store s in stores)
-				s.Replace(find, replacement);
-		}
-		
-		public override Entity[] FindEntities(Statement[] filters) {
-			Hashtable h = new Hashtable();
-			foreach (Store s in stores)
-				foreach (Entity e in s.FindEntities(filters))
-					h[e] = h;
-			return (Entity[])new ArrayList(h.Keys).ToArray(typeof(Entity));
-		}
+		public override void Replace(Statement find, Statement replacement) { throw new InvalidOperationException("Replace is not a valid operation on a MultiStore."); }
 		
 	}
 	
