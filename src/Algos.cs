@@ -438,7 +438,7 @@ namespace SemWeb.Algos {
 		public class Graph : StatementSource {
 			SelectableSource source;
 			ResSet entities = new ResSet();
-			Entity meta = new Entity(null);
+			Entity meta = new BNode();
 			internal Graph(SelectableSource source, ArrayList entities) {
 				this.source = source;
 				foreach (Entity e in entities)

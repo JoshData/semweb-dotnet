@@ -7,7 +7,7 @@ namespace SemWeb {
 		public Resource Object;
 		public Entity Meta;
 		
-		public static Entity DefaultMeta = new Entity(null);
+		public static Entity DefaultMeta = new BNode();
 		
 		public static Statement All = new Statement(null, null, null, null);
 		

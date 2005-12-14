@@ -408,7 +408,7 @@ namespace SemWeb {
 				if (reverse || reverse2) OnError("is...of is not allowed in path expressions", loc);
 				if (!(path is Entity)) OnError("A path expression cannot be a literal", loc);
 				
-				Entity anon = new Entity(null);
+				Entity anon = new BNode();
 				
 				Statement s;
 				if (pathType == '!' || pathType == '.') {
@@ -445,7 +445,7 @@ namespace SemWeb {
 			if (prefix == "_") {
 				Resource ret = (Resource)context.anonymous[str];
 				if (ret == null) {
-					ret = new Entity(null);
+					ret = new BNode();
 					context.anonymous[str] = ret;
 				}
 				return ret;
@@ -538,7 +538,7 @@ namespace SemWeb {
 				string name = str.Substring(1);
 				Entity var = (Entity)context.variables[name];
 				if (var == null) {
-					var = new Entity(null);
+					var = new BNode();
 					AddVariableName(var, name);
 					context.variables[name] = var;
 				}
@@ -553,7 +553,7 @@ namespace SemWeb {
 			// ANONYMOUS
 			
 			if (str == "[") {
-				Entity ret = new Entity(null);
+				Entity ret = new BNode();
 				ReadWhitespace(context.source);
 				if (context.source.Peek() != ']') {
 					char bracket = ReadPredicates(ret, context);
@@ -579,9 +579,9 @@ namespace SemWeb {
 						break;
 					
 					if (ent == null) {
-						ent = new Entity(null);
+						ent = new BNode();
 					} else {
-						Entity sub = new Entity(null);
+						Entity sub = new BNode();
 						Add(context.store, new Statement(ent, entRDFREST, sub, context.meta), loc);
 						ent = sub;
 					}
@@ -605,7 +605,7 @@ namespace SemWeb {
 				ParseContext newcontext = context;
 				
 				// The formula is denoted by a blank node
-				newcontext.meta = new Entity(null);
+				newcontext.meta = new BNode();
 				
 				// According to the spec, _:xxx anonymous nodes are
 				// local to the formula.  But ?$variables (which aren't

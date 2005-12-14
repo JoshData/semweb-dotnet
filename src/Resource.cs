@@ -39,7 +39,7 @@ namespace SemWeb {
 			return !(a == b);
 		}
 		
-		public object GetResourceKey(object key) {
+		internal object GetResourceKey(object key) {
 			if (extraKeys == null) return null;
 			for (int i = 0; i < extraKeys.Count; i++) {
 				Resource.ExtraKey ekey = (Resource.ExtraKey)extraKeys[i];
@@ -48,7 +48,7 @@ namespace SemWeb {
 			}
 			return null;
 		}
-		public void SetResourceKey(object key, object value) {
+		internal void SetResourceKey(object key, object value) {
 			if (extraKeys == null) extraKeys = new ArrayList();
 			
 			foreach (Resource.ExtraKey ekey in extraKeys)
@@ -63,11 +63,17 @@ namespace SemWeb {
 		
 	}
 	
-	public sealed class Entity : Resource {
+	public class Entity : Resource {
 		private string uri;
-		int cachedHashCode = -1;
 		
-		public Entity(string uri) { if (uri != null) this.uri = string.Intern(uri); }
+		public Entity(string uri) {
+			if (uri == null) throw new ArgumentNullException("uri");
+			this.uri = string.Intern(uri);
+		}
+		
+		// For the BNode constructor only.
+		internal Entity() {
+		}
 		
 		public override string Uri {
 			get {
@@ -78,44 +84,11 @@ namespace SemWeb {
 		public static implicit operator Entity(string uri) { return new Entity(uri); }
 		
 		public override int GetHashCode() {
-			if (cachedHashCode != -1) return cachedHashCode;
-			
-			if (Uri != null) {
-				cachedHashCode = Uri.GetHashCode();
-			} else if (extraKeys != null && extraKeys.Count == 1) {
-				ExtraKey v = (ExtraKey)extraKeys[0];
-				cachedHashCode = unchecked(v.Key.GetHashCode() + v.Value.GetHashCode());
-			}
-			
-			// If there's no Uri or ExtraKeys info, then this
-			// object is only equal to itself.  It's then safe
-			// to use object.GetHashCode().
-			if (cachedHashCode == -1) cachedHashCode = base.GetHashCode();
-			
-			return cachedHashCode;
+			return uri.GetHashCode();
 		}
 			
 		public override bool Equals(object other) {
 			if (object.ReferenceEquals(this, other)) return true;
-			if (!(other is Entity)) return false;
-			
-			// If anonymous, then we have to compare extraKeys.
-			if ((Uri == null && ((Resource)other).Uri == null)) {
-				ArrayList otherkeys = ((Resource)other).extraKeys;
-				if (otherkeys != null && extraKeys != null) {
-					for (int vi1 = 0; vi1 < extraKeys.Count; vi1++) {
-						ExtraKey v1 = (ExtraKey)extraKeys[vi1];
-						for (int vi2 = 0; vi2 < otherkeys.Count; vi2++) {
-							ExtraKey v2 = (ExtraKey)otherkeys[vi2];
-							if (v1.Key == v2.Key)
-								return v1.Value.Equals(v2.Value);
-						}
-					}
-				}
-				
-				return false;
-			}				
-			
 			return ((Resource)other).Uri != null && ((Resource)other).Uri == Uri;
 		}
 		
@@ -133,6 +106,54 @@ namespace SemWeb {
 		}
 	}
 	
+	public class BNode : Entity {
+		string pstr;
+	
+		public BNode() {
+		}
+		
+		public BNode(string localId) {
+			this.pstr = localId;
+		}
+		
+		public string LocalId {
+			get {
+				return pstr;
+			}
+		}
+		
+		public override int GetHashCode() {
+			if (extraKeys != null && extraKeys.Count == 1) {
+				ExtraKey v = (ExtraKey)extraKeys[0];
+				return unchecked(v.Key.GetHashCode() + v.Value.GetHashCode());
+			}
+			
+			// If there's no ExtraKeys info, then this
+			// object is only equal to itself.  It's then safe
+			// to use object.GetHashCode().
+			return base.GetHashCode();
+		}
+			
+		public override bool Equals(object other) {
+			if (object.ReferenceEquals(this, other)) return true;
+			if (!(other is BNode)) return false;
+			
+			ArrayList otherkeys = ((Resource)other).extraKeys;
+			if (otherkeys != null && extraKeys != null) {
+				for (int vi1 = 0; vi1 < extraKeys.Count; vi1++) {
+					ExtraKey v1 = (ExtraKey)extraKeys[vi1];
+					for (int vi2 = 0; vi2 < otherkeys.Count; vi2++) {
+						ExtraKey v2 = (ExtraKey)otherkeys[vi2];
+						if (v1.Key == v2.Key)
+							return v1.Value.Equals(v2.Value);
+					}
+				}
+			}
+			
+			return false;
+		}
+	}
+
 	public sealed class Literal : Resource { 
 		private string value, lang, type;
 		

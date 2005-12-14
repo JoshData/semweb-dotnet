@@ -1,4 +1,4 @@
-VERSION=0.61
+VERSION=0.62
 
 all: bin/SemWeb.dll bin/SemWeb.PostgreSQLStore.dll bin/SemWeb.MySQLStore.dll bin/SemWeb.SqliteStore.dll bin/SemWeb.Sparql.dll bin/rdfstorage.exe bin/rdfquery.exe
 
@@ -66,7 +66,7 @@ package: all
 		ChangeLog Makefile README.txt semweb.mds \
 		package-workspace/semweb-$(VERSION)
 	mkdir package-workspace/semweb-$(VERSION)/examples
-	cp examples/*.cs examples/Makefile examples/README.txt \
+	cp examples/*.cs examples/Makefile examples/README.txt examples/getsomedata.sh \
 		package-workspace/semweb-$(VERSION)/examples
 	tar -czf packages/semweb-$(VERSION).tgz -C package-workspace \
 		--exclude .svn \

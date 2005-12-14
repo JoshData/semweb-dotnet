@@ -102,7 +102,7 @@ namespace SemWeb {
 			if (blankNodes.ContainsKey(nodeID))
 				return (Entity)blankNodes[nodeID];
 			
-			Entity entity = new Entity(null);
+			Entity entity = new BNode();
 			blankNodes[nodeID] = entity;
 
 			return entity;
@@ -149,7 +149,7 @@ namespace SemWeb {
 			} else if (nodeID != null)
 				entity = GetBlankNode(nodeID);
 			else
-				entity = new Entity(null);
+				entity = new BNode();
 			
 			// If the name of the element is not rdf:Description,
 			// then the name gives its type.
@@ -299,20 +299,20 @@ namespace SemWeb {
 				if (datatype == null)
 					datatype = "http://www.w3.org/1999/02/22-rdf-syntax-ns#XMLLiteral";
 				
-				if (ParsePropertyAttributes(new Entity(null)))
+				if (ParsePropertyAttributes(new BNode()))
 					OnError("Property attributes are not valid when parseType is Literal");
 				
 				objct = new Literal(xml.ReadInnerXml(), null, datatype);
 				
 			} else if (parseType != null && parseType == "Resource") {
-				objct = new Entity(null);
+				objct = new BNode();
 				
 				ParsePropertyAttributes((Entity)objct);
 				if (!xml.IsEmptyElement)
 					ParsePropertyNodes((Entity)objct);
 				
 			} else if (parseType != null && parseType == "Collection") {
-				Entity collection = new Entity(null);
+				Entity collection = new BNode();
 				Entity lastnode = collection;
 				bool empty = true;
 				
@@ -324,7 +324,7 @@ namespace SemWeb {
 					if (xml.NodeType != XmlNodeType.Element) continue;
 					
 					if (!empty) {
-						Entity next = new Entity(null);
+						Entity next = new BNode();
 						storage.Add(new Statement(lastnode, rdfRest, next, Meta));
 						lastnode = next;
 					}
@@ -346,7 +346,7 @@ namespace SemWeb {
 				// Forces even xml content to be read as in parseType=Literal?
 				// Note that any xml:lang is discarded.
 				
-				if (ParsePropertyAttributes(new Entity(null)))
+				if (ParsePropertyAttributes(new BNode()))
 					OnError("Property attributes are not valid when a data type is given");
 					
 				objct = new Literal(xml.ReadInnerXml(), null, datatype);
@@ -359,7 +359,7 @@ namespace SemWeb {
 				// is an anonymous entity.  Otherwise the text content
 				// is the literal value.
 				
-				objct = new Entity(null);
+				objct = new BNode();
 				if (ParsePropertyAttributes((Entity)objct)) {
 					// Found property attributes.  There should be no other internal content?
 					

@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Collections.Specialized;
 using System.Data;
 using System.IO;
 using System.Text;
@@ -12,7 +13,7 @@ namespace SemWeb.Stores {
 	
 	public abstract class SQLStore : Store {
 		string table;
-		string uuid;
+		string guid;
 		
 		bool firstUse = true;
 		IDictionary lockedIdCache = null;
@@ -72,6 +73,42 @@ namespace SemWeb.Stores {
 			
 			CreateTable();
 			CreateIndexes();
+			CreateVersion();
+		}
+		
+		private void CreateVersion() {	
+			string verdatastr = RunScalarString("SELECT value from " + table + "_literals WHERE id = 0");
+			NameValueCollection verdata = ParseVersionInfo(verdatastr);
+			
+			if (verdata["guid"] == null) {
+				guid = Guid.NewGuid().ToString("N");
+				verdata["guid"] = guid;
+			} else {
+				guid = verdata["guid"];
+			}
+			
+			string newverdata = Escape(SerializeVersionInfo(verdata), true);
+			if (verdatastr == null)
+				RunCommand("INSERT " + table + "_literals (id, value) VALUES (0, " + newverdata + ")");
+			else
+				RunCommand("UPDATE " + table + "_literals SET value = " + newverdata + " WHERE id = 0");
+		}
+		
+		NameValueCollection ParseVersionInfo(string verdata) {
+			NameValueCollection nvc = new NameValueCollection();
+			if (verdata == null) return nvc;
+			foreach (string s in verdata.Split('\n')) {
+				int c = s.IndexOf(':');
+				if (c == -1) continue;
+				nvc[s.Substring(0, c)] = s.Substring(c+1);
+			}
+			return nvc;
+		}
+		string SerializeVersionInfo(NameValueCollection verdata) {
+			string ret = "";
+			foreach (string k in verdata.Keys)
+				ret += k + ":" + verdata[k] + "\n";
+			return ret;
 		}
 		
 		public override int StatementCount { get { Init(); RunAddBuffer(); return RunScalarInt("select count(subject) from " + table + "_statements", 0); } }
@@ -301,6 +338,12 @@ namespace SemWeb.Stores {
 			
 			if (resource.Uri != null) {
 				id = GetEntityId(resource.Uri, create, entityInsertBuffer, insertCombined);
+			} else if (resource is BNode && ((BNode)resource).LocalId != null
+				&& ((BNode)resource).LocalId.StartsWith(guid + "-")) {
+				// assumes numeric second part...
+				string localid = ((BNode)resource).LocalId;
+				int colon = localid.IndexOf('-');
+				id = int.Parse(localid.Substring(colon+1));
 			} else {
 				// This anonymous node didn't come from the database
 				// since it didn't have a resource key.  If !create,
@@ -340,7 +383,12 @@ namespace SemWeb.Stores {
 			if (cache != null && cache.ContainsKey(rk))
 				return (Entity)cache[rk];
 			
-			Entity ent = new Entity(uri);
+			Entity ent;
+			if (uri != null) {
+				ent = new Entity(uri);
+			} else {
+				ent = new BNode(guid + "-" + resourceId.ToString());
+			}
 			
 			SetResourceKey(ent, rk);
 			
@@ -1076,7 +1124,6 @@ namespace SemWeb.Stores {
 			}
 		}
 		
-		/*
 		private string RunScalarString(string sql) {
 			object ret = RunScalar(sql);
 			if (ret == null) return null;
@@ -1084,7 +1131,6 @@ namespace SemWeb.Stores {
 			if (ret is byte[]) return System.Text.Encoding.UTF8.GetString((byte[])ret);
 			throw new FormatException("SQL store returned a literal value as " + ret);
 		}
-		*/
 
 		protected virtual void CreateTable() {
 			foreach (string cmd in GetCreateTableCommands(table)) {

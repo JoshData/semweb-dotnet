@@ -166,8 +166,8 @@ public class N3Test {
 		// purposes we'll add bnodes so they have the
 		// same number.
 		if (abnodes.Count != bbnodes.Count) failures += "\nInput/output have different number of blank nodes";
-		while (abnodes.Count < bbnodes.Count) abnodes.Add(new Entity(null));
-		while (bbnodes.Count < abnodes.Count) bbnodes.Add(new Entity(null));
+		while (abnodes.Count < bbnodes.Count) abnodes.Add(new BNode());
+		while (bbnodes.Count < abnodes.Count) bbnodes.Add(new BNode());
 		
 		// Set up the permutation array.
 		int[] nodemap = new int[abnodes.Count];

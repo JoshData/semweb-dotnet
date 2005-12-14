@@ -1,3 +1,11 @@
+	* New BNode class.  To create a blank node, use new BNnde()
+	  in place of new Entity(null), which will now throw an
+	  exception.
+	* Sparql Protocol handler has been reorganized to make it
+	  easy to extend it by overriding methods.
+
+2005-12-10 Version 0.61
+
 	* RdfReaders have a new Namespaces property to expose what
 	  namespace prefixes were found in the stream.
 	* Added PostgreSQL and BDB (ver 4.3 only) stores.  SQL store

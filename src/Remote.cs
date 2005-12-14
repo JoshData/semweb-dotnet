@@ -112,11 +112,15 @@ namespace SemWeb.Remote {
 			ret.Append("FILTER(");
 			for (int i = 0; i < r.Length; i++) {
 				if (i != 0) ret.Append(" || ");
-				if (r[i].Uri == null) continue;
+				string localid = (string)r[i].GetResourceKey(this);
+				if (r[i].Uri == null && localid == null) continue;
 				ret.Append("(str(?");
 				ret.Append(v);
 				ret.Append(")=\"");
-				ret.Append(Escape(r[i].Uri));
+				if (r[i].Uri != null)
+					ret.Append(Escape(r[i].Uri));
+				else
+					ret.Append("localid:" + Escape(localid));
 				ret.Append("\")");
 			}
 			ret.Append(").");
@@ -135,14 +139,19 @@ namespace SemWeb.Remote {
 		}
 		
 		string S(Resource r, string v) {
-			if (r == null)
+			if (r == null) {
 				return v;
-			else if (r is Literal)
+			} else if (r is Literal) {
 				return r.ToString();
-			else if (r.Uri != null) {
+			} else if (r.Uri != null) {
 				if (r.Uri.IndexOf('>') != -1)
 					throw new ArgumentException("Invalid URI: " + r.Uri);
 				return "<" + r.Uri + ">";
+			} else if (r.GetResourceKey(this) != null) {
+				string localid = (string)r.GetResourceKey(this);
+				if (localid.IndexOf('>') != -1)
+					throw new ArgumentException("Invalid local id: " + localid);
+				return "<localid:" + localid + ">";
 			} else {
 				throw new ArgumentException("Blank node in select not supported.");
 			}
@@ -165,7 +174,9 @@ namespace SemWeb.Remote {
 			else if (b.Name == "bnode") {
 				string id = b.InnerText;
 				if (bnodes.ContainsKey(id)) return (Entity)bnodes[id];
-				Entity ret = new Entity(null);
+				Entity ret = new BNode();
+				if (b.HasAttribute("localId"))
+					ret.SetResourceKey(this, b.GetAttribute("localId"));
 				bnodes[id] = ret;
 				return ret;
 			}

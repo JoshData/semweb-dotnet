@@ -190,7 +190,7 @@ namespace SemWeb.Query {
 			if (obj is ASTVar) {
 				ASTVar var = (ASTVar)obj;
 				if (vars.ContainsKey(var.getName())) return (Resource)vars[var.getName()];
-				Entity v = new Entity(null);
+				Entity v = new BNode();
 				gm.SetVariableName(v, var.getName());
 				vars[var.getName()] = v;
 				return v;
@@ -231,7 +231,7 @@ namespace SemWeb.Query {
 			Entity[] vars2 = new Entity[vars.size()];
 			for (int i = 0; i < bindings.Length; i++) {
 				Variable v = (Variable)vars.get(i);
-				vars2[i] = new Entity(null);
+				vars2[i] = new BNode();
 				bindings[i] = new VariableBinding(vars2[i], v.getName(), null);
 			}
 			resultsink.Init(bindings);
@@ -392,7 +392,7 @@ namespace SemWeb.Query {
 					org.openrdf.model.BNode bnode = (org.openrdf.model.BNode)ent;
 					Entity r = (Entity)bnodes[bnode.getID()];
 					if (r == null) {
-						r = new Entity(null);
+						r = new BNode();
 						bnodes[bnode.getID()] = r;
 					}
 					return r;
@@ -430,7 +430,7 @@ namespace SemWeb.Query {
 			}
 	
 			public org.openrdf.model.BNode createBNode() {
-				return new BNodeWrapper(new Entity(null));
+				return new BNodeWrapper(new BNode());
 			}
 			public org.openrdf.model.BNode createBNode(string id) {
 				throw new Exception(id);
@@ -591,40 +591,20 @@ namespace SemWeb.Query {
 	
 		bool System.Web.IHttpHandler.IsReusable { get { return true; } }
 		
-		public void ProcessRequest(System.Web.HttpContext context) {
+		public virtual void ProcessRequest(System.Web.HttpContext context) {
 			try {
 				string query = context.Request["query"];
 				if (query == null || query.Trim() == "")
 					throw new QueryFormatException("No query provided.");
-				
-				Query sparql = new Sparql(query);
-				if (MaximumLimit != -1 && (sparql.ReturnLimit == -1 || sparql.ReturnLimit > MaximumLimit)) sparql.ReturnLimit = MaximumLimit;
-				
-				string path = context.Request.Path;
-				SelectableSource source;
-				lock (sources) {
-					source = (SelectableSource)sources[path];
-					if (source == null) {
-						System.Collections.Specialized.NameValueCollection config = (System.Collections.Specialized.NameValueCollection)System.Configuration.ConfigurationSettings.GetConfig("sparqlSources");
-						if (config == null)
-							throw new InvalidOperationException("No sparqlSources config section is set up.");
-						string spec = config[path];
-						if (spec == null)
-							throw new InvalidOperationException("No data source is set for the path " + path + ".");
-						StatementSource src = Store.CreateForInput(spec);
-						if (!(src is SelectableSource))
-							src = new MemoryStore(src);
-						source = (SelectableSource)src;
-						sources[path] = source;
-					}
-				}
 				
 				// Buffer the response so that any errors while
 				// executing don't get outputted after the response
 				// has begun.
 				
 				MemoryStream buffer = new MemoryStream();
-				sparql.Run(source, new SparqlXmlQuerySink(new StreamWriter(buffer)));
+				SelectableSource source = GetDataSource();
+				Query sparql = CreateQuery(query);
+				RunQuery(sparql, source, new StreamWriter(buffer));
 				
 				if (context.Request["outputMimeType"] == null)
 					context.Response.ContentType = MimeType;
@@ -644,6 +624,42 @@ namespace SemWeb.Query {
 				context.Response.StatusDescription = e.Message;
 				context.Response.Write(e.Message);
 			}
+		}
+
+		protected virtual SelectableSource GetDataSource() {
+			if (System.Web.HttpContext.Current == null)
+				throw new InvalidOperationException("This method is not valid outside of an ASP.NET request.");
+
+			string path = System.Web.HttpContext.Current.Request.Path;
+			lock (sources) {
+				SelectableSource source = (SelectableSource)sources[path];
+				if (source != null) return source;
+
+				System.Collections.Specialized.NameValueCollection config = (System.Collections.Specialized.NameValueCollection)System.Configuration.ConfigurationSettings.GetConfig("sparqlSources");
+				if (config == null)
+					throw new InvalidOperationException("No sparqlSources config section is set up.");
+
+				string spec = config[path];
+				if (spec == null)
+					throw new InvalidOperationException("No data source is set for the path " + path + ".");
+
+				StatementSource src = Store.CreateForInput(spec);
+				if (!(src is SelectableSource))
+					src = new MemoryStore(src);
+				sources[path] = src;
+
+				return (SelectableSource)src;
+			}
+		}
+		
+		protected virtual Query CreateQuery(string query) {
+			Query sparql = new Sparql(query);
+			if (MaximumLimit != -1 && (sparql.ReturnLimit == -1 || sparql.ReturnLimit > MaximumLimit)) sparql.ReturnLimit = MaximumLimit;
+			return sparql;
+		}
+		
+		protected virtual void RunQuery(Query query, SelectableSource source, TextWriter output) {
+			query.Run(source, new SparqlXmlQuerySink(output));
 		}
 	}
 }
