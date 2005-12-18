@@ -77,7 +77,7 @@ namespace SemWeb.Stores {
 		}
 		
 		private void CreateVersion() {	
-			string verdatastr = RunScalarString("SELECT value from " + table + "_literals WHERE id = 0");
+			string verdatastr = RunScalarString("SELECT value FROM " + table + "_literals WHERE id = 0");
 			NameValueCollection verdata = ParseVersionInfo(verdatastr);
 			
 			if (verdata["guid"] == null) {
@@ -89,7 +89,7 @@ namespace SemWeb.Stores {
 			
 			string newverdata = Escape(SerializeVersionInfo(verdata), true);
 			if (verdatastr == null)
-				RunCommand("INSERT " + table + "_literals (id, value) VALUES (0, " + newverdata + ")");
+				RunCommand("INSERT INTO " + table + "_literals (id, value) VALUES (0, " + newverdata + ")");
 			else
 				RunCommand("UPDATE " + table + "_literals SET value = " + newverdata + " WHERE id = 0");
 		}
@@ -110,6 +110,8 @@ namespace SemWeb.Stores {
 				ret += k + ":" + verdata[k] + "\n";
 			return ret;
 		}
+		
+		public override bool Distinct { get { return true; } }
 		
 		public override int StatementCount { get { Init(); RunAddBuffer(); return RunScalarInt("select count(subject) from " + table + "_statements", 0); } }
 		
@@ -864,7 +866,7 @@ namespace SemWeb.Stores {
 			return b.ToString();
 		}
 		
-		protected virtual void EscapedAppend(StringBuilder b, string str) {
+		protected void EscapedAppend(StringBuilder b, string str) {
 			EscapedAppend(b, str, true);
 		}
 

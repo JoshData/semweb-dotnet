@@ -15,7 +15,6 @@ namespace SemWeb {
 		ArrayList warnings = new ArrayList();
 		Hashtable variablenames = new Hashtable();
 		bool reuseentities = false;
-		bool dupcheck = false;
 		NamespaceManager nsmgr = new NamespaceManager();
 
 		public Entity Meta {
@@ -45,14 +44,7 @@ namespace SemWeb {
 			}
 		}
 		
-		public bool DuplicateCheck {
-			get {
-				return dupcheck;
-			}
-			set {
-				dupcheck = value;
-			}
-		}
+		bool StatementSource.Distinct { get { return false; } }
 		
 		public NamespaceManager Namespaces { get { return nsmgr; } }
 		
@@ -133,22 +125,7 @@ namespace SemWeb {
 				return baseuri + uri;
 			}			
 		}
-		
-		internal StatementSink GetDupCheckSink(StatementSink sink) {
-			if (!dupcheck) return sink;
-			if (!(sink is Store)) return sink;
-			return new DupCheckSink((Store)sink);
-		}
-		
-		private class DupCheckSink : StatementSink {
-			Store store;
-			public DupCheckSink(Store store) { this.store = store; }
-			public bool Add(Statement s) {
-				if (store.Contains(s)) return true;
-				store.Add(s);
-				return true;
-			}
-		}
+
 	}
 	
 	internal class MultiRdfReader : RdfReader {

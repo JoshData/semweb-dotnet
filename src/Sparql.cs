@@ -256,9 +256,6 @@ namespace SemWeb.Query {
 			}
 			
 			resultsink.Finished();
-
-			if (true)
-				Console.Error.WriteLine("Selected " + sourcewrapper.NStatements);
 		}
 	
 		class RdfSourceWrapper : RdfSource, RdfSourceWithMultiValues,
@@ -269,8 +266,6 @@ namespace SemWeb.Query {
 			Entity QueryMeta;
 			
 			bool debug = false;
-			
-			public int NStatements = 0;
 			
 			public RdfSourceWrapper(SelectableSource source, Entity meta) {
 				this.source = source;
@@ -285,16 +280,19 @@ namespace SemWeb.Query {
 			}
 			
 			private StatementIterator GetIterator(Entity[] subjects, Entity[] predicates, Resource[] objects, Entity[] metas) {
-				if (debug || true) {
+				if (debug)
 					Console.Error.WriteLine("ASK: " + ToString(subjects) + " " + ToString(predicates) + " " + ToString(objects));
-				}
+
 				if (subjects == null && predicates == null && objects == null)
 					throw new QueryExecutionException("Query would select all statements in the store.");
+				
 				MemoryStore results = new MemoryStore();
-				DupChecker dupchecker = new DupChecker();
-				dupchecker.store = results;
-				source.Select(subjects, predicates, objects, metas, dupchecker);
-				NStatements  += results.StatementCount;
+				StatementSink sink = results;
+				
+				if (!source.Distinct)
+					sink = new SemWeb.Util.DistinctStatementsSink(results);
+
+				source.Select(subjects, predicates, objects, metas, sink);
 				return new StatementIterator(results.ToArray());
 			}
 			
@@ -467,16 +465,7 @@ namespace SemWeb.Query {
 				public org.openrdf.model.URI getPredicate() { return predicate; }
 				public org.openrdf.model.Value getObject() { return @object; }
 			}
-			
-			class DupChecker : StatementSink {
-				public MemoryStore store;
-				public bool Add(Statement s) {
-					if (s.AnyNull) throw new ArgumentNullException(s.ToString());
-					if (!store.Contains(s))
-						store.Add(s);
-					return true;
-				}
-			}
+
 		}
 		
 		class StatementIterator : java.util.Iterator {

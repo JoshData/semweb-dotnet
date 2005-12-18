@@ -49,7 +49,7 @@ namespace SemWeb {
 		public override void Select(StatementSink store) {
 			ParseContext context = new ParseContext();
 			context.source = new MyReader(sourcestream);
-			context.store = GetDupCheckSink(store);
+			context.store = store;
 			context.namespaces = namespaces;
 			context.namedNode = new UriMap();
 			context.anonymous = new Hashtable();

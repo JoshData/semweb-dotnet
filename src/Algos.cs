@@ -13,6 +13,7 @@ namespace SemWeb.Algos {
 			this.a = a;
 			this.b = b;
 		}
+		public bool Distinct { get { return a.Distinct; } }
 		public bool Contains(Statement template) {
 			return Store.Contains(this, template);
 		}
@@ -444,6 +445,7 @@ namespace SemWeb.Algos {
 				foreach (Entity e in entities)
 					this.entities.Add(e);
 			}
+			public bool Distinct { get { return source.Distinct; } }
 			public bool Contains(Entity e) {
 				return entities.Contains(e);
 			}

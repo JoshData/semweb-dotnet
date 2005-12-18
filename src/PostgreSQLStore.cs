@@ -51,7 +51,7 @@ namespace SemWeb.Stores {
 			return column + " IS NULL";
 		}
 
-		public void Dispose() {
+		public override void Close() {
 			connection.Close();
 		}
 		

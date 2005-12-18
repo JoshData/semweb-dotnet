@@ -6,7 +6,7 @@ using ByteFX.Data.MySqlClient;
 
 namespace SemWeb.Stores {
 	
-	public class MySQLStore : SQLStore, IDisposable {
+	public class MySQLStore : SQLStore {
 		MySqlConnection connection;
 		string connectionString;
 		
@@ -30,7 +30,7 @@ namespace SemWeb.Stores {
 			return "ISNULL(" + column + ")";
 		}
 
-		public void Dispose() {
+		public override void Close() {
 			connection.Close();
 		}
 		

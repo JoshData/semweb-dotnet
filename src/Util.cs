@@ -91,6 +91,24 @@ namespace SemWeb.Util {
 			return c;
 		}*/		
 	}
+	
+	public class DistinctStatementsSink : StatementSink {
+		StatementSink sink;
+		Store store;
+		public DistinctStatementsSink(StatementSink sink) {
+			this.sink = sink;
+			if (sink is Store)
+				store = (Store)sink;
+			else
+				store = new MemoryStore();
+		}
+		public bool Add(Statement s) {
+			if (store.Contains(s)) return true;
+			if (store != sink) store.Add(s);
+			return sink.Add(s);
+		}
+	}
+	
 
 	public class StatementList : ICollection {
 		private const int DefaultInitialCapacity = 0x10;

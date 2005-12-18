@@ -14,6 +14,8 @@ namespace SemWeb.Remote {
 		public SparqlHttpSource(string url) {
 			this.url = url;
 		}
+
+		public bool Distinct { get { return true; } }
 		
 		public bool Contains(Statement template) {
 			return Select(template, null, true);;
@@ -90,13 +92,20 @@ namespace SemWeb.Remote {
 			if (bindings == null)
 				throw new ApplicationException("Invalid sever response: No result node.");
 			
+			MemoryStore distinctCheck = null;
+			if (bindings.GetAttribute("distinct") != "true")
+				distinctCheck = new MemoryStore();
+			
 			Hashtable bnodes = new Hashtable();
 			
 			foreach (XmlElement binding in bindings) {
 				Entity subj = (Entity)GetBinding(binding, "subject", subjects, bnodes);
 				Entity pred = (Entity)GetBinding(binding, "predicate", predicates, bnodes);
 				Resource obj = GetBinding(binding, "object", objects, bnodes);
-				if (!sink.Add(new Statement(subj, pred, obj))) return true;
+				Statement s = new Statement(subj, pred, obj);
+				if (distinctCheck != null && distinctCheck.Contains(s)) continue;
+				if (!sink.Add(s)) return true;
+				if (distinctCheck != null) distinctCheck.Add(s);
 			}
 			
 			return true;

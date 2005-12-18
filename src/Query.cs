@@ -3,6 +3,7 @@ using System.Collections;
 using System.IO;
 
 using SemWeb;
+using SemWeb.Filters;
 using SemWeb.Stores;
 using SemWeb.Util;
 
@@ -59,7 +60,7 @@ namespace SemWeb.Query {
 		
 		private struct Variable {
 			public Entity Entity;
-			public ValueFilter[] Filters;
+			public LiteralFilter[] Filters;
 		}
 		
 		private struct VarOrAnchor {
@@ -185,7 +186,7 @@ namespace SemWeb.Query {
 			setupVariablesDistinct.Add(d);
 		}
 		
-		public void AddValueFilter(Entity entity, ValueFilter filter) {
+		public void AddValueFilter(Entity entity, LiteralFilter filter) {
 			SetupValueFilter d = new SetupValueFilter();
 			d.a = entity;
 			d.b = filter;
@@ -205,7 +206,7 @@ namespace SemWeb.Query {
 		}
 		private class SetupValueFilter {
 			public Entity a;
-			public ValueFilter b;
+			public LiteralFilter b;
 		}
 		
 		private void CheckInit() {
@@ -228,16 +229,16 @@ namespace SemWeb.Query {
 		public GraphMatch(RdfReader query) :
 			this(new MemoryStore(query),
 				query.BaseUri == null ? null : new Entity(query.BaseUri),
-				query.Variables, null) {
+				query.Variables) {
 		}
 
-		public GraphMatch(Store queryModel) : this(queryModel, null, null, null) {
+		public GraphMatch(Store queryModel) : this(queryModel, null, null) {
 		}
 		
-		private GraphMatch(Store queryModel, Entity queryNode) : this(queryModel, queryNode, null, null) {
+		private GraphMatch(Store queryModel, Entity queryNode) : this(queryModel, queryNode, null) {
 		}
 		
-		private GraphMatch(Store queryModel, Entity queryNode, IDictionary variableNames, IDictionary extraValueFilters) {
+		private GraphMatch(Store queryModel, Entity queryNode, IDictionary variableNames) {
 			// Find the query options
 			if (queryNode != null) {
 				ReturnStart = GetIntOption(queryModel, queryNode, qStart);
@@ -260,7 +261,7 @@ namespace SemWeb.Query {
 			foreach (Statement s in queryModel.Select(Statement.All)) {
 				if (IsQueryPredicate(s.Predicate)) continue;
 				
-				if (s.Predicate.Uri != null && extraValueFilters != null && extraValueFilters.Contains(s.Predicate.Uri)) {
+				/*if (s.Predicate.Uri != null && extraValueFilters != null && extraValueFilters.Contains(s.Predicate.Uri)) {
 					ValueFilterFactory f = (ValueFilterFactory)extraValueFilters[s.Predicate.Uri];
 					AddValueFilter(s.Subject, f.GetValueFilter(s.Predicate.Uri, s.Object));
 					continue;
@@ -270,7 +271,7 @@ namespace SemWeb.Query {
 						AddValueFilter(s.Subject, f);
 						continue;
 					}
-				}
+				}*/
 				
 				if (s.Meta == Statement.DefaultMeta)
 					AddEdge(s);
@@ -770,9 +771,9 @@ namespace SemWeb.Query {
 		
 		bool MatchesFilters(Resource e, VarOrAnchor var, SelectableSource targetModel) {
 			if (!var.IsVariable) return true;
-			foreach (ValueFilter f in variables[var.VarIndex].Filters) {
+			/*foreach (ValueFilter f in variables[var.VarIndex].Filters) {
 				if (!f.Filter(e, targetModel)) return false;
-			}
+			}*/
 			return true;
 		}
 		
@@ -822,7 +823,7 @@ namespace SemWeb.Query {
 						filters.Add(filter.b);
 				}
 				
-				variables[i].Filters = (ValueFilter[])filters.ToArray(typeof(ValueFilter));
+				//variables[i].Filters = (ValueFilter[])filters.ToArray(typeof(ValueFilter));
 			}
 			
 			// Set up the statements
@@ -1055,5 +1056,5 @@ namespace SemWeb.Query {
 			return template;
 		}
 	}
-}	
+}
 

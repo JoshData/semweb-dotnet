@@ -5,6 +5,7 @@ using System.Data;
 namespace SemWeb {
 	
 	public interface StatementSource {
+		bool Distinct { get; }
 		void Select(StatementSink sink);
 	}
 	
@@ -55,7 +56,8 @@ namespace SemWeb {
 	}
 
 	public abstract class Store : StatementSource, StatementSink,
-		SelectableSource, QueryableSource, ModifiableSource {
+		SelectableSource, QueryableSource, ModifiableSource,
+		IDisposable {
 		
 		Entity rdfType;
 		
@@ -146,6 +148,15 @@ namespace SemWeb {
 		protected Store() {
 			rdfType = new Entity("http://www.w3.org/1999/02/22-rdf-syntax-ns#type");
 		}
+		
+		void IDisposable.Dispose() {
+			Close();
+		}
+		
+		public virtual void Close() {
+		}
+		
+		public abstract bool Distinct { get; }
 		
 		public abstract int StatementCount { get; }
 
@@ -342,8 +353,10 @@ namespace SemWeb {
 	}
 
 	public abstract class SelectResult : StatementSource, IEnumerable {
+		internal Store source;
 		MemoryStore ms;
-		internal SelectResult() { }
+		internal SelectResult(Store source) { this.source = source; }
+		public bool Distinct { get { return source.Distinct; } }
 		public abstract void Select(StatementSink sink);
 		public IEnumerator GetEnumerator() {
 			return Buffer().Statements.GetEnumerator();
@@ -360,10 +373,8 @@ namespace SemWeb {
 		}
 		
 		internal class Single : SelectResult {
-			Store source;
 			Statement template;
-			public Single(Store source, Statement template) {
-				this.source = source;
+			public Single(Store source, Statement template) : base(source) {
 				this.template = template;
 			}
 			public override void Select(StatementSink sink) {
@@ -372,11 +383,10 @@ namespace SemWeb {
 		}
 		
 		internal class Multi : SelectResult {
-			Store source;
 			Entity[] subjects, predicates, metas;
 			Resource[] objects;
-			public Multi(Store source, Entity[] subjects, Entity[] predicates, Resource[] objects, Entity[] metas) {
-				this.source = source;
+			public Multi(Store source, Entity[] subjects, Entity[] predicates, Resource[] objects, Entity[] metas)
+				: base(source) {
 				this.subjects = subjects;
 				this.predicates = predicates;
 				this.objects = objects;
@@ -397,6 +407,8 @@ namespace SemWeb.Stores {
 		ArrayList allsources = new ArrayList();
 		
 		public MultiStore() { }
+		
+		public override bool Distinct { get { return false; } }
 		
 		public void Add(SelectableSource store) {
 			stores.Add(store);

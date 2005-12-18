@@ -249,6 +249,31 @@ namespace SemWeb {
 			
 			return new Literal(value, lang, datatype);
 		}
+		
+		public object ParseValue() {
+			string NS = "http://www.w3.org/2001/XMLSchema#";
+			string dt = DataType;
+			if (dt == null || !dt.StartsWith(NS)) return Value;
+			dt = dt.Substring(NS.Length);
+			
+			if (dt == "string" || dt == "normalizedString" || dt == "anyURI") return Value;
+			if (dt == "boolean") return (Value == "true" || Value == "1");
+			if (dt == "decimal" || dt == "integer" || dt == "nonPositiveInteger" || dt == "negativeInteger" || dt == "nonNegativeInteger" || dt == "positiveInteger") return Decimal.Parse(Value);
+			if (dt == "float") return float.Parse(Value);
+			if (dt == "double") return double.Parse(Value);
+			if (dt == "duration") return TimeSpan.Parse(Value); // syntax?
+			if (dt == "dateTime" || dt == "time" || dt == "date") return DateTime.Parse(Value); // syntax?
+			if (dt == "long") return long.Parse(Value);
+			if (dt == "int") return int.Parse(Value);
+			if (dt == "short") return short.Parse(Value);
+			if (dt == "byte") return sbyte.Parse(Value);
+			if (dt == "unsignedLong") return ulong.Parse(Value);
+			if (dt == "unsignedInt") return uint.Parse(Value);
+			if (dt == "unsignedShort") return ushort.Parse(Value);
+			if (dt == "unsignedByte") return byte.Parse(Value);
+			
+			return Value;
+		}
 	}
 
 	/*

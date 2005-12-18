@@ -14,6 +14,7 @@ namespace SemWeb {
 		bool isIndexed = false;
 		internal bool allowIndexing = true;
 		internal bool checkForDuplicates = false;
+		bool distinct = true;
 		
 		public MemoryStore() {
 		}
@@ -28,7 +29,9 @@ namespace SemWeb {
 
 		//public IList Statements { get { return ArrayList.ReadOnly(statements); } }
 		public IList Statements { get { return statements.ToArray(); } }
-		  
+		
+		public override bool Distinct { get { return distinct; } }
+		
 		public override int StatementCount { get { return statements.Count; } }
 		
 		public Statement this[int index] {
@@ -45,6 +48,7 @@ namespace SemWeb {
 			statements.Clear();
 			statementsAboutSubject.Clear();
 			statementsAboutObject.Clear();
+			distinct = true;
 		}
 		
 		private StatementList GetIndexArray(Hashtable from, Resource entity) {
@@ -64,6 +68,13 @@ namespace SemWeb {
 				GetIndexArray(statementsAboutSubject, statement.Subject).Add(statement);
 				GetIndexArray(statementsAboutObject, statement.Object).Add(statement);
 			}
+			if (!checkForDuplicates) distinct = false;
+		}
+		
+		public override void Import(StatementSource source) {
+			bool newDistinct = checkForDuplicates || ((StatementCount==0) && source.Distinct);
+			base.Import(source); // distinct set to false if !checkForDuplicates
+			distinct = newDistinct;
 		}
 		
 		public override void Remove(Statement statement) {

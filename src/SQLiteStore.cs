@@ -28,8 +28,8 @@ namespace SemWeb.Stores {
 			return column + " ISNULL";
 		}
 		
-		protected override void EscapedAppend(StringBuilder b, string str) {
-			b.Append('\'');
+		protected override void EscapedAppend(StringBuilder b, string str, bool quotes) {
+			if (quotes) b.Append('\'');
 			for (int i = 0; i < str.Length; i++) {
 				char c = str[i];
 				switch (c) {
@@ -42,7 +42,11 @@ namespace SemWeb.Stores {
 						break;
 				}
 			}
-			b.Append('\'');
+			if (quotes) b.Append('\'');
+		}
+		
+		public override void Close() {
+			dbcon.Close();
 		}
 		
 		protected override void RunCommand(string sql) {
