@@ -13,6 +13,7 @@ namespace SemWeb {
 		bool Contains(Statement template);
 		void Select(Statement template, StatementSink sink);
 		void Select(Entity[] subjects, Entity[] predicates, Resource[] objects, Entity[] metas, StatementSink sink);
+		void Select(Entity[] subjects, Entity[] predicates, Entity[] metas, StatementSink sink, LiteralFilter[] literalFilters);
 	}
 
 	public interface QueryableSource {
@@ -198,10 +199,10 @@ namespace SemWeb {
 		public abstract Entity[] GetMetas();
 		
 		public virtual bool Contains(Statement template) {
-			return Contains(this, template);
+			return DefaultContains(this, template);
 		}
 
-		public static bool Contains(SelectableSource source, Statement template) {
+		public static bool DefaultContains(SelectableSource source, Statement template) {
 			StatementExistsSink sink = new StatementExistsSink();
 			source.Select(template, sink);
 			return sink.Exists;
@@ -214,6 +215,30 @@ namespace SemWeb {
 		public abstract void Select(Statement template, StatementSink result);
 		
 		public abstract void Select(Entity[] subjects, Entity[] predicates, Resource[] objects, Entity[] metas, StatementSink result);
+		
+		public virtual void Select(Entity[] subjects, Entity[] predicates, Entity[] metas, StatementSink sink, LiteralFilter[] literalFilters) {
+			DefaultSelect(this, subjects, predicates, metas, sink, literalFilters);
+		}
+		
+		public static void DefaultSelect(SelectableSource source, Entity[] subjects, Entity[] predicates, Entity[] metas, StatementSink sink, LiteralFilter[] literalFilters) {
+			source.Select(subjects, predicates, (Resource[])null, metas, new FilterSink(source, sink, literalFilters));
+		}
+
+		private class FilterSink : StatementSink {
+			SelectableSource source;
+			StatementSink sink;
+			LiteralFilter[] filters;
+			public FilterSink(SelectableSource source, StatementSink sink, LiteralFilter[] filters) {
+				this.source = source; this.sink = sink; this.filters = filters;
+			}
+			public bool Add(Statement statement) {
+				if (!(statement.Object is Literal)) return true;
+				foreach (LiteralFilter filter in filters)
+					if (!filter.Filter((Literal)statement.Object, source))
+						return true;
+				return sink.Add(statement);
+			}
+		}
 		
 		public SelectResult Select(Statement template) {
 			return new SelectResult.Single(this, template);
@@ -274,10 +299,10 @@ namespace SemWeb {
 		}
 		
 		public virtual Entity[] FindEntities(Statement[] filters) {
-			return FindEntities(this, filters);
+			return DefaultFindEntities(this, filters);
 		}
 		
-		internal static Entity[] FindEntities(SelectableSource source, Statement[] filters) {
+		internal static Entity[] DefaultFindEntities(SelectableSource source, Statement[] filters) {
 			Hashtable ents = new Hashtable();
 			source.Select(filters[0], new FindEntitiesSink(ents, spom(filters[0])));
 			for (int i = 1; i < filters.Length; i++) {

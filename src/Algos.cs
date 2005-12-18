@@ -15,7 +15,7 @@ namespace SemWeb.Algos {
 		}
 		public bool Distinct { get { return a.Distinct; } }
 		public bool Contains(Statement template) {
-			return Store.Contains(this, template);
+			return Store.DefaultContains(this, template);
 		}
 		public void Select(StatementSink sink) {
 			Select(Statement.All, sink);
@@ -25,6 +25,9 @@ namespace SemWeb.Algos {
 		}
 		public void Select(Entity[] subjects, Entity[] predicates, Resource[] objects, Entity[] metas, StatementSink sink) {
 			a.Select(subjects, predicates, objects, metas, new Tester(b, sink));
+		}
+		public void Select(Entity[] subjects, Entity[] predicates, Entity[] metas, StatementSink sink, LiteralFilter[] literalFilters) {
+			Store.DefaultSelect(this, subjects, predicates, metas, sink, literalFilters);
 		}
 		class Tester : StatementSink {
 			SelectableSource b;

@@ -181,19 +181,22 @@ namespace SemWeb.Stores {
 				
 			if (create) {
 				int id = AddLiteral(literal.Value, literal.Language, literal.DataType, buffer, insertCombined);
-				if (literal.Value.Length < 75) {
+				if (literal.Value.Length < 50) {
 					literalCache[literal] = id;
 					literalCacheSize += literal.Value.Length;
-					
-					if (literalCacheSize > 10000000 + 32*literalCache.Count) {
-						literalCacheSize = 0;
-						literalCache.Clear();
-					}
+					CheckLiteralCacheSize();
 				}
 				return id;
 			}
 			
 			return 0;
+		}
+		
+		void CheckLiteralCacheSize() {
+			if (literalCacheSize + 32*8*literalCache.Count > 10000000) {
+				literalCacheSize = 0;
+				literalCache.Clear();
+			}
 		}
 		
 		private void WhereLiteral(StringBuilder b, Literal literal) {
@@ -544,6 +547,7 @@ namespace SemWeb.Stores {
 			// Clear the array and reuse it.
 			statements.Clear();
 			addStatementBuffer = statements;
+			CheckLiteralCacheSize();
 		}
 		
 		public override void Remove(Statement template) {
@@ -881,7 +885,6 @@ namespace SemWeb.Stores {
 					case '\n': b.Append("\\n"); break;
 					case '\\':
 					case '\"':
-					case '%':
 					case '*':
 						b.Append('\\');
 						b.Append(c);

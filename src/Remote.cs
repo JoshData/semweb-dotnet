@@ -44,6 +44,11 @@ namespace SemWeb.Remote {
 			Select(subjects, predicates, objects, metas, sink, false);
 		}
 		
+		public void Select(Entity[] subjects, Entity[] predicates, Entity[] metas, StatementSink sink, LiteralFilter[] literalFilters) {
+			// TODO: Pass filters on to the source.
+			Store.DefaultSelect(this, subjects, predicates, metas, sink, literalFilters);
+		}
+		
 		bool Select(Entity[] subjects, Entity[] predicates, Resource[] objects, Entity[] metas, StatementSink sink, bool ask) {
 			// SPARQL doesn't support metas.  Anything but a null or DefaultMeta
 			// meta returns no statements immediately.

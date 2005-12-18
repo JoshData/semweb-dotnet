@@ -700,7 +700,7 @@ namespace SemWeb.Query {
 				if (targetModel is QueryableSource)
 					targetentities = ((QueryableSource)targetModel).FindEntities(findstatementsarray);
 				else
-					targetentities = Store.FindEntities(targetModel, findstatementsarray);
+					targetentities = Store.DefaultFindEntities(targetModel, findstatementsarray);
 				
 				foreach (Entity r in targetentities) {
 					if (!MatchesFilters(r, var, targetModel)) continue;
