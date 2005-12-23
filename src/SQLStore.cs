@@ -202,8 +202,6 @@ namespace SemWeb.Stores {
 		private void WhereLiteral(StringBuilder b, Literal literal) {
 			b.Append("value = ");
 			EscapedAppend(b, literal.Value);
-			//b.Append(" AND BINARY value = ");
-			//EscapedAppend(b, literal.Value);
 			b.Append(" AND ");
 			if (literal.Language != null) {
 				b.Append("language = ");
@@ -1110,7 +1108,7 @@ namespace SemWeb.Stores {
 			cmd.Append(" AND ");
 			cmd.Append(joinalias);
 			cmd.Append(".value LIKE \"%");
-			cmd.Append(Escape(pattern, false));
+			cmd.Append(Escape(pattern.Replace("%", "\\%"), false));
 			cmd.Append("%\" ");
 		}
 		
