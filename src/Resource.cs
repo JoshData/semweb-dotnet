@@ -4,11 +4,13 @@ using System.Collections;
 namespace SemWeb {
 	
 	public abstract class Resource {
+		internal object ekKey, ekValue;
 		internal ArrayList extraKeys;
 		
 		internal class ExtraKey {
 			public object Key;
 			public object Value; 
+			public ExtraKey(object k, object v) { Key = k; Value = v; }
 		}
 		
 		public abstract string Uri { get; }
@@ -40,6 +42,7 @@ namespace SemWeb {
 		}
 		
 		internal object GetResourceKey(object key) {
+			if (ekKey == key) return ekValue;
 			if (extraKeys == null) return null;
 			for (int i = 0; i < extraKeys.Count; i++) {
 				Resource.ExtraKey ekey = (Resource.ExtraKey)extraKeys[i];
@@ -49,15 +52,18 @@ namespace SemWeb {
 			return null;
 		}
 		internal void SetResourceKey(object key, object value) {
+			if (extraKeys == null && (ekKey == null || ekKey == key)) {
+				ekKey = key;
+				ekValue = value;
+				return;
+			}
+		
 			if (extraKeys == null) extraKeys = new ArrayList();
 			
 			foreach (Resource.ExtraKey ekey in extraKeys)
-				if (ekey.Key == key) { extraKeys.Remove(ekey); break; }
+				if (ekey.Key == key) { ekey.Value = value; return; }
 			
-			Resource.ExtraKey k = new Resource.ExtraKey();
-			k.Key = key;
-			k.Value = value;
-			
+			Resource.ExtraKey k = new Resource.ExtraKey(key, value);
 			extraKeys.Add(k);
 		}
 		
@@ -68,7 +74,7 @@ namespace SemWeb {
 		
 		public Entity(string uri) {
 			if (uri == null) throw new ArgumentNullException("uri");
-			this.uri = string.Intern(uri);
+			this.uri = uri;
 		}
 		
 		// For the BNode constructor only.
@@ -84,6 +90,7 @@ namespace SemWeb {
 		public static implicit operator Entity(string uri) { return new Entity(uri); }
 		
 		public override int GetHashCode() {
+			if (uri == null) return base.GetHashCode();
 			return uri.GetHashCode();
 		}
 			
@@ -123,7 +130,8 @@ namespace SemWeb {
 		}
 		
 		public override int GetHashCode() {
-			if (extraKeys != null && extraKeys.Count == 1) {
+			if (ekKey != null) return unchecked(ekKey.GetHashCode() + ekValue.GetHashCode());
+			if (extraKeys != null && extraKeys.Count >= 1) {
 				ExtraKey v = (ExtraKey)extraKeys[0];
 				return unchecked(v.Key.GetHashCode() + v.Value.GetHashCode());
 			}
@@ -139,11 +147,13 @@ namespace SemWeb {
 			if (!(other is BNode)) return false;
 			
 			ArrayList otherkeys = ((Resource)other).extraKeys;
-			if (otherkeys != null && extraKeys != null) {
-				for (int vi1 = 0; vi1 < extraKeys.Count; vi1++) {
-					ExtraKey v1 = (ExtraKey)extraKeys[vi1];
-					for (int vi2 = 0; vi2 < otherkeys.Count; vi2++) {
-						ExtraKey v2 = (ExtraKey)otherkeys[vi2];
+			object okKey = ((Resource)other).ekKey;
+			object okValue = ((Resource)other).ekValue;
+			if ((okKey != null || otherkeys != null) && (ekKey != null || extraKeys != null)) {
+				for (int vi1 = -1; vi1 < extraKeys.Count; vi1++) {
+					ExtraKey v1 = vi1 == -1 ? new ExtraKey(ekKey, ekValue) : (ExtraKey)extraKeys[vi1];
+					for (int vi2 = -1; vi2 < otherkeys.Count; vi2++) {
+						ExtraKey v2 = vi2 == -1 ? new ExtraKey(okKey, okValue) : (ExtraKey)otherkeys[vi2];
 						if (v1.Key == v2.Key)
 							return v1.Value.Equals(v2.Value);
 					}
