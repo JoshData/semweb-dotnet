@@ -27,7 +27,7 @@ namespace SemWeb.Stores {
 		StringBuilder cmdBuffer = new StringBuilder();
 		
 		// Buffer statements to process together.
-		ArrayList addStatementBuffer = null;
+		StatementList addStatementBuffer = null;
 		
 		string 	INSERT_INTO_LITERALS_VALUES,
 				INSERT_INTO_STATEMENTS_VALUES,
@@ -446,7 +446,7 @@ namespace SemWeb.Stores {
 			Init();
 			
 			// Prevent recursion through NextId=>StatementCount
-			ArrayList statements = addStatementBuffer;
+			StatementList statements = addStatementBuffer;
 			addStatementBuffer = null;
 			
 			// Prefetch the IDs of all literals that aren't
@@ -912,7 +912,7 @@ namespace SemWeb.Stores {
 			
 			cachedNextId = -1;
 			lockedIdCache = new UriMap();
-			addStatementBuffer = new ArrayList(); 
+			addStatementBuffer = new StatementList();
 			
 			using (IDataReader reader = RunReader("SELECT id, value from " + table + "_entities;")) {
 				while (reader.Read())
