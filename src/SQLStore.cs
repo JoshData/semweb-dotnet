@@ -11,7 +11,7 @@ namespace SemWeb.Stores {
 	// TODO: It's not safe to have two concurrent accesses to the same database
 	// because the creation of new entities will use the same IDs.
 	
-	public abstract class SQLStore : Store {
+	public abstract class SQLStore : Store, SupportsPersistableBNodes {
 		string table;
 		string guid;
 		
@@ -114,6 +114,23 @@ namespace SemWeb.Stores {
 		public override bool Distinct { get { return true; } }
 		
 		public override int StatementCount { get { Init(); RunAddBuffer(); return RunScalarInt("select count(subject) from " + table + "_statements", 0); } }
+		
+		public string GetStoreGuid() { return guid; }
+		
+		public string GetNodeId(BNode node) {
+			ResourceKey rk = (ResourceKey)GetResourceKey(node);
+			if (rk == null) return null;
+			return rk.ResId.ToString();
+		}
+		
+		public BNode GetNodeFromId(string persistentId) {
+			try {
+				int id = int.Parse(persistentId);
+				return (BNode)MakeEntity(id, null, null);
+			} catch (Exception e) {
+				return null;
+			}
+		}
 		
 		private int NextId() {
 			if (lockedIdCache != null && cachedNextId != -1)
@@ -341,12 +358,6 @@ namespace SemWeb.Stores {
 			
 			if (resource.Uri != null) {
 				id = GetEntityId(resource.Uri, create, entityInsertBuffer, insertCombined);
-			} else if (resource is BNode && ((BNode)resource).LocalId != null
-				&& ((BNode)resource).LocalId.StartsWith(guid + "-")) {
-				// assumes numeric second part...
-				string localid = ((BNode)resource).LocalId;
-				int colon = localid.IndexOf('-');
-				id = int.Parse(localid.Substring(colon+1));
 			} else {
 				// This anonymous node didn't come from the database
 				// since it didn't have a resource key.  If !create,
@@ -390,7 +401,7 @@ namespace SemWeb.Stores {
 			if (uri != null) {
 				ent = new Entity(uri);
 			} else {
-				ent = new BNode(guid + "-" + resourceId.ToString());
+				ent = new BNode();
 			}
 			
 			SetResourceKey(ent, rk);

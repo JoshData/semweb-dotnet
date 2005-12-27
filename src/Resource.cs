@@ -114,19 +114,7 @@ namespace SemWeb {
 	}
 	
 	public class BNode : Entity {
-		string pstr;
-	
 		public BNode() {
-		}
-		
-		public BNode(string localId) {
-			this.pstr = localId;
-		}
-		
-		public string LocalId {
-			get {
-				return pstr;
-			}
 		}
 		
 		public override int GetHashCode() {

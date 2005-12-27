@@ -426,6 +426,12 @@ namespace SemWeb {
 
 namespace SemWeb.Stores {
 
+	public interface SupportsPersistableBNodes {
+		string GetStoreGuid();
+		string GetNodeId(BNode node);
+		BNode GetNodeFromId(string persistentId);
+	}
+
 	public class MultiStore : Store {
 		ArrayList stores = new ArrayList();
 		Hashtable namedgraphs = new Hashtable();

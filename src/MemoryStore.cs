@@ -2,10 +2,11 @@ using System;
 using System.Collections;
 
 using SemWeb;
+using SemWeb.Stores;
 using SemWeb.Util;
 
 namespace SemWeb {
-	public class MemoryStore : Store, IEnumerable {
+	public class MemoryStore : Store, SupportsPersistableBNodes, IEnumerable {
 		StatementList statements = new StatementList();
 		
 		Hashtable statementsAboutSubject = new Hashtable();
@@ -15,6 +16,10 @@ namespace SemWeb {
 		internal bool allowIndexing = true;
 		internal bool checkForDuplicates = false;
 		bool distinct = true;
+		
+		string guid = null;
+		Hashtable pbnodeToId = null;
+		Hashtable pbnodeFromId = null;
 		
 		public MemoryStore() {
 		}
@@ -195,6 +200,28 @@ namespace SemWeb {
 				Add(replacement);
 				break; // should match just one statement anyway
 			}
+		}
+
+		public string GetStoreGuid() {
+			if (guid == null) guid = Guid.NewGuid().ToString("N");;
+			return guid;
+		}
+		
+		public string GetNodeId(BNode node) {
+			if (pbnodeToId == null) {
+				pbnodeToId = new Hashtable();
+				pbnodeFromId = new Hashtable();
+			}
+			if (pbnodeToId.ContainsKey(node)) return (string)pbnodeToId[node];
+			string id = pbnodeToId.Count.ToString();
+			pbnodeToId[node] = id;
+			pbnodeFromId[id] = node;
+			return id;
+		}
+		
+		public BNode GetNodeFromId(string persistentId) {
+			if (pbnodeFromId == null) return null;
+			return (BNode)pbnodeFromId[persistentId];
 		}
 	}
 }

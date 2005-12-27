@@ -79,8 +79,6 @@ namespace SemWeb.Query {
 						blankNodes[var.Target] = id;
 					}
 					output.WriteStartElement("bnode");
-					if (((BNode)var.Target).LocalId != null)
-					output.WriteAttributeString("localId", ((BNode)var.Target).LocalId);
 					output.WriteString(id);
 					output.WriteEndElement();
 				}

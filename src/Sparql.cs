@@ -13,8 +13,12 @@ using name.levering.ryan.sparql.common;
 namespace SemWeb.Query {
 
 	public class Sparql : SemWeb.Query.Query {
+	
+		private const string BNodePersistUri = "tag:taubz.for.net,2005:bnode_persist_uri/";
 
 		name.levering.ryan.sparql.model.Query query;
+		
+		public bool AllowPersistBNodes = true;
 		
 		public enum QueryType {
 			Ask,
@@ -73,7 +77,7 @@ namespace SemWeb.Query {
 			if (!(query is AskQuery))
 				throw new InvalidOperationException("Only ASK queries are supported by this method (" + query.GetType() + ").");
 			AskQuery q = (AskQuery)query;
-			return q.execute(new RdfSourceWrapper(source, QueryMeta));
+			return q.execute(new RdfSourceWrapper(source, QueryMeta, this));
 		}
 		
 		public void Ask(SelectableSource source, TextWriter output) {
@@ -97,7 +101,7 @@ namespace SemWeb.Query {
 			if (!(query is ConstructQuery))
 				throw new InvalidOperationException("Only CONSTRUCT queries are supported by this method (" + query.GetType() + ").");
 			ConstructQuery q = (ConstructQuery)query;
-			RdfSourceWrapper sourcewrapper = new RdfSourceWrapper(source, QueryMeta);
+			RdfSourceWrapper sourcewrapper = new RdfSourceWrapper(source, QueryMeta, this);
 			RdfGraph graph = q.execute(sourcewrapper);
 			WriteGraph(graph, sourcewrapper, sink);
 		}
@@ -129,7 +133,7 @@ namespace SemWeb.Query {
 			if (!(query is DescribeQuery))
 				throw new InvalidOperationException("Only DESCRIBE queries are supported by this method (" + query.GetType() + ").");
 			DescribeQuery q = (DescribeQuery)query;
-			RdfSourceWrapper sourcewrapper = new RdfSourceWrapper(source, QueryMeta);
+			RdfSourceWrapper sourcewrapper = new RdfSourceWrapper(source, QueryMeta, this);
 			RdfGraph graph = q.execute(sourcewrapper);
 			WriteGraph(graph, sourcewrapper, sink);
 		}
@@ -218,7 +222,7 @@ namespace SemWeb.Query {
 				throw new InvalidOperationException("Only SELECT queries are supported by this method (" + query.GetType() + ").");
 
 			SelectQuery squery = (SelectQuery)query;
-			RdfSourceWrapper sourcewrapper = new RdfSourceWrapper(source, QueryMeta);
+			RdfSourceWrapper sourcewrapper = new RdfSourceWrapper(source, QueryMeta, this);
 			RdfBindingSet results;
 			try {
 				results = squery.execute(sourcewrapper);
@@ -246,7 +250,9 @@ namespace SemWeb.Query {
 
 				for (int i = 0; i < bindings.Length; i++) {
 					Variable v = (Variable)row.getVariables().get(i);
-					bindings[i] = new VariableBinding(vars2[i], v.getName(), sourcewrapper.ToResource(row.getValue(v)));
+					Resource r = sourcewrapper.ToResource(row.getValue(v));
+					r = sourcewrapper.Persist(r);
+					bindings[i] = new VariableBinding(vars2[i], v.getName(), r);
 				}
 				
 				resultsink.Add(bindings);
@@ -264,12 +270,14 @@ namespace SemWeb.Query {
 			SelectableSource source;
 			Hashtable bnodes = new Hashtable();
 			Entity QueryMeta;
+			Sparql sparql;
 			
 			bool debug = false;
 			
-			public RdfSourceWrapper(SelectableSource source, Entity meta) {
+			public RdfSourceWrapper(SelectableSource source, Entity meta, Sparql sparql) {
 				this.source = source;
 				QueryMeta = meta;
+				this.sparql = sparql;
 			}
 		
 			private StatementIterator GetIterator(Statement statement) {
@@ -285,6 +293,11 @@ namespace SemWeb.Query {
 
 				if (subjects == null && predicates == null && objects == null)
 					throw new QueryExecutionException("Query would select all statements in the store.");
+				
+				if (subjects != null) Depersist(subjects);
+				if (predicates != null) Depersist(predicates);
+				if (objects != null) Depersist(objects);
+				if (metas != null) Depersist(metas);
 				
 				MemoryStore results = new MemoryStore();
 				StatementSink sink = results;
@@ -381,7 +394,7 @@ namespace SemWeb.Query {
 			public bool hasStatement (org.openrdf.model.Value subject, org.openrdf.model.URI @predicate, org.openrdf.model.Value @object, org.openrdf.model.URI graph) {
 				return has(new Statement(ToEntity(subject), ToEntity(predicate), ToResource(@object), ToEntity(graph)));
 			}
-	
+			
 			public Entity ToEntity(org.openrdf.model.Value ent) {
 				if (ent == null) return null;
 				if (ent is BNodeWrapper) return ((BNodeWrapper)ent).r;
@@ -465,7 +478,44 @@ namespace SemWeb.Query {
 				public org.openrdf.model.URI getPredicate() { return predicate; }
 				public org.openrdf.model.Value getObject() { return @object; }
 			}
-
+			
+			public void Depersist(Resource[] r) {
+				for (int i = 0; i < r.Length; i++)
+					r[i] = Depersist(r[i]);
+			}
+			
+			public Resource Depersist(Resource r) {
+				if (r.Uri == null || !sparql.AllowPersistBNodes) return r;
+				if (!(source is SupportsPersistableBNodes)) return r;
+				if (!r.Uri.StartsWith(Sparql.BNodePersistUri)) return r;
+				
+				SupportsPersistableBNodes spb = (SupportsPersistableBNodes)source;
+				string uri = r.Uri;
+				string guid = uri.Substring(Sparql.BNodePersistUri.Length);
+				int c = guid.IndexOf(':');
+				if (c > 0) {
+					string id = guid.Substring(c+1);
+					guid = guid.Substring(0, c);
+					if (spb.GetStoreGuid() != null && guid == spb.GetStoreGuid()) {
+						BNode node = spb.GetNodeFromId(id);
+						if (node != null)
+							return node;
+					}
+				}
+				
+				return r;
+			}
+			
+			public Resource Persist(Resource r) {
+				if (!(r is BNode) || !sparql.AllowPersistBNodes) return r;
+				if (!(source is SupportsPersistableBNodes)) return r;
+				SupportsPersistableBNodes spb = (SupportsPersistableBNodes)source;
+				string guid = spb.GetStoreGuid();
+				if (guid == null) return r;
+				string id = spb.GetNodeId((BNode)r);
+				if (id == null) return r;
+				return new Entity(Sparql.BNodePersistUri + guid + ":" + id);
+			}
 		}
 		
 		class StatementIterator : java.util.Iterator {
