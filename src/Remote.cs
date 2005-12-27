@@ -50,17 +50,19 @@ namespace SemWeb.Remote {
 		}
 		
 		bool Select(Entity[] subjects, Entity[] predicates, Resource[] objects, Entity[] metas, StatementSink sink, bool ask) {
-			// SPARQL doesn't support metas.  Anything but a null or DefaultMeta
+			// TODO: Change meta into named graphs.  Anything but a null or DefaultMeta
 			// meta returns no statements immediately.
 			if (metas != null && (metas.Length != 1 || metas[0] != Statement.DefaultMeta))
 				return false;
 		
 			string query;
+			bool nonull = false;
 		
 			if (subjects != null && subjects.Length == 1
 				&& predicates != null && predicates.Length == 1
 				&& objects != null && objects.Length == 1) {
 				query = "ASK WHERE { " + S(subjects[0], null) + " " + S(predicates[0], null) + " " + S(objects[0], null) + "}";
+				nonull = true;
 			} else {
 				if (ask)
 					query = "ASK";
@@ -81,13 +83,17 @@ namespace SemWeb.Remote {
 			
 			XmlDocument result = Load(query);
 			
-			foreach (XmlElement boolean in result.DocumentElement) {
-				if (boolean.Name != "boolean") continue;
-				bool ret = boolean.InnerText == "true";
-				if (ask)
-					return ret;
-				else if (ret)
-					sink.Add(new Statement(subjects[0], predicates[0], objects[0]));
+			if (ask || nonull) {
+				foreach (XmlElement boolean in result.DocumentElement) {
+					if (boolean.Name != "boolean") continue;
+					bool ret = boolean.InnerText == "true";
+					if (ask)
+						return ret;
+					else if (ret)
+						sink.Add(new Statement(subjects[0], predicates[0], objects[0]));
+					return false;
+				}
+				throw new ApplicationException("Invalid server response: No boolean node.");
 			}
 			
 			XmlElement bindings = null;
@@ -95,7 +101,7 @@ namespace SemWeb.Remote {
 				if (e.Name == "results")
 					bindings = e;
 			if (bindings == null)
-				throw new ApplicationException("Invalid sever response: No result node.");
+				throw new ApplicationException("Invalid server response: No result node.");
 			
 			MemoryStore distinctCheck = null;
 			if (bindings.GetAttribute("distinct") != "true")
@@ -126,15 +132,12 @@ namespace SemWeb.Remote {
 			ret.Append("FILTER(");
 			for (int i = 0; i < r.Length; i++) {
 				if (i != 0) ret.Append(" || ");
-				string localid = (string)r[i].GetResourceKey(this);
-				if (r[i].Uri == null && localid == null) continue;
+				if (r[i].Uri == null) continue;
 				ret.Append("(str(?");
 				ret.Append(v);
 				ret.Append(")=\"");
 				if (r[i].Uri != null)
 					ret.Append(Escape(r[i].Uri));
-				else
-					ret.Append("localid:" + Escape(localid));
 				ret.Append("\")");
 			}
 			ret.Append(").");
@@ -161,11 +164,6 @@ namespace SemWeb.Remote {
 				if (r.Uri.IndexOf('>') != -1)
 					throw new ArgumentException("Invalid URI: " + r.Uri);
 				return "<" + r.Uri + ">";
-			} else if (r.GetResourceKey(this) != null) {
-				string localid = (string)r.GetResourceKey(this);
-				if (localid.IndexOf('>') != -1)
-					throw new ArgumentException("Invalid local id: " + localid);
-				return "<localid:" + localid + ">";
 			} else {
 				throw new ArgumentException("Blank node in select not supported.");
 			}
@@ -178,7 +176,7 @@ namespace SemWeb.Remote {
 			while (b != null && b.GetAttribute("name") != v)
 				b = (XmlElement)b.NextSibling;
 			if (b == null)
-				throw new ApplicationException("Invalid sever response: Not all bindings present (" + v + "): " + binding.OuterXml);
+				throw new ApplicationException("Invalid server response: Not all bindings present (" + v + "): " + binding.OuterXml);
 			
 			b = (XmlElement)b.FirstChild;
 			if (b.Name == "uri")
@@ -189,12 +187,10 @@ namespace SemWeb.Remote {
 				string id = b.InnerText;
 				if (bnodes.ContainsKey(id)) return (Entity)bnodes[id];
 				Entity ret = new BNode();
-				if (b.HasAttribute("localId"))
-					ret.SetResourceKey(this, b.GetAttribute("localId"));
 				bnodes[id] = ret;
 				return ret;
 			}
-			throw new ApplicationException("Invalid sever response: " + b.OuterXml);
+			throw new ApplicationException("Invalid server response: " + b.OuterXml);
 		}
 		
 		XmlDocument Load(string query) {
@@ -214,7 +210,7 @@ namespace SemWeb.Remote {
 			ret.Load(new StreamReader(resp.GetResponseStream(), System.Text.Encoding.UTF8));
 						
 			if (ret.DocumentElement.Name != "sparql")
-				throw new ApplicationException("Invalid sever response: Not a sparql results document.");
+				throw new ApplicationException("Invalid server response: Not a sparql results document.");
 			
 			return ret;
 		}
@@ -241,7 +237,7 @@ namespace SemWeb.Remote {
 				if (e.Name == "results")
 					bindings = e;
 			if (bindings == null)
-				throw new ApplicationException("Invalid sever response: No result node.");
+				throw new ApplicationException("Invalid server response: No result node.");
 			
 			Hashtable bnodes = new Hashtable();
 			ArrayList ret = new ArrayList();
