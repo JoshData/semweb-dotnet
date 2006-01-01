@@ -17,6 +17,9 @@ namespace SemWeb {
 		
 		long anonCounter = 0;
 		Hashtable anonAlloc = new Hashtable();
+		Hashtable nameAlloc = new Hashtable();
+		
+		static Entity rdftype = "http://www.w3.org/1999/02/22-rdf-syntax-ns#type";
 		
 		public RdfXmlWriter(string file) : this(file, null) { }
 		
@@ -141,9 +144,11 @@ namespace SemWeb {
 			element.SetAttributeNode(attr);
 		}
 		
-		private XmlElement GetNode(string uri, string type, XmlElement context) {
-			if (nodeMap.ContainsKey(uri)) {
-				XmlElement ret = (XmlElement)nodeMap[uri];
+		private XmlElement GetNode(Entity entity, string type, XmlElement context) {
+			string uri = entity.Uri;
+		
+			if (nodeMap.ContainsKey(entity)) {
+				XmlElement ret = (XmlElement)nodeMap[entity];
 				if (type == null) return ret;
 				
 				// Check if we have to add new type information to the existing node.
@@ -159,7 +164,7 @@ namespace SemWeb {
 					}
 					
 					ret.ParentNode.ReplaceChild(newnode, ret);
-					nodeMap[uri] = newnode;
+					nodeMap[entity] = newnode;
 					return newnode;
 				} else {
 					// The node is already typed, so just add a type predicate.
@@ -180,10 +185,10 @@ namespace SemWeb {
 				node = doc.CreateElement(prefix + ":" + localname, ns.GetNamespace(prefix));
 			}
 			
-			if (!anonAlloc.ContainsKey(uri)) {
+			if (uri != null) {
 				SetAttribute(node, NS.RDF, ns.GetPrefix(NS.RDF), "about", uri);
 			} else {
-				SetAttribute(node, NS.RDF, ns.GetPrefix(NS.RDF), "nodeID", uri);
+				SetAttribute(node, NS.RDF, ns.GetPrefix(NS.RDF), "nodeID", GetBNodeRef((BNode)entity));
 			}
 			
 			if (context == null)
@@ -191,44 +196,65 @@ namespace SemWeb {
 			else
 				context.AppendChild(node);
 			
-			nodeMap[uri] = node;
+			nodeMap[entity] = node;
 			return node;
 		}
 		
-		private XmlElement CreatePredicate(XmlElement subject, string predicate) {
+		private XmlElement CreatePredicate(XmlElement subject, Entity predicate) {
+			if (predicate.Uri == null)
+				throw new InvalidOperationException("Predicates cannot be blank nodes.");
+			
 			string prefix, localname;
-			Normalize(predicate, out prefix, out localname);
+			Normalize(predicate.Uri, out prefix, out localname);
 			XmlElement pred = doc.CreateElement(prefix + ":" + localname, ns.GetNamespace(prefix));
 			subject.AppendChild(pred);
 			return pred;
 		}
 		
-		public override void WriteStatement(string subj, string pred, string obj) {
-			XmlElement subjnode = GetNode(subj, pred == "http://www.w3.org/1999/02/22-rdf-syntax-ns#type" ? obj : null, null);
-			if (pred == "http://www.w3.org/1999/02/22-rdf-syntax-ns#type") return;
+		public override void Add(Statement statement) {
+			if (statement.AnyNull) throw new ArgumentNullException();
+		
+			XmlElement subjnode;
 			
-			XmlElement prednode = CreatePredicate(subjnode, pred);
-			if (nodeMap.ContainsKey(obj)) {
-				if (!anonAlloc.ContainsKey(obj)) {
-					SetAttribute(prednode, NS.RDF, ns.GetPrefix(NS.RDF), "resource", obj);
+			bool hastype = statement.Predicate == rdftype && statement.Object.Uri != null;
+			subjnode = GetNode(statement.Subject, hastype ? statement.Object.Uri : null, null);
+			if (hastype) return;
+
+			XmlElement prednode = CreatePredicate(subjnode, statement.Predicate);
+			
+			if (!(statement.Object is Literal)) {
+				if (nodeMap.ContainsKey(statement.Object)) {
+					if (statement.Object.Uri != null) {
+						SetAttribute(prednode, NS.RDF, ns.GetPrefix(NS.RDF), "resource", statement.Object.Uri);
+					} else {
+						SetAttribute(prednode, NS.RDF, ns.GetPrefix(NS.RDF), "nodeID", GetBNodeRef((BNode)statement.Object));
+					}
 				} else {
-					SetAttribute(prednode, NS.RDF, ns.GetPrefix(NS.RDF), "nodeID", obj);
+					GetNode((Entity)statement.Object, null, prednode);
 				}
 			} else {
-				GetNode(obj, null, prednode);
+				Literal literal = (Literal)statement.Object;
+				prednode.InnerText = literal.Value;
+				if (literal.Language != null)
+					prednode.SetAttribute("xml:lang", literal.Language);
+				if (literal.DataType != null)
+					SetAttribute(prednode, NS.RDF, ns.GetPrefix(NS.RDF), "datatype", literal.DataType);
 			}
 		}
 		
-		public override void WriteStatement(string subj, string pred, Literal literal) {
-			XmlElement subjnode = GetNode(subj, null, null);
-			XmlElement prednode = CreatePredicate(subjnode, pred);
-			prednode.InnerText = literal.Value;
-		}
-		
-		public override string CreateAnonymousEntity() {
-			string id = "anon" + (anonCounter++);
-			anonAlloc[id] = anonAlloc;
-			return id;
+		public string GetBNodeRef(BNode node) {
+			if (node.LocalName != null &&
+				(nameAlloc[node.LocalName] == null || (BNode)nameAlloc[node.LocalName] == node)
+				&& !node.LocalName.StartsWith("bnode")) {
+				nameAlloc[node.LocalName] = node; // ensure two different nodes with the same local name don't clash
+				return node.LocalName;
+			} else if (anonAlloc[node] != null) {
+				return (string)anonAlloc[node];
+			} else {
+				string id = "bnode" + (anonCounter++);
+				anonAlloc[node] = id;
+				return id;
+			}
 		}
 		
 		public override void Close() {
@@ -239,107 +265,4 @@ namespace SemWeb {
 		}
 	}
 
-	internal class RdfXmlWriter2 : RdfWriter {
-		XmlWriter writer;
-		NamespaceManager ns;
-		NamespaceManager autons;
-		
-		long anonCounter = 0;
-		string currentSubject = null;
-		
-		string rdf;
-		
-		public RdfXmlWriter2(string file) : this(file, null) { }
-		
-		public RdfXmlWriter2(string file, NamespaceManager ns) : this(GetWriter(file), ns) { }
-
-		public RdfXmlWriter2(TextWriter writer) : this(writer, null) { }
-		
-		public RdfXmlWriter2(TextWriter writer, NamespaceManager ns) : this(NewWriter(writer), ns) { }
-		
-		private static XmlWriter NewWriter(TextWriter writer) {
-			XmlTextWriter ret = new XmlTextWriter(writer);
-			ret.Formatting = Formatting.Indented;
-			ret.Indentation = 1;
-			ret.IndentChar = '\t';
-			return ret;
-		}
-		
-		public RdfXmlWriter2(XmlWriter writer) : this(writer, null) { }
-		
-		public RdfXmlWriter2(XmlWriter writer, NamespaceManager ns) {
-			if (ns == null)
-				ns = new NamespaceManager();
-			this.writer = writer;
-			this.ns = ns;
-			//autons = new AutoPrefixNamespaceManager(this.ns);
-		}
-		
-		public override NamespaceManager Namespaces { get { return ns; } }
-		
-		private bool Open(string resource, string type) {
-			bool emittedType = false;
-			
-			if (currentSubject == null) {
-				rdf = autons.GetPrefix("http://www.w3.org/1999/02/22-rdf-syntax-ns#");
-				writer.WriteStartElement(rdf + ":RDF");
-				foreach (string prefix in autons.GetPrefixes())
-					writer.WriteAttributeString("xmlns:" + prefix, autons.GetNamespace(prefix));
-			}
-			if (currentSubject != null && currentSubject != resource)
-				writer.WriteEndElement();
-			if (currentSubject == null || currentSubject != resource) {
-				currentSubject = resource;
-				
-				if (type == null)
-					writer.WriteStartElement(rdf + ":Description");
-				else {
-					writer.WriteStartElement(URI(type));
-					emittedType = true;
-				}
-				
-				writer.WriteAttributeString(rdf + ":about", resource);
-			}
-			
-			return emittedType;
-		}
-		
-		public override void WriteStatement(string subj, string pred, string obj) {
-			if (Open(subj, pred == "http://www.w3.org/1999/02/22-rdf-syntax-ns#type" ? obj : null))
-				return;
-			writer.WriteStartElement(URI(pred));
-			writer.WriteAttributeString("rdf:resource", obj);
-			writer.WriteEndElement();
-		}
-		
-		public override void WriteStatement(string subj, string pred, Literal literal) {
-			Open(subj, null);
-			writer.WriteStartElement(URI(pred));
-			// Should write language and datatype
-			writer.WriteString(literal.Value);
-			writer.WriteEndElement();
-		}
-		
-		public override string CreateAnonymousEntity() {
-			return "_:anon" + (anonCounter++);
-		}
-		
-		public override void Close() {
-			base.Close();
-			if (currentSubject != null) {
-				writer.WriteEndElement();
-				writer.WriteEndElement();
-			}
-			writer.Close();
-		}
-
-		
-		private string URI(string uri) {
-			if (uri.StartsWith("_:anon")) return uri;
-			string ret = autons.Normalize(uri);
-			if (ret.StartsWith("<"))
-				throw new InvalidOperationException("A namespace prefix must be defined for the URI " + ret + ".");
-			return ret;
-		}
-	}
 }

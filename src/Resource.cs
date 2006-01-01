@@ -114,9 +114,17 @@ namespace SemWeb {
 	}
 	
 	public class BNode : Entity {
+		string localname;
+	
 		public BNode() {
 		}
 		
+		public BNode(string localName) {
+			localname = localName;
+		}
+		
+		public string LocalName { get { return localname; } }
+
 		public override int GetHashCode() {
 			if (ekKey != null) return unchecked(ekKey.GetHashCode() + ekValue.GetHashCode());
 			if (extraKeys != null && extraKeys.Count >= 1) {

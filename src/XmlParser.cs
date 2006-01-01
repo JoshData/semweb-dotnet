@@ -101,7 +101,7 @@ namespace SemWeb {
 			if (blankNodes.ContainsKey(nodeID))
 				return (Entity)blankNodes[nodeID];
 			
-			Entity entity = new BNode();
+			Entity entity = new BNode(nodeID);
 			blankNodes[nodeID] = entity;
 
 			return entity;

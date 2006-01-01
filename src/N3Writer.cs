@@ -14,7 +14,8 @@ namespace SemWeb {
 		
 		string lastSubject = null, lastPredicate = null;
 		
-		long anonCounter = 0;
+		Hashtable anonNames = new Hashtable();
+		Hashtable anonNameMap = new Hashtable();
 		
 		Formats format = Formats.Turtle;
 		
@@ -38,16 +39,10 @@ namespace SemWeb {
 		
 		public Formats Format { get { return format; } set { format = value; } }
 		
-		public override void WriteStatement(string subj, string pred, string obj) {
-			WriteStatement2(URI(subj), URI(pred), URI(obj));
-		}
-		
-		public override void WriteStatement(string subj, string pred, Literal literal) {
-			WriteStatement2(URI(subj), URI(pred), literal.ToString());
-		}
-		
-		public override string CreateAnonymousEntity() {
-			return "_:anon" + (anonCounter++);
+		public override void Add(Statement statement) {
+			if (statement.AnyNull) throw new ArgumentNullException();
+			WriteStatement2(URI(statement.Subject), URI(statement.Predicate),
+				statement.Object is Literal ? ((Literal)statement.Object).ToString() : URI((Entity)statement.Object));
 		}
 
 		public override void Close() {
@@ -61,10 +56,26 @@ namespace SemWeb {
 		}
 
 		
-		private string URI(string uri) {
-			if (uri.StartsWith("_:anon")) return uri;
-			if (BaseUri != null && uri.StartsWith(BaseUri)) {
-				int len = BaseUri.Length;
+		private string URI(Entity entity) {
+			if (entity is BNode) {
+				string name = ((BNode)entity).LocalName;
+				if (name != null &&
+					(anonNameMap[name] == null || (BNode)anonNameMap[name] == entity)
+					&& !name.StartsWith("bnode")) {
+					return "_:" + name;
+				} else if (anonNames[entity] != null) {
+					return (string)anonNames[entity];
+				} else {
+					string id = "_:bnode" + anonNames.Count;
+					anonNames[entity] = id;
+					return id;
+				}
+			}
+			
+			string uri = entity.Uri;
+			string effectiveBaseUri = BaseUri == null ? "#" : BaseUri;
+			if (effectiveBaseUri != null && uri.StartsWith(effectiveBaseUri)) {
+				int len = effectiveBaseUri.Length;
 				bool ok = true;
 				for (int i = len; i < uri.Length; i++) {
 					if (!char.IsLetterOrDigit(uri[i])) { ok = false; break; }

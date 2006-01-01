@@ -37,37 +37,8 @@ namespace SemWeb {
 			return true;
 		}
 		
-		public void Add(Statement statement) {
-			if (statement.AnyNull)
-				throw new ArgumentNullException();
-				
-			string s = getUri(statement.Subject);
-			string p = getUri(statement.Predicate);
-			
-			if (statement.Object is Literal) {
-				Literal lit = (Literal)statement.Object;
-				WriteStatement(s, p, lit);
-			} else {
-				string o = getUri((Entity)statement.Object);
-				WriteStatement(s, p, o);
-			}
-		}
-		
-		private string getUri(Entity e) {
-			if (e.Uri != null) return e.Uri;
-			string uri = (string)GetResourceKey(e);
-			if (uri != null) return uri;
-			uri = CreateAnonymousEntity();
-			SetResourceKey(e, uri);
-			return uri;
-		}
-		
-		public abstract void WriteStatement(string subj, string pred, string obj);
-		
-		public abstract void WriteStatement(string subj, string pred, Literal literal);
-		
-		public abstract string CreateAnonymousEntity();
-		
+		public abstract void Add(Statement statement);
+
 		public virtual void Close() {
 			if (closed) return;
 			closed = true;

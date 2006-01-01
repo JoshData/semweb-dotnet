@@ -23,6 +23,8 @@ namespace SemWeb {
 		Entity entDAMLEQUIV = "http://www.daml.org/2000/12/daml+oil#equivalentTo";
 		Entity entLOGIMPLIES = "http://www.w3.org/2000/10/swap/log#implies";
 		
+		bool addFailuresAsWarnings = false;
+		
 		public N3Reader(TextReader source) {
 			this.sourcestream = source;
 		}
@@ -445,12 +447,12 @@ namespace SemWeb {
 			if (prefix == "_") {
 				Resource ret = (Resource)context.anonymous[str];
 				if (ret == null) {
-					ret = new BNode();
+					ret = new BNode(str.Substring(colon+1));
 					context.anonymous[str] = ret;
 				}
 				return ret;
 			} else if (prefix == "" && context.namespaces.GetNamespace(prefix) == null) {
-				return GetResource(context, (BaseUri == null ? "" : BaseUri) + str.Substring(colon+1));
+				return GetResource(context, (BaseUri == null ? "#" : BaseUri) + str.Substring(colon+1));
 			} else {
 				string ns = context.namespaces.GetNamespace(prefix);
 				if (ns == null)
@@ -538,7 +540,7 @@ namespace SemWeb {
 				string name = str.Substring(1);
 				Entity var = (Entity)context.variables[name];
 				if (var == null) {
-					var = new BNode();
+					var = new BNode(name);
 					AddVariableName(var, name);
 					context.variables[name] = var;
 				}
@@ -644,7 +646,10 @@ namespace SemWeb {
 			try {
 				store.Add(statement);
 			} catch (Exception e) {
-				OnError("Add failed on statement { " + statement + " }: " + e.Message, position, e);
+				if (!addFailuresAsWarnings)
+					OnError("Add failed on statement { " + statement + " }: " + e.Message, position, e);
+				else
+					OnWarning("Add failed on statement { " + statement + " }: " + e.Message, position, e);
 			}
 		}
 		
@@ -653,6 +658,9 @@ namespace SemWeb {
 		}
 		private void OnError(string message, Location position, Exception cause) {
 			throw new ParserException(message + ", line " + position.Line + " col " + position.Col, cause);
+		}
+		private void OnWarning(string message, Location position, Exception cause) {
+			OnWarning(message + ", line " + position.Line + " col " + position.Col);
 		}
 		
 	
