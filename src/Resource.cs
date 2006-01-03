@@ -146,9 +146,9 @@ namespace SemWeb {
 			object okKey = ((Resource)other).ekKey;
 			object okValue = ((Resource)other).ekValue;
 			if ((okKey != null || otherkeys != null) && (ekKey != null || extraKeys != null)) {
-				for (int vi1 = -1; vi1 < extraKeys.Count; vi1++) {
+				for (int vi1 = -1; vi1 < ((extraKeys == null) ? 0 : extraKeys.Count); vi1++) {
 					ExtraKey v1 = vi1 == -1 ? new ExtraKey(ekKey, ekValue) : (ExtraKey)extraKeys[vi1];
-					for (int vi2 = -1; vi2 < otherkeys.Count; vi2++) {
+					for (int vi2 = -1; vi2 < ((otherkeys == null) ? 0 : otherkeys.Count); vi2++) {
 						ExtraKey v2 = vi2 == -1 ? new ExtraKey(okKey, okValue) : (ExtraKey)otherkeys[vi2];
 						if (v1.Key == v2.Key)
 							return v1.Value.Equals(v2.Value);

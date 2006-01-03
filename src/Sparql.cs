@@ -280,14 +280,15 @@ namespace SemWeb.Query {
 				this.sparql = sparql;
 			}
 		
-			private StatementIterator GetIterator(Statement statement) {
+			private StatementIterator GetIterator(Statement statement, bool defaultGraph) {
 				return GetIterator(statement.Subject == null ? null : new Entity[] { statement.Subject },
 					statement.Predicate == null ? null : new Entity[] { statement.Predicate },
 					statement.Object == null ? null : new Resource[] { statement.Object },
-					statement.Meta == null ? null : new Entity[] { statement.Meta });
+					statement.Meta == null ? null : new Entity[] { statement.Meta },
+					defaultGraph);
 			}
 			
-			private StatementIterator GetIterator(Entity[] subjects, Entity[] predicates, Resource[] objects, Entity[] metas) {
+			private StatementIterator GetIterator(Entity[] subjects, Entity[] predicates, Resource[] objects, Entity[] metas, bool defaultGraph) {
 				if (debug)
 					Console.Error.WriteLine("ASK: " + ToString(subjects) + " " + ToString(predicates) + " " + ToString(objects));
 
@@ -303,7 +304,7 @@ namespace SemWeb.Query {
 				StatementSink sink = results;
 				
 				if (!source.Distinct)
-					sink = new SemWeb.Util.DistinctStatementsSink(results);
+					sink = new SemWeb.Util.DistinctStatementsSink(results, defaultGraph && metas == null);
 
 				source.Select(subjects, predicates, objects, metas, sink);
 				return new StatementIterator(results.ToArray());
@@ -334,11 +335,11 @@ namespace SemWeb.Query {
 		     * that match the remainding parameters will be returned.
      		 */ 
      		public java.util.Iterator getDefaultStatements (org.openrdf.model.Value subject, org.openrdf.model.URI predicate, org.openrdf.model.Value @object) {
-				return GetIterator( new Statement(ToEntity(subject), ToEntity(predicate), ToResource(@object), QueryMeta) );
+				return GetIterator( new Statement(ToEntity(subject), ToEntity(predicate), ToResource(@object), QueryMeta), true );
 			}
 
      		public java.util.Iterator getDefaultStatements (org.openrdf.model.Value[] subject, org.openrdf.model.Value[] predicate, org.openrdf.model.Value[] @object) {
-				return GetIterator( ToEntities(subject), ToEntities(predicate), ToResources(@object), QueryMeta == null ? null : new Entity[] { QueryMeta } );
+				return GetIterator( ToEntities(subject), ToEntities(predicate), ToResources(@object), QueryMeta == null ? null : new Entity[] { QueryMeta }, true );
      		}
 			
 		    /**
@@ -353,11 +354,11 @@ namespace SemWeb.Query {
 		     * @return an Iterator over the matching statements
 		     */
      		public java.util.Iterator getStatements (org.openrdf.model.Value subject, org.openrdf.model.URI predicate, org.openrdf.model.Value @object) {
-				return GetIterator(  new Statement(ToEntity(subject), ToEntity(predicate), ToResource(@object), null) );
+				return GetIterator(  new Statement(ToEntity(subject), ToEntity(predicate), ToResource(@object), null), false );
 			}
 	
      		public java.util.Iterator getStatements (org.openrdf.model.Value[] subject, org.openrdf.model.Value[] predicate, org.openrdf.model.Value[] @object) {
-				return GetIterator(  ToEntities(subject), ToEntities(predicate), ToResources(@object), null );
+				return GetIterator(  ToEntities(subject), ToEntities(predicate), ToResources(@object), null, false );
      		}
      		
 		    /**
@@ -367,11 +368,11 @@ namespace SemWeb.Query {
 		     * that match the remainding parameters will be returned.
 		     */
      		public java.util.Iterator getStatements (org.openrdf.model.Value subject, org.openrdf.model.URI predicate, org.openrdf.model.Value @object, org.openrdf.model.URI graph) {
-				return GetIterator( new Statement(ToEntity(subject), ToEntity(predicate), ToResource(@object), ToEntity(graph)) );
+				return GetIterator( new Statement(ToEntity(subject), ToEntity(predicate), ToResource(@object), ToEntity(graph)), false );
 			}
 			
      		public java.util.Iterator getStatements (org.openrdf.model.Value[] subject, org.openrdf.model.Value[] predicate, org.openrdf.model.Value[] @object, org.openrdf.model.URI[] graph) {
-				return GetIterator( ToEntities(subject), ToEntities(predicate), ToResources(@object), ToEntities(graph) );
+				return GetIterator( ToEntities(subject), ToEntities(predicate), ToResources(@object), ToEntities(graph), false );
      		}
      		
 			public org.openrdf.model.ValueFactory getValueFactory() {
