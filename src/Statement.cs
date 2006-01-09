@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 
 namespace SemWeb {
 	public struct Statement {
@@ -73,6 +74,15 @@ namespace SemWeb {
 			}
 		}
 		
+		public Statement Replace(Hashtable resourceMap) {
+			return new Statement(
+				!resourceMap.ContainsKey(Subject) ? Subject : (Entity)resourceMap[Subject],
+				!resourceMap.ContainsKey(Predicate) ? Predicate : (Entity)resourceMap[Predicate],
+				!resourceMap.ContainsKey(Object) ? Object : (Resource)resourceMap[Object],
+				!resourceMap.ContainsKey(Meta) ? Meta : (Entity)resourceMap[Meta]
+				);
+		}
+
 		public override bool Equals(object other) {
 			return (Statement)other == this;
 		}

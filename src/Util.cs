@@ -26,6 +26,7 @@ namespace SemWeb.Util {
 		}
 		
 		public void AddRange(Resource[] items) {
+			if (items == null) return;
 			foreach (Resource r in items)
 				Add(r);
 		}
@@ -48,6 +49,7 @@ namespace SemWeb.Util {
 		}
 		
 		public void AddRange(ResSet set) {
+			if (set == null) return;
 			foreach (Resource r in set.Items) {
 				Add(r);
 			}
@@ -80,6 +82,18 @@ namespace SemWeb.Util {
 			return ret;
 		}
 		
+		public Entity[] ToEntityArray() {
+			Entity[] ret = new Entity[Count];
+			CopyTo(ret, 0);
+			return ret;
+		}
+		
+		public void RetainAll(ResSet set) {
+			foreach (Resource r in new ArrayList(this))
+				if (!set.Contains(r))
+					Remove(r);
+		}
+
 		/*Hashtable Intersect(Hashtable x, Hashtable y) {
 			Hashtable a, b;
 			if (x.Count < y.Count) { a = x; b = y; }
@@ -95,14 +109,17 @@ namespace SemWeb.Util {
 	public class DistinctStatementsSink : StatementSink {
 		StatementSink sink;
 		Store store;
-		public DistinctStatementsSink(StatementSink sink) {
+		bool resetMeta;
+		public DistinctStatementsSink(StatementSink sink, bool resetMeta) {
 			this.sink = sink;
 			if (sink is Store)
 				store = (Store)sink;
 			else
 				store = new MemoryStore();
+			this.resetMeta = resetMeta;
 		}
 		public bool Add(Statement s) {
+			if (resetMeta) s.Meta = Statement.DefaultMeta;
 			if (store.Contains(s)) return true;
 			if (store != sink) store.Add(s);
 			return sink.Add(s);
@@ -169,9 +186,9 @@ namespace SemWeb.Util {
 		}
 		
 		public void Remove(Statement s) {
-			if (_size == 0) throw new ArgumentException("Element not in array.");
+			if (_size == 0) return;
 			int index = Array.IndexOf(_items, s, 0, _size);
-			if (index < 0) throw new ArgumentException("Element not in array.");
+			if (index < 0) return;
 			RemoveAt(index);
 		}
 
@@ -235,4 +252,77 @@ namespace SemWeb.Util {
 		}
 	}
 
+	internal class MultiMap {
+		Hashtable items = new Hashtable();
+		
+		public MultiMap() {
+		}
+		
+		public void Put(object key, object value) {
+			object entry = items[key];
+			if (entry == null) {
+				items[key] = value;
+			} else if (entry is ArrayList) {
+				((ArrayList)entry).Add(value);
+			} else {
+				ArrayList list = new ArrayList();
+				list.Add(entry);
+				list.Add(value);
+				items[key] = list;
+			}
+		}
+
+		public void Clear() {
+			items.Clear();
+		}
+		
+		public IList Get(object key) {
+			object ret = items[key];
+			if (ret == null) return null;
+			if (ret is ArrayList) return (ArrayList)ret;
+			ArrayList list = new ArrayList();
+			list.Add(ret);
+			return list;
+		}
+		
+		public IEnumerable Keys {
+			get {
+				return items.Keys;
+			}
+		}
+	}
+	
+	internal class Permutation {
+		int[] state;
+		int[] max;
+		public Permutation(int n) : this(n, 2) {
+		}
+		public Permutation(int n, int e) {
+			state = new int[n];
+			max = new int[n];
+			for (int i = 0; i < n; i++)
+				max[i] = e;
+		}
+		public Permutation(int[] choices) {
+			state = new int[choices.Length];
+			max = choices;
+		}
+		public int[] Next() {
+			if (state == null) return null;
+		
+			int[] ret = (int[])state.Clone();
+			
+			state[0]++;
+			for (int i = 0; i < max.Length; i++) { // use max.Length because state becomes null
+				if (state[i] < max[i]) break;
+				state[i] = 0;
+				if (i == state.Length-1) // done the next time around
+					state = null;
+				else // carry
+					state[i+1]++;
+			}
+
+			return ret;
+		}
+	}
 }

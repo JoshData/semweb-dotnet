@@ -552,7 +552,7 @@ namespace SemWeb.Query {
 			
 			public org.openrdf.model.Value getSubject() {
 				if (s.Subject.Uri == null)
-					return new BNodeWrapper(s.Subject);
+					return new BNodeWrapper((BNode)s.Subject);
 				else
 					return new URIWrapper(s.Subject);
 			}
@@ -567,17 +567,18 @@ namespace SemWeb.Query {
 				if (s.Object is Literal)
 					return new LiteralWrapper((Literal)s.Object);
 				else if (s.Object.Uri == null)
-					return new BNodeWrapper((Entity)s.Object);
+					return new BNodeWrapper((BNode)s.Object);
 				else
 					return new URIWrapper((Entity)s.Object);
 			}
 		}
 		
 		class BNodeWrapper : java.lang.Object, org.openrdf.model.BNode {
-			public Entity r;
-			public BNodeWrapper(Entity res) { r = res; }
+			public BNode r;
+			public BNodeWrapper(BNode res) { r = res; }
 			public string getID() { throw new NotSupportedException(); }
 			public override bool equals(object other) {
+				if (!(other is BNodeWrapper)) return false;
 				return r.Equals(((BNodeWrapper)other).r);
 			}
 			public override int hashCode() { return r.GetHashCode(); }
@@ -598,13 +599,13 @@ namespace SemWeb.Query {
 				else
 					return false;
 			}
-			public override int hashCode() { return r.GetHashCode(); }
+			public override int hashCode() { return java.lang.String.instancehelper_hashCode(r.Uri); }
 		}
 	
 		class LiteralWrapper : java.lang.Object, org.openrdf.model.Literal {
 			public Literal r;
 			public LiteralWrapper(Literal res) { r = res; }
-			public org.openrdf.model.URI getDatatype() { return new URIWrapper(r.DataType); }
+			public org.openrdf.model.URI getDatatype() { if (r.DataType == null) return null; return new URIWrapper(r.DataType); }
 			public string getLabel() { return r.Value; }
 			public string getLanguage() { return r.Language; }
 			public override bool equals(object other) {
@@ -614,7 +615,7 @@ namespace SemWeb.Query {
 					return r.Equals(GetLiteral((org.openrdf.model.Literal)other));
 				return false;
 			}
-			public override int hashCode() { return r.GetHashCode(); }
+			public override int hashCode() { return java.lang.String.instancehelper_hashCode(r.Value); }
 			static Literal GetLiteral(org.openrdf.model.Literal literal) {
 				return new Literal(literal.getLabel(), literal.getLanguage(),
 					literal.getDatatype() == null ? null

@@ -63,6 +63,11 @@ namespace SemWeb {
 		Entity rdfType;
 		
 		public static StatementSource CreateForInput(string spec) {
+			if (spec.StartsWith("rdfs+")) {
+				StatementSource s = CreateForInput(spec.Substring(5));
+				if (!(s is SelectableSource)) s = new MemoryStore(s);
+				return new SemWeb.Inference.RDFS(s, (SelectableSource)s);
+			}
 			return (StatementSource)Create(spec, false);
 		}		
 		
@@ -97,13 +102,10 @@ namespace SemWeb {
 				case "turtle":
 					if (spec == "") throw new ArgumentException("Use: format:filename");
 					if (output) {
-						N3Writer ret = new N3Writer(spec);
+						N3Writer ret = new N3Writer(spec); // turtle is default format
 						switch (type) {
 							case "nt": case "ntriples":
 								ret.Format = N3Writer.Formats.NTriples;
-								break;
-							case "turtle":
-								ret.Format = N3Writer.Formats.Turtle;
 								break;
 						}
 						return ret;

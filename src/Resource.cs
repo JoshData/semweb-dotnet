@@ -57,6 +57,8 @@ namespace SemWeb {
 				ekValue = value;
 				return;
 			}
+			
+			if (this is BNode) throw new InvalidOperationException("Only one resource key can be set for a BNode.");
 		
 			if (extraKeys == null) extraKeys = new ArrayList();
 			
@@ -73,7 +75,7 @@ namespace SemWeb {
 		private string uri;
 		
 		public Entity(string uri) {
-			if (uri == null) throw new ArgumentNullException("uri");
+			if (uri == null) throw new ArgumentNullException("To construct entities with no URI, use the BNode class.");
 			this.uri = uri;
 		}
 		
@@ -90,7 +92,7 @@ namespace SemWeb {
 		public static implicit operator Entity(string uri) { return new Entity(uri); }
 		
 		public override int GetHashCode() {
-			if (uri == null) return base.GetHashCode();
+			if (uri == null) return base.GetHashCode(); // this is called from BNode.GetHashCode().
 			return uri.GetHashCode();
 		}
 			
@@ -126,11 +128,8 @@ namespace SemWeb {
 		public string LocalName { get { return localname; } }
 
 		public override int GetHashCode() {
-			if (ekKey != null) return unchecked(ekKey.GetHashCode() + ekValue.GetHashCode());
-			if (extraKeys != null && extraKeys.Count >= 1) {
-				ExtraKey v = (ExtraKey)extraKeys[0];
-				return unchecked(v.Key.GetHashCode() + v.Value.GetHashCode());
-			}
+			if (ekKey != null)
+				return ekKey.GetHashCode() ^ ekValue.GetHashCode();
 			
 			// If there's no ExtraKeys info, then this
 			// object is only equal to itself.  It's then safe
@@ -142,21 +141,12 @@ namespace SemWeb {
 			if (object.ReferenceEquals(this, other)) return true;
 			if (!(other is BNode)) return false;
 			
-			ArrayList otherkeys = ((Resource)other).extraKeys;
 			object okKey = ((Resource)other).ekKey;
 			object okValue = ((Resource)other).ekValue;
-			if ((okKey != null || otherkeys != null) && (ekKey != null || extraKeys != null)) {
-				for (int vi1 = -1; vi1 < ((extraKeys == null) ? 0 : extraKeys.Count); vi1++) {
-					ExtraKey v1 = vi1 == -1 ? new ExtraKey(ekKey, ekValue) : (ExtraKey)extraKeys[vi1];
-					for (int vi2 = -1; vi2 < ((otherkeys == null) ? 0 : otherkeys.Count); vi2++) {
-						ExtraKey v2 = vi2 == -1 ? new ExtraKey(okKey, okValue) : (ExtraKey)otherkeys[vi2];
-						if (v1.Key == v2.Key)
-							return v1.Value.Equals(v2.Value);
-					}
-				}
-			}
 			
-			return false;
+			return (ekKey != null && okKey != null)
+				&& (ekKey == okKey)
+				&& ekValue.Equals(okValue);
 		}
 	}
 

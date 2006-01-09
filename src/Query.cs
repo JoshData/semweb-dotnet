@@ -687,8 +687,7 @@ namespace SemWeb.Query {
 				foreach (QueryStatement qs in group) {
 					Statement s = GetStatement(qs, bindings);
 					if (s == StatementFailed) return false;
-					if (s.Meta == null) // make sure it has DefaultMeta
-						s = new Statement(s.Subject, s.Predicate, s.Object);
+					s.Meta = QueryMeta;
 					Debug("  " + s);
 					findstatements.Add(s);
 				}

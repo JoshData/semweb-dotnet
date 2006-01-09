@@ -130,29 +130,20 @@ namespace SemWeb.Remote {
 			if (r == null || r.Length <= 1) return "";
 			StringBuilder ret = new StringBuilder();
 			ret.Append("FILTER(");
+			bool first = true;
 			for (int i = 0; i < r.Length; i++) {
-				if (i != 0) ret.Append(" || ");
 				if (r[i].Uri == null) continue;
-				ret.Append("(str(?");
+				if (!first) ret.Append(" || "); first = false;
+				ret.Append('?');
 				ret.Append(v);
-				ret.Append(")=\"");
+				ret.Append("=<");
 				if (r[i].Uri != null)
-					ret.Append(Escape(r[i].Uri));
-				ret.Append("\")");
+					ret.Append(r[i].Uri);
+				ret.Append('>');
 			}
 			ret.Append(").");
+			if (first) return "";
 			return ret.ToString();
-		}
-		
-		string Escape(string s) {
-			if (s.IndexOf('\\') == -1 && s.IndexOf('"') == -1) return s;
-			StringBuilder r = new StringBuilder();
-			foreach (char c in s) {
-				if (c == '\\' || c == '"')
-					r.Append('\\');
-				r.Append(c);
-			}
-			return r.ToString();
 		}
 		
 		string S(Resource r, string v) {
@@ -194,9 +185,28 @@ namespace SemWeb.Remote {
 		}
 		
 		XmlDocument Load(string query) {
-			string qurl = url + "?query=" + System.Web.HttpUtility.UrlEncode(query);
+			string qstr = "query=" + System.Web.HttpUtility.UrlEncode(query);
 			
-			System.Net.WebRequest rq = System.Net.WebRequest.Create(qurl);
+			string method = "POST";
+			
+			System.Net.WebRequest rq;
+			
+			if (method == "GET") {
+				string qurl = url + "?" + qstr;
+				rq = System.Net.WebRequest.Create(qurl);
+			} else {
+				ASCIIEncoding encoding = new ASCIIEncoding(); // ?
+				byte[] data = encoding.GetBytes(qstr);
+
+				rq = System.Net.WebRequest.Create(url);
+				rq.Method = "POST";
+				rq.ContentType="application/x-www-form-urlencoded";
+				rq.ContentLength = data.Length;
+				
+				using (Stream stream = rq.GetRequestStream())
+					stream.Write(data, 0, data.Length);
+			}
+			
 			System.Net.WebResponse resp = rq.GetResponse();
 			
 			string mimetype = resp.ContentType;

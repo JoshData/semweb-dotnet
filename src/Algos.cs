@@ -104,23 +104,31 @@ namespace SemWeb.Algos {
 		// look at their subgraphs.
 	
 		public static void MakeLean(Store store) {
-			MakeLean(store, null);
+			MakeLean(store, null, null);
+		}
+
+		public static void MakeLean(Store store, SelectableSource relativeTo) {
+			MakeLean(store, relativeTo, null);
 		}
 	
-		public static void MakeLean(Store store, StatementSink removed) {
-			MSG.Graph[] msgs = MSG.FindMSGs(store);
-			
-			MemoryStore painted = new MemoryStore();
-			MSG.PaintStatements(msgs, store, painted);
+		public static void MakeLean(Store store, SelectableSource relativeTo, StatementSink removed) {
+			// Break the data source into MSGs.  Make each MSG
+			// lean first (in isolation).  Then check each lean MSG
+			// to see if it's already entailed by the whole store,
+			// or by relativeTo if it's provided (not null).
 		
+			MSG.Graph[] msgs = MSG.FindMSGs(store, true);
+			
 			foreach (MSG.Graph msgg in msgs) {
 				// Load the MSG into memory.
-				MemoryStore msg = new MemoryStore(painted.Select(new Statement(null, null, null, msgg.Meta)));
-				msg.Replace(msgg.Meta, Statement.DefaultMeta);
+				MemoryStore msg = new MemoryStore(msgg); // unnecessary duplication...
 
-				// Make this MSG lean.
+				// Make this MSG lean.  The "right" thing to do is
+				// to consider all of the 'connected' subgraphs of MSG
+				// against the whole store, rather than the MSG in
+				// isolation.  But that gets much too expensive.
 				MemoryStore msgremoved = new MemoryStore();
-				MakeLeanMSG(store, msg, msgg.GetBNodes(), msgremoved);
+				MakeLeanMSG(msg, msgg.GetBNodes(), msgremoved);
 				
 				// Whatever was removed from msg, remove it from the main graph.
 				store.RemoveAll(msgremoved.ToArray());
@@ -143,218 +151,334 @@ namespace SemWeb.Algos {
 					// This MSG can be removed.
 					store.RemoveAll(msg.ToArray());
 					if (removed != null) msg.Select(removed);
+				} else if (relativeTo != null) {
+					match.Run(relativeTo, sink);
+					if (sink.Bindings.Count > 0) {
+						// This MSG can be removed.
+						store.RemoveAll(msg.ToArray());
+						if (removed != null) msg.Select(removed);
+					}
 				}
 			}
 		}
 		
-		private static void MakeLeanMSG(Store graph, Store msg, ICollection bnodecollection, StatementSink removed) {
-			// For each of the 'connected' subgraphs of msg,
-			// check if the store minus that subgraph
-			// entails the subgraph.
+		private static void MakeLeanMSG(Store msg, ICollection bnodecollection, StatementSink removed) {
+			// To make any graph lean, we try to eliminate duplicate
+			// paths through the graph, where duplicate means we
+			// take some subset of the bnodes and call them variables,
+			// and we relabel them as other bnodes from the remaining
+			// set (the fixed nodes).  But there are 2^N subsets of bnodes
+			// we could choose as variables (N=number of bnodes), so we can't
+			// reasonably iterate through them.
+			
+			// I'll make a simplifying assumption that bnode predicates
+			// in the graph will be considered always fixed.
+			// This lets us view the graph as actually a graph (with
+			// nodes and edges), and then we can make the observation that
+			// if variable node V is part of a subgraph that can be removed,
+			// if V directly connects to fixed node F via an edge labeled P,
+			// then F must connect to a fixed node G via an edge also
+			// labeled P.  That is, we can start our search looking for
+			// nodes that project two edges with the same label.
+			
+			// Also, we only want to consider contiguous 'paths' -- subsets
+			// of the bnodes connected only through those nodes --
+			// to see if there is another path in the MSG if we
+			// map bnodes in the first path to nodes in the MSG.
+			
+			// So the strategy is to start at each node in the graph
+			// and consider it fixed.  If it has two outgoing
+			// edges with the same property and one terminates on a
+			// bnode, this is the beginning of a possible pair
+			// of redundant paths (the one with the bnode being
+			// eliminable).
+			
+			// However, the path with the bnode
+			// has to be incremented with all of that bnode's
+			// outgoing edges.  The other path has to be
+			// incremented in parallel, following the same predicates
+			// to other nodes.  If that can't be done, then these
+			// paths are not duplicates.  If the parallel predicates
+			// terminate on the very same nodes, the bnode and its edges can
+			// be removed.
+			
+			// From there, each of the nodes the bnode edges terminate on,
+			// besides the initial node, can be considered fixed or
+			// a variable.  If it's a variable it might be able to have
+			// one of many possible values, but then the path has to
+			// be expanded to include all of the outgoing edges for this
+			// variable.
+		
+			// Ok, here we go.
 			
 			// If there is only one bnode in the MSG, then
-			// there are no subgraphs to check.
+			// there are no subgraphs to check.  That's nice.
 			if (bnodecollection.Count == 1) return;
 			
-			// Get an array of bnodes in the msg
-			ArrayList bnodes = new ArrayList();
-			Hashtable bnodeindex = new Hashtable();
-			foreach (Entity e in bnodecollection) {
-				bnodeindex[e] = bnodes.Count;
-				bnodes.Add(e);
-			}
-				
-			// Build a connectivity map of the bnodes
-			bool[,] connected;
-			Connectivity.Build(msg, out connected, bnodeindex);
+			// Remember which bnodes have been removed in
+			// due course.
+			ResSet nodesremoved = new ResSet();
 			
-			// Find the mean connectivity of each node.
-			int meancon = 0;
-			for (int i = 0; i < bnodes.Count; i++)
-				for (int j = 0; j < bnodes.Count; j++)
-					if (connected[i,j])
-						meancon++;
-			meancon /= bnodes.Count;
+			// Remember which nodes are predicates and can't
+			// be considered variable.
+			ResSet predicates = new ResSet();
+			foreach (Statement s in msg.Select(Statement.All))
+				predicates.Add(s.Predicate);
 			
-			// If there's high connectivity, then (I think)
-			// we want to just enumerate the 2^N possible
-			// variable choices.  Otherwise, we expect there
-			// to be far fewer than 2^N contiguous subgraphs,
-			// so we can do a faster but more memory-intensive
-			// enumeration.  What should the mean connectivity
-			// threshold be?
-			Permuter permuter;
-			if (meancon < 5 && bnodes.Count > 5) {
-				// We'll iterate using a memory-hogging algorithm
-				// that uses the connectivity.
-				permuter = new SearchingPermuter(connected);
-			} else {
-				// We'll iterate over the 2^N choices of variables.
-				permuter = new ExponentialPermuter(bnodes.Count);
-			}
-			
-			Console.WriteLine("\nNew MSG: {0}\n", permuter.GetType().ToString());
-			
-			// Set up an array for the permutations.
-			// It would be better to organize this to
-			// minimize the amount of change in the
-			// variables set and the subgraph store
-			// in each iteration.
-			bool[] permute;
-			int considered = 0;
-			while ((permute = permuter.Next()) != null) {
-				considered++;
-				Console.WriteLine("  considered {0} subgraphs for a {1}-node MSG (2^N={2})", considered, bnodes.Count, Math.Pow(2, bnodes.Count));
-				
-				// Get all of the statements that mention
-				// the bnodes marked as 'true' in this
-				// permutation.
-				
-				ResSet variables = new ResSet();
-				for (int i = 0; i < bnodes.Count; i++)
-					if (permute[i])
-						variables.Add((Entity)bnodes[i]);
-			
-				MemoryStore subgraph = new MemoryStore();
-				msg.Select(new Sink(variables, subgraph));
-				if (subgraph.StatementCount == 0) continue; // things may have been removed, meta entities, etc.
-				//subgraph.Write(Console.Out);
-				
-				// Note that like below, 'msg' should really be 'graph'.
-				if (subgraph.StatementCount > msg.StatementCount/2) continue;
-
-				// Check if subgraph is entailed by (store minus subgraph)
-				GraphMatch match = new GraphMatch(subgraph);
-				
-				// Bnodes that aren't variables in this subgraph
-				// (false in this permutation) must be marked
-				// as non-variables.
-				for (int i = 0; i < bnodes.Count; i++)
-					if (!permute[i])
-						match.SetNonVariable((Entity)bnodes[i]);
-
-				QueryResultBufferSink qsink = new QueryResultBufferSink();
-				
-				// The next line is wrong.  'msg' should be 'graph'.
-				// But there's a bug that makes that not work.  Also,
-				// since msg is in memory already, maybe we can forgo
-				// making the graph completely lean and just see if
-				// msg, rather than the whole graph, entails this subgraph.
-				match.Run(new SubtractionSource(msg, subgraph), qsink);
-				
-				if (qsink.Bindings.Count > 0) {
-					// This subgraph can be removed.
-					msg.RemoveAll(subgraph.ToArray());
-					
-					// Track which statements were removed.
-					if (removed != null) subgraph.Select(removed);
-				}
-				
-			}
-			
-			Console.WriteLine("MSG: Considered {0} subgraphs for a {1}-node MSG (2^N={2})", considered, bnodes.Count, Math.Pow(2, bnodes.Count));
-		}
-		
-		private abstract class Permuter {
-			public abstract bool[] Next();
-		}
-		
-		private class SearchingPermuter : Permuter {
-			// This is based on something I read.
-			// We'll maintain a queue of connected
-			// subgraphs to process.  The queue will
-			// start with a one-node subgraph for each
-			// bnode.  Then each time we process a
-			// subgraph, we'll extend the graph by one
-			// node every way we can and add all of those
-			// new subgraphs into the queue -- unless we've
-			// already processed the subgraph.  
-		
-			int n;
-			bool[,] conn;
-			Queue queue = new Queue();
-			Hashtable processed = new Hashtable();
-			
-			public SearchingPermuter(bool[,] conn) {
-				this.conn = conn;
-				n = conn.GetLength(0);
-				for (int i = 0; i < n; i++)
-					QueueSubgraph(null, i);
-			}
-			
-			void QueueSubgraph(Subgraph a, int b) {
-				Subgraph s = new Subgraph();
-				s.nodes = new bool[n];
-				s.touching = new bool[n];
-				if (a != null) {
-					a.nodes.CopyTo(s.nodes, 0);
-					a.touching.CopyTo(s.touching, 0);
-				}
-				s.nodes[b] = true;
-
-				s.sum = unchecked((a != null ? a.sum : 0) + b);
-				if (processed.ContainsKey(s)) return;
-				
-				for (int i = 0; i < n; i++)
-					if (conn[b,i])
-						s.touching[i] = true;
-						
-				processed[s] = processed;
-				queue.Enqueue(s);
-			}
-			
-			public override bool[] Next() {
-				if (queue.Count == 0) return null;
-				Subgraph s = (Subgraph)queue.Dequeue();
-				
-				// Create a new s for every node touching
-				// s but not in s.
-				for (int i = 0; i < n; i++)
-					if (!s.nodes[i] && s.touching[i])
-						QueueSubgraph(s, i);
-				
-				return s.nodes;
-			}
-			
-			class Subgraph {
-				public bool[] nodes;
-				public bool[] touching;
-				public int sum;
-				
-				public override int GetHashCode() { return sum; }
-				public override bool Equals(object o) {
-					Subgraph g = (Subgraph)o;
-					for (int i = 0; i < nodes.Length; i++)
-						if (nodes[i] != g.nodes[i])
-							return false;
-					return true;
-				}
+			// Start with each bnode to consider fixed.
+			foreach (BNode b in bnodecollection) {
+				if (nodesremoved.Contains(b)) continue;
+				MakeLeanMSG2(msg, predicates, removed, nodesremoved, b);
 			}
 		}
 		
-		private class ExponentialPermuter : Permuter {
-			bool[] state;
-			public ExponentialPermuter(int bnodecount) {
-				state = new bool[bnodecount];
-				state[0] = true; // don't need to do the first
-								 // permutation with no variables
-			}
-			public override bool[] Next() {
-				bool[] ret = (bool[])state.Clone();
+		private static void MakeLeanMSG2(Store msg, ResSet predicates, StatementSink removed,
+			ResSet nodesremoved, BNode startingnode) {
+			
+			// Find every pair of two distinct outgoing edges from startingnode
+			// with the same predicate, targeting entities only.
+			
+			MultiMap edges = new MultiMap();
+			
+			foreach (Statement s in msg.Select(new Statement(startingnode, null, null)))
+				if (s.Object is Entity)
+					edges.Put(new Edge(true, startingnode, s.Predicate, null), s.Object);
+			foreach (Statement s in msg.Select(new Statement(null, null, startingnode)))
+				edges.Put(new Edge(false, startingnode, s.Predicate, null), s.Subject);
+			
+			foreach (Edge e in edges.Keys) {
+				// Make sure we have a distinct set of targets.
+				ResSet targets_set = new ResSet();
+				foreach (Entity r in edges.Get(e))
+					targets_set.Add(r);
+				if (targets_set.Count == 1) continue;
 				
-				state[0] = !state[0];
-				for (int i = 0; i < state.Length; i++) {
-					if (state[i] == true) break;
-					if (i == state.Length-1) {
-						// We don't need to do the last
-						// permutation with all true.
-						return null;
+				IList targets = targets_set.ToEntityArray();
+				
+				// Take every pair of targets, provided
+				// one is a bnode that can be a variable.
+				for (int i = 0; i < targets.Count; i++) {
+					if (!(targets[i] is BNode) || predicates.Contains((BNode)targets[i])) continue;
+					if (nodesremoved.Contains((BNode)targets[i])) continue;
+					for (int j = 0; j < targets.Count; j++) {
+						if (i == j) continue;
+						// Create a new synchronous-path object.
+						SyncPath p = new SyncPath();
+						p.FixedNodes.Add((Resource)targets[j]);
+						p.FrontierVariables.Add((Resource)targets[i]);
+						p.Mapping[targets[i]] = targets[j];
+						p.Path[new Edge(e.Direction, e.Start, e.Predicate, (BNode)targets[i])] = p.Path;
+						if (MakeLeanMSG3(msg, predicates, removed, nodesremoved, p))
+							break; // the target was removed
 					}
-					state[i+1] = !state[i+1];
+				}
+			}
+		}
+		
+		private static bool MakeLeanMSG3(Store msg, ResSet predicates, StatementSink removed,
+			ResSet nodesremoved, SyncPath path) {
+			// The variable path has to be expanded by including the statements
+			// connected to the variables on the frontier.  Statements
+			// mentioning a variable node have already been considered.
+			// The target of each such statement can be considered fixed
+			// or variable. If a variable is considered fixed, the edge
+			// must exist in the MSG substituting the variables for their
+			// values.  If it's variable, it has to have at least one
+			// match in the MSG but not as any of the variable nodes.
+			// If all targets are considered fixed (and have matches),
+			// then the variables so far (and their edges) can all be
+			// removed and no more processing needs to be done.
+			// There are (2^N)-1 other considerations.  For each of those,
+			// the targets considered variables all become the new
+			// frontier, and this is repeated. 
+			
+			// First, get a list of edges from the frontier that we
+			// haven't considered yet.
+			
+			ArrayList alledges = new ArrayList();
+			foreach (BNode b in path.FrontierVariables) {
+				// Make sure all edges are kept because even the ones
+				// to literals have to be removed when duplication is found.
+				foreach (Statement s in msg.Select(new Statement(b, null, null)))
+					alledges.Add(new Edge(true, b, s.Predicate, s.Object));
+				foreach (Statement s in msg.Select(new Statement(null, null, b)))
+					alledges.Add(new Edge(false, b, s.Predicate, s.Subject));
+			}
+			
+			ArrayList newedges = new ArrayList();
+			ResSet alltargets = new ResSet();
+			ResSet fixabletargetsset = new ResSet(); // can be fixed
+			ResSet variabletargetsset = new ResSet(); // must be variable
+			foreach (Edge e in alledges) {
+				if (path.Path.ContainsKey(e)) continue;
+				path.Path[e] = e;
+				
+				// This checks if we can keep the target of this edge
+				// fixed, given the variable mappings we have so far.
+				bool isTargetFixable =
+					msg.Contains(e.AsStatement().Replace(path.Mapping));
+
+				// If the target of e is any of the following, we
+				// can check immediately if the edge is supported
+				// by the MSG under the variable mapping we have so far:
+				//    a named node, literal, fixed node, or predicate
+				//    a variable we've seen already
+				// If it's not supported, this path fails.  If it is
+				// supported, we're done with this edge.
+				if (!(e.End is BNode)
+					|| path.FixedNodes.Contains(e.End)
+					|| predicates.Contains(e.End)
+					|| path.VariableNodes.Contains(e.End)) {
+					if (!isTargetFixable) return false;
+					continue; // this edge is supported, so we can continue
+				}
+				
+				// The target of e is a new BNode.
+				// If this target is not fixable via this edge, it's
+				// not fixable at all.
+				
+				if (!isTargetFixable) {
+					fixabletargetsset.Remove(e.End);
+					variabletargetsset.Add(e.End);
+				}
+				
+				if (!alltargets.Contains(e.End)) {
+					alltargets.Add(e.End);
+					fixabletargetsset.Add(e.End);
+				}
+				
+				newedges.Add(e);
+			}
+			
+			// If all of the targets were fixable (trivially true also
+			// if there simple were no new edges/targets), then we've reached
+			// the end of this path.  We can immediately remove
+			// the edges we've seen so far, under the variable mapping
+			// we've chosen.
+			if (variabletargetsset.Count == 0) {
+				foreach (Edge e in path.Path.Keys) {
+					Statement s = e.AsStatement();
+					msg.Remove(s);
+					if (removed != null) removed.Add(s);
+				}
+				foreach (Entity e in path.Mapping.Keys)
+					nodesremoved.Add(e);
+				return true;
+			}
+			
+			// At this point, at least one target must be a variable
+			// and we'll have to expand the path in that direction.
+			// We might want to permute through the ways we can
+			// take fixable nodes as either fixed or variable, but
+			// we'll be greedy and assume everything fixable is
+			// fixed and everything else is a variable.
+			
+			path.FixedNodes.AddRange(fixabletargetsset);
+			path.VariableNodes.AddRange(variabletargetsset);
+
+			// But we need to look at all the ways each variable target
+			// can be mapped to a new value, which means intersecting
+			// the possible matches for each relevant edge.
+			Entity[] variables = variabletargetsset.ToEntityArray();
+			ResSet[] values = new ResSet[variables.Length];
+			Entity[][] values_array = new Entity[variables.Length][];
+			int[] choices = new int[variables.Length];
+			for (int i = 0; i < variables.Length; i++) {
+				foreach (Edge e in newedges) {
+					if (e.End != variables[i]) continue;
+					
+					// Get the possible values this edge allows
+					Resource[] vr;
+					if (e.Direction)
+						vr = msg.SelectObjects((Entity)path.Mapping[e.Start], e.Predicate);
+					else
+						vr = msg.SelectSubjects(e.Predicate, (Entity)path.Mapping[e.Start]);
+					
+					// Filter out literals and any variables
+					// on the path!  The two paths can't intersect
+					// except at fixed nodes.
+					ResSet v = new ResSet();
+					foreach (Resource r in vr) {
+						if (r is Literal) continue;
+						if (path.Mapping.ContainsKey(r)) continue;
+						v.Add(r);
+					}
+					
+					// Intersect these with the values we have already.
+					if (values[i] == null)
+						values[i] = v;
+					else
+						values[i].RetainAll(v);
+						
+					// If no values are available for this variable,
+					// we're totally done.
+					if (values[i].Count == 0) return false;
+				}
+				
+				choices[i] = values[i].Count;
+				values_array[i] = values[i].ToEntityArray();
+			}
+			
+			// Now we have to permute through the choice of values.
+			// Make an array of the number of choices for each variable.
+			Permutation p = new Permutation(choices);
+			int[] pstate;
+			while ((pstate = p.Next()) != null) {
+				SyncPath newpath = new SyncPath();
+				newpath.FixedNodes.AddRange(path.FixedNodes);
+				newpath.VariableNodes.AddRange(path.VariableNodes);
+				newpath.Mapping = (Hashtable)path.Mapping.Clone();
+				newpath.Path = (Hashtable)path.Path.Clone();
+				
+				newpath.FrontierVariables = variabletargetsset;
+				
+				for (int i = 0; i < variables.Length; i++) {
+					Entity value = values_array[i][pstate[i]];
+					newpath.Mapping[variables[i]] = value;
+					newpath.FixedNodes.Add(value);
 				}
 
-				return ret;
+				if (MakeLeanMSG3(msg, predicates, removed,
+					nodesremoved, newpath)) return true;
 			}
+			
+			return false;
+		}
+		
+		private class Edge {
+			bool direction;
+			Entity start, predicate;
+			Resource end;
+			public Edge(bool direction, Entity start, Entity predicate, Resource end) {
+				this.direction = direction;
+				this.start = start;
+				this.predicate = predicate;
+				this.end = end;
+			}
+			public bool Direction { get { return direction; } }
+			public Entity Start { get { return start; } }
+			public Entity Predicate { get { return predicate; } }
+			public Resource End { get { return end; } }
+			public override int GetHashCode() { return predicate.GetHashCode(); }
+			public override bool Equals(object other) {
+				Edge e = (Edge)other;
+				return Direction == e.Direction
+					&& Start == e.Start
+					&& Predicate == e.Predicate
+					&& End == e.End;
+			}
+			public Statement AsStatement() {
+				if (Direction) return new Statement(Start, Predicate, End);
+				else return new Statement((Entity)End, Predicate, Start);
+			}
+		}
+		
+		private class SyncPath {
+			public ResSet FixedNodes = new ResSet();
+			public ResSet VariableNodes = new ResSet();
+			public ResSet FrontierVariables = new ResSet();
+			public Hashtable Mapping = new Hashtable();
+			public Hashtable Path = new Hashtable();
 		}
 
 		private class Sink : StatementSink {
@@ -428,26 +552,26 @@ namespace SemWeb.Algos {
 		}
 		
 		// This method finds all minimal self-contained graphs
-		// by painting nodes colors.  (The colors happen to be
-		// objects.)
-		public static Graph[] FindMSGs(SelectableSource source) {
-			FindMSGsSink sink = new FindMSGsSink();
+		// by painting nodes colors (the colors happen to be
+		// objects) in one pass over the statements and then doing
+		// a second pass to put each statement mentioning a bnode
+		// into the appropriate graph structure.
+		public static Graph[] FindMSGs(SelectableSource source, bool loadIntoMemory) {
+			FindMSGsSink sink = new FindMSGsSink(source, loadIntoMemory);
 			source.Select(Statement.All, sink);
-			ArrayList graphs = new ArrayList();
-			foreach (ArrayList a in sink.colors.Keys)
-				graphs.Add(new Graph(source, a));
+			ArrayList graphs = new ArrayList(sink.colors.Keys);
 			return (Graph[])graphs.ToArray(typeof(Graph));
 		}
 		
 		public class Graph : StatementSource {
 			SelectableSource source;
-			ResSet entities = new ResSet();
-			Entity meta = new BNode();
-			internal Graph(SelectableSource source, ArrayList entities) {
+			internal ResSet entities = new ResSet();
+			internal MemoryStore statements;
+
+			internal Graph(SelectableSource source)  {
 				this.source = source;
-				foreach (Entity e in entities)
-					this.entities.Add(e);
 			}
+			
 			public bool Distinct { get { return source.Distinct; } }
 			public bool Contains(Entity e) {
 				return entities.Contains(e);
@@ -456,21 +580,12 @@ namespace SemWeb.Algos {
 				return entities.Items;
 			}
 			public void Select(StatementSink s) {
-				/*StatementList templates = new StatementList();
-				foreach (Entity e in GetBNodes()) {
-					templates.Add(new Statement(e, null, null, null));
-					templates.Add(new Statement(null, e, null, null));
-					templates.Add(new Statement(null, null, e, null));
-				}
-			
-				MemoryStore m = new MemoryStore();
-				m.checkForDuplicates = true;
-				source.Select(templates, m);
-				m.Select(s);*/
-			
-				source.Select(Statement.All, new Sink(this, s));
+				if (statements == null)
+					source.Select(Statement.All, new Sink(this, s));
+				else
+					statements.Select(s);
 			}
-			public Entity Meta { get { return meta; } }
+
 			private class Sink : StatementSink {
 				Graph g;
 				StatementSink s;
@@ -486,52 +601,33 @@ namespace SemWeb.Algos {
 					return true;
 				}
 			}
-		}
-		
-		public static void PaintStatements(Graph[] msgs, StatementSource source, StatementSink sink) {
-			Hashtable ents = new Hashtable();
-			foreach (Graph g in msgs) {
-				foreach (Entity e in g.GetBNodes()) {
-					ents[e] = g.Meta;
-				}
-			}
-			source.Select(new PaintMSGsSink(ents, sink));
-		}
-		
-		class PaintMSGsSink : StatementSink {
-			Hashtable ents = new Hashtable();
-			StatementSink sink;
-			public PaintMSGsSink(Hashtable ents, StatementSink sink) {
-				this.ents = ents;
-				this.sink = sink;
-			}
-			public bool Add(Statement s) {
-				if (ents.ContainsKey(s.Subject)) s.Meta = (Entity)ents[s.Subject];
-				else if (ents.ContainsKey(s.Predicate)) s.Meta = (Entity)ents[s.Predicate];
-				else if (ents.ContainsKey(s.Object)) s.Meta = (Entity)ents[s.Object];
-				else return true;
-				return sink.Add(s);
+			public static void LoadGraphs(Graph[] graphs) {
 			}
 		}
 		
 		class FindMSGsSink : StatementSink {
+			SelectableSource source;
+			bool loadin;
 			Hashtable bnodecolors = new Hashtable();
 			public Hashtable colors = new Hashtable();
+			public FindMSGsSink(SelectableSource source, bool loadIntoMem) { this.source = source; loadin = loadIntoMem; }
 			public bool Add(Statement s) {
 				// Get the color of any painted entity in the statement.
 				int numcon = 0;
-				ArrayList color = null;
+				Graph color = null;
 				if (s.Subject.Uri == null) { Go1(s.Subject, ref color); numcon++; }
 				if (s.Predicate.Uri == null) { Go1(s.Predicate, ref color); numcon++; }
 				if (s.Object.Uri == null && s.Object is Entity) { Go1((Entity)s.Object, ref color); numcon++; }
 				
-				// If there isn't more than one blank node in the statement.
-				if (numcon < 2)
+				// If there isn't a blank node here, nothing to do.
+				if (numcon == 0)
 					return true;
 				
 				// No nodes were colored yet, so pick a new color.
 				if (color == null) {
-					color = new ArrayList();
+					color = new Graph(source);
+					if (loadin)
+						color.statements = new MemoryStore();
 					colors[color] = color;
 				}
 				
@@ -540,27 +636,36 @@ namespace SemWeb.Algos {
 				if (s.Predicate.Uri == null) Go2(s.Predicate, ref color);
 				if (s.Object.Uri == null && s.Object is Entity) Go2((Entity)s.Object, ref color);
 				
+				// And put this statement into that color
+				if (loadin)
+					color.statements.Add(s);
+				
 				return true;
 			}
-			void Go1(Entity e, ref ArrayList color) {
+			void Go1(Entity e, ref Graph color) {
 				if (color == null && bnodecolors.ContainsKey(e)) {
-					color = (ArrayList)bnodecolors[e];
+					color = (Graph)bnodecolors[e];
 				}
 			}
-			void Go2(Entity e, ref ArrayList color) {
+			void Go2(Entity e, ref Graph color) {
 				if (bnodecolors.ContainsKey(e)) {
-					ArrayList curcolor = (ArrayList)bnodecolors[e];
+					Graph curcolor = (Graph)bnodecolors[e];
 					if (curcolor != color) {
 						// Everyone that has the color curcolor
 						// has to switch to the color color.
-						foreach (Entity e2 in curcolor)
+						foreach (Entity e2 in curcolor.entities)
 							bnodecolors[e2] = color;
-						color.AddRange(curcolor);
+
+						color.entities.AddRange(curcolor.entities);
+						if (loadin)
+							foreach (Statement s in curcolor.statements)
+								color.statements.Add(s);
+								
 						colors.Remove(curcolor);
 					}
 				} else {
 					bnodecolors[e] = color;
-					color.Add(e);
+					color.entities.Add(e);
 				}
 			}
 		}
@@ -593,4 +698,82 @@ namespace SemWeb.Algos {
 		}
 	}
 
+	// This class uses a connectivity matrix to iterate
+	// through the connected subsets of the nodes, that is,
+	// subsets of the nodes that are connected by traveling
+	// just through those nodes.  The Next() method returns
+	// a bool[] indicating the nodes in the subgraph.
+	public class SubgraphIterator {
+		// This is based on something I read.
+		// We'll maintain a queue of connected
+		// subgraphs to process.  The queue will
+		// start with a one-node subgraph for each
+		// bnode.  Then each time we process a
+		// subgraph, we'll extend the graph by one
+		// node every way we can and add all of those
+		// new subgraphs into the queue -- unless we've
+		// already processed the subgraph.  
+	
+		int n;
+		bool[,] conn;
+		Queue queue = new Queue();
+		Hashtable processed = new Hashtable();
+		
+		public SubgraphIterator(bool[,] connectivity) {
+			this.conn = connectivity;
+			n = conn.GetLength(0);
+			for (int i = 0; i < n; i++)
+				QueueSubgraph(null, i);
+		}
+		
+		void QueueSubgraph(Subgraph a, int b) {
+			Subgraph s = new Subgraph();
+			s.nodes = new bool[n];
+			s.touching = new bool[n];
+			if (a != null) {
+				a.nodes.CopyTo(s.nodes, 0);
+				a.touching.CopyTo(s.touching, 0);
+			}
+			s.nodes[b] = true;
+
+			s.sum = unchecked((a != null ? a.sum : 0) + b);
+			if (processed.ContainsKey(s)) return;
+			
+			for (int i = 0; i < n; i++)
+				if (conn[b,i])
+					s.touching[i] = true;
+					
+			processed[s] = processed;
+			queue.Enqueue(s);
+		}
+		
+		public bool[] Next() {
+			if (queue.Count == 0) return null;
+			Subgraph s = (Subgraph)queue.Dequeue();
+			
+			// Create a new s for every node touching
+			// s but not in s.
+			for (int i = 0; i < n; i++)
+				if (!s.nodes[i] && s.touching[i])
+					QueueSubgraph(s, i);
+			
+			return s.nodes;
+		}
+		
+		class Subgraph {
+			public bool[] nodes;
+			public bool[] touching;
+			public int sum;
+			
+			public override int GetHashCode() { return sum; }
+			public override bool Equals(object o) {
+				Subgraph g = (Subgraph)o;
+				for (int i = 0; i < nodes.Length; i++)
+					if (nodes[i] != g.nodes[i])
+						return false;
+				return true;
+			}
+		}
+	}
+		
 }

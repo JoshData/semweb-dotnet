@@ -1039,13 +1039,13 @@ namespace SemWeb.Stores {
 				if (fipos == null) throw new ArgumentException("Null must appear in every statement.");
 				cmd.Append(fipos);
 				
-				if (filters[i].Subject != null && filters[i].Subject != null)
+				if (filters[i].Subject != null)
 					if (!WhereItem("f" + i + ".subject", filters[i].Subject, cmd, true)) return new Entity[0];
-				if (filters[i].Predicate != null && filters[i].Predicate != null)
+				if (filters[i].Predicate != null)
 					if (!WhereItem("f" + i + ".predicate", filters[i].Predicate, cmd, true)) return new Entity[0];
-				if (filters[i].Object != null && filters[i].Object != null && !isliteralmatch(filters[i].Object))
+				if (filters[i].Object != null && !isliteralmatch(filters[i].Object))
 					if (!WhereItem("f" + i + ".object", filters[i].Object, cmd, true)) return new Entity[0];
-				if (filters[i].Meta != null && filters[i].Meta != null)
+				if (filters[i].Meta != null)
 					if (!WhereItem("f" + i + ".meta", filters[i].Meta, cmd, true)) return new Entity[0];
 				
 				if (filters[i].Object == null)
@@ -1059,15 +1059,15 @@ namespace SemWeb.Stores {
 			
 			cmd.Append(" WHERE 1 ");
 			
-			if (filters[0].Subject != null && filters[0].Subject != null)
+			if (filters[0].Subject != null)
 				if (!WhereItem("s.subject", filters[0].Subject, cmd, true)) return new Entity[0];
-			if (filters[0].Predicate != null && filters[0].Predicate != null)
+			if (filters[0].Predicate != null)
 				if (!WhereItem("s.predicate", filters[0].Predicate, cmd, true)) return new Entity[0];
-			if (filters[0].Object != null && filters[0].Object != null && !isliteralmatch(filters[0].Object))
+			if (filters[0].Object != null && !isliteralmatch(filters[0].Object))
 				if (!WhereItem("s.object", filters[0].Object, cmd, true)) return new Entity[0];
 			if (isliteralmatch(filters[0].Object))
 				cmd.Append("AND s.objecttype=1 ");
-			if (filters[0].Meta != null && filters[0].Meta != null)
+			if (filters[0].Meta != null)
 				if (!WhereItem("s.meta", filters[0].Meta, cmd, true)) return new Entity[0];
 			
 			if (filters[0].Object == null)
