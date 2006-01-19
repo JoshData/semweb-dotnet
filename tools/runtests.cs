@@ -138,7 +138,7 @@ public class N3Test {
 	
 	static ArrayList GetBlankNodes(Store s) {
 		ArrayList ret = new ArrayList();
-		foreach (Entity e in s.GetAllEntities())
+		foreach (Entity e in s.GetEntities())
 			if (e.Uri == null) ret.Add(e);
 		return ret;
 	}

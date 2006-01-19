@@ -32,11 +32,14 @@ public class RDFStorage {
 		[Mono.GetOptions.Option("Quiet mode: Don't emit status information.")]
 		public bool quiet = false;
 
-		[Mono.GetOptions.Option("Check for duplicate statements.")]
-		public bool dupcheck = false;
-		
 		[Mono.GetOptions.Option("Make the output lean.")]
 		public bool makelean = false;
+
+		[Mono.GetOptions.Option("Make lean in comparison to another data source.")]
+		public string leanagainst = null;
+		
+		[Mono.GetOptions.Option("Write out lean-removed statements.")]
+		public bool leanprogress = false;
 	}
 	
 	public static void Main(string[] args) {
@@ -61,7 +64,7 @@ public class RDFStorage {
 		
 		if (opts.clear) {
 			if (!(storage is Store)) {
-				Console.Error.WriteLine("The --clear option cannot be used with this type of output storage.  Ignoring --clear.");
+				Console.Error.WriteLine("The --clear option cannot be used with this type of output method.  Ignoring --clear.");
 			} else {
 				try {
 					if (meta == null)
@@ -74,7 +77,7 @@ public class RDFStorage {
 			}
 		}
 		
-		MultiRdfParser multiparser = new MultiRdfParser(opts.RemainingArguments, opts.@in, meta, opts.baseuri, opts.quiet, opts.dupcheck);
+		MultiRdfParser multiparser = new MultiRdfParser(opts.RemainingArguments, opts.@in, meta, opts.baseuri, opts.quiet);
 		
 		if (storage is Store) {
 			((Store)storage).Import(multiparser);
@@ -83,7 +86,19 @@ public class RDFStorage {
 				multiparser.Select(storage);
 			} else {
 				MemoryStore st = new MemoryStore(multiparser);
-				Lean.MakeLean(st);
+				StatementSink removed = null;
+				if (opts.leanprogress)
+					removed = new N3Writer(Console.Out);
+				if (opts.leanagainst != null) {
+					StatementSource against = Store.CreateForInput(opts.leanagainst);
+					if (!(against is SelectableSource))
+						against = new MemoryStore(against);
+					Lean.MakeLean(st, (SelectableSource)against, removed);
+				} else if (storage is SelectableSource) {
+					Lean.MakeLean(st, (SelectableSource)storage, removed);
+				} else {
+					Lean.MakeLean(st, null, removed);
+				}
 				st.Select(storage);
 			}
 		}
@@ -101,15 +116,13 @@ public class RDFStorage {
 		Entity meta;
 		string baseuri;
 		bool quiet;
-		bool dupcheck;
 		
-		public MultiRdfParser(IList files, string format, Entity meta, string baseuri, bool quiet, bool dupcheck) {
+		public MultiRdfParser(IList files, string format, Entity meta, string baseuri, bool quiet) {
 			this.files = files;
 			this.format = format;
 			this.meta = meta;
 			this.baseuri = baseuri;
 			this.quiet = quiet;
-			this.dupcheck = dupcheck;
 		}
 		
 		public override void Select(StatementSink storage) {
@@ -129,8 +142,9 @@ public class RDFStorage {
 						RdfReader parser = RdfReader.Create(format, infile);
 						parser.BaseUri = baseuri;
 						if (meta != null) parser.Meta = meta;
-						parser.DuplicateCheck = dupcheck;
 						parser.Select(filter);
+						foreach (string warning in parser.Warnings)
+							Console.Error.WriteLine(warning);
 						parser.Dispose();
 					} else {
 						StatementSource src = Store.CreateForInput(infile);

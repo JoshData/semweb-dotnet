@@ -11,7 +11,8 @@ MAIN_SOURCES = \
 	src/Store.cs src/MemoryStore.cs src/SQLStore.cs \
 	src/RdfParser.cs src/XmlParser.cs src/N3Parser.cs \
 	src/RdfWriter.cs src/XmlWriter.cs src/N3Writer.cs \
-	src/RSquary.cs src/RSquaryFilters.cs src/Query.cs \
+	src/RSquary.cs src/LiteralFilters.cs src/Query.cs \
+	src/Reasoning.cs \
 	src/Algos.cs src/Remote.cs \
 	src/XPathSemWebNavigator.cs
 

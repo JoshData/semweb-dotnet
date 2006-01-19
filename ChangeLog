@@ -1,8 +1,18 @@
 	* New BNode class.  To create a blank node, use new BNnde()
 	  in place of new Entity(null), which will now throw an
-	  exception.
+	  exception.  BNodes remember their local names in documents
+	  so reserialization can reuse the names, when possible.
+	* New SemWeb.Inference.RDFS class which wraps any SelectableSource
+	  and provides RDFS reasoning over the store through the
+	  Select methods.
 	* Sparql Protocol handler has been reorganized to make it
 	  easy to extend it by overriding methods.
+	* Algos for finding MSGs and making graphs lean has been
+	  improved and is now not so slow to make it useless (if it works).
+	* The default baseuri of the N3Reader is now "#".
+	* StatementSources now indicate with their Distinct property
+	  whether they guarantee to return distinct statements via Select
+	  (and the Select overloads for subinterfaces).
 
 2005-12-10 Version 0.61
 
@@ -13,7 +23,7 @@
 	* There's a new SemWeb.Algos namespace containing a class to
 	  find Minimun Self-Contained Graphs and to make a store
 	  'lean' by removing redundant subgraphs (but exponentially slow).
-	* New method Store::RemoveAll.
+	* New method Store::RemoveAll(StatementSource).
 	* N3Reader: If a BaseUri was set, overriding it with @prefix :
 	  did not work.  Changed an error in RdfXmlReader to a warning;
 	* RdfXmlReader now passes all W3C tests (positive & negative).
