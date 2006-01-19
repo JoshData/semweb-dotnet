@@ -62,7 +62,6 @@ namespace SemWeb.Stores {
 		protected abstract bool SupportsNoDuplicates { get; }
 		protected abstract bool SupportsInsertIgnore { get; }
 		protected abstract bool SupportsInsertCombined { get; }
-		protected abstract bool SupportsUseIndex { get; }
 		protected virtual bool SupportsFastJoin { get { return true; } }
 		
 		protected abstract string CreateNullTest(string column);
@@ -790,15 +789,6 @@ namespace SemWeb.Stores {
 			cmd.Append(" FROM ");
 			cmd.Append(table);
 			cmd.Append("_statements AS q");
-			if (SupportsUseIndex && false) {
-				// When selecting on mutliple resources at once, assume that it's faster
-				// to select for each resource, rather than based on another index (say,
-				// the predicate that the templates share).
-				if (templateSubject is MultiRes) cmd.Append(" USE INDEX(subject_index)");
-				else if (templatePredicate is MultiRes) cmd.Append(" USE INDEX(predicate_index)");
-				else if (templateObject is MultiRes) cmd.Append(" USE INDEX(object_index)");
-				else if (templateMeta is MultiRes) cmd.Append(" USE INDEX(meta_index)");
-			}
 			
 			if (partialFilter.Object) {
 				cmd.Append(" LEFT JOIN ");

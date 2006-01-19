@@ -21,7 +21,6 @@ namespace SemWeb.Stores {
 		protected override bool SupportsNoDuplicates { get { return false; } }
 		protected override bool SupportsInsertIgnore { get { return false; } }
 		protected override bool SupportsInsertCombined { get { return false; } }
-		protected override bool SupportsUseIndex { get { return false; } }
 		protected override bool SupportsFastJoin { get { return false; } }
 		
 		protected override string CreateNullTest(string column) {

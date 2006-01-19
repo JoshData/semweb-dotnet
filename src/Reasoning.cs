@@ -8,11 +8,11 @@ using SemWeb.Util;
 namespace SemWeb.Inference {
 
 	public class RDFS : SelectableSource, SupportsPersistableBNodes {
-		static Entity type = NS.RDF + "type";
-		static Entity subClassOf = NS.RDFS + "subClassOf";
-		static Entity subPropertyOf = NS.RDFS + "subPropertyOf";
-		static Entity domain = NS.RDFS + "domain";
-		static Entity range = NS.RDFS + "range";
+		static readonly Entity type = NS.RDF + "type";
+		static readonly Entity subClassOf = NS.RDFS + "subClassOf";
+		static readonly Entity subPropertyOf = NS.RDFS + "subPropertyOf";
+		static readonly Entity domain = NS.RDFS + "domain";
+		static readonly Entity range = NS.RDFS + "range";
 	
 		// Each of these hashtables relates an entity
 		// to a ResSet of other entities, including itself.
@@ -331,6 +331,7 @@ namespace SemWeb.Inference {
 			StatementSink sink;
 			public LiteralDTMap(Hashtable t, StatementSink s) { ranges = t; sink = s; }
 			public bool Add(Statement s) {
+				ranges.ToString(); // avoid warning about not using variable
 				if (s.Object is Literal && ((Literal)s.Object).DataType == null) {
 					// TODO: Look at the superproperty closure of the predicate
 					// and apply the first range found to the literal.  While
