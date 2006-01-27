@@ -242,7 +242,7 @@ namespace SemWeb {
 			}
 		}
 		
-		public string GetBNodeRef(BNode node) {
+		private string GetBNodeRef(BNode node) {
 			if (node.LocalName != null &&
 				(nameAlloc[node.LocalName] == null || (BNode)nameAlloc[node.LocalName] == node)
 				&& !node.LocalName.StartsWith("bnode")) {
