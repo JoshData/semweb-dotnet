@@ -51,6 +51,8 @@ namespace SemWeb {
 			if (doc != null) return;
 			doc = new XmlDocument();
 			
+			doc.AppendChild(doc.CreateXmlDeclaration("1.0", null, null));
+			
 			string rdfprefix = ns.GetPrefix(NS.RDF);
 			if (rdfprefix == null) {
 				if (ns.GetNamespace("rdf") == null) {
@@ -62,6 +64,10 @@ namespace SemWeb {
 			XmlElement root = doc.CreateElement(rdfprefix + ":RDF", NS.RDF);
 			foreach (string prefix in ns.GetPrefixes())
 				root.SetAttribute("xmlns:" + prefix, ns.GetNamespace(prefix));
+			
+			if (BaseUri != null)
+				root.SetAttribute("xml:base", BaseUri);
+
 			doc.AppendChild(root);
 		}
 		
@@ -186,7 +192,13 @@ namespace SemWeb {
 			}
 			
 			if (uri != null) {
-				SetAttribute(node, NS.RDF, ns.GetPrefix(NS.RDF), "about", uri);
+				string fragment;
+				if (!Relativize(uri, out fragment))
+					SetAttribute(node, NS.RDF, ns.GetPrefix(NS.RDF), "about", uri);
+				else if (fragment.Length == 0)
+					SetAttribute(node, NS.RDF, ns.GetPrefix(NS.RDF), "about", "");
+				else
+					SetAttribute(node, NS.RDF, ns.GetPrefix(NS.RDF), "ID", fragment.Substring(1)); // chop off hash
 			} else {
 				SetAttribute(node, NS.RDF, ns.GetPrefix(NS.RDF), "nodeID", GetBNodeRef((BNode)entity));
 			}
@@ -225,7 +237,10 @@ namespace SemWeb {
 			if (!(statement.Object is Literal)) {
 				if (nodeMap.ContainsKey(statement.Object)) {
 					if (statement.Object.Uri != null) {
-						SetAttribute(prednode, NS.RDF, ns.GetPrefix(NS.RDF), "resource", statement.Object.Uri);
+						string uri = statement.Object.Uri, fragment;
+						if (Relativize(statement.Object.Uri, out fragment))
+							uri = fragment;
+						SetAttribute(prednode, NS.RDF, ns.GetPrefix(NS.RDF), "resource", uri);
 					} else {
 						SetAttribute(prednode, NS.RDF, ns.GetPrefix(NS.RDF), "nodeID", GetBNodeRef((BNode)statement.Object));
 					}
@@ -262,6 +277,16 @@ namespace SemWeb {
 			if (doc != null)
 				doc.WriteTo(writer);
 			writer.Close();
+		}
+		
+		bool Relativize(string uri, out string fragment) {
+			fragment = null;
+			if (BaseUri == null) return false;
+			if (!uri.StartsWith(BaseUri) || uri.Length < BaseUri.Length) return false;
+			string rel = uri.Substring(BaseUri.Length);
+			if (rel == "") { fragment = ""; return true; }
+			if (rel[0] == '#') { fragment = rel; return true; }
+			return false;
 		}
 	}
 
