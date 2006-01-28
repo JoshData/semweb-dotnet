@@ -50,7 +50,7 @@ namespace SemWeb.Query {
 		bool init = false;
 		object sync = new object();
 		Variable[] variables;
-		Entity[] variableEntities;
+		BNode[] variableEntities;
 		QueryStatement[][] statements;
 		ArrayList novariablestatements = new ArrayList();
 		
@@ -59,7 +59,7 @@ namespace SemWeb.Query {
 		          ifps = new ResSet();
 		
 		private struct Variable {
-			public Entity Entity;
+			public BNode Entity;
 			public LiteralFilter[] Filters;
 		}
 		
@@ -170,16 +170,15 @@ namespace SemWeb.Query {
 			}
 		}
 		
-		public void SetNonVariable(Entity anonymousnode) {
-			if (anonymousnode.Uri != null) throw new ArgumentException("anonymousnode should be an anonymous nodes.  Named nodes are never variables to begin with.");
+		public void SetNonVariable(BNode anonymousnode) {
 			nonvariables[anonymousnode] = anonymousnode;
 		}
 		
-		public void SetVariableName(Entity variable, string name) {
+		public void SetVariableName(BNode variable, string name) {
 			variableNames[variable] = name;
 		}
 
-		public void MakeDistinct(Entity a, Entity b) {
+		public void MakeDistinct(BNode a, BNode b) {
 			SetupVariablesDistinct d = new SetupVariablesDistinct();
 			d.a = a;
 			d.b = b;
@@ -247,13 +246,13 @@ namespace SemWeb.Query {
 
 			if (variableNames != null) {
 				foreach (DictionaryEntry entry in variableNames)
-					SetVariableName((Entity)entry.Key, (string)entry.Value);
+					SetVariableName((BNode)entry.Key, (string)entry.Value);
 			}
 			
 			// Search the query for 'distinct' predicates between variables.
 			foreach (Statement s in queryModel.Select(new Statement(null, qDistinctFrom, null))) {
-				if (!(s.Object is Entity)) continue;
-				MakeDistinct(s.Subject, (Entity)s.Object);
+				if (!(s.Object is BNode)) continue;
+				MakeDistinct((BNode)s.Subject, (BNode)s.Object);
 			}
 			
 			// Add all statements except the query predicates and value filters into a
@@ -695,11 +694,7 @@ namespace SemWeb.Query {
 				ResSet values = new ResSet();
 				
 				Statement[] findstatementsarray = (Statement[])findstatements.ToArray(typeof(Statement));
-				Entity[] targetentities;
-				if (targetModel is QueryableSource)
-					targetentities = ((QueryableSource)targetModel).FindEntities(findstatementsarray);
-				else
-					targetentities = Store.DefaultFindEntities(targetModel, findstatementsarray);
+				Entity[] targetentities = targetModel.FindEntities(findstatementsarray);
 				
 				foreach (Entity r in targetentities) {
 					if (!MatchesFilters(r, var, targetModel)) continue;
@@ -809,10 +804,10 @@ namespace SemWeb.Query {
 		
 			// Set up the variables array.
 			variables = new Variable[setupVariables.Count];
-			variableEntities = new Entity[variables.Length];
+			variableEntities = new BNode[variables.Length];
 			Hashtable varIndex = new Hashtable();
 			for (int i = 0; i < variables.Length; i++) {
-				variables[i].Entity = (Entity)setupVariables[i];
+				variables[i].Entity = (BNode)setupVariables[i];
 				variableEntities[i] = variables[i].Entity;
 				varIndex[variables[i].Entity] = i;
 				
@@ -1017,6 +1012,9 @@ namespace SemWeb.Query {
 
 		public virtual void Finished() {
 		}
+		
+		public virtual void AddComments(string comments) {
+		}
 	}
 	
 	internal class QueryResultBufferSink : QueryResultSink {
@@ -1028,17 +1026,17 @@ namespace SemWeb.Query {
 	}
 
 	public struct VariableBinding {
-		Entity v;
+		BNode v;
 		string n;
 		Resource t;
 		
-		public VariableBinding(Entity variable, string name, Resource target) {
+		public VariableBinding(BNode variable, string name, Resource target) {
 			v = variable;
 			n = name;
 			t = target;
 		}
 		
-		public Entity Variable { get { return v; } internal set { v = value; } }
+		public BNode Variable { get { return v; } internal set { v = value; } }
 		public string Name { get { return n; } internal set { n = value; } }
 		public Resource Target { get { return t; } internal set { t = value; } }
 

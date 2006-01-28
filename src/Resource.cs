@@ -3,7 +3,7 @@ using System.Collections;
 
 namespace SemWeb {
 	
-	public abstract class Resource {
+	public abstract class Resource : IComparable {
 		internal object ekKey, ekValue;
 		internal ArrayList extraKeys;
 		
@@ -68,7 +68,35 @@ namespace SemWeb {
 			Resource.ExtraKey k = new Resource.ExtraKey(key, value);
 			extraKeys.Add(k);
 		}
+
+		int IComparable.CompareTo(object other) {
+			// We'll make an ordering over resources.
+			// First named entities, then bnodes, then literals.
+			// Named entities are sorted by URI.
+			// Bnodes by hashcode.
+			// Literals by their value, language, datatype.
 		
+			Resource r = (Resource)other;
+			if (Uri != null && r.Uri == null) return -1;
+			if (Uri == null && r.Uri != null) return 1;
+			if (this is BNode && r is Literal) return -1;
+			if (this is Literal && r is BNode) return 1;
+			
+			if (Uri != null) return String.Compare(Uri, r.Uri, false, System.Globalization.CultureInfo.InvariantCulture);
+			
+			if (this is BNode) return GetHashCode().CompareTo(r.GetHashCode());
+
+			if (this is Literal) {
+				int x = String.Compare(((Literal)this).Value, ((Literal)r).Value, false, System.Globalization.CultureInfo.InvariantCulture);
+				if (x != 0) return x;
+				x = String.Compare(((Literal)this).Language, ((Literal)r).Language, false, System.Globalization.CultureInfo.InvariantCulture);
+				if (x != 0) return x;
+				x = String.Compare(((Literal)this).DataType, ((Literal)r).DataType, false, System.Globalization.CultureInfo.InvariantCulture);
+				return x;
+			}
+			
+			return 0; // unreachable
+		}
 	}
 	
 	public class Entity : Resource {

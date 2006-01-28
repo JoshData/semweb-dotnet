@@ -221,6 +221,7 @@ namespace SemWeb.Query {
 			if (!(query is SelectQuery))
 				throw new InvalidOperationException("Only SELECT queries are supported by this method (" + query.GetType() + ").");
 
+			// Perform the query
 			SelectQuery squery = (SelectQuery)query;
 			RdfSourceWrapper sourcewrapper = new RdfSourceWrapper(source, QueryMeta, this);
 			RdfBindingSet results;
@@ -230,29 +231,40 @@ namespace SemWeb.Query {
 				throw new QueryExecutionException("Error executing query: " + e.Message, e);
 			}
 			
+			// Prepare binding objects
 			java.util.List vars = results.getVariables();
 			VariableBinding[] bindings = new VariableBinding[vars.size()];
+			Variable[] svars = new Variable[vars.size()];
 			BNode[] vars2 = new BNode[vars.size()];
 			for (int i = 0; i < bindings.Length; i++) {
-				Variable v = (Variable)vars.get(i);
+				svars[i] = (Variable)vars.get(i);
 				vars2[i] = new BNode();
-				bindings[i] = new VariableBinding(vars2[i], v.getName(), null);
+				bindings[i] = new VariableBinding(vars2[i], svars[i].getName(), null);
 			}
+			
+			// Initialize the result sink
 			resultsink.Init(bindings);
 			
+			// Set the comments
+			resultsink.AddComments(sourcewrapper.GetLog());
+
+			// Iterate the bindings
 			java.util.Iterator iter = results.iterator();
 			long ctr = -1, ctr2 = 0;
 			while (iter.hasNext()) {
 				RdfBindingRow row = (RdfBindingRow)iter.next();
 
+				// Since SPARQL processing may be lazy-delayed,
+				// add any new comments that might have be logged.
+				resultsink.AddComments(sourcewrapper.GetLog());
+			
 				ctr++;
 				if (ctr < ReturnStart && ReturnStart != -1) continue;
 
 				for (int i = 0; i < bindings.Length; i++) {
-					Variable v = (Variable)row.getVariables().get(i);
-					Resource r = sourcewrapper.ToResource(row.getValue(v));
+					Resource r = sourcewrapper.ToResource(row.getValue(svars[i]));
 					r = sourcewrapper.Persist(r);
-					bindings[i] = new VariableBinding(vars2[i], v.getName(), r);
+					bindings[i] = new VariableBinding(bindings[i].Variable, bindings[i].Name, r);
 				}
 				
 				resultsink.Add(bindings);
@@ -261,6 +273,7 @@ namespace SemWeb.Query {
 				if (ctr2 >= ReturnLimit && ReturnLimit != -1) break;
 			}
 			
+			// Close the result sink.
 			resultsink.Finished();
 		}
 	
@@ -272,12 +285,23 @@ namespace SemWeb.Query {
 			Entity QueryMeta;
 			Sparql sparql;
 			
-			bool debug = false;
+			System.Text.StringBuilder log = new System.Text.StringBuilder();
 			
 			public RdfSourceWrapper(SelectableSource source, Entity meta, Sparql sparql) {
 				this.source = source;
 				QueryMeta = meta;
 				this.sparql = sparql;
+			}
+			
+			void Log(string message) {
+				log.Append(message);
+				log.Append('\n');
+			}
+			
+			public string GetLog() {
+				string ret = log.ToString();
+				log.Length = 0;
+				return ret;
 			}
 		
 			private StatementIterator GetIterator(Statement statement, bool defaultGraph) {
@@ -289,8 +313,7 @@ namespace SemWeb.Query {
 			}
 			
 			private StatementIterator GetIterator(Entity[] subjects, Entity[] predicates, Resource[] objects, Entity[] metas, bool defaultGraph) {
-				if (debug)
-					Console.Error.WriteLine("ASK: " + ToString(subjects) + " " + ToString(predicates) + " " + ToString(objects));
+				DateTime start = DateTime.Now;
 
 				if (subjects == null && predicates == null && objects == null)
 					throw new QueryExecutionException("Query would select all statements in the store.");
@@ -300,6 +323,11 @@ namespace SemWeb.Query {
 				if (objects != null) Depersist(objects);
 				if (metas != null) Depersist(metas);
 				
+				if (subjects != null && subjects.Length > 500) subjects = null;
+				if (predicates != null && predicates.Length > 500) predicates = null;
+				if (objects != null && objects.Length > 500) objects = null;
+				if (metas != null && metas.Length > 500) metas = null;
+				
 				MemoryStore results = new MemoryStore();
 				StatementSink sink = results;
 				
@@ -307,13 +335,20 @@ namespace SemWeb.Query {
 					sink = new SemWeb.Util.DistinctStatementsSink(results, defaultGraph && metas == null);
 
 				source.Select(subjects, predicates, objects, metas, sink);
+				
+				Log("SELECT: " + ToString(subjects) + " " + ToString(predicates) + " " + ToString(objects) + " => " + results.StatementCount + " statements [" + (DateTime.Now-start) + "s]");
+				
 				return new StatementIterator(results.ToArray());
 			}
 			
 			private string ToString(Resource[] res) {
 				if (res == null) return "?";
 				System.Text.StringBuilder b = new System.Text.StringBuilder();
-				if (res.Length > 1) b.Append("{ ");
+				if (res.Length > 1) {
+					b.Append("{ (");
+					b.Append(res.Length);
+					b.Append(") ");
+				}
 				foreach (Resource r in res) {
 					if (b.Length > 2) b.Append(", ");
 					if (b.Length > 50) { b.Append("..."); break; }
@@ -380,7 +415,7 @@ namespace SemWeb.Query {
 			}
 			
 			private bool has(Statement statement) {
-				if (debug) Console.Error.WriteLine("ASK CONTAINS: " + statement);
+				Log("CONTAINS: " + statement);
 				return source.Contains(statement);
 			}
 			
@@ -683,11 +718,19 @@ namespace SemWeb.Query {
 				string spec = config[path];
 				if (spec == null)
 					throw new InvalidOperationException("No data source is set for the path " + path + ".");
+					
+				bool reuse = true;
+				if (spec.StartsWith("noreuse,")) {
+					reuse = false;
+					spec = spec.Substring("noreuse,".Length);
+				}
 
 				StatementSource src = Store.CreateForInput(spec);
 				if (!(src is SelectableSource))
 					src = new MemoryStore(src);
-				sources[path] = src;
+					
+				if (reuse)
+					sources[path] = src;
 
 				return (SelectableSource)src;
 			}

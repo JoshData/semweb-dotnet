@@ -772,8 +772,8 @@ namespace SemWeb.Stores {
 				(templateMeta == null) || templateMeta is MultiRes
 				);
 			
-			if (partialFilter.SelectNone)
-				partialFilter = SelectPartialFilter.All;
+			if (partialFilter.SelectNone) // have to select something
+				partialFilter = new SelectPartialFilter(true, false, false, false);
 				
 			// SQLite has a problem with LEFT JOIN: When a condition is made on the
 			// first table in the ON clause (q.objecttype=0/1), when it fails,

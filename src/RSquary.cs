@@ -31,6 +31,11 @@ namespace SemWeb.Query {
 			this.output = output;
 		}
 		
+		public override void AddComments(string comments) {
+			if (comments != null && comments.Length > 0)
+				output.WriteComment(comments);
+		}
+		
 		public override void Init(VariableBinding[] variables) {
 			output.WriteStartElement("sparql");
 			output.WriteAttributeString("xmlns", "http://www.w3.org/2005/sparql-results#");

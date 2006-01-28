@@ -2,7 +2,7 @@ using System;
 using System.Collections;
 
 namespace SemWeb {
-	public struct Statement {
+	public struct Statement : IComparable {
 		public Entity Subject;
 		public Entity Predicate;
 		public Resource Object;
@@ -111,6 +111,21 @@ namespace SemWeb {
 			return !(a == b);
 		}
 
+		int IComparable.CompareTo(object obj) {
+			Statement s = (Statement)obj;
+			int x;
+			x = cmp(Subject, s.Subject); if (x != 0) return x;
+			x = cmp(Predicate, s.Predicate); if (x != 0) return x;
+			x = cmp(Object, s.Object); if (x != 0) return x;
+			x = cmp(Meta, s.Meta); if (x != 0) return x;
+			return 0;
+		}
+		int cmp(Resource a, Resource b) {
+			if (a == null && b == null) return 0;
+			if (a == null) return -1;
+			if (b == null) return 1;
+			return ((IComparable)a).CompareTo(b);
+		}
 	}
 	
 	internal struct SelectPartialFilter {

@@ -155,8 +155,10 @@ namespace SemWeb.Inference {
 						
 						// If it's in the domain of any of these properties,
 						// we know its type.
-						data.Select(subjects, dom.ToEntityArray(), null, metas, new ExpandDomRan(0, domPropToType, sink));
-						data.Select(null, ran.ToEntityArray(), subjects, metas, new ExpandDomRan(1, domPropToType, sink));
+						if (subjects != null) {
+							data.Select(subjects, dom.ToEntityArray(), null, metas, new ExpandDomRan(0, domPropToType, sink));
+							data.Select(null, ran.ToEntityArray(), subjects, metas, new ExpandDomRan(1, domPropToType, sink));
+						}
 						
 					} else if (subjects != null) {
 						// What types do these subjects have?
@@ -226,6 +228,10 @@ namespace SemWeb.Inference {
 			data.Select(subjects, predicates, metas, new LiteralDTMap(ranges, sink), literalFilters); 
 		}
 
+		public Entity[] FindEntities(Statement[] graph) {
+			return Store.DefaultFindEntities(this, graph);
+		}
+		
 		static Entity[] GetClosure(ResSet starts, Hashtable table) {
 			if (starts == null) return null;
 			return GetClosure(starts.ToArray(), table);

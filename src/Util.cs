@@ -237,6 +237,10 @@ namespace SemWeb.Util {
 		
 		public bool IsSynchronized { get { return false; } }
 		
+		public void Sort() {
+			Array.Sort(_items, 0, _size);
+		}
+		
 		class Enumer : IEnumerator {
 			StatementList list;
 			int index;

@@ -202,12 +202,12 @@ namespace SemWeb {
 			}
 		}
 
-		public string GetStoreGuid() {
+		string SupportsPersistableBNodes.GetStoreGuid() {
 			if (guid == null) guid = Guid.NewGuid().ToString("N");;
 			return guid;
 		}
 		
-		public string GetNodeId(BNode node) {
+		string SupportsPersistableBNodes.GetNodeId(BNode node) {
 			if (pbnodeToId == null) {
 				pbnodeToId = new Hashtable();
 				pbnodeFromId = new Hashtable();
@@ -219,7 +219,7 @@ namespace SemWeb {
 			return id;
 		}
 		
-		public BNode GetNodeFromId(string persistentId) {
+		BNode SupportsPersistableBNodes.GetNodeFromId(string persistentId) {
 			if (pbnodeFromId == null) return null;
 			return (BNode)pbnodeFromId[persistentId];
 		}

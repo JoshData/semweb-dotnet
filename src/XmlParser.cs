@@ -60,6 +60,13 @@ namespace SemWeb {
 				if (xml.NodeType != XmlNodeType.Element) continue;
 				
 				if (xml.NamespaceURI == NS.RDF && xml.LocalName == "RDF" ) {
+					// If there is an xml:base here, set BaseUri so
+					// the application can recover it.  It doesn't
+					// affect parsing since the xml:base attribute
+					// will override BaseUri.
+					string xmlbase = xml.GetAttribute("xml:base");
+					if (xmlbase != null) BaseUri = xmlbase;
+					
 					while (xml.Read()) {
 						if (xml.NodeType == XmlNodeType.Element)
 							ParseDescription();
