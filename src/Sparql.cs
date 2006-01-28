@@ -194,7 +194,7 @@ namespace SemWeb.Query {
 			if (obj is ASTVar) {
 				ASTVar var = (ASTVar)obj;
 				if (vars.ContainsKey(var.getName())) return (Resource)vars[var.getName()];
-				Entity v = new BNode();
+				BNode v = new BNode();
 				gm.SetVariableName(v, var.getName());
 				vars[var.getName()] = v;
 				return v;
@@ -232,7 +232,7 @@ namespace SemWeb.Query {
 			
 			java.util.List vars = results.getVariables();
 			VariableBinding[] bindings = new VariableBinding[vars.size()];
-			Entity[] vars2 = new Entity[vars.size()];
+			BNode[] vars2 = new BNode[vars.size()];
 			for (int i = 0; i < bindings.Length; i++) {
 				Variable v = (Variable)vars.get(i);
 				vars2[i] = new BNode();
