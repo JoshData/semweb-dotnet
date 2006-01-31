@@ -21,6 +21,18 @@
         <remarks>The <see cref="M:SemWeb.StatementSink.Add(SemWeb.Statement)" /> method is called on <paramref name="sink" /> for each statement in this StatementSource.</remarks>
       </Docs>
     </Member>
+    <Member MemberName="Distinct">
+      <MemberSignature Language="C#" Value="public bool Distinct { get; };" />
+      <MemberType>Property</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Boolean</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Gets whether the statement source returns only distinct statments from Select calls.</summary>
+        <value>True if any call to Select (and its overloads when they are implemented) yields only distinct statements (i.e. no duplicates).</value>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
   </Members>
   <Docs>
     <summary>A source of statements, such as a RdfReader or a Store.</summary>

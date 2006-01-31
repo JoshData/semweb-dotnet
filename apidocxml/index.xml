@@ -29,13 +29,14 @@
       <Type Name="SelectResult" />
       <Type Name="QueryableSource" />
       <Type Name="ModifiableSource" />
+      <Type Name="BNode" />
+      <Type Name="LiteralFilter" />
+      <Type Name="LiteralFilter+CompType" />
     </Namespace>
     <Namespace Name="SemWeb.Query">
       <Type Name="QueryResultSink" />
       <Type Name="VariableBinding" />
-      <Type Name="ValueFilter" />
       <Type Name="SparqlXmlQuerySink" />
-      <Type Name="ValueFilterFactory" />
       <Type Name="GraphMatch" />
       <Type Name="Sparql" />
       <Type Name="Query" />
@@ -50,22 +51,36 @@
       <Type Name="MySQLStore" />
       <Type Name="PostgreSQLStore" />
       <Type Name="SqliteStore" />
+      <Type Name="SupportsPersistableBNodes" />
     </Namespace>
     <Namespace Name="SemWeb.Util">
       <Type Name="XPathSemWebNavigator" />
       <Type Name="StatementList" />
+      <Type Name="DistinctStatementsSink" />
     </Namespace>
     <Namespace Name="SemWeb.Algos">
       <Type Name="Lean" />
       <Type Name="MSG" />
       <Type Name="MSG+Graph" />
       <Type Name="Connectivity" />
+      <Type Name="SubgraphIterator" />
     </Namespace>
     <Namespace Name="SemWeb.Remote">
       <Type Name="SparqlHttpSource" />
     </Namespace>
     <Namespace Name="SemWeb.Util.Bind">
       <Type Name="Any" />
+    </Namespace>
+    <Namespace Name="SemWeb.Filters">
+      <Type Name="StringCompareFilter" />
+      <Type Name="StringContainsFilter" />
+      <Type Name="StringStartsWithFilter" />
+      <Type Name="NumericCompareFilter" />
+      <Type Name="DateTimeCompareFilter" />
+      <Type Name="TimeSpanCompareFilter" />
+    </Namespace>
+    <Namespace Name="SemWeb.Inference">
+      <Type Name="RDFS" />
     </Namespace>
   </Types>
   <Assemblies>

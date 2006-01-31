@@ -82,6 +82,18 @@
         <remarks>Calling this method is not advised when the number of matching statements may be very large.</remarks>
       </Docs>
     </Member>
+    <Member MemberName="Distinct">
+      <MemberSignature Language="C#" Value="public bool Distinct { get; };" />
+      <MemberType>Property</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Boolean</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Gets whether this select result returns only distinct statments from Select calls.</summary>
+        <value>True if any call to Select and its overloads yields only distinct statements (i.e. no duplicates).</value>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
   </Members>
   <Docs>
     <summary>This class is used to hold the results of a call to Select.</summary>

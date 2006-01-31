@@ -1,5 +1,5 @@
 <Type Name="SQLStore" FullName="SemWeb.Stores.SQLStore">
-  <TypeSignature Language="C#" Value="public abstract class SQLStore : SemWeb.Store" />
+  <TypeSignature Language="C#" Value="public abstract class SQLStore : SemWeb.Store, SemWeb.Stores.SupportsPersistableBNodes" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
     <AssemblyVersion>0.5.0.2</AssemblyVersion>
@@ -8,6 +8,9 @@
     <BaseTypeName>SemWeb.Store</BaseTypeName>
   </Base>
   <Interfaces>
+    <Interface>
+      <InterfaceName>SemWeb.Stores.SupportsPersistableBNodes</InterfaceName>
+    </Interface>
   </Interfaces>
   <Members>
     <Member MemberName="RunCommand">
@@ -148,7 +151,7 @@
       </Docs>
     </Member>
     <Member MemberName="EscapedAppend">
-      <MemberSignature Language="C#" Value="protected virtual void EscapedAppend (System.Text.StringBuilder b, string str);" />
+      <MemberSignature Language="C#" Value="protected void EscapedAppend (System.Text.StringBuilder b, string str);" />
       <MemberType>Method</MemberType>
       <ReturnValue>
         <ReturnType>System.Void</ReturnType>
@@ -174,18 +177,6 @@
         <summary>Implemented by inheritors to indicate whether the backend supports inserting mutliple rows at once in a single INSERT command.</summary>
         <value>If true, the more efficient multiple-row INSERT syntax is used, e.g.: INSERT INTO table VALUES (row1a, row1b), (row2a, row2b), .... ;</value>
         <remarks>None.</remarks>
-      </Docs>
-    </Member>
-    <Member MemberName="SupportsUseIndex">
-      <MemberSignature Language="C#" Value="protected abstract bool SupportsUseIndex { get; };" />
-      <MemberType>Property</MemberType>
-      <ReturnValue>
-        <ReturnType>System.Boolean</ReturnType>
-      </ReturnValue>
-      <Docs>
-        <summary>To be added.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SupportsFastJoin">
@@ -253,6 +244,51 @@
       <Docs>
         <summary>To be added.</summary>
         <value>To be added.</value>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="GetStoreGuid">
+      <MemberSignature Language="C#" Value="public string GetStoreGuid ();" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>System.String</ReturnType>
+      </ReturnValue>
+      <Parameters />
+      <Docs>
+        <summary>To be added.</summary>
+        <returns>To be added.</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="GetNodeId">
+      <MemberSignature Language="C#" Value="public string GetNodeId (SemWeb.BNode node);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>System.String</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="node" Type="SemWeb.BNode" />
+      </Parameters>
+      <Docs>
+        <param name="node">To be added.</param>
+        <summary>To be added.</summary>
+        <returns>To be added.</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="GetNodeFromId">
+      <MemberSignature Language="C#" Value="public SemWeb.BNode GetNodeFromId (string persistentId);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>SemWeb.BNode</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="persistentId" Type="System.String" />
+      </Parameters>
+      <Docs>
+        <param name="persistentId">To be added.</param>
+        <summary>To be added.</summary>
+        <returns>To be added.</returns>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>

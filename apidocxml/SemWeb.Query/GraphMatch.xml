@@ -35,23 +35,6 @@
         <remarks>Bindings returned will not return the same value for these two variables.  (I'm not sure if this is implemented...)</remarks>
       </Docs>
     </Member>
-    <Member MemberName="AddValueFilter">
-      <MemberSignature Language="C#" Value="public void AddValueFilter (SemWeb.Entity entity, SemWeb.Query.ValueFilter filter);" />
-      <MemberType>Method</MemberType>
-      <ReturnValue>
-        <ReturnType>System.Void</ReturnType>
-      </ReturnValue>
-      <Parameters>
-        <Parameter Name="entity" Type="SemWeb.Entity" />
-        <Parameter Name="filter" Type="SemWeb.Query.ValueFilter" />
-      </Parameters>
-      <Docs>
-        <param name="entity">The variable to which the filter is applied.</param>
-        <param name="filter">The value filter.</param>
-        <summary>Adds a value filter.</summary>
-        <remarks>Value filters are used to filter out bindings for variables.  They can be used to restrict numeric literal bindings to be greater than a certain number, for instance.</remarks>
-      </Docs>
-    </Member>
     <Member MemberName="SetNonVariable">
       <MemberSignature Language="C#" Value="public void SetNonVariable (SemWeb.Entity anonymousnode);" />
       <MemberType>Method</MemberType>
@@ -145,6 +128,23 @@
       </Parameters>
       <Docs>
         <param name="queryModel">To be added.</param>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="AddValueFilter">
+      <MemberSignature Language="C#" Value="public void AddValueFilter (SemWeb.Entity entity, SemWeb.LiteralFilter filter);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="entity" Type="SemWeb.Entity" />
+        <Parameter Name="filter" Type="SemWeb.LiteralFilter" />
+      </Parameters>
+      <Docs>
+        <param name="entity">To be added.</param>
+        <param name="filter">To be added.</param>
         <summary>To be added.</summary>
         <remarks>To be added.</remarks>
       </Docs>

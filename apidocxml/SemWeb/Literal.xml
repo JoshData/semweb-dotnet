@@ -109,6 +109,60 @@
         <remarks>None.</remarks>
       </Docs>
     </Member>
+    <Member MemberName="ParseValue">
+      <MemberSignature Language="C#" Value="public object ParseValue ();" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Object</ReturnType>
+      </ReturnValue>
+      <Parameters />
+      <Docs>
+        <summary>Uses the DataType of the literal to turn it into a native .NET type.</summary>
+        <returns>A string, boolean, integer, or other value, as described below.</returns>
+        <remarks>
+          <para>If the DataType of the literal is not set, or if the DataType is not one of the following recognized types, the literal's string value is returned.</para>
+          <para>The recognized types below are all in the http://www.w3.org/2001/XMLSchema# namespace.  That is, where it says "string" below, it means the DataType is http://www.w3.org/2001/XMLSchema#string.</para>
+          <list type="table">
+            <listheader>
+              <term>DataType(s)</term>
+              <description>Return Value</description>
+            </listheader>
+            <item>
+              <term>string, normalizedString, anyURI</term>
+              <description>The literal's value, as a <see cref="T:System.String" />.</description>
+            </item>
+            <item>
+              <term>boolean</term>
+              <description>A <see cref="T:System.Boolean" />, true if the literal's value is "true" or "1", false otherwise.</description>
+            </item>
+            <item>
+              <term>decimal, integer, positiveInteger, nonPositiveInteger, negativeInteger, nonNegativeInteger</term>
+              <description>The literal's value as a <see cref="T:System.Decimal" /> using <see cref="M:System.Decimal.Parse(string)" />.</description>
+            </item>
+            <item>
+              <term>float or double</term>
+              <description>The literal's value as a <see cref="T:System.Single" /> for float or <see cref="T:System.Double" /> for double, using the appropriate Parse method.</description>
+            </item>
+            <item>
+              <term>duration</term>
+              <description>The literal's value as a <see cref="T:System.TimeSpan" /> using <see cref="M:System.TimeSpan.Parse(string)" />.</description>
+            </item>
+            <item>
+              <term>dateTime, time, date</term>
+              <description>The literal's value as a <see cref="T:System.DateTime" /> using <see cref="M:System.DateTime.Parse(string)" />.</description>
+            </item>
+            <item>
+              <term>long, int, short, byte</term>
+              <description>The literal's value as a <see cref="T:System.Int64" />, <see cref="T:System.Int32" />, <see cref="T:System.Int16" />, or <see cref="T:System.SByte" /> using the appropriate Parse method.</description>
+            </item>
+            <item>
+              <term>unsignedLong, unsignedInt, unsignedShort, unsignedByte</term>
+              <description>The literal's value as a <see cref="T:System.UInt64" />, <see cref="T:System.UInt32" />, <see cref="T:System.UInt16" />, or <see cref="T:System.Byte" /> using the appropriate Parse method.</description>
+            </item>
+          </list>
+        </remarks>
+      </Docs>
+    </Member>
   </Members>
   <Docs>
     <summary>A literal (text string) node in an RDF graph.</summary>

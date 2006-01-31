@@ -158,18 +158,6 @@
         <remarks>Setting this property to true may slow down the performance of the reader, as it may need to consult a hashtable each time a URI is read mapping the URI to an Entity it has previously created.</remarks>
       </Docs>
     </Member>
-    <Member MemberName="DuplicateCheck">
-      <MemberSignature Language="C#" Value="public bool DuplicateCheck { set; get; };" />
-      <MemberType>Property</MemberType>
-      <ReturnValue>
-        <ReturnType>System.Boolean</ReturnType>
-      </ReturnValue>
-      <Docs>
-        <summary>Gets/sets whether the reader checks for duplicate statements found in the stream and ignores duplicates.</summary>
-        <value>If <see langword="true" />, for each statement read, the RdfReader checks that the statement has not already been sent to the StatementSink, or if the StatementSink is a Store, is not already present in the Store.</value>
-        <remarks>DuplicateCheck is by default <see langword="false" />.  Setting this property to <see langword="true" /> will significantly degrade performance.</remarks>
-      </Docs>
-    </Member>
     <Member MemberName="AddVariableName">
       <MemberSignature Language="C#" Value="protected void AddVariableName (SemWeb.Entity variable, string name);" />
       <MemberType>Method</MemberType>

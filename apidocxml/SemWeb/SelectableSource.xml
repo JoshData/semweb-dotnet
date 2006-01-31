@@ -76,6 +76,51 @@ any statement matching the template.</returns>
         </remarks>
       </Docs>
     </Member>
+    <Member MemberName="Select">
+      <MemberSignature Language="C#" Value="public void Select (SemWeb.Entity[] subjects, SemWeb.Entity[] predicates, SemWeb.Entity[] metas, SemWeb.StatementSink sink, SemWeb.LiteralFilter[] literalFilters);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="subjects" Type="SemWeb.Entity[]" />
+        <Parameter Name="predicates" Type="SemWeb.Entity[]" />
+        <Parameter Name="metas" Type="SemWeb.Entity[]" />
+        <Parameter Name="sink" Type="SemWeb.StatementSink" />
+        <Parameter Name="literalFilters" Type="SemWeb.LiteralFilter[]" />
+      </Parameters>
+      <Docs>
+        <param name="subjects">An array of entities for matching subjects, or <see langword="null" /> if any subject matches.</param>
+        <param name="predicates">An array of entities for matching predicates, or <see langword="null" /> if any predicate matches.</param>
+        <param name="metas">An array of entities for matching meta fields, or <see langword="null" /> if any meta field matches.</param>
+        <param name="sink">A sink to which each matching statement is written.</param>
+        <param name="literalFilters">An array of literal filter objects.</param>
+        <summary>Queries the store for matching statements with literal objects that match filters, and writes the statements to a <see cref="T:SemWeb.StatementSink" />.</summary>
+        <remarks>
+          <para>**This operation is not fully implemented in all data sources yet.**</para>
+          <para>Each statement in the data source matching the parameters is added to <paramref name="result" /> with a call to <see cref="M:SemWeb.StatementSink.Add(SemWeb.Statement)" />.  If the call to Add returns <see langword="false" />, the select operation is aborted and returns immediately.</para>
+          <para>None of the argument arrays may be zero-length or contain <see langword="null" />.</para>
+          <para>Only statements with <see cref="T:SemWeb.Literal" /> objects will match, and the literal
+		  value must match all of the provided filters.</para>
+        </remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="FindEntities">
+      <MemberSignature Language="C#" Value="public SemWeb.Entity[] FindEntities (SemWeb.Statement[] graph);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>SemWeb.Entity[]</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="graph" Type="SemWeb.Statement[]" />
+      </Parameters>
+      <Docs>
+        <param name="graph">A graph.  Each statement in the graph must contain at least one <see langword="null" /> field which represents the single variable in the query.</param>
+        <summary>Finds all entities that can substitute into a graph.</summary>
+        <returns>An array of entities that match the variable in the query graph.</returns>
+        <remarks>Implementors of SelectableSource can use <see cref="M:SemWeb.Store.DefaultFindEntities(SemWeb.Statement[])"/> as a default, unoptimized implementation.</remarks>
+      </Docs>
+    </Member>
   </Members>
   <Docs>
     <summary>An interface implemented by RDF sources that supports Select operations.</summary>

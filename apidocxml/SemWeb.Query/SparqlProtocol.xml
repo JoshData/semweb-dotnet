@@ -45,7 +45,7 @@
       </Docs>
     </Member>
     <Member MemberName="ProcessRequest">
-      <MemberSignature Language="C#" Value="public void ProcessRequest (System.Web.HttpContext context);" />
+      <MemberSignature Language="C#" Value="public virtual void ProcessRequest (System.Web.HttpContext context);" />
       <MemberType>Method</MemberType>
       <ReturnValue>
         <ReturnType>System.Void</ReturnType>
@@ -59,12 +59,68 @@
         <remarks>This method is not meant to be called from user code.</remarks>
       </Docs>
     </Member>
+    <Member MemberName="GetDataSource">
+      <MemberSignature Language="C#" Value="protected virtual SemWeb.SelectableSource GetDataSource ();" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>SemWeb.SelectableSource</ReturnType>
+      </ReturnValue>
+      <Parameters />
+      <Docs>
+        <summary>Constructs the data source for a query.</summary>
+        <returns>A data source for the query.</returns>
+        <remarks>The default implementation assumes a HttpRequest is currently being processed and uses the current HttpContext
+        to fetch a specification string from the web.config configuration file, and then constructs
+        the data source from that.  Override in subclasses to create a data source in a different way,
+        especially if this class is used outside of an ASP.NET HttpRequest.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="CreateQuery">
+      <MemberSignature Language="C#" Value="protected virtual SemWeb.Query.Query CreateQuery (string query);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>SemWeb.Query.Query</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="query" Type="System.String" />
+      </Parameters>
+      <Docs>
+        <param name="query">The SPARQL query as a string.</param>
+        <summary>Constructs a Query object for a SPARQL query.</summary>
+        <returns>A Query object.</returns>
+        <remarks>The default implementation returns a new SPARQL query object based on the
+        query.  Override in subclasses to create a query in a different way, or to set
+        limits on the query.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="RunQuery">
+      <MemberSignature Language="C#" Value="protected virtual void RunQuery (SemWeb.Query.Query query, SemWeb.SelectableSource source, System.IO.TextWriter output);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="query" Type="SemWeb.Query.Query" />
+        <Parameter Name="source" Type="SemWeb.SelectableSource" />
+        <Parameter Name="output" Type="System.IO.TextWriter" />
+      </Parameters>
+      <Docs>
+        <param name="query">The query to run.</param>
+        <param name="source">The data source to query against.</param>
+        <param name="output">The output stream.</param>
+        <summary>Runs a query.</summary>
+        <remarks>The default implementation runs the query on the data source and outputs the
+        results in the SPARQL XML Results specification format.  Override in subclasses to
+        output the results in a different way, to run the query differently, or to set
+        limits on the query or output.</remarks>
+      </Docs>
+    </Member>
   </Members>
   <Docs>
     <summary>Implements a SPARQL Protocol server for ASP.NET.</summary>
     <remarks>
       <para>This class implements the <see cref="T:System.Web.IHttpHandler" /> interface to provide a SPARQL Protocol query server over HTTP.</para>
-      <para>To activate the SPARQL server in your ASP.NET site, place the SemWeb.dll and SemWeb.Sparql.dll assemblies in the bin directory of your site.  Then add the following to your web.config file.  Note that you must specify a spec string to a data source to serve, as described in <see cref="M:SemWeb.Store.CreateForInput(string)" />.</para>
+      <para>To activate the SPARQL server in your ASP.NET site, place the SemWeb.dll, SemWeb.Sparql.dll, and sparql-core.dll assemblies in the bin directory of your ASP.NET application.  Then add the following to your web.config file.  Note that you must specify a spec string to a data source to serve, as described in <see cref="M:SemWeb.Store.CreateForInput(string)" />.</para>
       <example>
         <code>&lt;configuration&gt;
      &lt;configSections&gt;
@@ -86,6 +142,11 @@
           &lt;add key="/sparql" value="xml:/home/user/datafile.rdf"/&gt;
      &lt;/sparqlSources&gt;
 &lt;/configuration&gt;</code>
+      </example>
+      <para>Precede the data source specification string with "rdfs+" to wrap the data source with
+      the <see cref="T:SemWeb.Inference.RDFS" /> reasoning engine.  For instance:</para>
+      <example>
+        <code>&lt;add key="/sparql" value="rdfs+mysql:rdftable:Database=databasename;Server=localhost;User Id=username"/&gt;</code>
       </example>
       <para>Using Mono's XSP light-weight web server, you can create a standalone SPARQL Protocol server by:</para>
       <list type="bullet">

@@ -16,7 +16,7 @@
         <Parameter Name="file" Type="System.String" />
       </Parameters>
       <Docs>
-        <param name="file">To be added.</param>
+        <param name="file">A file name.</param>
         <summary>Creates an RDF/XML writer that writes to the named file.</summary>
         <remarks>To be added.</remarks>
       </Docs>
@@ -29,8 +29,8 @@
         <Parameter Name="ns" Type="SemWeb.NamespaceManager" />
       </Parameters>
       <Docs>
-        <param name="file">To be added.</param>
-        <param name="ns">To be added.</param>
+        <param name="file">A file name.</param>
+        <param name="ns">A namespace manager.</param>
         <summary>Creates an RDF/XML writer that writes to the named file, with the given namespace declarations.</summary>
         <remarks>To be added.</remarks>
       </Docs>
@@ -42,7 +42,7 @@
         <Parameter Name="writer" Type="System.IO.TextWriter" />
       </Parameters>
       <Docs>
-        <param name="writer">To be added.</param>
+        <param name="writer">A TextWriter.</param>
         <summary>Creates an RDF/XML writer that writes to the given TextWriter.</summary>
         <remarks>To be added.</remarks>
       </Docs>
@@ -55,8 +55,8 @@
         <Parameter Name="ns" Type="SemWeb.NamespaceManager" />
       </Parameters>
       <Docs>
-        <param name="writer">To be added.</param>
-        <param name="ns">To be added.</param>
+        <param name="writer">A TextWriter.</param>
+        <param name="ns">A namespace manager.</param>
         <summary>Creates an RDF/XML writer that writes to the given TextWriter, with the given namespace declarations.</summary>
         <remarks>To be added.</remarks>
       </Docs>
@@ -68,7 +68,7 @@
         <Parameter Name="writer" Type="System.Xml.XmlWriter" />
       </Parameters>
       <Docs>
-        <param name="writer">To be added.</param>
+        <param name="writer">A textWriter.</param>
         <summary>Creates an RDF/XML writer that writes to the given XmlWriter.</summary>
         <remarks>To be added.</remarks>
       </Docs>
@@ -81,7 +81,7 @@
         <Parameter Name="ns" Type="SemWeb.NamespaceManager" />
       </Parameters>
       <Docs>
-        <param name="writer">To be added.</param>
+        <param name="writer">An XmlWriter.</param>
         <param name="ns">To be added.</param>
         <summary>Creates an RDF/XML writer that writes to the given XmlWriter, with the given namespace declarations.</summary>
         <remarks>To be added.</remarks>

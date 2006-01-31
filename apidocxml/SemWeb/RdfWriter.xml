@@ -26,7 +26,7 @@
       </Docs>
     </Member>
     <Member MemberName="Add">
-      <MemberSignature Language="C#" Value="public void Add (SemWeb.Statement statement);" />
+      <MemberSignature Language="C#" Value="public abstract void Add (SemWeb.Statement statement);" />
       <MemberType>Method</MemberType>
       <ReturnValue>
         <ReturnType>System.Void</ReturnType>
@@ -38,44 +38,6 @@
         <param name="statement">The statement to write.</param>
         <summary>Writes a statement to the stream.</summary>
         <remarks>None.</remarks>
-      </Docs>
-    </Member>
-    <Member MemberName="WriteStatement">
-      <MemberSignature Language="C#" Value="public abstract void WriteStatement (string subj, string pred, string obj);" />
-      <MemberType>Method</MemberType>
-      <ReturnValue>
-        <ReturnType>System.Void</ReturnType>
-      </ReturnValue>
-      <Parameters>
-        <Parameter Name="subj" Type="System.String" />
-        <Parameter Name="pred" Type="System.String" />
-        <Parameter Name="obj" Type="System.String" />
-      </Parameters>
-      <Docs>
-        <param name="subj">The URI of the subject of the statement.</param>
-        <param name="pred">The URI of the predicate of the statement.</param>
-        <param name="obj">The URI of the object of the statement.</param>
-        <summary>Writes a statement with an entity object to the stream.</summary>
-        <remarks>In place of any of the URIs, a value returned by <see cref="M:SemWeb.RdfWriter.CreateAnonymousEntity()" /> can be used to indicate an anonymous node.</remarks>
-      </Docs>
-    </Member>
-    <Member MemberName="WriteStatement">
-      <MemberSignature Language="C#" Value="public abstract void WriteStatement (string subj, string pred, SemWeb.Literal literal);" />
-      <MemberType>Method</MemberType>
-      <ReturnValue>
-        <ReturnType>System.Void</ReturnType>
-      </ReturnValue>
-      <Parameters>
-        <Parameter Name="subj" Type="System.String" />
-        <Parameter Name="pred" Type="System.String" />
-        <Parameter Name="literal" Type="SemWeb.Literal" />
-      </Parameters>
-      <Docs>
-        <param name="subj">The URI of the subject of the statement.</param>
-        <param name="pred">The URI of the predicate of the statement.</param>
-        <param name="literal">The object literal value.</param>
-        <summary>Writes a statement with a literal object to the stream.</summary>
-        <remarks>In place of either of the URIs, a value returned by <see cref="M:SemWeb.RdfWriter.CreateAnonymousEntity()" /> can be used to indicate an anonymous node.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Close">
@@ -145,19 +107,6 @@
         <param name="value">A key to associate with the resource and the writer.</param>
         <summary>See <see cref="M:SemWeb.Store.SetResourceKey(SemWeb.Resource)" />.</summary>
         <remarks>See <see cref="M:SemWeb.Store.SetResourceKey(SemWeb.Resource)" />.</remarks>
-      </Docs>
-    </Member>
-    <Member MemberName="CreateAnonymousEntity">
-      <MemberSignature Language="C#" Value="public abstract string CreateAnonymousEntity ();" />
-      <MemberType>Method</MemberType>
-      <ReturnValue>
-        <ReturnType>System.String</ReturnType>
-      </ReturnValue>
-      <Parameters />
-      <Docs>
-        <summary>Returns a string which can be used in place of a URI in WriteStatement to indicate an anonymous (blank) node.</summary>
-        <returns>A string to be used with <see cref="M:SemWeb.RdfWriter.WriteStatement(string,string,string)" /> or <see cref="M:SemWeb.RdfWriter.WriteStatement(string,string,SemWeb.Literal)" />.</returns>
-        <remarks>Call this method once for each anonymous node to be written to ths stream.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Write">

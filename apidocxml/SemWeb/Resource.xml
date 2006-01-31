@@ -63,39 +63,6 @@
         <remarks>See the Resource equality operator.</remarks>
       </Docs>
     </Member>
-    <Member MemberName="GetResourceKey">
-      <MemberSignature Language="C#" Value="public object GetResourceKey (object key);" />
-      <MemberType>Method</MemberType>
-      <ReturnValue>
-        <ReturnType>System.Object</ReturnType>
-      </ReturnValue>
-      <Parameters>
-        <Parameter Name="key" Type="System.Object" />
-      </Parameters>
-      <Docs>
-        <param name="key">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
-      </Docs>
-    </Member>
-    <Member MemberName="SetResourceKey">
-      <MemberSignature Language="C#" Value="public void SetResourceKey (object key, object value);" />
-      <MemberType>Method</MemberType>
-      <ReturnValue>
-        <ReturnType>System.Void</ReturnType>
-      </ReturnValue>
-      <Parameters>
-        <Parameter Name="key" Type="System.Object" />
-        <Parameter Name="value" Type="System.Object" />
-      </Parameters>
-      <Docs>
-        <param name="key">To be added.</param>
-        <param name="value">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
-      </Docs>
-    </Member>
   </Members>
   <Docs>
     <summary>The base class of <see cref="T:SemWeb.Entity" /> and <see cref="T:SemWeb.Literal" /> -- the nodes in an RDF graph.</summary>

@@ -99,22 +99,6 @@
         meta entities are considered equal, or both are <see langword="null" />.</remarks>
       </Docs>
     </Member>
-    <Member MemberName="Matches">
-      <MemberSignature Language="C#" Value="public bool Matches (SemWeb.Statement statement);" />
-      <MemberType>Method</MemberType>
-      <ReturnValue>
-        <ReturnType>System.Boolean</ReturnType>
-      </ReturnValue>
-      <Parameters>
-        <Parameter Name="statement" Type="SemWeb.Statement" />
-      </Parameters>
-      <Docs>
-        <param name="statement">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
-      </Docs>
-    </Member>
     <Member MemberName="DefaultMeta">
       <MemberSignature Language="C#" Value="public static SemWeb.Entity DefaultMeta;" />
       <MemberType>Field</MemberType>
@@ -161,10 +145,10 @@
         <Parameter Name="replacement" Type="SemWeb.Resource" />
       </Parameters>
       <Docs>
-        <param name="find">To be added.</param>
-        <param name="replacement">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
+        <param name="find">The resource to be replaced.</param>
+        <param name="replacement">The new resource to use.</param>
+        <summary>Replaces occurrences of a resource with another resource.</summary>
+        <returns>A new statement in which occurrences of <paramref name="find" /> have been replaced with <paramref name="replacement" />.</returns>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -210,6 +194,38 @@
       <Docs>
         <summary>The meta field for the statement.</summary>
         <remarks>This field is often left as its default value, which is <see cref="F:SemWeb.Statement.DefaultMeta" />, but the value of this field can be used for any application-specific purpose.  Uses include tracking context and provenance, reification, and for formulas and named graphs.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Replace">
+      <MemberSignature Language="C#" Value="public SemWeb.Statement Replace (System.Collections.Hashtable resourceMap);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>SemWeb.Statement</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="resourceMap" Type="System.Collections.Hashtable" />
+      </Parameters>
+      <Docs>
+        <param name="resourceMap">A mapping from resources to resources.</param>
+        <summary>Replaces instances of resources in the statement with other resources.</summary>
+        <returns>A new statement in which instances of the keys of <paramref name="resourceMap" /> have been replaced by their corresponding values.</returns>
+        <remarks>An exception will be thrown if a resource in subject, predicate, or meta position is mapped to a literal value.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Matches">
+      <MemberSignature Language="C#" Value="public bool Matches (SemWeb.Statement statement);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Boolean</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="statement" Type="SemWeb.Statement" />
+      </Parameters>
+      <Docs>
+        <param name="statement">To be added.</param>
+        <summary>To be added.</summary>
+        <returns>To be added.</returns>
+        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

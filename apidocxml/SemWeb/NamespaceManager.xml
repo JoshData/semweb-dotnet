@@ -154,7 +154,7 @@
       <Docs>
         <summary>Gets all of the prefixes known to the namespace manager.</summary>
         <returns>A collection of all prefixes known to this namespace manager.</returns>
-        <remarks>To be added.</remarks>
+        <remarks>None.</remarks>
       </Docs>
     </Member>
   </Members>
