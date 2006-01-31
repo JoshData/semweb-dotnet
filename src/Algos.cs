@@ -29,6 +29,9 @@ namespace SemWeb.Algos {
 		public void Select(Entity[] subjects, Entity[] predicates, Entity[] metas, StatementSink sink, LiteralFilter[] literalFilters) {
 			Store.DefaultSelect(this, subjects, predicates, metas, sink, literalFilters);
 		}
+		public Entity[] FindEntities(Statement[] graph) {
+			throw new InvalidOperationException();
+		}
 		class Tester : StatementSink {
 			SelectableSource b;
 			StatementSink c;

@@ -14,11 +14,11 @@ namespace SemWeb {
 		void Select(Statement template, StatementSink sink);
 		void Select(Entity[] subjects, Entity[] predicates, Resource[] objects, Entity[] metas, StatementSink sink);
 		void Select(Entity[] subjects, Entity[] predicates, Entity[] metas, StatementSink sink, LiteralFilter[] literalFilters);
+		Entity[] FindEntities(Statement[] graph);
 	}
 
 	public interface QueryableSource {
-		Entity[] FindEntities(Statement[] graph);
-		void Query(Statement[] graph, SemWeb.Query.QueryResultSink sink);
+		void Query(Statement[] graph, BNode[] variables, SemWeb.Query.QueryResultSink sink);
 	}
 	
 	public interface StatementSink {
@@ -57,7 +57,7 @@ namespace SemWeb {
 	}
 
 	public abstract class Store : StatementSource, StatementSink,
-		SelectableSource, QueryableSource, ModifiableSource,
+		SelectableSource, ModifiableSource,
 		IDisposable {
 		
 		Entity rdfType;
@@ -350,13 +350,6 @@ namespace SemWeb {
 				if (e != null) ents[e] = ents;
 				return true;
 			}
-		}
-		
-		public virtual void Query(Statement[] graph, SemWeb.Query.QueryResultSink sink) {
-			SemWeb.Query.GraphMatch gm = new SemWeb.Query.GraphMatch();
-			foreach (Statement s in graph)
-				gm.AddEdge(s);
-			gm.Run(this, sink);
 		}
 		
 		public void Write(RdfWriter writer) {

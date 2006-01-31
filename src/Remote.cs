@@ -260,7 +260,7 @@ namespace SemWeb.Remote {
 			return (Entity[])ret.ToArray(typeof(Entity));
 		}
 		
-		public void Query(Statement[] graph, SemWeb.Query.QueryResultSink sink) {
+		public void Query(Statement[] graph, BNode[] variables, SemWeb.Query.QueryResultSink sink) {
 			throw new NotImplementedException();
 		}
 	}
