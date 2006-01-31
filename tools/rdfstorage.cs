@@ -29,6 +29,9 @@ public class RDFStorage {
 		[Mono.GetOptions.Option("The default base {URI} for the input streams.")]
 		public string baseuri = null;
 
+		[Mono.GetOptions.Option("The base {URI} for the output stream (if supported).")]
+		public string outbaseuri = null;
+
 		[Mono.GetOptions.Option("Quiet mode: Don't emit status information.")]
 		public bool quiet = false;
 
@@ -57,6 +60,8 @@ public class RDFStorage {
 			opts.quiet = true;
 		
 		StatementSink storage = Store.CreateForOutput(opts.@out);
+		if (storage is RdfWriter && opts.outbaseuri != null)
+			((RdfWriter)storage).BaseUri = opts.outbaseuri;
 		
 		Entity meta = null;
 		if (opts.meta != null)

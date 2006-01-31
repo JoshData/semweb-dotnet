@@ -1,3 +1,5 @@
+2006-01-31 Version 0.7
+
 	* New BNode class.  To create a blank node, use new BNnde()
 	  in place of new Entity(null), which will now throw an
 	  exception.  BNodes remember their local names in documents
