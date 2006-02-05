@@ -678,9 +678,16 @@ namespace SemWeb.Query {
 				// has begun.
 				
 				MemoryStream buffer = new MemoryStream();
-				SelectableSource source = GetDataSource();
-				Query sparql = CreateQuery(query);
-				RunQuery(sparql, source, new StreamWriter(buffer));
+
+				bool closeAfterQuery;
+				SelectableSource source = GetDataSource(out closeAfterQuery);
+				try {
+					Query sparql = CreateQuery(query);
+					RunQuery(sparql, source, new StreamWriter(buffer));
+				} finally {
+					if (closeAfterQuery && source is IDisposable)
+						((IDisposable)source).Dispose();
+				}
 				
 				if (context.Request["outputMimeType"] == null)
 					context.Response.ContentType = MimeType;
@@ -702,7 +709,9 @@ namespace SemWeb.Query {
 			}
 		}
 
-		protected virtual SelectableSource GetDataSource() {
+		protected virtual SelectableSource GetDataSource(out bool closeAfterQuery) {
+			closeAfterQuery = false;
+			
 			if (System.Web.HttpContext.Current == null)
 				throw new InvalidOperationException("This method is not valid outside of an ASP.NET request.");
 
@@ -722,6 +731,7 @@ namespace SemWeb.Query {
 				bool reuse = true;
 				if (spec.StartsWith("noreuse,")) {
 					reuse = false;
+					closeAfterQuery = true;
 					spec = spec.Substring("noreuse,".Length);
 				}
 
