@@ -16,6 +16,7 @@ namespace SemWeb.Query {
 	
 		private const string BNodePersistUri = "tag:taubz.for.net,2005:bnode_persist_uri/";
 
+		string queryString;
 		name.levering.ryan.sparql.model.Query query;
 		
 		public bool AllowPersistBNodes = true;
@@ -32,6 +33,7 @@ namespace SemWeb.Query {
 		}
 	
 		public Sparql(string query) {
+			queryString = query;
 			try {
 				this.query = SPARQLParser.parse(new java.io.StringReader(query));
 				if (this.query is SelectQuery) {
@@ -246,6 +248,7 @@ namespace SemWeb.Query {
 			resultsink.Init(bindings);
 			
 			// Set the comments
+			resultsink.AddComments(queryString + "\n");
 			resultsink.AddComments(sourcewrapper.GetLog());
 
 			// Iterate the bindings
@@ -322,11 +325,6 @@ namespace SemWeb.Query {
 				if (predicates != null) Depersist(predicates);
 				if (objects != null) Depersist(objects);
 				if (metas != null) Depersist(metas);
-				
-				if (subjects != null && subjects.Length > 500) subjects = null;
-				if (predicates != null && predicates.Length > 500) predicates = null;
-				if (objects != null && objects.Length > 500) objects = null;
-				if (metas != null && metas.Length > 500) metas = null;
 				
 				MemoryStore results = new MemoryStore();
 				StatementSink sink = results;

@@ -732,11 +732,33 @@ namespace SemWeb.Stores {
 		
 		public override void Select(Entity[] subjects, Entity[] predicates, Resource[] objects, Entity[] metas, StatementSink result) {
 			if (result == null) throw new ArgumentNullException();
-			Select(ToMultiRes(subjects),
-				ToMultiRes(predicates),
-				ToMultiRes(objects),
-				ToMultiRes(metas),
-				result);
+			foreach (Entity[] s in SplitArray(subjects))
+			foreach (Entity[] p in SplitArray(predicates))
+			foreach (Resource[] o in SplitArray(objects))
+			foreach (Entity[] m in SplitArray(metas))
+				Select(ToMultiRes(s),
+					ToMultiRes(p),
+					ToMultiRes(o),
+					ToMultiRes(m),
+					result);
+		}
+		
+		Resource[][] SplitArray(Resource[] e) {
+			int lim = 500;
+			if (e == null || e.Length <= lim) {
+				if (e is Entity[]) return new Entity[][] { (Entity[])e }; else return new Resource[][] { e };
+			}
+			int overflow = e.Length % lim;
+			int n = (e.Length / lim) + ((overflow != 0) ? 1 : 0);
+			Resource[][] ret;
+			if (e is Entity[]) ret = new Entity[n][]; else ret = new Resource[n][];
+			for (int i = 0; i < n; i++) {
+				int c = lim;
+				if (i == n-1 && overflow != 0) c = overflow;
+				if (e is Entity[]) ret[i] = new Entity[c]; else ret[i] = new Resource[c];
+				Array.Copy(e, i*lim, ret[i], 0, c);
+			}
+			return ret;
 		}
 		
 		Resource ToMultiRes(Resource[] r) {

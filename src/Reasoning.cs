@@ -7,7 +7,7 @@ using SemWeb.Util;
 
 namespace SemWeb.Inference {
 
-	public class RDFS : SelectableSource, SupportsPersistableBNodes {
+	public class RDFS : SelectableSource, SupportsPersistableBNodes, IDisposable {
 		static readonly Entity type = NS.RDF + "type";
 		static readonly Entity subClassOf = NS.RDFS + "subClassOf";
 		static readonly Entity subPropertyOf = NS.RDFS + "subPropertyOf";
@@ -41,6 +41,11 @@ namespace SemWeb.Inference {
 		public RDFS(StatementSource schema, SelectableSource data)
 		: this(data) {
 			LoadSchema(schema);
+		}
+		
+		void IDisposable.Dispose() {
+			if (data is IDisposable)
+				((IDisposable)data).Dispose();
 		}
 		
 		public StatementSink Schema { get { return schemasink; } }
@@ -156,8 +161,8 @@ namespace SemWeb.Inference {
 						// If it's in the domain of any of these properties,
 						// we know its type.
 						if (subjects != null) {
-							data.Select(subjects, dom.ToEntityArray(), null, metas, new ExpandDomRan(0, domPropToType, sink));
-							data.Select(null, ran.ToEntityArray(), subjects, metas, new ExpandDomRan(1, domPropToType, sink));
+							if (dom.Count > 0) data.Select(subjects, dom.ToEntityArray(), null, metas, new ExpandDomRan(0, domPropToType, sink));
+							if (ran.Count > 0) data.Select(null, ran.ToEntityArray(), subjects, metas, new ExpandDomRan(1, ranPropToType, sink));
 						}
 						
 					} else if (subjects != null) {
@@ -220,7 +225,8 @@ namespace SemWeb.Inference {
 					}
 				}
 				
-				data.Select(subjects, qprops.ToEntityArray(), objects, metas, new LiteralDTMap(ranges, new PredMap(propfrom, sink)));
+				//data.Select(subjects, qprops.ToEntityArray(), objects, metas, new LiteralDTMap(ranges, new PredMap(propfrom, sink)));
+				data.Select(subjects, qprops.ToEntityArray(), objects, metas, new PredMap(propfrom, sink));
 			}
 		}
 		
@@ -274,12 +280,15 @@ namespace SemWeb.Inference {
 			Hashtable map;
 			StatementSink sink;
 			public ExpandDomRan(int dr, Hashtable propToType, StatementSink s) {
+				if (s == null) throw new ArgumentNullException();
 				domran = dr;
 				map = propToType;
 				sink = s; 
 			}
 			public bool Add(Statement s) {
+				if (s.AnyNull) throw new ArgumentNullException();
 				if (domran == 1 && !(s.Object is Entity)) return true;
+				if (!map.ContainsKey(s.Predicate)) return true; // shouldn't really happen
 				foreach (Entity e in (ResSet)map[s.Predicate]) {
 					Statement s1 = new Statement(
 						domran == 0 ? s.Subject : (Entity)s.Object,
