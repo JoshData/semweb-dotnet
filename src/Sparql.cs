@@ -681,7 +681,9 @@ namespace SemWeb.Query {
 				SelectableSource source = GetDataSource(out closeAfterQuery);
 				try {
 					Query sparql = CreateQuery(query);
-					RunQuery(sparql, source, new StreamWriter(buffer));
+					TextWriter writer = new StreamWriter(buffer, System.Text.Encoding.UTF8);
+					RunQuery(sparql, source, writer);
+					writer.Flush();
 				} finally {
 					if (closeAfterQuery && source is IDisposable)
 						((IDisposable)source).Dispose();
@@ -751,7 +753,49 @@ namespace SemWeb.Query {
 		}
 		
 		protected virtual void RunQuery(Query query, SelectableSource source, TextWriter output) {
+			if (System.Web.HttpContext.Current != null
+				&& System.Web.HttpContext.Current.Request["outputMimeType"] != null
+				&& System.Web.HttpContext.Current.Request["outputMimeType"] == "text/html") {
+				query.Run(source, new HTMLQuerySink(output));
+				return;
+			}
+
 			query.Run(source, new SparqlXmlQuerySink(output));
 		}
+		
+		private class HTMLQuerySink : QueryResultSink {
+			TextWriter output;
+			
+			public HTMLQuerySink(TextWriter output) { this.output = output; }
+
+			public override void Init(VariableBinding[] variables) {
+				output.WriteLine("<table>");
+				output.WriteLine("<tr>");
+				foreach (VariableBinding var in variables) {
+					if (var.Name == null) continue;
+					output.WriteLine("<th>" + var.Name + "</th>");
+				}
+				output.WriteLine("</tr>");
+			}
+			
+			public override void Finished() {
+				output.WriteLine("</table>");
+			}
+			
+			public override bool Add(VariableBinding[] result) {
+				output.WriteLine("<tr>");
+				foreach (VariableBinding var in result) {
+					if (var.Name == null) continue;
+					string t = var.Target.ToString();
+					if (var.Target is Literal) t = ((Literal)var.Target).Value;
+					t = t.Replace("&", "&amp;");
+					t = t.Replace("<", "&lt;");
+					output.WriteLine("<td>" + t + "</td>");
+				}
+				output.WriteLine("</tr>");			
+				return true;
+			}
+		}
+
 	}
 }

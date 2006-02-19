@@ -21,6 +21,8 @@ namespace SemWeb.Stores {
 		
 		Hashtable literalCache = new Hashtable();
 		int literalCacheSize = 0;
+		
+		bool statementsRemoved = false;
 
 		bool Debug = false;
 		
@@ -86,10 +88,10 @@ namespace SemWeb.Stores {
 				guid = verdata["guid"];
 			}
 			
-			string newverdata = Escape(SerializeVersionInfo(verdata), true);
+			string newverdata = SerializeVersionInfo(verdata);
 			if (verdatastr == null)
-				RunCommand("INSERT INTO " + table + "_literals (id, value) VALUES (0, " + newverdata + ")");
-			else
+				RunCommand("INSERT INTO " + table + "_literals (id, value) VALUES (0, " + Escape(newverdata, true) + ")");
+			else if (verdatastr != newverdata)
 				RunCommand("UPDATE " + table + "_literals SET value = " + newverdata + " WHERE id = 0");
 		}
 		
@@ -569,6 +571,8 @@ namespace SemWeb.Stores {
 			cmd.Append(";");
 			
 			RunCommand(cmd.ToString());
+			
+			statementsRemoved = true;
 		}
 		
 		public override Entity[] GetEntities() {
@@ -666,13 +670,17 @@ namespace SemWeb.Stores {
 		}
 		
 		private bool WhereClause(Statement template, System.Text.StringBuilder cmd) {
-			return WhereClause(template.Subject, template.Predicate, template.Object, template.Meta, cmd);
+			bool ww;
+			return WhereClause(template.Subject, template.Predicate, template.Object, template.Meta, cmd, out ww);
 		}
 
-		private bool WhereClause(Resource templateSubject, Resource templatePredicate, Resource templateObject, Resource templateMeta, System.Text.StringBuilder cmd) {
-			if (templateSubject == null && templatePredicate == null && templateObject == null && templateMeta == null)
+		private bool WhereClause(Resource templateSubject, Resource templatePredicate, Resource templateObject, Resource templateMeta, System.Text.StringBuilder cmd, out bool wroteWhere) {
+			if (templateSubject == null && templatePredicate == null && templateObject == null && templateMeta == null) {
+				wroteWhere = false;
 				return true;
+			}
 			
+			wroteWhere = true;
 			cmd.Append(" WHERE ");
 			
 			if (templateSubject != null)
@@ -749,7 +757,7 @@ namespace SemWeb.Stores {
 		}
 		
 		Resource[][] SplitArray(Resource[] e) {
-			int lim = 500;
+			int lim = 1000;
 			if (e == null || e.Length <= lim) {
 				if (e is Entity[]) return new Entity[][] { (Entity[])e }; else return new Resource[][] { e };
 			}
@@ -841,9 +849,22 @@ namespace SemWeb.Stores {
 				cmd.Append("_entities AS muri ON q.meta = muri.id");
 			}
 			cmd.Append(' ');
-			if (!WhereClause(templateSubject, templatePredicate, templateObject, templateMeta, cmd)) return;
 			
-			// TODO: Transform literal filters into SQL.
+			bool wroteWhere;
+			if (!WhereClause(templateSubject, templatePredicate, templateObject, templateMeta, cmd, out wroteWhere)) return;
+			
+			// Transform literal filters into SQL.
+			if (litFilters != null) {
+				foreach (LiteralFilter f in litFilters) {
+					string s = FilterToSQL(f, "lit.value");
+					if (s != null) {
+						if (!wroteWhere) { cmd.Append(" WHERE "); wroteWhere = true; }
+						else { cmd.Append(" AND "); }
+						cmd.Append(" ");
+						cmd.Append(s);
+					}
+				}
+			}
 			
 			if (limit >= 1) {
 				cmd.Append(" LIMIT ");
@@ -896,6 +917,30 @@ namespace SemWeb.Stores {
 
 				}
 			}
+		}
+		
+		private string FilterToSQL(LiteralFilter filter, string col) {
+			if (filter is SemWeb.Filters.StringCompareFilter) {
+				SemWeb.Filters.StringCompareFilter f = (SemWeb.Filters.StringCompareFilter)filter;
+				return col + FilterOpToSQL(f.Type) + Escape(f.Pattern, true);
+			}
+			if (filter is SemWeb.Filters.NumericCompareFilter) {
+				SemWeb.Filters.NumericCompareFilter f = (SemWeb.Filters.NumericCompareFilter)filter;
+				return col + FilterOpToSQL(f.Type) + f.Number;
+			}
+			return null;
+		}
+		
+		private string FilterOpToSQL(LiteralFilter.CompType op) {
+			switch (op) {
+			case LiteralFilter.CompType.LT: return " < ";
+			case LiteralFilter.CompType.LE: return " <= ";
+			case LiteralFilter.CompType.NE: return " <> ";
+			case LiteralFilter.CompType.EQ: return " = ";
+			case LiteralFilter.CompType.GT: return " > ";
+			case LiteralFilter.CompType.GE: return " >= ";
+			default: throw new ArgumentException(op.ToString());
+			}			
 		}
 		
 		private string Escape(string str, bool quotes) {
@@ -1170,6 +1215,13 @@ namespace SemWeb.Stores {
 			if (ret is string) return (string)ret;
 			if (ret is byte[]) return System.Text.Encoding.UTF8.GetString((byte[])ret);
 			throw new FormatException("SQL store returned a literal value as " + ret);
+		}
+		
+		public override void Close() {
+			if (statementsRemoved) {
+				RunCommand("DELETE FROM " + table + "_literals where (select count(*) from " + table + "_statements where object=id) = 0 and id > 0");
+				RunCommand("DELETE FROM " + table + "_entities where (select count(*) from " + table + "_statements where subject=id) = 0 and (select count(*) from " + table + "_statements where predicate=id) = 0 and (select count(*) from " + table + "_statements where object=id) = 0 and (select count(*) from " + table + "_statements where meta=id) = 0 ;");
+			}
 		}
 
 		protected virtual void CreateTable() {
