@@ -60,9 +60,6 @@ namespace SemWeb.Remote {
 				&& objects != null && objects.Length == 1) {
 				query = "ASK WHERE { " + S(subjects[0], null) + " " + S(predicates[0], null) + " " + S(objects[0], null) + "}";
 				nonull = true;
-
-				// TODO: Pass literal filters to server.
-				if (litFilters != null) throw new NotImplementedException("Literal filters cannot be used with an ASK query.");
 			} else {
 				if (ask)
 					query = "ASK";

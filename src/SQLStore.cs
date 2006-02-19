@@ -742,6 +742,7 @@ namespace SemWeb.Stores {
 					ToMultiRes(p),
 					ToMultiRes(o),
 					ToMultiRes(m),
+					filter.LiteralFilters,
 					result,
 					filter.Limit); // hmm, repeated
 			}
@@ -779,10 +780,10 @@ namespace SemWeb.Stores {
 		
 		public override void Select(Statement template, StatementSink result) {
 			if (result == null) throw new ArgumentNullException();
-			Select(template.Subject, template.Predicate, template.Object, template.Meta, result, 0);
+			Select(template.Subject, template.Predicate, template.Object, template.Meta, null, result, 0);
 		}
 
-		private void Select(Resource templateSubject, Resource templatePredicate, Resource templateObject, Resource templateMeta, StatementSink result, int limit) {
+		private void Select(Resource templateSubject, Resource templatePredicate, Resource templateObject, Resource templateMeta, LiteralFilter[] litFilters, StatementSink result, int limit) {
 			if (result == null) throw new ArgumentNullException();
 	
 			Init();
@@ -792,7 +793,7 @@ namespace SemWeb.Stores {
 			SelectPartialFilter partialFilter = new SelectPartialFilter(
 				(templateSubject == null) || templateSubject is MultiRes,
 				(templatePredicate == null) || templatePredicate is MultiRes,
-				(templateObject == null) || templateObject is MultiRes,
+				(templateObject == null) || templateObject is MultiRes || litFilters != null,
 				(templateMeta == null) || templateMeta is MultiRes
 				);
 			
@@ -841,12 +842,15 @@ namespace SemWeb.Stores {
 			}
 			cmd.Append(' ');
 			if (!WhereClause(templateSubject, templatePredicate, templateObject, templateMeta, cmd)) return;
-			cmd.Append(";");
+			
+			// TODO: Transform literal filters into SQL.
 			
 			if (limit >= 1) {
 				cmd.Append(" LIMIT ");
 				cmd.Append(limit);
 			}
+
+			cmd.Append(";");
 			
 			if (Debug || false) {
 				string cmd2 = cmd.ToString();
@@ -874,12 +878,18 @@ namespace SemWeb.Stores {
 						ld = AsString(reader[col++]);
 					}
 					
+					Resource sobject =
+						!partialFilter.Object ? templateObject : 
+							(ot == 0 ? (Resource)MakeEntity(oid, ouri, entMap)
+								     : (Resource)new Literal(lv, ll, ld));
+					
+					if (litFilters != null && !LiteralFilter.MatchesFilters(sobject, litFilters, this))
+						continue;
+						
 					bool ret = result.Add(new Statement(
 						!partialFilter.Subject ? (Entity)templateSubject : MakeEntity(sid, suri, entMap),
 						!partialFilter.Predicate ? (Entity)templatePredicate : MakeEntity(pid, puri, entMap),
-						!partialFilter.Object ? templateObject : 
-							(ot == 0 ? (Resource)MakeEntity(oid, ouri, entMap)
-								     : (Resource)new Literal(lv, ll, ld)),
+						sobject,
 						(!partialFilter.Meta || mid == 0) ? (Entity)templateMeta : MakeEntity(mid, muri, entMap)
 						));
 					if (!ret) break;

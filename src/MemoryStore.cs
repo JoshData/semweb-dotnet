@@ -173,6 +173,7 @@ namespace SemWeb {
 				if (p != null && !p.Contains(st.Predicate)) continue;
 				if (o != null && !o.Contains(st.Object)) continue;
 				if (m != null && !m.Contains(st.Meta)) continue;
+				if (filter.LiteralFilters != null && !LiteralFilter.MatchesFilters(st.Object, filter.LiteralFilters, this)) continue;
 				if (!result.Add(st)) return;
 			}
 		}
