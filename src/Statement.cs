@@ -128,6 +128,31 @@ namespace SemWeb {
 		}
 	}
 	
+	public struct SelectFilter {
+		public Entity[] Subjects;
+		public Entity[] Predicates;
+		public Resource[] Objects;
+		public Entity[] Metas;
+		public LiteralFilter[] LiteralFilters;
+		public int Limit;
+		
+		public SelectFilter(Statement statement) {
+			Subjects = null; Predicates = null; Objects = null; Metas = null; LiteralFilters = null; Limit = 0;
+			if (statement.Subject != null) Subjects = new Entity[] { statement.Subject };
+			if (statement.Predicate != null) Predicates = new Entity[] { statement.Predicate };
+			if (statement.Object != null) Objects = new Resource[] { statement.Object };
+			if (statement.Meta != null) Metas = new Entity[] { statement.Meta };
+		}
+		
+		public SelectFilter(Entity[] subjects, Entity[] predicates, Resource[] objects, Entity[] metas) {
+			Subjects = null; Predicates = null; Objects = null; Metas = null; LiteralFilters = null; Limit = 0;
+			Subjects = subjects;
+			Predicates = predicates;
+			Objects = objects;
+			Metas = metas;
+		}
+	}
+	
 	internal struct SelectPartialFilter {
 		bool s, p, o, m;
 		

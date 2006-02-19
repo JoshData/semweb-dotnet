@@ -40,6 +40,19 @@ namespace SemWeb {
 		public enum CompType {
 			LT, LE, NE, EQ, GT, GE
 		}
+		
+		public static bool MatchesFilters(Resource literal, LiteralFilter[] filters, SelectableSource targetModel) {
+			if (literal is Literal)
+				return MatchesFilters((Literal)literal, filters, targetModel);
+			return false;
+		}
+		
+		public static bool MatchesFilters(Literal literal, LiteralFilter[] filters, SelectableSource targetModel) {
+			foreach (LiteralFilter filter in filters)
+				if (!filter.Filter(literal, targetModel))
+					return false;
+			return true;
+		}
 	}
 }
 

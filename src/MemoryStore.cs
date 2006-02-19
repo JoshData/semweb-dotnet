@@ -161,12 +161,12 @@ namespace SemWeb {
 			}
 		}
 
-		public override void Select(Entity[] subjects, Entity[] predicates, Resource[] objects, Entity[] metas, StatementSink result) {
+		public override void Select(SelectFilter filter, StatementSink result) {
 			ResSet
-				s = subjects == null ? null : new ResSet(subjects),
-				p = predicates == null ? null : new ResSet(predicates),
-				o = objects == null ? null : new ResSet(objects),
-				m = metas == null ? null : new ResSet(metas);
+				s = filter.Subjects == null ? null : new ResSet(filter.Subjects),
+				p = filter.Predicates == null ? null : new ResSet(filter.Predicates),
+				o = filter.Objects == null ? null : new ResSet(filter.Objects),
+				m = filter.Metas == null ? null : new ResSet(filter.Metas);
 				
 			foreach (Statement st in statements) {
 				if (s != null && !s.Contains(st.Subject)) continue;

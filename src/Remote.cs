@@ -7,7 +7,7 @@ using System.Xml;
  
 namespace SemWeb.Remote {
 
-	public class SparqlHttpSource : SelectableSource, QueryableSource {
+	public class SparqlHttpSource : SelectableSource {
 	
 		string url;
 		
@@ -18,7 +18,7 @@ namespace SemWeb.Remote {
 		public bool Distinct { get { return true; } }
 		
 		public bool Contains(Statement template) {
-			return Select(template, null, true);;
+			return Select(template, null, true);
 		}
 		
 		public void Select(StatementSink sink) {
@@ -35,21 +35,18 @@ namespace SemWeb.Remote {
 				template.Predicate == null ? null : new Entity[] { template.Predicate },
 				template.Object == null ? null : new Resource[] { template.Object },
 				template.Meta == null ? null : new Entity[] { template.Meta },
+				null,
+				0,
 				sink,
 				ask
 				);
 		}
 		
-		public void Select(Entity[] subjects, Entity[] predicates, Resource[] objects, Entity[] metas, StatementSink sink) {
-			Select(subjects, predicates, objects, metas, sink, false);
+		public void Select(SelectFilter filter, StatementSink sink) {
+			Select(filter.Subjects, filter.Predicates, filter.Objects, filter.Metas, filter.LiteralFilters, filter.Limit, sink, false);
 		}
 		
-		public void Select(Entity[] subjects, Entity[] predicates, Entity[] metas, StatementSink sink, LiteralFilter[] literalFilters) {
-			// TODO: Pass filters on to the source.
-			Store.DefaultSelect(this, subjects, predicates, metas, sink, literalFilters);
-		}
-		
-		bool Select(Entity[] subjects, Entity[] predicates, Resource[] objects, Entity[] metas, StatementSink sink, bool ask) {
+		bool Select(Entity[] subjects, Entity[] predicates, Resource[] objects, Entity[] metas, LiteralFilter[] litFilters, int limit, StatementSink sink, bool ask) {
 			// TODO: Change meta into named graphs.  Anything but a null or DefaultMeta
 			// meta returns no statements immediately.
 			if (metas != null && (metas.Length != 1 || metas[0] != Statement.DefaultMeta))
@@ -63,6 +60,9 @@ namespace SemWeb.Remote {
 				&& objects != null && objects.Length == 1) {
 				query = "ASK WHERE { " + S(subjects[0], null) + " " + S(predicates[0], null) + " " + S(objects[0], null) + "}";
 				nonull = true;
+
+				// TODO: Pass literal filters to server.
+				if (litFilters != null) throw new NotImplementedException("Literal filters cannot be used with an ASK query.");
 			} else {
 				if (ask)
 					query = "ASK";
@@ -79,7 +79,12 @@ namespace SemWeb.Remote {
 				query += SL(predicates, "predicate");
 				query += SL(objects, "object");
 				query += " }";
+				
+				// TODO: Pass literal filters to server.
 			}
+			
+			if (limit >= 1)
+				query += " LIMIT " + limit;
 			
 			XmlDocument result = Load(query);
 			
@@ -115,6 +120,7 @@ namespace SemWeb.Remote {
 				Resource obj = GetBinding(binding, "object", objects, bnodes);
 				Statement s = new Statement(subj, pred, obj);
 				if (distinctCheck != null && distinctCheck.Contains(s)) continue;
+				if (litFilters != null && !LiteralFilter.MatchesFilters(s.Object, litFilters, this)) continue;
 				if (!sink.Add(s)) return true;
 				if (distinctCheck != null) distinctCheck.Add(s);
 			}
@@ -259,10 +265,7 @@ namespace SemWeb.Remote {
 			
 			return (Entity[])ret.ToArray(typeof(Entity));
 		}
-		
-		public void Query(Statement[] graph, BNode[] variables, SemWeb.Query.QueryResultSink sink) {
-			throw new NotImplementedException();
-		}
+
 	}
 }
 

@@ -332,7 +332,7 @@ namespace SemWeb.Query {
 				if (!source.Distinct)
 					sink = new SemWeb.Util.DistinctStatementsSink(results, defaultGraph && metas == null);
 
-				source.Select(subjects, predicates, objects, metas, sink);
+				source.Select(new SelectFilter(subjects, predicates, objects, metas), sink);
 				
 				Log("SELECT: " + ToString(subjects) + " " + ToString(predicates) + " " + ToString(objects) + " => " + results.StatementCount + " statements [" + (DateTime.Now-start) + "s]");
 				

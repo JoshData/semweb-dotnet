@@ -23,11 +23,8 @@ namespace SemWeb.Algos {
 		public void Select(Statement template, StatementSink sink) {
 			a.Select(template, new Tester(b, sink));
 		}
-		public void Select(Entity[] subjects, Entity[] predicates, Resource[] objects, Entity[] metas, StatementSink sink) {
-			a.Select(subjects, predicates, objects, metas, new Tester(b, sink));
-		}
-		public void Select(Entity[] subjects, Entity[] predicates, Entity[] metas, StatementSink sink, LiteralFilter[] literalFilters) {
-			Store.DefaultSelect(this, subjects, predicates, metas, sink, literalFilters);
+		public void Select(SelectFilter filter, StatementSink sink) {
+			a.Select(filter, new Tester(b, sink));
 		}
 		public Entity[] FindEntities(Statement[] graph) {
 			throw new InvalidOperationException();

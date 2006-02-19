@@ -91,9 +91,10 @@ namespace SemWeb.Inference {
 		public void LoadSchema(StatementSource source) {
 			if (source is SelectableSource) {
 				((SelectableSource)source).Select(
+					new SelectFilter(
 					null,
 					new Entity[] { subClassOf, subPropertyOf, domain, range },
-					null, null, Schema);
+					null, null), Schema);
 			} else {
 				source.Select(Schema);
 			}
@@ -113,21 +114,21 @@ namespace SemWeb.Inference {
 				return;
 			}
 			
-			Select(
-				template.Subject == null ? null : new Entity[] { template.Subject },
-				template.Predicate == null ? null : new Entity[] { template.Predicate },
-				template.Object == null ? null : new Resource[] { template.Object },
-				template.Meta == null ? null : new Entity[] { template.Meta },
-				sink);
+			Select(new SelectFilter(template), sink);
 		}
 		
-		public void Select(Entity[] subjects, Entity[] predicates, Resource[] objects, Entity[] metas, StatementSink sink) {
-			if (predicates == null) {
-				data.Select(subjects, predicates, objects, metas, sink);
+		public void Select(SelectFilter filter, StatementSink sink) {
+			if (filter.Predicates == null) {
+				data.Select(filter, sink);
 				return;
 			}
 			
 			ResSet remainingPredicates = new ResSet();
+			
+			Entity[] subjects = filter.Subjects;
+			Entity[] predicates = filter.Predicates;
+			Resource[] objects = filter.Objects;
+			Entity[] metas = filter.Metas;
 			
 			foreach (Entity p in predicates) {
 				if (p == type) {
@@ -136,7 +137,7 @@ namespace SemWeb.Inference {
 						// or what things have those types?
 						
 						// Expand objects by the subclass closure of the objects
-						data.Select(subjects, new Entity[] { p }, GetClosure(objects, subclasses), metas, sink);
+						data.Select(new SelectFilter(subjects, new Entity[] { p }, GetClosure(objects, subclasses), metas), sink);
 						
 						// Process domains and ranges.
 						ResSet dom = new ResSet(), ran = new ResSet();
@@ -161,23 +162,23 @@ namespace SemWeb.Inference {
 						// If it's in the domain of any of these properties,
 						// we know its type.
 						if (subjects != null) {
-							if (dom.Count > 0) data.Select(subjects, dom.ToEntityArray(), null, metas, new ExpandDomRan(0, domPropToType, sink));
-							if (ran.Count > 0) data.Select(null, ran.ToEntityArray(), subjects, metas, new ExpandDomRan(1, ranPropToType, sink));
+							if (dom.Count > 0) data.Select(new SelectFilter(subjects, dom.ToEntityArray(), null, metas), new ExpandDomRan(0, domPropToType, sink));
+							if (ran.Count > 0) data.Select(new SelectFilter(null, ran.ToEntityArray(), subjects, metas), new ExpandDomRan(1, ranPropToType, sink));
 						}
 						
 					} else if (subjects != null) {
 						// What types do these subjects have?
 						
 						// Expand the resulting types by the closure of their superclasses
-						data.Select(subjects, new Entity[] { p }, objects, metas, new Expand(superclasses, sink));
+						data.Select(new SelectFilter(subjects, new Entity[] { p }, objects, metas), new Expand(superclasses, sink));
 						
 						// Use domains and ranges to get type info
-						data.Select(subjects, null, null, metas, new Expand3(0, domains, superclasses, sink));
-						data.Select(null, null, subjects, metas, new Expand3(1, ranges, superclasses, sink));
+						data.Select(new SelectFilter(subjects, null, null, metas), new Expand3(0, domains, superclasses, sink));
+						data.Select(new SelectFilter(null, null, subjects, metas), new Expand3(1, ranges, superclasses, sink));
 
 					} else {
 						// What has type what?  We won't answer that question.
-						data.Select(subjects, predicates, objects, metas, sink);
+						data.Select(filter, sink);
 					}
 
 				} else if ((p == subClassOf || p == subPropertyOf)
@@ -188,7 +189,7 @@ namespace SemWeb.Inference {
 					
 					if (subjects != null && objects != null) {
 						// Expand objects by the subs closure of the objects.
-						data.Select(subjects, new Entity[] { p }, GetClosure(objects, subs), metas, sink);
+						data.Select(new SelectFilter(subjects, new Entity[] { p }, GetClosure(objects, subs), metas), sink);
 					} else if (subjects != null) {
 						// get all of the supers of all of the subjects
 						foreach (Entity s in subjects)
@@ -203,7 +204,7 @@ namespace SemWeb.Inference {
 						}
 					} else {
 						// What is a subclass/property of what?  We won't answer that.
-						data.Select(subjects, predicates, objects, metas, sink);
+						data.Select(filter, sink);
 					}
 				} else {
 					remainingPredicates.Add(p);
@@ -226,14 +227,10 @@ namespace SemWeb.Inference {
 				}
 				
 				//data.Select(subjects, qprops.ToEntityArray(), objects, metas, new LiteralDTMap(ranges, new PredMap(propfrom, sink)));
-				data.Select(subjects, qprops.ToEntityArray(), objects, metas, new PredMap(propfrom, sink));
+				data.Select(new SelectFilter(subjects, qprops.ToEntityArray(), objects, metas), new PredMap(propfrom, sink));
 			}
 		}
 		
-		public void Select(Entity[] subjects, Entity[] predicates, Entity[] metas, StatementSink sink, LiteralFilter[] literalFilters) {
-			data.Select(subjects, predicates, metas, new LiteralDTMap(ranges, sink), literalFilters); 
-		}
-
 		public Entity[] FindEntities(Statement[] graph) {
 			return Store.DefaultFindEntities(this, graph);
 		}

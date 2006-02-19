@@ -460,10 +460,12 @@ namespace SemWeb.Query {
 					
 					MemoryStore matches = new MemoryStore();
 					targetModel.Select(
-						(Entity[])qs.Subject.GetValues(bindings.Union, true),
-						(Entity[])qs.Predicate.GetValues(bindings.Union, true),
-						qs.Object.GetValues(bindings.Union, false),
-						QueryMeta == null ? null : new Entity[] { QueryMeta },
+						new SelectFilter(
+							(Entity[])qs.Subject.GetValues(bindings.Union, true),
+							(Entity[])qs.Predicate.GetValues(bindings.Union, true),
+							qs.Object.GetValues(bindings.Union, false),
+							QueryMeta == null ? null : new Entity[] { QueryMeta }
+							),
 						new ClearMetaDupCheck(matches));
 					
 					Debug("\t" + matches.StatementCount + " Matches");

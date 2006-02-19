@@ -12,13 +12,13 @@ namespace SemWeb {
 	public interface SelectableSource : StatementSource {
 		bool Contains(Statement template);
 		void Select(Statement template, StatementSink sink);
-		void Select(Entity[] subjects, Entity[] predicates, Resource[] objects, Entity[] metas, StatementSink sink);
-		void Select(Entity[] subjects, Entity[] predicates, Entity[] metas, StatementSink sink, LiteralFilter[] literalFilters);
+		void Select(SelectFilter filter, StatementSink sink);
 		Entity[] FindEntities(Statement[] graph);
 	}
 
 	public interface QueryableSource {
 		void Query(Statement[] graph, BNode[] variables, SemWeb.Query.QueryResultSink sink);
+		void Query(SelectFilter[] graph, BNode[] variables, SemWeb.Query.QueryResultSink sink);
 	}
 	
 	public interface StatementSink {
@@ -206,7 +206,9 @@ namespace SemWeb {
 
 		public static bool DefaultContains(SelectableSource source, Statement template) {
 			StatementExistsSink sink = new StatementExistsSink();
-			source.Select(template, sink);
+			SelectFilter filter = new SelectFilter(template);
+			filter.Limit = 1;
+			source.Select(filter, sink);
 			return sink.Exists;
 		}
 		
@@ -216,38 +218,14 @@ namespace SemWeb {
 		
 		public abstract void Select(Statement template, StatementSink result);
 		
-		public abstract void Select(Entity[] subjects, Entity[] predicates, Resource[] objects, Entity[] metas, StatementSink result);
-		
-		public virtual void Select(Entity[] subjects, Entity[] predicates, Entity[] metas, StatementSink sink, LiteralFilter[] literalFilters) {
-			DefaultSelect(this, subjects, predicates, metas, sink, literalFilters);
-		}
-		
-		public static void DefaultSelect(SelectableSource source, Entity[] subjects, Entity[] predicates, Entity[] metas, StatementSink sink, LiteralFilter[] literalFilters) {
-			source.Select(subjects, predicates, (Resource[])null, metas, new FilterSink(source, sink, literalFilters));
-		}
-
-		private class FilterSink : StatementSink {
-			SelectableSource source;
-			StatementSink sink;
-			LiteralFilter[] filters;
-			public FilterSink(SelectableSource source, StatementSink sink, LiteralFilter[] filters) {
-				this.source = source; this.sink = sink; this.filters = filters;
-			}
-			public bool Add(Statement statement) {
-				if (!(statement.Object is Literal)) return true;
-				foreach (LiteralFilter filter in filters)
-					if (!filter.Filter((Literal)statement.Object, source))
-						return true;
-				return sink.Add(statement);
-			}
-		}
+		public abstract void Select(SelectFilter filter, StatementSink result);
 		
 		public SelectResult Select(Statement template) {
 			return new SelectResult.Single(this, template);
 		}
 		
-		public SelectResult Select(Entity[] subjects, Entity[] predicates, Resource[] objects, Entity[] metas) {
-			return new SelectResult.Multi(this, subjects, predicates, objects, metas);
+		public SelectResult Select(SelectFilter filter) {
+			return new SelectResult.Multi(this, filter);
 		}
 		
 		public Resource[] SelectObjects(Entity subject, Entity predicate) {
@@ -403,17 +381,13 @@ namespace SemWeb {
 		}
 		
 		internal class Multi : SelectResult {
-			Entity[] subjects, predicates, metas;
-			Resource[] objects;
-			public Multi(Store source, Entity[] subjects, Entity[] predicates, Resource[] objects, Entity[] metas)
+			SelectFilter filter;
+			public Multi(Store source, SelectFilter filter)
 				: base(source) {
-				this.subjects = subjects;
-				this.predicates = predicates;
-				this.objects = objects;
-				this.metas = metas;
+				this.filter = filter;
 			}
 			public override void Select(StatementSink sink) {
-				source.Select(subjects, predicates, objects, metas, sink);
+				source.Select(filter, sink);
 			}
 		}
 	}
@@ -553,13 +527,15 @@ namespace SemWeb.Stores {
 				s.Select(template, result);
 		}
 		
-		public override void Select(Entity[] subjects, Entity[] predicates, Resource[] objects, Entity[] metas, StatementSink result) {
-			if (metas == null || namedgraphs.Count == 0) metas = new Entity[] { null };
-			foreach (Entity meta in metas) {
+		public override void Select(SelectFilter filter, StatementSink result) {
+			Entity[] scanMetas = filter.Metas;
+			filter.Metas = null;
+			if (scanMetas == null || namedgraphs.Count == 0) scanMetas = new Entity[] { null };
+			foreach (Entity meta in scanMetas) {
 				SelectableSource[] sources = GetSources(meta);
 				if (sources == null) continue;
 				foreach (SelectableSource s in sources)
-					s.Select(subjects, predicates, objects, metas, result);
+					s.Select(filter, result);
 			}
 		}
 

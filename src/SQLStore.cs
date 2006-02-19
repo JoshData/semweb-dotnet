@@ -730,17 +730,21 @@ namespace SemWeb.Stores {
 			if (partialFilter.Meta) { AppendComma(cmd, "q.meta, muri.value", !f); f = false; }
 		}
 		
-		public override void Select(Entity[] subjects, Entity[] predicates, Resource[] objects, Entity[] metas, StatementSink result) {
+		public override void Select(SelectFilter filter, StatementSink result) {
 			if (result == null) throw new ArgumentNullException();
-			foreach (Entity[] s in SplitArray(subjects))
-			foreach (Entity[] p in SplitArray(predicates))
-			foreach (Resource[] o in SplitArray(objects))
-			foreach (Entity[] m in SplitArray(metas))
-				Select(ToMultiRes(s),
+			foreach (Entity[] s in SplitArray(filter.Subjects))
+			foreach (Entity[] p in SplitArray(filter.Predicates))
+			foreach (Resource[] o in SplitArray(filter.Objects))
+			foreach (Entity[] m in SplitArray(filter.Metas))
+			{
+				Select(
+					ToMultiRes(s),
 					ToMultiRes(p),
 					ToMultiRes(o),
 					ToMultiRes(m),
-					result);
+					result,
+					filter.Limit); // hmm, repeated
+			}
 		}
 		
 		Resource[][] SplitArray(Resource[] e) {
@@ -775,16 +779,14 @@ namespace SemWeb.Stores {
 		
 		public override void Select(Statement template, StatementSink result) {
 			if (result == null) throw new ArgumentNullException();
-			Select(template.Subject, template.Predicate, template.Object, template.Meta, result);
+			Select(template.Subject, template.Predicate, template.Object, template.Meta, result, 0);
 		}
 
-		private void Select(Resource templateSubject, Resource templatePredicate, Resource templateObject, Resource templateMeta, StatementSink result) {
+		private void Select(Resource templateSubject, Resource templatePredicate, Resource templateObject, Resource templateMeta, StatementSink result, int limit) {
 			if (result == null) throw new ArgumentNullException();
 	
 			Init();
 			RunAddBuffer();
-			
-			bool limitOne = false;
 			
 			// Don't select on columns that we already know from the template
 			SelectPartialFilter partialFilter = new SelectPartialFilter(
@@ -841,8 +843,10 @@ namespace SemWeb.Stores {
 			if (!WhereClause(templateSubject, templatePredicate, templateObject, templateMeta, cmd)) return;
 			cmd.Append(";");
 			
-			if (limitOne)
-				cmd.Append(" LIMIT 1");
+			if (limit >= 1) {
+				cmd.Append(" LIMIT ");
+				cmd.Append(limit);
+			}
 			
 			if (Debug || false) {
 				string cmd2 = cmd.ToString();
