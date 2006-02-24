@@ -118,7 +118,7 @@ namespace SemWeb.Inference {
 		}
 		
 		public void Select(SelectFilter filter, StatementSink sink) {
-			if (filter.Predicates == null && filter.LiteralFilters != null) {
+			if (filter.Predicates == null || filter.LiteralFilters != null) {
 				data.Select(filter, sink);
 				return;
 			}

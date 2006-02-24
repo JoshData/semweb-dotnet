@@ -260,8 +260,9 @@ namespace SemWeb.Query {
 				// Since SPARQL processing may be lazy-delayed,
 				// add any new comments that might have be logged.
 				resultsink.AddComments(sourcewrapper.GetLog());
-			
+
 				ctr++;
+			
 				if (ctr < ReturnStart && ReturnStart != -1) continue;
 
 				for (int i = 0; i < bindings.Length; i++) {
@@ -269,12 +270,16 @@ namespace SemWeb.Query {
 					r = sourcewrapper.Persist(r);
 					bindings[i] = new VariableBinding(bindings[i].Variable, bindings[i].Name, r);
 				}
+
+				resultsink.AddComments(sourcewrapper.GetLog());
 				
 				resultsink.Add(bindings);
 
 				ctr2++;
 				if (ctr2 >= ReturnLimit && ReturnLimit != -1) break;
 			}
+			
+			resultsink.AddComments(sourcewrapper.GetLog());
 			
 			// Close the result sink.
 			resultsink.Finished();
@@ -413,8 +418,9 @@ namespace SemWeb.Query {
 			}
 			
 			private bool has(Statement statement) {
-				Log("CONTAINS: " + statement);
-				return source.Contains(statement);
+				bool ret = source.Contains(statement);
+				Log("CONTAINS: " + statement + " ("  + ret + ")");
+				return ret;
 			}
 			
 			public bool hasDefaultStatement (org.openrdf.model.Value subject, org.openrdf.model.URI @predicate, org.openrdf.model.Value @object) {
