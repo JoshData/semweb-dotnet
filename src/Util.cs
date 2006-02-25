@@ -108,20 +108,17 @@ namespace SemWeb.Util {
 	
 	public class DistinctStatementsSink : StatementSink {
 		StatementSink sink;
-		Store store;
+		StatementMap hash;
 		bool resetMeta;
 		public DistinctStatementsSink(StatementSink sink, bool resetMeta) {
 			this.sink = sink;
-			if (sink is Store)
-				store = (Store)sink;
-			else
-				store = new MemoryStore();
+			hash = new StatementMap();
 			this.resetMeta = resetMeta;
 		}
 		public bool Add(Statement s) {
 			if (resetMeta) s.Meta = Statement.DefaultMeta;
-			if (store.Contains(s)) return true;
-			if (store != sink) store.Add(s);
+			if (hash.ContainsKey(s)) return true;
+			hash[s] = hash;
 			return sink.Add(s);
 		}
 	}
@@ -253,6 +250,486 @@ namespace SemWeb.Util {
 				return true;
 			}
 			public object Current { get { return list[index]; } }
+		}
+	}
+
+
+	// This is based on Mono's Hashtable implementation:
+	// Copyright (C) 2004-2005 Novell, Inc (http://www.novell.com)
+	public class StatementMap {
+
+		struct Slot {
+			internal bool used, removed;
+			internal Statement key;
+			internal Object value;
+			internal int hashMix;
+		}
+
+		const int CHAIN_MARKER  = ~Int32.MaxValue;
+		private readonly static string xstr = "Hashtable.Enumerator: snapshot out of sync.";
+
+		private int inUse;
+		private int modificationCount;
+		private float loadFactor;
+		private Slot [] table;
+		private int threshold;
+	
+		private StatementList hashKeys;
+		private HashValues hashValues;
+
+		private static readonly int [] primeTbl = {
+			11,
+			19,
+			37,
+			73,
+			109,
+			163,
+			251,
+			367,
+			557,
+			823,
+			1237,
+			1861,
+			2777,
+			4177,
+			6247,
+			9371,
+			14057,
+			21089,
+			31627,
+			47431,
+			71143,
+			106721,
+			160073,
+			240101,
+			360163,
+			540217,
+			810343,
+			1215497,
+			1823231,
+			2734867,
+			4102283,
+			6153409,
+			9230113,
+			13845163
+		};
+
+		public StatementMap () : this (0, 1.0f) {}
+
+		public StatementMap (int capacity, float loadFactor) {
+			if (capacity<0)
+				throw new ArgumentOutOfRangeException ("capacity", "negative capacity");
+
+			if (loadFactor < 0.1f || loadFactor > 1.0f || Single.IsNaN (loadFactor))
+				throw new ArgumentOutOfRangeException ("loadFactor", "load factor");
+
+			if (capacity == 0) ++capacity;
+			this.loadFactor = 0.75f*loadFactor;
+			double tableSize = capacity / this.loadFactor;
+
+                        if (tableSize > Int32.MaxValue)
+                                throw new ArgumentException ("Size is too big");
+
+                        int size = (int) tableSize;
+			size = ToPrime (size);
+			this.SetTable (new Slot [size]);
+
+			this.inUse = 0;
+			this.modificationCount = 0;
+		}
+
+		public int Count {
+			get {
+				return inUse;
+			}
+		}
+
+		public StatementList Keys {
+			get {
+				if (this.hashKeys == null) {
+					this.hashKeys = new StatementList ();
+					Enumerator e = new Enumerator(this);
+					while (e.MoveNext())
+						hashKeys.Add(e.Key);
+				}
+				return this.hashKeys;
+			}
+		}
+		
+		public IEnumerable Values {
+			get {
+				if (this.hashValues == null)
+					this.hashValues = new HashValues (this);
+				return this.hashValues;
+			}
+		}
+
+		public Object this [Statement key] {
+			get {
+				Slot [] table = this.table;
+				uint size = (uint) table.Length;
+				int h = key.GetHashCode() & Int32.MaxValue;
+				uint indx = (uint)h;
+				uint step = (uint) ((h >> 5)+1) % (size-1)+1;
+				
+				for (uint i = size; i > 0; i--) {
+					indx %= size;
+					Slot entry = table [indx];
+					if (!entry.used)
+						break;
+					
+					Statement k = entry.key;
+					
+					if ((entry.hashMix & Int32.MaxValue) == h
+					    && k == key) {
+						return entry.value;
+					}
+	
+					if ((entry.hashMix & CHAIN_MARKER) == 0)
+						break;
+	
+					indx += step;
+				}
+				
+				return null;
+			}
+			
+			set {
+				PutImpl (key, value, true);
+			}
+		}
+
+		public virtual void Clear ()
+		{
+			for (int i = 0;i<table.Length;i++) {
+				table [i].used = false;
+				table [i].removed = false;
+				table [i].key = Statement.All;
+				table [i].value = null;
+				table [i].hashMix = 0;
+			}
+
+			inUse = 0;
+			modificationCount++;
+		}
+
+		public bool ContainsKey (Statement key)
+		{
+			return (Find (key) >= 0);
+		}
+
+		public virtual void Remove (Statement key)
+		{
+			int i = Find (key);
+			if (i >= 0) {
+				Slot [] table = this.table;
+				int h = table [i].hashMix;
+				h &= CHAIN_MARKER;
+				table [i].hashMix = h;
+				table [i].key = Statement.All;
+				if (h != 0) table [i].removed = true;
+				else table [i].used = false;
+				table [i].value = null;
+				--inUse;
+				++modificationCount;
+			}
+		}
+
+		private void AdjustThreshold ()
+		{
+			int size = table.Length;
+
+			threshold = (int) (size*loadFactor);
+			if (this.threshold >= size)
+				threshold = size-1;
+		}
+
+		private void SetTable (Slot [] table)
+		{
+			if (table == null)
+				throw new ArgumentNullException ("table");
+
+			this.table = table;
+			AdjustThreshold ();
+		}
+
+		private int Find (Statement key)
+		{
+			Slot [] table = this.table;
+			uint size = (uint) table.Length;
+			int h = key.GetHashCode() & Int32.MaxValue;
+			uint indx = (uint)h;
+			uint step = (uint) ((h >> 5)+1) % (size-1)+1;
+			
+			for (uint i = size; i > 0; i--) {
+				indx %= size;
+				Slot entry = table [indx];
+				if (!entry.used)
+					break;
+				
+				Statement k = entry.key;
+				
+				if ((entry.hashMix & Int32.MaxValue) == h
+				    && k == key) {
+					return (int) indx;
+				}
+
+				if ((entry.hashMix & CHAIN_MARKER) == 0)
+					break;
+
+				indx += step;
+			}
+			return -1;
+		}
+
+
+		private void Rehash ()
+		{
+			int oldSize = this.table.Length;
+
+			// From the SDK docs:
+			//   Hashtable is automatically increased
+			//   to the smallest prime number that is larger
+			//   than twice the current number of Hashtable buckets
+			uint newSize = (uint)ToPrime ((oldSize<<1)|1);
+
+
+			Slot [] newTable = new Slot [newSize];
+			Slot [] table = this.table;
+
+			for (int i = 0;i<oldSize;i++) {
+				Slot s = table [i];
+				if (s.used) {
+					int h = s.hashMix & Int32.MaxValue;
+					uint spot = (uint)h;
+					uint step = ((uint) (h>>5)+1)% (newSize-1)+1;
+					for (uint j = spot%newSize;;spot+= step, j = spot%newSize) {
+						// No check for KeyMarker.Removed here,
+						// because the table is just allocated.
+						if (!newTable [j].used) {
+							newTable [j].used = s.used;
+							newTable [j].removed = s.removed;
+							newTable [j].key = s.key;
+							newTable [j].value = s.value;
+							newTable [j].hashMix |= h;
+							break;
+						} else {
+							newTable [j].hashMix |= CHAIN_MARKER;
+						}
+					}
+				}
+			}
+
+			++this.modificationCount;
+
+			this.SetTable (newTable);
+		}
+
+
+		private void PutImpl (Statement key, Object value, bool overwrite)
+		{
+			uint size = (uint)this.table.Length;
+			if (this.inUse >= this.threshold) {
+				this.Rehash ();
+				size = (uint)this.table.Length;
+			}
+
+			int h = key.GetHashCode() & Int32.MaxValue;
+			uint spot = (uint)h;
+			uint step = (uint) ((spot>>5)+1)% (size-1)+1;
+			Slot [] table = this.table;
+			Slot entry;
+
+			int freeIndx = -1;
+			for (int i = 0; i < size; i++) {
+				int indx = (int) (spot % size);
+				entry = table [indx];
+
+				if (freeIndx == -1
+				    && entry.removed
+				    && (entry.hashMix & CHAIN_MARKER) != 0)
+					freeIndx = indx;
+
+				if (!entry.used ||
+				    (entry.removed
+				     && (entry.hashMix & CHAIN_MARKER) == 0)) {
+
+					if (freeIndx == -1)
+						freeIndx = indx;
+					break;
+				}
+
+				if ((entry.hashMix & Int32.MaxValue) == h && key == entry.key) {
+					if (overwrite) {
+						table [indx].value = value;
+						++this.modificationCount;
+					} else {
+						// Handle Add ():
+						// An entry with the same key already exists in the Hashtable.
+						throw new ArgumentException (
+								"Key duplication when adding: " + key);
+					}
+					return;
+				}
+
+				if (freeIndx == -1) {
+					table [indx].hashMix |= CHAIN_MARKER;
+				}
+
+				spot+= step;
+
+			}
+
+			if (freeIndx!= -1) {
+				table [freeIndx].used = true;
+				table [freeIndx].removed = false;
+				table [freeIndx].key = key;
+				table [freeIndx].value = value;
+				table [freeIndx].hashMix |= h;
+
+				++this.inUse;
+				++this.modificationCount;
+			}
+
+		}
+
+		//
+		// Private static methods
+		//
+		internal static bool TestPrime (int x)
+		{
+			if ((x & 1) != 0) {
+				for (int n = 3; n< (int)Math.Sqrt (x); n += 2) {
+					if ((x % n) == 0)
+						return false;
+				}
+				return true;
+			}
+			// There is only one even prime - 2.
+			return (x == 2);
+		}
+
+		internal static int CalcPrime (int x)
+		{
+			for (int i = (x & (~1))-1; i< Int32.MaxValue; i += 2) {
+				if (TestPrime (i)) return i;
+			}
+			return x;
+		}
+
+		internal static int ToPrime (int x)
+		{
+			for (int i = 0; i < primeTbl.Length; i++) {
+				if (x <= primeTbl [i])
+					return primeTbl [i];
+			}
+			return CalcPrime (x);
+		}
+
+		private sealed class Enumerator : IEnumerator {
+
+			private StatementMap host;
+			private int stamp;
+			private int pos;
+			private int size;
+
+			private bool hasCurrentKey;
+			private Statement currentKey;
+			private Object currentValue;
+
+			public Enumerator (StatementMap host) {
+				this.host = host;
+				stamp = host.modificationCount;
+				size = host.table.Length;
+				Reset ();
+			}
+
+			private void FailFast ()
+			{
+				if (host.modificationCount != stamp) {
+					throw new InvalidOperationException (xstr);
+				}
+			}
+
+			public void Reset ()
+			{
+				FailFast ();
+
+				pos = -1;
+				hasCurrentKey = false;
+				currentKey = Statement.All;
+				currentValue = null;
+			}
+
+			public bool MoveNext ()
+			{
+				FailFast ();
+
+				if (pos < size) {
+					while (++pos < size) {
+						Slot entry = host.table [pos];
+
+						if (entry.used && !entry.removed) {
+							currentKey = entry.key;
+							currentValue = entry.value;
+							return true;
+						}
+					}
+				}
+
+				hasCurrentKey = false;
+				currentKey = Statement.All;
+				currentValue = null;
+				return false;
+			}
+
+			public DictionaryEntry Entry
+			{
+				get {
+					if (!hasCurrentKey) throw new InvalidOperationException ();
+					FailFast ();
+					return new DictionaryEntry (currentKey, currentValue);
+				}
+			}
+
+			public Statement Key {
+				get {
+					if (!hasCurrentKey) throw new InvalidOperationException ();
+					FailFast ();
+					return currentKey;
+				}
+			}
+			
+			public Object Value {
+				get {
+					if (!hasCurrentKey) throw new InvalidOperationException ();
+					FailFast ();
+					return currentValue;
+				}
+			}
+
+			public Object Current {
+				get {
+					if (!hasCurrentKey) throw new InvalidOperationException ();
+					return currentValue;
+				}
+			}
+		}
+
+		private class HashValues : IEnumerable {
+			private StatementMap host;
+
+			public HashValues (StatementMap host) {
+				if (host == null)
+					throw new ArgumentNullException ();
+
+				this.host = host;
+			}
+
+			public virtual IEnumerator GetEnumerator ()
+			{
+				return new Enumerator (host);
+			}
 		}
 	}
 

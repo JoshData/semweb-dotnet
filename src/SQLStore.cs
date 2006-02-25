@@ -35,6 +35,10 @@ namespace SemWeb.Stores {
 				INSERT_INTO_STATEMENTS_VALUES,
 				INSERT_INTO_ENTITIES_VALUES;
 		char quote;
+		
+		object syncroot = new object();
+		
+		Hashtable metaEntities;
 				
 		private class ResourceKey {
 			public int ResId;
@@ -67,7 +71,7 @@ namespace SemWeb.Stores {
 		protected virtual bool SupportsFastJoin { get { return true; } }
 		
 		protected abstract string CreateNullTest(string column);
-
+		
 		private void Init() {
 			if (!firstUse) return;
 			firstUse = false;
@@ -169,6 +173,8 @@ namespace SemWeb.Stores {
 		
 			Init();
 			if (addStatementBuffer != null) addStatementBuffer.Clear();
+			
+			metaEntities = null;
 
 			//RunCommand("DELETE FROM " + table + "_statements;");
 			//RunCommand("DELETE FROM " + table + "_literals;");
@@ -416,6 +422,8 @@ namespace SemWeb.Stores {
 		public override void Add(Statement statement) {
 			if (statement.AnyNull) throw new ArgumentNullException();
 			
+			metaEntities = null;
+
 			if (addStatementBuffer != null) {
 				addStatementBuffer.Add(statement);
 				if (addStatementBuffer.Count >= 400)
@@ -573,6 +581,7 @@ namespace SemWeb.Stores {
 			RunCommand(cmd.ToString());
 			
 			statementsRemoved = true;
+			metaEntities = null;
 		}
 		
 		public override Entity[] GetEntities() {
@@ -729,15 +738,51 @@ namespace SemWeb.Stores {
 			builder.Append(text);
 		}
 		
-		private static void SelectFilter(SelectPartialFilter partialFilter, StringBuilder cmd) {
+		internal struct SelectColumnFilter {
+			public bool SubjectId, PredicateId, ObjectId, MetaId;
+			public bool SubjectUri, PredicateUri, ObjectData, MetaUri;
+		}
+	
+		private static void SelectFilterColumns(SelectColumnFilter filter, StringBuilder cmd) {
 			bool f = true;
 			
-			if (partialFilter.Subject) { cmd.Append("q.subject, suri.value"); f = false; }
-			if (partialFilter.Predicate) { AppendComma(cmd, "q.predicate, puri.value", !f); f = false; }
-			if (partialFilter.Object) { AppendComma(cmd, "q.objecttype, q.object, ouri.value", !f); f = false; }
-			if (partialFilter.Meta) { AppendComma(cmd, "q.meta, muri.value", !f); f = false; }
+			if (filter.SubjectId) { cmd.Append("q.subject"); f = false; }
+			if (filter.PredicateId) { AppendComma(cmd, "q.predicate", !f); f = false; }
+			if (filter.ObjectId) { AppendComma(cmd, "q.object", !f); f = false; }
+			if (filter.MetaId) { AppendComma(cmd, "q.meta", !f); f = false; }
+			if (filter.SubjectUri) { AppendComma(cmd, "suri.value", !f); f = false; }
+			if (filter.PredicateUri) { AppendComma(cmd, "puri.value", !f); f = false; }
+			if (filter.ObjectData) { AppendComma(cmd, "q.objecttype, ouri.value, lit.value, lit.language, lit.datatype", !f); f = false; }
+			if (filter.MetaUri) { AppendComma(cmd, "muri.value", !f); f = false; }
 		}
 		
+		private void SelectFilterTables(SelectColumnFilter filter, StringBuilder cmd) {
+			if (filter.SubjectUri) {
+				cmd.Append(" LEFT JOIN ");
+				cmd.Append(table);
+				cmd.Append("_entities AS suri ON q.subject = suri.id");
+			}
+			if (filter.PredicateUri) {
+				cmd.Append(" LEFT JOIN ");
+				cmd.Append(table);
+				cmd.Append("_entities AS puri ON q.predicate = puri.id");
+			}
+			if (filter.ObjectData) {
+				cmd.Append(" LEFT JOIN ");
+				cmd.Append(table);
+				cmd.Append("_entities AS ouri ON q.object = ouri.id");
+
+				cmd.Append(" LEFT JOIN ");
+				cmd.Append(table);
+				cmd.Append("_literals AS lit ON q.object=lit.id");
+			}
+			if (filter.MetaUri) {
+				cmd.Append(" LEFT JOIN ");
+				cmd.Append(table);
+				cmd.Append("_entities AS muri ON q.meta = muri.id");
+			}
+		}
+
 		public override void Select(SelectFilter filter, StatementSink result) {
 			if (result == null) throw new ArgumentNullException();
 			foreach (Entity[] s in SplitArray(filter.Subjects))
@@ -784,6 +829,18 @@ namespace SemWeb.Stores {
 			public MultiRes(Resource[] a) { items = a; }
 			public Resource[] items;
 			public override string Uri { get { return null; } }
+			public bool ContainsLiterals() {
+				foreach (Resource r in items)
+					if (r is Literal)
+						return true;
+				return false;
+			}
+		}
+		
+		void CacheMultiObjects(Hashtable entMap, Resource obj) {
+			if (!(obj is MultiRes)) return;
+			foreach (Resource r in ((MultiRes)obj).items)
+				entMap[GetResourceId(r, false)] = r;
 		}
 		
 		public override void Select(Statement template, StatementSink result) {
@@ -794,19 +851,33 @@ namespace SemWeb.Stores {
 		private void Select(Resource templateSubject, Resource templatePredicate, Resource templateObject, Resource templateMeta, LiteralFilter[] litFilters, StatementSink result, int limit) {
 			if (result == null) throw new ArgumentNullException();
 	
+			lock (syncroot) {
+			
 			Init();
 			RunAddBuffer();
 			
-			// Don't select on columns that we already know from the template
-			SelectPartialFilter partialFilter = new SelectPartialFilter(
-				(templateSubject == null) || templateSubject is MultiRes,
-				(templatePredicate == null) || templatePredicate is MultiRes,
-				(templateObject == null) || templateObject is MultiRes || litFilters != null,
-				(templateMeta == null) || templateMeta is MultiRes
-				);
+			// Don't select on columns that we already know from the template.
+			// But grab the URIs and literal values for MultiRes selection.
+			SelectColumnFilter columns = new SelectColumnFilter();
+			columns.SubjectId = (templateSubject == null) || templateSubject is MultiRes;
+			columns.PredicateId = (templatePredicate == null) || templatePredicate is MultiRes;
+			columns.ObjectId = (templateObject == null) || templateObject is MultiRes;
+			columns.MetaId = (templateMeta == null) || templateMeta is MultiRes;
+			columns.SubjectUri = templateSubject == null;
+			columns.PredicateUri = templatePredicate == null;
+			columns.ObjectData = templateObject == null || (templateObject is MultiRes && ((MultiRes)templateObject).ContainsLiterals());
+			columns.MetaUri = false; // templateMeta == null;
 			
-			if (partialFilter.SelectNone) // have to select something
-				partialFilter = new SelectPartialFilter(true, false, false, false);
+			// Meta URIs tend to be repeated a lot, so we don't
+			// want to ever select them from the database.
+			// This preloads them, although it makes the first
+			// select quite slow.
+			if (templateMeta == null)
+				LoadMetaEntities();
+			
+			// Have to select something
+			if (!columns.SubjectId && !columns.PredicateId && !columns.ObjectId && !columns.MetaId)
+				columns.SubjectId = true;
 				
 			// SQLite has a problem with LEFT JOIN: When a condition is made on the
 			// first table in the ON clause (q.objecttype=0/1), when it fails,
@@ -816,38 +887,11 @@ namespace SemWeb.Stores {
 			System.Text.StringBuilder cmd = new System.Text.StringBuilder("SELECT ");
 			if (!SupportsNoDuplicates)
 				cmd.Append("DISTINCT ");
-			SelectFilter(partialFilter, cmd);
-			if (partialFilter.Object)
-				cmd.Append(", lit.value, lit.language, lit.datatype");
+			SelectFilterColumns(columns, cmd);
 			cmd.Append(" FROM ");
 			cmd.Append(table);
 			cmd.Append("_statements AS q");
-			
-			if (partialFilter.Object) {
-				cmd.Append(" LEFT JOIN ");
-				cmd.Append(table);
-				cmd.Append("_literals AS lit ON q.object=lit.id");
-			}
-			if (partialFilter.Subject) {
-				cmd.Append(" LEFT JOIN ");
-				cmd.Append(table);
-				cmd.Append("_entities AS suri ON q.subject = suri.id");
-			}
-			if (partialFilter.Predicate) {
-				cmd.Append(" LEFT JOIN ");
-				cmd.Append(table);
-				cmd.Append("_entities AS puri ON q.predicate = puri.id");
-			}
-			if (partialFilter.Object) {
-				cmd.Append(" LEFT JOIN ");
-				cmd.Append(table);
-				cmd.Append("_entities AS ouri ON q.object = ouri.id");
-			}
-			if (partialFilter.Meta) {
-				cmd.Append(" LEFT JOIN ");
-				cmd.Append(table);
-				cmd.Append("_entities AS muri ON q.meta = muri.id");
-			}
+			SelectFilterTables(columns, cmd);
 			cmd.Append(' ');
 			
 			bool wroteWhere;
@@ -881,44 +925,62 @@ namespace SemWeb.Stores {
 			
 			Hashtable entMap = new Hashtable();
 			
+			// Be sure if a MultiRes is involved we hash the
+			// ids of the entities so we can return them
+			// without creating new ones.
+			CacheMultiObjects(entMap, templateSubject);
+			CacheMultiObjects(entMap, templatePredicate);
+			CacheMultiObjects(entMap, templateObject);
+			CacheMultiObjects(entMap, templateMeta);
+						
 			using (IDataReader reader = RunReader(cmd.ToString())) {
 				while (reader.Read()) {
 					int col = 0;
 					int sid = -1, pid = -1, ot = -1, oid = -1, mid = -1;
 					string suri = null, puri = null, ouri = null, muri = null;
-					
-					if (partialFilter.Subject) { sid = reader.GetInt32(col++); suri = AsString(reader[col++]); }
-					if (partialFilter.Predicate) { pid = reader.GetInt32(col++); puri = AsString(reader[col++]); }
-					if (partialFilter.Object) { ot = reader.GetInt32(col++); oid = reader.GetInt32(col++); ouri = AsString(reader[col++]); }
-					if (partialFilter.Meta) { mid = reader.GetInt32(col++); muri = AsString(reader[col++]); }
-					
 					string lv = null, ll = null, ld = null;
-					if (ot == 1 && partialFilter.Object) {
-						lv = AsString(reader[col++]);
-						ll = AsString(reader[col++]);
-						ld = AsString(reader[col++]);
-					}
 					
-					Resource sobject =
-						!partialFilter.Object ? templateObject : 
-							(ot == 0 ? (Resource)MakeEntity(oid, ouri, entMap)
-								     : (Resource)new Literal(lv, ll, ld));
+					if (columns.SubjectId) { sid = reader.GetInt32(col++); }
+					if (columns.PredicateId) { pid = reader.GetInt32(col++); }
+					if (columns.ObjectId) { oid = reader.GetInt32(col++); }
+					if (columns.MetaId) { mid = reader.GetInt32(col++); }
 					
-					if (litFilters != null && !LiteralFilter.MatchesFilters(sobject, litFilters, this))
+					if (columns.SubjectUri) { suri = AsString(reader[col++]); }
+					if (columns.PredicateUri) { puri = AsString(reader[col++]); }
+					if (columns.ObjectData) { ot = reader.GetInt32(col++); ouri = AsString(reader[col++]); lv = AsString(reader[col++]); ll = AsString(reader[col++]); ld = AsString(reader[col++]);}
+					if (columns.MetaUri) { muri = AsString(reader[col++]); }
+					
+					Entity subject = GetSelectedEntity(sid, suri, templateSubject, columns.SubjectId, columns.SubjectUri, entMap);
+					Entity predicate = GetSelectedEntity(pid, puri, templatePredicate, columns.PredicateId, columns.PredicateUri, entMap);
+					Resource objec = GetSelectedResource(oid, ot, ouri, lv, ll, ld, templateObject, columns.ObjectId, columns.ObjectData, entMap);
+					Entity meta = GetSelectedEntity(mid, muri, templateMeta, columns.MetaId, columns.MetaUri, templateMeta != null ? entMap : metaEntities);
+
+					if (litFilters != null && !LiteralFilter.MatchesFilters(objec, litFilters, this))
 						continue;
 						
-					bool ret = result.Add(new Statement(
-						!partialFilter.Subject ? (Entity)templateSubject : MakeEntity(sid, suri, entMap),
-						!partialFilter.Predicate ? (Entity)templatePredicate : MakeEntity(pid, puri, entMap),
-						sobject,
-						(!partialFilter.Meta || mid == 0) ? (Entity)templateMeta : MakeEntity(mid, muri, entMap)
-						));
+					bool ret = result.Add(new Statement(subject, predicate, objec, meta));
 					if (!ret) break;
-
 				}
 			}
+			
+			} // lock
+		}
+
+		Entity GetSelectedEntity(int id, string uri, Resource given, bool idSelected, bool uriSelected, Hashtable entMap) {
+			if (!idSelected) return (Entity)given;
+			if (!uriSelected) return (Entity)entMap[id];
+			return MakeEntity(id, uri, entMap);
 		}
 		
+		Resource GetSelectedResource(int id, int type, string uri, string lv, string ll, string ld, Resource given, bool idSelected, bool uriSelected, Hashtable entMap) {
+			if (!idSelected) return (Resource)given;
+			if (!uriSelected) return (Resource)entMap[id];
+			if (type == 0)
+				return MakeEntity(id, uri, entMap);
+			else
+				return new Literal(lv, ll, ld);
+		}
+
 		private string FilterToSQL(LiteralFilter filter, string col) {
 			if (filter is SemWeb.Filters.StringCompareFilter) {
 				SemWeb.Filters.StringCompareFilter f = (SemWeb.Filters.StringCompareFilter)filter;
@@ -941,6 +1003,18 @@ namespace SemWeb.Stores {
 			case LiteralFilter.CompType.GE: return " >= ";
 			default: throw new ArgumentException(op.ToString());
 			}			
+		}
+		
+		private void LoadMetaEntities() {
+			if (metaEntities != null) return;
+			metaEntities = new Hashtable();
+			using (IDataReader reader = RunReader("select id, value from " + table + "_entities where id in (select distinct meta from " + table + "_statements)")) {
+				while (reader.Read()) {
+					int id = reader.GetInt32(0);
+					string uri = reader.GetString(1);
+					metaEntities[id] = MakeEntity(id, uri, null);
+				}
+			}
 		}
 		
 		private string Escape(string str, bool quotes) {
@@ -1033,7 +1107,9 @@ namespace SemWeb.Stores {
 				if (!WhereItem(col, a, cmd, false)) return;
 				cmd.Append(";");
 				RunCommand(cmd.ToString());
-			}			
+			}
+
+			metaEntities = null;
 		}
 		
 		public override void Replace(Statement find, Statement replacement) {
@@ -1070,6 +1146,7 @@ namespace SemWeb.Stores {
 				return;
 			
 			RunCommand(cmd.ToString());
+			metaEntities = null;
 		}
 		
 		public override Entity[] FindEntities(Statement[] filters) {
@@ -1262,7 +1339,7 @@ namespace SemWeb.Stores {
 		
 		internal static string[] GetCreateIndexCommands(string table) {
 			return new string[] {
-				"CREATE UNIQUE INDEX subject_full_index ON " + table + "_statements(subject, predicate, object, meta);",
+				"CREATE UNIQUE INDEX subject_full_index ON " + table + "_statements(subject, predicate, object, meta, objecttype);",
 				"CREATE INDEX predicate_index ON " + table + "_statements(predicate);",
 				"CREATE INDEX object_index ON " + table + "_statements(object);",
 				"CREATE INDEX meta_index ON " + table + "_statements(meta);",
