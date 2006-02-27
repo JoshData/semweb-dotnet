@@ -18,6 +18,8 @@ namespace SemWeb {
 		long anonCounter = 0;
 		Hashtable anonAlloc = new Hashtable();
 		Hashtable nameAlloc = new Hashtable();
+		Hashtable nodeReferences = new Hashtable();
+		ArrayList predicateNodes = new ArrayList();
 		
 		static Entity rdftype = "http://www.w3.org/1999/02/22-rdf-syntax-ns#type";
 		
@@ -200,7 +202,8 @@ namespace SemWeb {
 				else
 					SetAttribute(node, NS.RDF, ns.GetPrefix(NS.RDF), "ID", fragment.Substring(1)); // chop off hash
 			} else {
-				SetAttribute(node, NS.RDF, ns.GetPrefix(NS.RDF), "nodeID", GetBNodeRef((BNode)entity));
+				// The nodeID attribute will be set the first time the node is referenced,
+				// in case it's never referenced so we don't need to put a nodeID on it.
 			}
 			
 			if (context == null)
@@ -220,6 +223,7 @@ namespace SemWeb {
 			Normalize(predicate.Uri, out prefix, out localname);
 			XmlElement pred = doc.CreateElement(prefix + ":" + localname, ns.GetNamespace(prefix));
 			subject.AppendChild(pred);
+			predicateNodes.Add(pred);
 			return pred;
 		}
 		
@@ -243,7 +247,17 @@ namespace SemWeb {
 						SetAttribute(prednode, NS.RDF, ns.GetPrefix(NS.RDF), "resource", uri);
 					} else {
 						SetAttribute(prednode, NS.RDF, ns.GetPrefix(NS.RDF), "nodeID", GetBNodeRef((BNode)statement.Object));
+						
+						// If this is the first reference to the bnode, put its nodeID on it, since we
+						// delayed setting that attribute until we needed it.
+						SetAttribute((XmlElement)nodeMap[statement.Object], NS.RDF, ns.GetPrefix(NS.RDF), "nodeID", GetBNodeRef((BNode)statement.Object));
 					}
+
+					// Track at most one reference to this entity as a statement object
+					if (nodeReferences.ContainsKey(nodeMap[statement.Object]))
+						nodeReferences[nodeMap[statement.Object]] = null;
+					else
+						nodeReferences[nodeMap[statement.Object]] = prednode;
 				} else {
 					GetNode((Entity)statement.Object, null, prednode);
 				}
@@ -273,6 +287,48 @@ namespace SemWeb {
 		}
 		
 		public override void Close() {
+			// For any node that was referenced by exactly one predicate,
+			// move the node into that predicate.
+			foreach (DictionaryEntry e in nodeReferences) {
+				if (e.Value == null) continue; // referenced by more than one predicate
+				XmlElement node = (XmlElement)e.Key;
+				XmlElement predicate = (XmlElement)e.Value;
+				if (node.ParentNode != node.OwnerDocument.DocumentElement) continue; // already referenced somewhere
+				node.ParentNode.RemoveChild(node);
+				predicate.AppendChild(node);
+				predicate.RemoveAttribute("resource", NS.RDF); // it's on the lower node
+				predicate.RemoveAttribute("nodeID", NS.RDF); // it's on the lower node
+				node.RemoveAttribute("nodeID", NS.RDF); // not needed anymore
+			}
+			
+			// Predicates that have rdf:Description nodes with only literal attributes
+			// can be condensed.
+			foreach (XmlElement pred in predicateNodes) {
+				if (!(pred.FirstChild is XmlElement)) continue; // literal value
+				
+				XmlElement obj = (XmlElement)pred.FirstChild;
+				if (obj.NamespaceURI + obj.LocalName != NS.RDF + "Description") continue; // untyped
+				
+				if (obj.Attributes.Count > 1) continue; // at most a rdf:about attribute
+				if (obj.Attributes.Count == 1 && obj.Attributes[0].NamespaceURI+obj.Attributes[0].LocalName != NS.RDF+"about") continue;
+				
+				// Only literal value predicates
+				bool allLits = true;
+				foreach (XmlElement opred in obj.ChildNodes)
+					if (opred.FirstChild is XmlElement)
+						allLits = false;
+						
+				if (allLits) {
+					// Condense by moving all of obj's elements to attributes of the predicate,
+					// and turning a rdf:about into a rdf:resource, and then remove obj completely.
+					if (obj.Attributes.Count == 1)
+						SetAttribute(pred, NS.RDF, ns.GetPrefix(NS.RDF), "resource", obj.Attributes[0].Value);
+					foreach (XmlElement opred in obj.ChildNodes)
+						SetAttribute(pred, opred.NamespaceURI, ns.GetPrefix(opred.NamespaceURI), opred.LocalName, opred.InnerText);
+					pred.RemoveChild(obj);
+				}
+			}
+		
 			base.Close();
 			if (doc != null)
 				doc.WriteTo(writer);
