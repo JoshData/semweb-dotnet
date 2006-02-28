@@ -62,7 +62,7 @@ namespace SemWeb.Query {
 			}
 		}
 	
-		public void Execute(SelectableSource source, TextWriter output) {
+		public override void Run(SelectableSource source, TextWriter output) {
 			if (query is AskQuery)
 				Ask(source, output);
 			else if (query is ConstructQuery)
@@ -218,7 +218,7 @@ namespace SemWeb.Query {
 		public override string GetExplanation() {
 			return query.ToString();
 		}
-	
+		
 		public override void Run(SelectableSource source, QueryResultSink resultsink) {
 			if (!(query is SelectQuery))
 				throw new InvalidOperationException("Only SELECT queries are supported by this method (" + query.GetType() + ").");
@@ -766,7 +766,7 @@ namespace SemWeb.Query {
 				return;
 			}
 
-			query.Run(source, new SparqlXmlQuerySink(output));
+			query.Run(source, output);
 		}
 		
 		private class HTMLQuerySink : QueryResultSink {

@@ -81,7 +81,7 @@ public class RDFQuery {
 		
 		if (query is Sparql && ((Sparql)query).Type != Sparql.QueryType.Select) {
 			Sparql sparql = (Sparql)query;
-			sparql.Execute(model, Console.Out);
+			sparql.Run(model, Console.Out);
 		} else {
 			query.Run(model, qs);
 		}
