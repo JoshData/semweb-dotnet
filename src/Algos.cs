@@ -41,7 +41,7 @@ namespace SemWeb.Algos {
 	}
 
 	// This class makes a graph lean.
-	public static class Lean {
+	public class Lean {
 		// A graph g is not lean if it can be decomposed
 		// into a and b such that a entails b.  (where
 		// 'decomposed' means a and b don't overlap
@@ -500,7 +500,7 @@ namespace SemWeb.Algos {
 		}
 	}
 
-	public static class MSG {
+	public class MSG {
 
 		// These methods find minimal self-contained graphs
 		// in a graph by recursively expanding a subgraph.
@@ -672,7 +672,7 @@ namespace SemWeb.Algos {
 		
 	}
 	
-	public static class Connectivity {
+	public class Connectivity {
 	
 		public static void Build(StatementSource graph, out bool[,] connectivity, Hashtable indexes) {
 			connectivity = new bool[indexes.Count, indexes.Count];

@@ -30,6 +30,10 @@ namespace SemWeb.Query {
 		
 		public Entity QueryMeta { get { return queryMeta; } set { queryMeta = value; } }
 		
+		public virtual void Run(SelectableSource source, TextWriter output) {
+			Run(source, new SparqlXmlQuerySink(output));
+		}
+
 		public abstract void Run(SelectableSource source, QueryResultSink resultsink);
 
 		public abstract string GetExplanation();
@@ -1038,9 +1042,9 @@ namespace SemWeb.Query {
 			t = target;
 		}
 		
-		public BNode Variable { get { return v; } internal set { v = value; } }
-		public string Name { get { return n; } internal set { n = value; } }
-		public Resource Target { get { return t; } internal set { t = value; } }
+		public BNode Variable { get { return v; } set { v = value; } }
+		public string Name { get { return n; } set { n = value; } }
+		public Resource Target { get { return t; } set { t = value; } }
 
 		public static Statement Substitute(VariableBinding[] variables, Statement template) {
 			// This may throw an InvalidCastException if a variable binds
