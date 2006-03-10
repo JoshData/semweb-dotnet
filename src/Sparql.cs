@@ -225,6 +225,8 @@ namespace SemWeb.Query {
 
 			// Perform the query
 			SelectQuery squery = (SelectQuery)query;
+			squery.bindLogic(new MyLogicFactory());
+			
 			RdfSourceWrapper sourcewrapper = new RdfSourceWrapper(source, QueryMeta, this);
 			RdfBindingSet results;
 			try {
@@ -284,8 +286,17 @@ namespace SemWeb.Query {
 			// Close the result sink.
 			resultsink.Finished();
 		}
+		
+		class MyLogicFactory : name.levering.ryan.sparql.logic.DefaultFactory {
+		    public override name.levering.ryan.sparql.model.logic.ConstraintLogic getGroupConstraintLogic(name.levering.ryan.sparql.model.data.GroupConstraintData data) {
+        		return new name.levering.ryan.sparql.logic.AdvancedGroupConstraintLogic(data, getSetIntersectLogic());
+    		}
+		    public override name.levering.ryan.sparql.model.logic.ConstraintLogic getTripleConstraintLogic(name.levering.ryan.sparql.model.data.TripleConstraintData data) {
+		        return new name.levering.ryan.sparql.logic.AdvancedStreamedTripleConstraintLogic(data);
+		    }
+		}
 	
-		class RdfSourceWrapper : RdfSource, RdfSourceWithMultiValues,
+		class RdfSourceWrapper : AdvancedRdfSource,
 				org.openrdf.model.ValueFactory {
 				
 			SelectableSource source;
@@ -317,10 +328,11 @@ namespace SemWeb.Query {
 					statement.Predicate == null ? null : new Entity[] { statement.Predicate },
 					statement.Object == null ? null : new Resource[] { statement.Object },
 					statement.Meta == null ? null : new Entity[] { statement.Meta },
+					null,
 					defaultGraph);
 			}
 			
-			private StatementIterator GetIterator(Entity[] subjects, Entity[] predicates, Resource[] objects, Entity[] metas, bool defaultGraph) {
+			private StatementIterator GetIterator(Entity[] subjects, Entity[] predicates, Resource[] objects, Entity[] metas, java.util.List litFilters, bool defaultGraph) {
 				DateTime start = DateTime.Now;
 
 				if (subjects == null && predicates == null && objects == null)
@@ -337,7 +349,14 @@ namespace SemWeb.Query {
 				if (!source.Distinct)
 					sink = new SemWeb.Util.DistinctStatementsSink(results, defaultGraph && metas == null);
 
-				source.Select(new SelectFilter(subjects, predicates, objects, metas), sink);
+				SelectFilter filter = new SelectFilter(subjects, predicates, objects, metas);
+				if (litFilters != null) {
+					filter.LiteralFilters = new LiteralFilter[litFilters.size()];
+					for (int i = 0; i < litFilters.size(); i++)
+						filter.LiteralFilters[i] = (LiteralFilter)litFilters.get(i);
+				}
+
+				source.Select(filter, sink);
 				
 				Log("SELECT: " + ToString(subjects) + " " + ToString(predicates) + " " + ToString(objects) + " => " + results.StatementCount + " statements [" + (DateTime.Now-start) + "s]");
 				
@@ -376,8 +395,8 @@ namespace SemWeb.Query {
 				return GetIterator( new Statement(ToEntity(subject), ToEntity(predicate), ToResource(@object), QueryMeta), true );
 			}
 
-     		public java.util.Iterator getDefaultStatements (org.openrdf.model.Value[] subject, org.openrdf.model.Value[] predicate, org.openrdf.model.Value[] @object) {
-				return GetIterator( ToEntities(subject), ToEntities(predicate), ToResources(@object), QueryMeta == null ? null : new Entity[] { QueryMeta }, true );
+     		public java.util.Iterator getDefaultStatements (org.openrdf.model.Value[] subject, org.openrdf.model.Value[] predicate, org.openrdf.model.Value[] @object, java.util.List litFilters) {
+				return GetIterator( ToEntities(subject), ToEntities(predicate), ToResources(@object), QueryMeta == null ? null : new Entity[] { QueryMeta }, litFilters, true );
      		}
 			
 		    /**
@@ -395,8 +414,8 @@ namespace SemWeb.Query {
 				return GetIterator(  new Statement(ToEntity(subject), ToEntity(predicate), ToResource(@object), null), false );
 			}
 	
-     		public java.util.Iterator getStatements (org.openrdf.model.Value[] subject, org.openrdf.model.Value[] predicate, org.openrdf.model.Value[] @object) {
-				return GetIterator(  ToEntities(subject), ToEntities(predicate), ToResources(@object), null, false );
+     		public java.util.Iterator getStatements (org.openrdf.model.Value[] subject, org.openrdf.model.Value[] predicate, org.openrdf.model.Value[] @object, java.util.List litFilters) {
+				return GetIterator(  ToEntities(subject), ToEntities(predicate), ToResources(@object), null, litFilters, false );
      		}
      		
 		    /**
@@ -409,8 +428,8 @@ namespace SemWeb.Query {
 				return GetIterator( new Statement(ToEntity(subject), ToEntity(predicate), ToResource(@object), ToEntity(graph)), false );
 			}
 			
-     		public java.util.Iterator getStatements (org.openrdf.model.Value[] subject, org.openrdf.model.Value[] predicate, org.openrdf.model.Value[] @object, org.openrdf.model.URI[] graph) {
-				return GetIterator( ToEntities(subject), ToEntities(predicate), ToResources(@object), ToEntities(graph), false );
+     		public java.util.Iterator getStatements (org.openrdf.model.Value[] subject, org.openrdf.model.Value[] predicate, org.openrdf.model.Value[] @object, org.openrdf.model.URI[] graph, java.util.List litFilters) {
+				return GetIterator( ToEntities(subject), ToEntities(predicate), ToResources(@object), ToEntities(graph), litFilters, false );
      		}
      		
 			public org.openrdf.model.ValueFactory getValueFactory() {
@@ -496,7 +515,7 @@ namespace SemWeb.Query {
 				return new LiteralWrapper(new Literal(value));
 			}
 			public org.openrdf.model.URI createURI(string ns, string ln) {
-				return new URIWrapper(new Entity(ns + ln));
+				return createURI(ns + ln);
 			}
 			public org.openrdf.model.URI createURI(string uri) {
 				return new URIWrapper(new Entity(uri));

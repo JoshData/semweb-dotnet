@@ -2,7 +2,12 @@ using System;
 using System.Collections;
 
 using System.Data;
+
+#if BYTEFX
 using ByteFX.Data.MySqlClient;
+#elif CONNECTOR
+using MySql.Data.MySqlClient;
+#endif
 
 namespace SemWeb.Stores {
 	

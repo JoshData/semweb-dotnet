@@ -298,6 +298,11 @@ namespace SemWeb {
 			
 			return Value;
 		}
+		
+		public Literal Normalize() {
+			if (DataType == null) return this;
+			return new Literal(ParseValue().ToString(), Language, DataType);
+		}
 	}
 
 	/*

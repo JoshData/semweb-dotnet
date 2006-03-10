@@ -8,12 +8,14 @@ using Mono.Data.SqliteClient;
 namespace SemWeb.Stores {
 	
 	public class SqliteStore : SQLStore {
+		string connectionString;
 		IDbConnection dbcon;
 		
 		bool debug = false;
 		
 		public SqliteStore(string connectionString, string table)
 			: base(table) {
+			this.connectionString = connectionString;
 			dbcon = new SqliteConnection(connectionString);
 			dbcon.Open();
 		}

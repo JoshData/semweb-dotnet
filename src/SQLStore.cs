@@ -986,6 +986,14 @@ namespace SemWeb.Stores {
 				SemWeb.Filters.StringCompareFilter f = (SemWeb.Filters.StringCompareFilter)filter;
 				return col + FilterOpToSQL(f.Type) + Escape(f.Pattern, true);
 			}
+			if (filter is SemWeb.Filters.StringContainsFilter) {
+				SemWeb.Filters.StringContainsFilter f = (SemWeb.Filters.StringContainsFilter)filter;
+				return col + " LIKE " + quote + "%" + Escape(f.Pattern, false).Replace("%", "\\%") + "%" + quote;
+			}
+			if (filter is SemWeb.Filters.StringStartsWithFilter) {
+				SemWeb.Filters.StringStartsWithFilter f = (SemWeb.Filters.StringStartsWithFilter)filter;
+				return col + " LIKE " + quote + Escape(f.Pattern, false).Replace("%", "\\%") + "%" + quote;
+			}
 			if (filter is SemWeb.Filters.NumericCompareFilter) {
 				SemWeb.Filters.NumericCompareFilter f = (SemWeb.Filters.NumericCompareFilter)filter;
 				return col + FilterOpToSQL(f.Type) + f.Number;
@@ -1051,13 +1059,13 @@ namespace SemWeb.Stores {
 			if (quotes) b.Append(quote);
 		}
 		
-		internal static void Escape(StringBuilder b) {
+		/*internal static void Escape(StringBuilder b) {
 			b.Replace("\\", "\\\\");
 			b.Replace("\"", "\\\"");
 			b.Replace("\n", "\\n");
 			b.Replace("%", "\\%");
 			b.Replace("*", "\\*");
-		}
+		}*/
 
 		public override void Import(StatementSource source) {
 			if (source == null) throw new ArgumentNullException();

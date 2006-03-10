@@ -47,7 +47,7 @@ namespace SemWeb {
 			return false;
 		}
 		
-		public static bool MatchesFilters(Literal literal, LiteralFilter[] filters, SelectableSource targetModel) {
+		private static bool MatchesFilters(Literal literal, LiteralFilter[] filters, SelectableSource targetModel) {
 			foreach (LiteralFilter filter in filters)
 				if (!filter.Filter(literal, targetModel))
 					return false;
