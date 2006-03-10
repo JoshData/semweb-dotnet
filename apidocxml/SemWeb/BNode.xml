@@ -45,13 +45,14 @@
   </Members>
   <Docs>
     <summary>A blank (anonymous) node.</summary>
-    <remarks><para>Blank nodes are a type of <see cref="T:SemWeb.Entity" /> that have no globally unique identifier.
+    <remarks>
+      <para>Blank nodes are a type of <see cref="T:SemWeb.Entity" /> that have no globally unique identifier.
     Two blank node instances are generally references to distinct nodes in a graph, unless they were created
     in the same <see cref="T:SemWeb.StatementSource" /> which marked them as being equivalent.</para>
-
-<example>
-  <para>The following example creates a new blank node.</para>
-  <code lang="C#">BNode node = new BNode();  </code>
-</example></remarks>
+      <example>
+        <para>The following example creates a new blank node.</para>
+        <code lang="C#">BNode node = new BNode();  </code>
+      </example>
+    </remarks>
   </Docs>
 </Type>

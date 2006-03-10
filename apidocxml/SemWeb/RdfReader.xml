@@ -222,10 +222,12 @@
   </Members>
   <Docs>
     <summary>The base class of types that read statements from streams.</summary>
-    <remarks>      <para>This is an abstract class.  Two subclasses are provided: <see cref="T:SemWeb.N3Reader" /> and <see cref="T:SemWeb.RdfXmlReader" />.</para>
-
-<para><see cref="M:SemWeb.RdfReader.LoadFromUri(System.Uri)" /> can be used to load RDF data, in either N3 or XML format, from a web address.</para>
-
-<para><see cref="M:SemWeb.RdfReader.Create(string,string)" /> can be used to create a reader in the factory paradigm.</para></remarks>
+    <remarks>
+      <para>This is an abstract class.  Two subclasses are provided: <see cref="T:SemWeb.N3Reader" /> and <see cref="T:SemWeb.RdfXmlReader" />.</para>
+      <para>
+        <see cref="M:SemWeb.RdfReader.LoadFromUri(System.Uri)" /> can be used to load RDF data, in either N3 or XML format, from a web address.</para>
+      <para>
+        <see cref="M:SemWeb.RdfReader.Create(string,string)" /> can be used to create a reader in the factory paradigm.</para>
+    </remarks>
   </Docs>
 </Type>

@@ -39,12 +39,12 @@
     <remarks>
       <para>Most of the N3 specification is supported, including everything in NTriples and Turtle.  Statements are streamed as soon as they are read from the stream.</para>
       <para>N3 formula notation with { and } is supported in the following way.  For every formula, an anonymous entity is created to represent that graph.  Every statement in the formula is imported with the <see cref="P:SemWeb.Statement.Meta" /> property set to the anonymous entity (unless it is recursively embedded in another formula, in which case it uses the innermost formula's anonymous entity).</para>
-
-<example>
-  <para>The following example reads a N-Triples, Turtle, or N3 file from disk:</para>
-  <code lang="C#">using (RdfReader data = new N3Reader("filename.n3")) {
+      <example>
+        <para>The following example reads a N-Triples, Turtle, or N3 file from disk:</para>
+        <code lang="C#">using (RdfReader data = new N3Reader("filename.n3")) {
     store.Import(data);
 }  </code>
-</example></remarks>
+      </example>
+    </remarks>
   </Docs>
 </Type>

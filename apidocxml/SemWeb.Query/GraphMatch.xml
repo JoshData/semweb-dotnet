@@ -58,19 +58,20 @@
       <Docs>
         <param name="query">An RDF reader (normally a <see cref="T:SemWeb.N3Reader" />) containing the query.</param>
         <summary>Creates a query based on an RDF file.</summary>
-        <remarks>          <para>The contents of the RDF stream are read.  Statements in the stream are passed to <see cref="M:SemWeb.Query.GraphMatch.AddEdge(SemWeb.Statement)" />.</para>
+        <remarks>
+          <para>The contents of the RDF stream are read.  Statements in the stream are passed to <see cref="M:SemWeb.Query.GraphMatch.AddEdge(SemWeb.Statement)" />.</para>
           <para>All of the anonymous nodes in the stream are considered variables, but only the N3 format allows anonymous nodes to be named variables.  Thus the N3 format is recommended.  Although variable names are not required by the GraphMatch class, they may be needed by whatever processes the query results.</para>
-
-<example>
-          <para>The following is an example query:</para>
-          <code>@prefix rdf: &lt;http://www.w3.org/1999/02/22-rdf-syntax-ns#&gt;.
+          <example>
+            <para>The following is an example query:</para>
+            <code>@prefix rdf: &lt;http://www.w3.org/1999/02/22-rdf-syntax-ns#&gt;.
 @prefix foaf: &lt;http://xmlns.com/foaf/0.1/&gt;.
 ?person rdf:type foaf:Agent .
 ?person foaf:name ?name .</code>
-          <para>To run this query:</para>
-  <code lang="C#">Store queryGraph = new MemoryStore(new N3Reader(new StringReader(stringAbove)));
+            <para>To run this query:</para>
+            <code lang="C#">Store queryGraph = new MemoryStore(new N3Reader(new StringReader(stringAbove)));
 new GraphMatch(queryGraph).Run(targetData, Console.Out);  </code>
-</example></remarks>
+          </example>
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName=".ctor">

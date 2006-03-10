@@ -207,12 +207,11 @@
   </Members>
   <Docs>
     <summary>A SPARQL query processor, supporting only SELECT at the moment.</summary>
-    <remarks><para>This class is based on the engine at http://sparql.sourceforge.net/ by Ryan Levering, version 0.7.</para>
-
-
-<example>
-  <para>This example runs a SELECT query on a data source and writes the results as XML to standard output.</para>
-  <code lang="C#">MemoryStore datamodel = new MemoryStore(new RdfXmlReader("rdfdata.rdf"));
+    <remarks>
+      <para>This class is based on the engine at http://sparql.sourceforge.net/ by Ryan Levering, version 0.7.</para>
+      <example>
+        <para>This example runs a SELECT query on a data source and writes the results as XML to standard output.</para>
+        <code lang="C#">MemoryStore datamodel = new MemoryStore(new RdfXmlReader("rdfdata.rdf"));
 
 string sparqlQuery = "PREFIX rdf: &lt;http://www.w3.org/1999/02/22-rdf-syntax-ns#&gt;\n"
                            + "PREFIX foaf: &lt;http://xmlns.com/foaf/0.1/&gt;\n"
@@ -221,8 +220,8 @@ string sparqlQuery = "PREFIX rdf: &lt;http://www.w3.org/1999/02/22-rdf-syntax-ns
 
 Sparql query = new Sparql(sparqlQuery);
 query.Run(datamodel, Console.Out).  </code>
-</example>
-
-<para>Although this example sends the results to a stream, the results can be processed programmatically by passing a <see cref="T:SemWeb.Query.QueryResultSink" /> instead of a TextWriter.</para></remarks>
+      </example>
+      <para>Although this example sends the results to a stream, the results can be processed programmatically by passing a <see cref="T:SemWeb.Query.QueryResultSink" /> instead of a TextWriter.</para>
+    </remarks>
   </Docs>
 </Type>

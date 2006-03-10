@@ -360,8 +360,8 @@ Example:  "n3:mydata.n3"</description>
               <description>A <see cref="T:SemWeb.Remote.SparqlHttpSource" />, which accesses a remote data source using the SPARQL Protocol.  Example: "sparql-http:http://www.govtrack.us/sparql"</description>
             </item>
           </list>
-        
-<para>The SQL stores can be both read from and written to.</para></remarks>
+          <para>The SQL stores can be both read from and written to.</para>
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName="CreateForOutput">

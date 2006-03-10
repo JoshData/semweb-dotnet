@@ -122,14 +122,15 @@
       </ReturnValue>
       <Docs>
         <summary>A statement whose fields are all <see langword="null" />.</summary>
-        <remarks><para>This statement is provided as a convience to easily select all statements in a source by a call to Select.</para>
-
-<example>
-  <para>The following expression writes out all statements in a store.</para>
-  <code lang="C#">using (StatementSink sink = new N3Writer(Console.Out)) {
+        <remarks>
+          <para>This statement is provided as a convience to easily select all statements in a source by a call to Select.</para>
+          <example>
+            <para>The following expression writes out all statements in a store.</para>
+            <code lang="C#">using (StatementSink sink = new N3Writer(Console.Out)) {
     store.Select(Statement.All);
 }</code>
-</example></remarks>
+          </example>
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName="AnyNull">

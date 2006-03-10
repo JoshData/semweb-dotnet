@@ -127,7 +127,8 @@
   </Members>
   <Docs>
     <summary>The base class of types that write statements to a stream.</summary>
-    <remarks>      <para>This is an abstract class.  Two subclasses are provided: <see cref="T:SemWeb.N3Writer" /> and <see cref="T:SemWeb.RdfXmlWriter" />.</para>
-</remarks>
+    <remarks>
+      <para>This is an abstract class.  Two subclasses are provided: <see cref="T:SemWeb.N3Writer" /> and <see cref="T:SemWeb.RdfXmlWriter" />.</para>
+    </remarks>
   </Docs>
 </Type>

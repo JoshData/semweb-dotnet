@@ -31,10 +31,14 @@
         <Parameter Name="metas" Type="SemWeb.Entity[]" />
       </Parameters>
       <Docs>
-        <param name="subjects"><see langword="null" /> to match any entity, or an array of entities any of which match the filter.</param>
-        <param name="predicates"><see langword="null" /> to match any entity, or an array of entities any of which match the filter.</param>
-        <param name="objects"><see langword="null" /> to match any resource, or an array of resources any of which match the filter.</param>
-        <param name="metas"><see langword="null" /> to match any entity, or an array of entities any of which match the filter.</param>
+        <param name="subjects">
+          <see langword="null" /> to match any entity, or an array of entities any of which match the filter.</param>
+        <param name="predicates">
+          <see langword="null" /> to match any entity, or an array of entities any of which match the filter.</param>
+        <param name="objects">
+          <see langword="null" /> to match any resource, or an array of resources any of which match the filter.</param>
+        <param name="metas">
+          <see langword="null" /> to match any entity, or an array of entities any of which match the filter.</param>
         <summary>Creates a SelectFilter to select for matching statements.</summary>
         <remarks>None.</remarks>
       </Docs>
@@ -47,7 +51,8 @@
       </ReturnValue>
       <Docs>
         <summary>The filter for the subject value of statements.</summary>
-        <remarks><see langword="null" /> to match any entity, or an array of entities any of which match the filter.</remarks>
+        <remarks>
+          <see langword="null" /> to match any entity, or an array of entities any of which match the filter.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Predicates">
@@ -58,7 +63,8 @@
       </ReturnValue>
       <Docs>
         <summary>The filter for the predicate value of statements.</summary>
-        <remarks><see langword="null" /> to match any entity, or an array of entities any of which match the filter.</remarks>
+        <remarks>
+          <see langword="null" /> to match any entity, or an array of entities any of which match the filter.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Objects">
@@ -69,7 +75,8 @@
       </ReturnValue>
       <Docs>
         <summary>The filter for the object value of statements.</summary>
-        <remarks><see langword="null" /> to match any resource, or an array of resources any of which match the filter.</remarks>
+        <remarks>
+          <see langword="null" /> to match any resource, or an array of resources any of which match the filter.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Metas">
@@ -80,7 +87,8 @@
       </ReturnValue>
       <Docs>
         <summary>The filter for the meta value of statements.</summary>
-        <remarks><see langword="null" /> to match any entity, or an array of entities any of which match the filter.</remarks>
+        <remarks>
+          <see langword="null" /> to match any entity, or an array of entities any of which match the filter.</remarks>
       </Docs>
     </Member>
     <Member MemberName="LiteralFilters">

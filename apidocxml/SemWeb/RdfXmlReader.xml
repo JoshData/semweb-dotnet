@@ -74,12 +74,12 @@
     <summary>Reads RDF statements from an RDF/XML file.</summary>
     <remarks>
       <para>The RdfXmlReader streams the statements to the StatementSink as they are read from the XML stream.  The entire XML document will not be loaded into memory.</para>
-
-<example>
-  <para>The following example reads a RDF/XML file from disk:</para>
-  <code lang="C#">using (RdfReader data = new RdfXmlReader("filename.rdf")) {
+      <example>
+        <para>The following example reads a RDF/XML file from disk:</para>
+        <code lang="C#">using (RdfReader data = new RdfXmlReader("filename.rdf")) {
     store.Import(data);
 }  </code>
-</example></remarks>
+      </example>
+    </remarks>
   </Docs>
 </Type>

@@ -18,7 +18,8 @@
       <Docs>
         <param name="uri">The URI of the entity.</param>
         <summary>Constructs a new entity with the given URI.</summary>
-        <remarks><paramref name="uri" /> may not be <see langword="null" />.  To construct a blank node, use <c>new <see cref="C:SemWeb.BNode()" /></c>.</remarks>
+        <remarks>
+          <paramref name="uri" /> may not be <see langword="null" />.  To construct a blank node, use <c>new <see cref="C:SemWeb.BNode()" /></c>.</remarks>
       </Docs>
     </Member>
     <Member MemberName="op_Implicit">
@@ -87,15 +88,14 @@
       <para>Specialized stores will attach caching information to Entity objects to make interaction with the store faster.  It is therefore better to reuse existing Entity objects where possible.</para>
       <para>The == and != operators have been overloaded for entities.  Two named entities are equal when they both have the same URI.  Two anonymous Entity objects are equal if they were created by the same Store and were assigned the same resource key.</para>
       <para>An implicit conversion operator is defined from strings to entities.  The operator converts the string to an entity by returning an entity with that URI.</para>
-
-<example>
-  <para>The following examples all create entities.</para>
-  <code lang="C#">Entity thing1 = new Entity("http://www.example.com/#thing");
+      <example>
+        <para>The following examples all create entities.</para>
+        <code lang="C#">Entity thing1 = new Entity("http://www.example.com/#thing");
 Entity thing2 = "http://www.example.com/#thing"; // operator overload
 Entity thing3 = (Entity)"http://www.example.com/#thing"; // operator overload with explicit cast
 
 Console.WriteLine(thing1.Uri)</code>
-</example>
-</remarks>
+      </example>
+    </remarks>
   </Docs>
 </Type>

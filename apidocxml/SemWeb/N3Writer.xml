@@ -76,11 +76,13 @@
   </Members>
   <Docs>
     <summary>Writes out RDF statements to a stream in Notation 3, Turtle (the default), or NTriples format.</summary>
-    <remarks><example>
-  <para>The following example writes out RDF statements in Turtle format to a file:</para>
-  <code lang="C#">using (N3Writer output = new N3Writer("filename.n3")) {
+    <remarks>
+      <example>
+        <para>The following example writes out RDF statements in Turtle format to a file:</para>
+        <code lang="C#">using (N3Writer output = new N3Writer("filename.n3")) {
     store.Write(data);
 }  </code>
-</example></remarks>
+      </example>
+    </remarks>
   </Docs>
 </Type>

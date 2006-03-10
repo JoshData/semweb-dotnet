@@ -26,10 +26,12 @@ statement that matches the template.</summary>
         <returns>
           <see langword="true" /> if the store contains the statement or
 any statement matching the template.</returns>
-        <remarks><example>
-  <para>The following expression tests for the existence of any rdf:type predicate in the store.</para>
-  <code lang="C#">store.Contains(new Statement(null, "http://www.w3.org/1999/02/22-rdf-syntax-ns#type", null));  </code>
-</example></remarks>
+        <remarks>
+          <example>
+            <para>The following expression tests for the existence of any rdf:type predicate in the store.</para>
+            <code lang="C#">store.Contains(new Statement(null, "http://www.w3.org/1999/02/22-rdf-syntax-ns#type", null));  </code>
+          </example>
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName="Select">
@@ -50,13 +52,13 @@ any statement matching the template.</returns>
           <para>Each statement in the store matching <paramref name="template" /> is added to <paramref name="sink" /> with a call to <see cref="M:SemWeb.StatementSink.Add(SemWeb.Statement)" />.  If the call to Add returns <see langword="false" />, the select operation is aborted and returns immediately.</para>
           <para>
             <paramref name="template" /> is a statement template, which means any field in <paramref name="template" /> may be <see langword="null" />, and those fields are excluded from the statement filter. For example, setting the Subject and Predicate fields but leaving the Object and Meta fields <see langword="null" /> will match all statements in the store that have the given Subject and Predicate, and anything in their Object and Meta fields.</para>
-
-<example>
-  <para>The following expression writes out all statements with the <c>rdf:type</c> predicate to standard output.</para>
-  <code lang="C#">using (StatementSink sink = new N3Writer(Console.Out)) {
+          <example>
+            <para>The following expression writes out all statements with the <c>rdf:type</c> predicate to standard output.</para>
+            <code lang="C#">using (StatementSink sink = new N3Writer(Console.Out)) {
     store.Select(new Statement(null, "http://www.w3.org/1999/02/22-rdf-syntax-ns#type", null), sink);
 }</code>
-</example></remarks>
+          </example>
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName="FindEntities">
@@ -72,16 +74,17 @@ any statement matching the template.</returns>
         <param name="graph">A graph.  Each statement in the graph must contain at least one <see langword="null" /> field which represents the single variable in the query.</param>
         <summary>Finds all entities that can substitute into a graph.</summary>
         <returns>An array of entities that match the variable in the query graph.</returns>
-        <remarks><para>Implementors of SelectableSource can use <see cref="M:SemWeb.Store.DefaultFindEntities(SemWeb.Statement[])" /> as a default, unoptimized implementation.</para>
-
-<example>
-  <para>The following expression finds all entities that are typed as a <c>foaf:Person</c> and have a particular name..</para>
-  <code lang="C#">Entity[] ents =
+        <remarks>
+          <para>Implementors of SelectableSource can use <see cref="M:SemWeb.Store.DefaultFindEntities(SemWeb.Statement[])" /> as a default, unoptimized implementation.</para>
+          <example>
+            <para>The following expression finds all entities that are typed as a <c>foaf:Person</c> and have a particular name..</para>
+            <code lang="C#">Entity[] ents =
     store.FindEntities(new Statement[] {
         new Statement(null, "http://www.w3.org/1999/02/22-rdf-syntax-ns#type", (Entity)"http://xmlns.com/foaf/0.1/Person"),
         new Statement(null, "http://xmlns.com/foaf/0.1/name", (Literal)"John Smith")
         });  </code>
-</example></remarks>
+          </example>
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName="Select">
@@ -98,11 +101,11 @@ any statement matching the template.</returns>
         <param name="filter">A filter specifying what statements to return.</param>
         <param name="sink">A StatementSink to which each matching statement will be added.</param>
         <summary>Queries the story for matching statements, with advanced options, and writes the statements to a <see cref="T:SemWeb.StatementSink" />.</summary>
-        <remarks><para>This overload of Select is used to query for statements matching many resources.</para>
-
-<example>
-  <para>The following expression writes out all statements with either of two entities as the subject.</para>
-  <code lang="C#">Entity a = "http://www.example.org/entityA";
+        <remarks>
+          <para>This overload of Select is used to query for statements matching many resources.</para>
+          <example>
+            <para>The following expression writes out all statements with either of two entities as the subject.</para>
+            <code lang="C#">Entity a = "http://www.example.org/entityA";
 Entity b = "http://www.example.org/entityB";
 
 using (StatementSink sink = new N3Writer(Console.Out)) {
@@ -110,7 +113,8 @@ using (StatementSink sink = new N3Writer(Console.Out)) {
         new SelectFilter(new Entity[] { a , b }, null, null),
         sink);
 }</code>
-</example></remarks>
+          </example>
+        </remarks>
       </Docs>
     </Member>
   </Members>

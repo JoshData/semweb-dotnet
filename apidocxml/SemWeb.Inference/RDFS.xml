@@ -73,6 +73,99 @@
         <remarks>Add statements to the value of this property to add schema information to the inferencer.</remarks>
       </Docs>
     </Member>
+    <Member MemberName="Select">
+      <MemberSignature Language="C#" Value="public void Select (SemWeb.StatementSink sink);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="sink" Type="SemWeb.StatementSink" />
+      </Parameters>
+      <Docs>
+        <param name="sink">To be added.</param>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Contains">
+      <MemberSignature Language="C#" Value="public bool Contains (SemWeb.Statement template);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Boolean</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="template" Type="SemWeb.Statement" />
+      </Parameters>
+      <Docs>
+        <param name="template">To be added.</param>
+        <summary>To be added.</summary>
+        <returns>To be added.</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Select">
+      <MemberSignature Language="C#" Value="public void Select (SemWeb.Statement template, SemWeb.StatementSink sink);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="template" Type="SemWeb.Statement" />
+        <Parameter Name="sink" Type="SemWeb.StatementSink" />
+      </Parameters>
+      <Docs>
+        <param name="template">To be added.</param>
+        <param name="sink">To be added.</param>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Select">
+      <MemberSignature Language="C#" Value="public void Select (SemWeb.SelectFilter filter, SemWeb.StatementSink sink);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="filter" Type="SemWeb.SelectFilter" />
+        <Parameter Name="sink" Type="SemWeb.StatementSink" />
+      </Parameters>
+      <Docs>
+        <param name="filter">To be added.</param>
+        <param name="sink">To be added.</param>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="FindEntities">
+      <MemberSignature Language="C#" Value="public SemWeb.Entity[] FindEntities (SemWeb.Statement[] graph);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>SemWeb.Entity[]</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="graph" Type="SemWeb.Statement[]" />
+      </Parameters>
+      <Docs>
+        <param name="graph">To be added.</param>
+        <summary>To be added.</summary>
+        <returns>To be added.</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Distinct">
+      <MemberSignature Language="C#" Value="public bool Distinct { get; };" />
+      <MemberType>Property</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Boolean</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+        <value>To be added.</value>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
   </Members>
   <Docs>
     <summary>A data source supporting RDFS inferencing which uses another data source as its underlying data model.</summary>
@@ -80,14 +173,12 @@
       <para>The RDFS class wraps another data source and provides RDFS inferencing on top of it by adding inferencing to the Select methods.</para>
       <para>The RDFS class first loads in a schema, either from the wrapped data source or another data source.  The class scans for rdf:subClassOf, rdf:subPropertyOf, rdf:domain, and rdf:range relations in the schema to establish the class and property hierarchies.</para>
       <para>Entailments are queried by calls to Contains or Select (except the Select overload that only takes a StatementSink as an argument).</para>
-
-<example>
-  <para>This example creates a RDFS class that provides RDFS reasoning over another data source.  It then returns all entities that are <c>owl:FunctionalProperty</c>s, either because it was directly asserted, or indirectly because the entity was asserted to be a type that is a <c>rdfs:subClassOf</c> <c>owl:FunctionalProperty</c>, following the transitive closure of <c>rdfs:subClassOf</c>.</para>
-  <code lang="C#">SelectableSource rdfs = new RDFS(dataSource);
+      <example>
+        <para>This example creates a RDFS class that provides RDFS reasoning over another data source.  It then returns all entities that are <c>owl:FunctionalProperty</c>s, either because it was directly asserted, or indirectly because the entity was asserted to be a type that is a <c>rdfs:subClassOf</c><c>owl:FunctionalProperty</c>, following the transitive closure of <c>rdfs:subClassOf</c>.</para>
+        <code lang="C#">SelectableSource rdfs = new RDFS(dataSource);
 using (N3Writer writer = new N3Writer(Console.Out))
     rdfs.Select(new Statement(null, "http://www.w3.org/1999/02/22-rdf-syntax-ns#type", "http://www.w3.org/2002/07/owl#FunctionalProperty"));  </code>
-</example>
-
+      </example>
       <para>There types of inferencing operations are supported:</para>
       <para>Calling Contains(X rdf:type Y), i.e. asking whether X is typed Y, returns true if the entity is marked as being a type of any subclass of Y, or if X is found in the domain or range of a predicate whose domain or range type is Y.  Asking for all entities with a given type using Select(<see langword="null" /> rdf:type Y) returns all entities marked as being typed as Y or any of its subclasses.  Domains and ranges are not used in this case because it would require selecting for all occurrences of all properties with domains and ranges, which isn't scalable.  (This will probably be enable-able in the future.)  When the type of an entity is requested with a call to Select(X rdf:type <see langword="null" />), the type found for X in the underlying data source is returned and all of its superclasses, and if X is found in the domain or range of any predicates whose domain or range is given in the schema, the domain or range is returned as well.</para>
       <para>When checking if X is a subclass or subproperty of Y with a call to Contains(X rdf:subClassOf/rdf:subPropertyOf Y), true is returned if Y is in the transitive closure of rdf:subClassOf or rdf:subPropertyOf for X, which was already loaded into memory when the schema information was loaded.  When asking for the subclasses, superclasses, subproperties, or superproperties using Select(X rdfs:subClass/PropertyOf <see langword="null" />) or Select(<see langword="null" /> rdfs:subClass/PropertyOf Y), the transitive closure is returned.</para>
