@@ -1,3 +1,21 @@
+2006-03-11 Version 0.71
+
+	* The Select(Entity[],Entity[],Resource[]) API calls are
+	  replaced with new Select(SelectFilter) methods.
+	* RdfXmlWriter: Improved and tightened output a lot.
+	* Sparql: Major performance improvements.
+	* SparqlProtocol: Make sure to dispose of data sources after
+	  queries if noreuse is set.  Be sure to flush output.
+	* RDFS: Bug fix.  Implement IDisposable so it can be disposed
+	  to dispose the underlying data.
+	* SQLStore: Limit the number of values in a multi-select to
+	  500 to prevent the SQL query from getting too long.  Performance
+	  improvement to Select(SelectFilter) by selecting on fewer
+	  columns.
+	* Query/Sparql refactoring a bit.
+	* Added a StatementMap which is a Statement-specialized Hashtable.
+	* ByteFx and MySql.Connector MySQL adapters are both compiled now. 
+
 2006-01-31 Version 0.7
 
 	* New BNode class.  To create a blank node, use new BNnde()

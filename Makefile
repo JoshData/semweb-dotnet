@@ -1,4 +1,4 @@
-VERSION=0.7
+VERSION=0.71
 
 all: bin/SemWeb.dll bin/SemWeb.PostgreSQLStore.dll bin/SemWeb.MySQLStore.dll bin/SemWeb.SqliteStore.dll bin/SemWeb.Sparql.dll bin/rdfstorage.exe bin/rdfquery.exe
 
@@ -36,8 +36,10 @@ bin/SemWeb.SqliteStore.dll: src/SQLiteStore.cs bin/SemWeb.dll
 	-r:bin/SemWeb.dll -r:System.Data -r:Mono.Data.SqliteClient
 	
 bin/SemWeb.MySQLStore.dll: src/MySQLStore.cs bin/SemWeb.dll
-	mcs -debug src/MySQLStore.cs -out:bin/SemWeb.MySQLStore.dll -t:library\
-	-r:bin/SemWeb.dll -r:System.Data -r:ByteFX.Data
+	mcs -debug src/MySQLStore.cs -out:bin/SemWeb.MySQLStore-ByteFx.dll -t:library\
+	 -r:bin/SemWeb.dll -r:System.Data -r:ByteFX.Data -d:BYTEFX
+	#mcs -debug src/MySQLStore.cs -out:bin/SemWeb.MySQLStore-Connector.dll -t:library\
+	# -r:bin/SemWeb.dll -r:System.Data -r:ByteFX.Data -d:ONNECTOR
 
 # Utility programs
 
@@ -52,7 +54,6 @@ bin/rdfquery.exe: tools/rdfquery.cs bin/SemWeb.dll
 apidocxml: Makefile
 	monodocer \
 		-assembly:bin/SemWeb.dll -assembly:bin/SemWeb.Sparql.dll \
-		-assembly:bin/SemWeb.MySQLStore.dll -assembly:bin/SemWeb.PostgreSQLStore.dll -assembly:bin/SemWeb.SqliteStore.dll \
 		-path:apidocxml --delete
 	#mono /usr/lib/monodoc/monodocs2slashdoc.exe doc > SemWeb.docs.xml
 	mkdir -p apidocs
