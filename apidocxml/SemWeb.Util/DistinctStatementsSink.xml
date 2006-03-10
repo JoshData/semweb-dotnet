@@ -1,0 +1,51 @@
+<Type Name="DistinctStatementsSink" FullName="SemWeb.Util.DistinctStatementsSink">
+  <TypeSignature Language="C#" Value="public class DistinctStatementsSink : SemWeb.StatementSink" />
+  <AssemblyInfo>
+    <AssemblyName>SemWeb</AssemblyName>
+    <AssemblyVersion>0.5.0.2</AssemblyVersion>
+  </AssemblyInfo>
+  <Base>
+    <BaseTypeName>System.Object</BaseTypeName>
+  </Base>
+  <Interfaces>
+    <Interface>
+      <InterfaceName>SemWeb.StatementSink</InterfaceName>
+    </Interface>
+  </Interfaces>
+  <Members>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public DistinctStatementsSink (SemWeb.StatementSink sink, bool resetMeta);" />
+      <MemberType>Constructor</MemberType>
+      <Parameters>
+        <Parameter Name="sink" Type="SemWeb.StatementSink" />
+        <Parameter Name="resetMeta" Type="System.Boolean" />
+      </Parameters>
+      <Docs>
+        <param name="sink">To be added.</param>
+        <param name="resetMeta">To be added.</param>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Add">
+      <MemberSignature Language="C#" Value="public bool Add (SemWeb.Statement s);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Boolean</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="s" Type="SemWeb.Statement" />
+      </Parameters>
+      <Docs>
+        <param name="s">To be added.</param>
+        <summary>To be added.</summary>
+        <returns>To be added.</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+  </Members>
+  <Docs>
+    <summary>To be added.</summary>
+    <remarks>To be added.</remarks>
+  </Docs>
+</Type>

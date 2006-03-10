@@ -1,0 +1,36 @@
+<Type Name="SparqlHttpSource" FullName="SemWeb.Remote.SparqlHttpSource">
+  <TypeSignature Language="C#" Value="public class SparqlHttpSource : SemWeb.SelectableSource" />
+  <AssemblyInfo>
+    <AssemblyName>SemWeb</AssemblyName>
+    <AssemblyVersion>0.5.0.2</AssemblyVersion>
+  </AssemblyInfo>
+  <Base>
+    <BaseTypeName>System.Object</BaseTypeName>
+  </Base>
+  <Interfaces>
+    <Interface>
+      <InterfaceName>SemWeb.SelectableSource</InterfaceName>
+    </Interface>
+  </Interfaces>
+  <Members>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public SparqlHttpSource (string url);" />
+      <MemberType>Constructor</MemberType>
+      <Parameters>
+        <Parameter Name="url" Type="System.String" />
+      </Parameters>
+      <Docs>
+        <param name="url">The URL to a SPARQL Protocol server.</param>
+        <summary>Creates a new SPARQL data source ready to connect to the SPARQL server at the given URL.</summary>
+        <remarks>A new HTTP connection is created on each call to a method in this class.</remarks>
+      </Docs>
+    </Member>
+  </Members>
+  <Docs>
+    <summary>This class is used to access data remotely via the SPARQL Protocol.</summary>
+    <remarks>
+      <para>The SparqlHttpSource accesses remote data using the SPARQL Protocol over HTTP.</para>
+      <para>SPARQL has some serious limitations regarding blank nodes.  Critically, a blank node returned by a SPARQL query cannot be referenced in future queries.  As a result, blank nodes returned by calls to this source cannot be used in future select calls to this source.</para>
+    </remarks>
+  </Docs>
+</Type>

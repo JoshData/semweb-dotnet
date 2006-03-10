@@ -1,0 +1,6 @@
+<Namespace Name="SemWeb.Algos">
+  <Docs>
+    <summary>Experimental algorithms.</summary>
+    <remarks>This namespace contains several experimental algorithms over RDF graphs.  The classes are undocumented for now.</remarks>
+  </Docs>
+</Namespace>

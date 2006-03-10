@@ -1,0 +1,53 @@
+<Type Name="StringCompareFilter" FullName="SemWeb.Filters.StringCompareFilter">
+  <TypeSignature Language="C#" Value="public class StringCompareFilter : SemWeb.LiteralFilter" />
+  <AssemblyInfo>
+    <AssemblyName>SemWeb</AssemblyName>
+    <AssemblyVersion>0.5.0.2</AssemblyVersion>
+  </AssemblyInfo>
+  <Base>
+    <BaseTypeName>SemWeb.LiteralFilter</BaseTypeName>
+  </Base>
+  <Interfaces />
+  <Members>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public StringCompareFilter (string pattern, SemWeb.LiteralFilter+CompType type);" />
+      <MemberType>Constructor</MemberType>
+      <Parameters>
+        <Parameter Name="pattern" Type="System.String" />
+        <Parameter Name="type" Type="SemWeb.LiteralFilter+CompType" />
+      </Parameters>
+      <Docs>
+        <param name="pattern">To be added.</param>
+        <param name="type">To be added.</param>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Pattern">
+      <MemberSignature Language="C#" Value="public readonly string Pattern;" />
+      <MemberType>Field</MemberType>
+      <ReturnValue>
+        <ReturnType>System.String</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Type">
+      <MemberSignature Language="C#" Value="public readonly SemWeb.LiteralFilter+CompType Type;" />
+      <MemberType>Field</MemberType>
+      <ReturnValue>
+        <ReturnType>SemWeb.LiteralFilter+CompType</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+  </Members>
+  <Docs>
+    <summary>To be added.</summary>
+    <remarks>To be added.</remarks>
+  </Docs>
+</Type>

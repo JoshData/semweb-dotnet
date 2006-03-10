@@ -1,0 +1,45 @@
+<Type Name="Connectivity" FullName="SemWeb.Algos.Connectivity">
+  <TypeSignature Language="C#" Value="public class Connectivity" />
+  <AssemblyInfo>
+    <AssemblyName>SemWeb</AssemblyName>
+    <AssemblyVersion>0.5.0.2</AssemblyVersion>
+  </AssemblyInfo>
+  <Base>
+    <BaseTypeName>System.Object</BaseTypeName>
+  </Base>
+  <Interfaces />
+  <Members>
+    <Member MemberName="Build">
+      <MemberSignature Language="C#" Value="public static void Build (SemWeb.StatementSource graph, out Boolean[,] connectivity, System.Collections.Hashtable indexes);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="graph" Type="SemWeb.StatementSource" />
+        <Parameter Name="connectivity" Type="System.Boolean[,]&amp;" RefType="out" />
+        <Parameter Name="indexes" Type="System.Collections.Hashtable" />
+      </Parameters>
+      <Docs>
+        <param name="graph">To be added.</param>
+        <param name="connectivity">To be added.</param>
+        <param name="indexes">To be added.</param>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public Connectivity ();" />
+      <MemberType>Constructor</MemberType>
+      <Parameters />
+      <Docs>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+  </Members>
+  <Docs>
+    <summary>To be added.</summary>
+    <remarks>To be added.</remarks>
+  </Docs>
+</Type>

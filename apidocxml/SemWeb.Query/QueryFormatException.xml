@@ -16,8 +16,8 @@
         <Parameter Name="message" Type="System.String" />
       </Parameters>
       <Docs>
-        <param name="message">To be added.</param>
-        <summary>To be added.</summary>
+        <param name="message">The message of the exception.</param>
+        <summary>Creates a new QueryFormatException.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -29,10 +29,10 @@
         <Parameter Name="cause" Type="System.Exception" />
       </Parameters>
       <Docs>
-        <param name="message">To be added.</param>
-        <param name="cause">To be added.</param>
+        <param name="message">The message of the exception.</param>
+        <param name="cause">The cause of the exception.</param>
         <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
+        <remarks>None.</remarks>
       </Docs>
     </Member>
   </Members>

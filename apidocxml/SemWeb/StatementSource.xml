@@ -30,7 +30,7 @@
       <Docs>
         <summary>Gets whether the statement source returns only distinct statments from Select calls.</summary>
         <value>True if any call to Select (and its overloads when they are implemented) yields only distinct statements (i.e. no duplicates).</value>
-        <remarks>To be added.</remarks>
+        <remarks>None.</remarks>
       </Docs>
     </Member>
   </Members>

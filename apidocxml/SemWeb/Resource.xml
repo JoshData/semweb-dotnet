@@ -1,5 +1,5 @@
 <Type Name="Resource" FullName="SemWeb.Resource">
-  <TypeSignature Language="C#" Value="public abstract class Resource" />
+  <TypeSignature Language="C#" Value="public abstract class Resource : System.IComparable" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
     <AssemblyVersion>0.5.0.2</AssemblyVersion>
@@ -7,7 +7,11 @@
   <Base>
     <BaseTypeName>System.Object</BaseTypeName>
   </Base>
-  <Interfaces />
+  <Interfaces>
+    <Interface>
+      <InterfaceName>System.IComparable</InterfaceName>
+    </Interface>
+  </Interfaces>
   <Members>
     <Member MemberName="Uri">
       <MemberSignature Language="C#" Value="public abstract string Uri { get; };" />
@@ -65,9 +69,9 @@
     </Member>
   </Members>
   <Docs>
-    <summary>The base class of <see cref="T:SemWeb.Entity" /> and <see cref="T:SemWeb.Literal" /> -- the nodes in an RDF graph.</summary>
+    <summary>The base class of <see cref="T:SemWeb.Entity" />, <see cref="T:SemWeb.BNode" />, and <see cref="T:SemWeb.Literal" />, the nodes in an RDF graph.</summary>
     <remarks>
-      <para>The <see cref="T:SemWeb.Entity" /> and <see cref="T:SemWeb.Literal" /> classes inherit from this class.  This class cannot be inherited in user code.</para>
+      <para>The <see cref="T:SemWeb.Entity" /> and <see cref="T:SemWeb.Literal" /> classes inherit from this class.  The <see cref="T:SemWeb.BNode" /> class inherits from <see cref="T:SemWeb.Entity" />.  This class cannot be inherited in user code.</para>
       <para>The == and != operators have been overloaded for Resources.  Two resources are equal if they are both <see cref="T:SemWeb.Entity" /> objects and the <see cref="T:SemWeb.Entity" /> overloaded == operator returns true, or if they are both <see cref="T:SemWeb.Literal" /> objects with equal values for Value, Language, and DataType.</para>
     </remarks>
   </Docs>

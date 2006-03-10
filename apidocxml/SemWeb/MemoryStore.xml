@@ -55,7 +55,7 @@ foreach (Statement s in memoryStore)
       </Parameters>
       <Docs>
         <param name="source">A StatementSource, the contents of which are read into the memory store.</param>
-        <summary>Creates a new MemoryStore and reads the data from a StatementSource, which might be an RdfReader, for instance.</summary>
+        <summary>Creates a new MemoryStore and reads the data from a StatementSource, which might be a <see cref="T:SemWeb.RdfReader" />, for instance.</summary>
         <remarks>None.</remarks>
       </Docs>
     </Member>

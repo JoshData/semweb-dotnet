@@ -16,9 +16,9 @@
         <Parameter Name="file" Type="System.String" />
       </Parameters>
       <Docs>
-        <param name="file">A file name.</param>
+        <param name="file">A file name, or "-" for standard output.</param>
         <summary>Creates an RDF/XML writer that writes to the named file.</summary>
-        <remarks>To be added.</remarks>
+        <remarks>None.</remarks>
       </Docs>
     </Member>
     <Member MemberName=".ctor">
@@ -29,10 +29,10 @@
         <Parameter Name="ns" Type="SemWeb.NamespaceManager" />
       </Parameters>
       <Docs>
-        <param name="file">A file name.</param>
+        <param name="file">A file name, or "-" for standard output.</param>
         <param name="ns">A namespace manager.</param>
         <summary>Creates an RDF/XML writer that writes to the named file, with the given namespace declarations.</summary>
-        <remarks>To be added.</remarks>
+        <remarks>None.</remarks>
       </Docs>
     </Member>
     <Member MemberName=".ctor">
@@ -44,7 +44,7 @@
       <Docs>
         <param name="writer">A TextWriter.</param>
         <summary>Creates an RDF/XML writer that writes to the given TextWriter.</summary>
-        <remarks>To be added.</remarks>
+        <remarks>None.</remarks>
       </Docs>
     </Member>
     <Member MemberName=".ctor">
@@ -58,7 +58,7 @@
         <param name="writer">A TextWriter.</param>
         <param name="ns">A namespace manager.</param>
         <summary>Creates an RDF/XML writer that writes to the given TextWriter, with the given namespace declarations.</summary>
-        <remarks>To be added.</remarks>
+        <remarks>None.</remarks>
       </Docs>
     </Member>
     <Member MemberName=".ctor">
@@ -68,9 +68,9 @@
         <Parameter Name="writer" Type="System.Xml.XmlWriter" />
       </Parameters>
       <Docs>
-        <param name="writer">A textWriter.</param>
+        <param name="writer">An XmlWriter.</param>
         <summary>Creates an RDF/XML writer that writes to the given XmlWriter.</summary>
-        <remarks>To be added.</remarks>
+        <remarks>None.</remarks>
       </Docs>
     </Member>
     <Member MemberName=".ctor">
@@ -82,9 +82,9 @@
       </Parameters>
       <Docs>
         <param name="writer">An XmlWriter.</param>
-        <param name="ns">To be added.</param>
+        <param name="ns">A namespace manager.</param>
         <summary>Creates an RDF/XML writer that writes to the given XmlWriter, with the given namespace declarations.</summary>
-        <remarks>To be added.</remarks>
+        <remarks>None.</remarks>
       </Docs>
     </Member>
   </Members>
@@ -93,6 +93,15 @@
     <remarks>
       <para>The RdfXmlWriter buffers the entire output document in memory, before writing the document to the stream when Close is called.</para>
       <para>The namespaces used in the output data must be registered with the NamespaceManager in the <see cref="P:SemWeb.RdfWriter.Namespaces" /> property before the first call to Add or WriteStatement.  Failure to do so may prevent the document from being written to the stream, as not all URIs can be automatically converted into an XML qualified name.</para>
-    </remarks>
+
+<example>
+  <para>The following example writes out RDF statements in RDF/XML format to a file:</para>
+  <code lang="C#">NamespaceManager namespaces = new NamespaceManager();
+namespaces.AddNamespace("http://xmlns.com/foaf/0.1/", "foaf");
+using (RdfXmlWriter output = new RdfXmlWriter("filename.rdf", namespaces)) {
+    output.BaseUri = "http://www.example.org/";
+    store.Write(data);
+}  </code>
+</example></remarks>
   </Docs>
 </Type>

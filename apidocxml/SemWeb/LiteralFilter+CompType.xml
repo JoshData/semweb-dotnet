@@ -1,0 +1,76 @@
+<Type Name="LiteralFilter+CompType" FullName="SemWeb.LiteralFilter+CompType">
+  <TypeSignature Language="C#" Value="public enum CompType" />
+  <AssemblyInfo>
+    <AssemblyName>SemWeb</AssemblyName>
+    <AssemblyVersion>0.5.0.2</AssemblyVersion>
+  </AssemblyInfo>
+  <Base>
+    <BaseTypeName>System.Enum</BaseTypeName>
+  </Base>
+  <Members>
+    <Member MemberName="NE">
+      <MemberSignature Language="C#" Value="NE" />
+      <MemberType>Field</MemberType>
+      <ReturnValue>
+        <ReturnType>SemWeb.LiteralFilter+CompType</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Not equal</summary>
+      </Docs>
+    </Member>
+    <Member MemberName="GE">
+      <MemberSignature Language="C#" Value="GE" />
+      <MemberType>Field</MemberType>
+      <ReturnValue>
+        <ReturnType>SemWeb.LiteralFilter+CompType</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Greater than or equal</summary>
+      </Docs>
+    </Member>
+    <Member MemberName="LE">
+      <MemberSignature Language="C#" Value="LE" />
+      <MemberType>Field</MemberType>
+      <ReturnValue>
+        <ReturnType>SemWeb.LiteralFilter+CompType</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Less than or equal</summary>
+      </Docs>
+    </Member>
+    <Member MemberName="GT">
+      <MemberSignature Language="C#" Value="GT" />
+      <MemberType>Field</MemberType>
+      <ReturnValue>
+        <ReturnType>SemWeb.LiteralFilter+CompType</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Greater than</summary>
+      </Docs>
+    </Member>
+    <Member MemberName="LT">
+      <MemberSignature Language="C#" Value="LT" />
+      <MemberType>Field</MemberType>
+      <ReturnValue>
+        <ReturnType>SemWeb.LiteralFilter+CompType</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Less than</summary>
+      </Docs>
+    </Member>
+    <Member MemberName="EQ">
+      <MemberSignature Language="C#" Value="EQ" />
+      <MemberType>Field</MemberType>
+      <ReturnValue>
+        <ReturnType>SemWeb.LiteralFilter+CompType</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Equal</summary>
+      </Docs>
+    </Member>
+  </Members>
+  <Docs>
+    <summary>Represents a type of relational comparison.</summary>
+    <remarks>This enumeration is used by various derivatives of the <see cref="T:SemWeb.LiteralFilter" /> class.</remarks>
+  </Docs>
+</Type>

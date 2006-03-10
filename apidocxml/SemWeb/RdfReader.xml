@@ -87,7 +87,7 @@
         <summary>An entity to assign as the meta entity for statements loaded by this reader.</summary>
         <value>An entity to use for meta information.  Cannot be <see langword="null" />.</value>
         <remarks>
-          <para>The value of this property is used as the meta argument in calls to <see cref="C:SemWeb.Statement(SemWeb.Entity,SemWeb.Entity,SemWeb.Resource,SemWeb.Entity)" />.  The use of <see cref="P:SemWeb.Statement.Meta" /> is up to the application.</para>
+          <para>The value of this property is used as the meta argument in calls to the Statement constructor <see cref="C:SemWeb.Statement(SemWeb.Entity,SemWeb.Entity,SemWeb.Resource,SemWeb.Entity)" />.  The use of <see cref="P:SemWeb.Statement.Meta" /> is up to the application.</para>
           <para>The default value of this property is <see cref="P:SemWeb.Statement.DefaultMeta" />, which is also the meta value used in the three-arg constructor for <see cref="T:SemWeb.Statement" />.  If the meta field is not important for the application, this field should be left unchanged.</para>
         </remarks>
       </Docs>
@@ -99,7 +99,7 @@
         <ReturnType>System.String</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>The base URI for resolving relative URIs found in the stream.</summary>
+        <summary>The base URI for resolving relative URIs found in the stream.  If a base URI is provided within the stream, this property may be updated to indicate the base URI found.</summary>
         <value>The base URI for resolving relative URIs found in the stream.  May be, and is initially, <see langword="null" />.  </value>
         <remarks>When this property is <see langword="null" />, the reader will not correctly resolve relative URIs in the stream.  Always set this property before beginning reading when the base URI of the document is known.</remarks>
       </Docs>
@@ -222,8 +222,10 @@
   </Members>
   <Docs>
     <summary>The base class of types that read statements from streams.</summary>
-    <remarks>
-      <para>This is an abstract class. Implementations of readers are provided in this namespace and in <see cref="N:SemWeb.IO" />.</para>
-    </remarks>
+    <remarks>      <para>This is an abstract class.  Two subclasses are provided: <see cref="T:SemWeb.N3Reader" /> and <see cref="T:SemWeb.RdfXmlReader" />.</para>
+
+<para><see cref="M:SemWeb.RdfReader.LoadFromUri(System.Uri)" /> can be used to load RDF data, in either N3 or XML format, from a web address.</para>
+
+<para><see cref="M:SemWeb.RdfReader.Create(string,string)" /> can be used to create a reader in the factory paradigm.</para></remarks>
   </Docs>
 </Type>

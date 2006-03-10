@@ -1,0 +1,53 @@
+<Type Name="DateTimeCompareFilter" FullName="SemWeb.Filters.DateTimeCompareFilter">
+  <TypeSignature Language="C#" Value="public class DateTimeCompareFilter : SemWeb.LiteralFilter" />
+  <AssemblyInfo>
+    <AssemblyName>SemWeb</AssemblyName>
+    <AssemblyVersion>0.5.0.2</AssemblyVersion>
+  </AssemblyInfo>
+  <Base>
+    <BaseTypeName>SemWeb.LiteralFilter</BaseTypeName>
+  </Base>
+  <Interfaces />
+  <Members>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public DateTimeCompareFilter (DateTime datetime, SemWeb.LiteralFilter+CompType type);" />
+      <MemberType>Constructor</MemberType>
+      <Parameters>
+        <Parameter Name="datetime" Type="System.DateTime" />
+        <Parameter Name="type" Type="SemWeb.LiteralFilter+CompType" />
+      </Parameters>
+      <Docs>
+        <param name="datetime">To be added.</param>
+        <param name="type">To be added.</param>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Value">
+      <MemberSignature Language="C#" Value="public readonly DateTime Value;" />
+      <MemberType>Field</MemberType>
+      <ReturnValue>
+        <ReturnType>System.DateTime</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Type">
+      <MemberSignature Language="C#" Value="public readonly SemWeb.LiteralFilter+CompType Type;" />
+      <MemberType>Field</MemberType>
+      <ReturnValue>
+        <ReturnType>SemWeb.LiteralFilter+CompType</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+  </Members>
+  <Docs>
+    <summary>To be added.</summary>
+    <remarks>To be added.</remarks>
+  </Docs>
+</Type>

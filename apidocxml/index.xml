@@ -32,6 +32,7 @@
       <Type Name="BNode" />
       <Type Name="LiteralFilter" />
       <Type Name="LiteralFilter+CompType" />
+      <Type Name="SelectFilter" />
     </Namespace>
     <Namespace Name="SemWeb.Query">
       <Type Name="QueryResultSink" />
@@ -48,15 +49,13 @@
     <Namespace Name="SemWeb.Stores">
       <Type Name="MultiStore" />
       <Type Name="SQLStore" />
-      <Type Name="MySQLStore" />
-      <Type Name="PostgreSQLStore" />
-      <Type Name="SqliteStore" />
       <Type Name="SupportsPersistableBNodes" />
     </Namespace>
     <Namespace Name="SemWeb.Util">
       <Type Name="XPathSemWebNavigator" />
       <Type Name="StatementList" />
       <Type Name="DistinctStatementsSink" />
+      <Type Name="StatementMap" />
     </Namespace>
     <Namespace Name="SemWeb.Algos">
       <Type Name="Lean" />
@@ -113,9 +112,6 @@
       </Attributes>
     </Assembly>
     <Assembly Name="SemWeb.Sparql" Version="0.0.0.0" />
-    <Assembly Name="SemWeb.MySQLStore" Version="0.0.0.0" />
-    <Assembly Name="SemWeb.PostgreSQLStore" Version="0.0.0.0" />
-    <Assembly Name="SemWeb.SqliteStore" Version="0.0.0.0" />
   </Assemblies>
   <Title>SemWeb</Title>
 </Overview>

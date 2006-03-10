@@ -17,7 +17,7 @@
       </Parameters>
       <Docs>
         <param name="value">The value of the Literal node.</param>
-        <summary>Creates a new Literal with the given value not associated with a KnowledgeModel.</summary>
+        <summary>Creates a new Literal with the given string value.</summary>
         <remarks>None.</remarks>
       </Docs>
     </Member>
@@ -34,7 +34,7 @@
         <param name="language">A language identifier, or <see langword="null" /> to leave the language unspecified.</param>
         <param name="dataType">The URI that gives the datatype of the literal, or <see langword="null" /> to leave the specific datatype unspecified.</param>
         <summary>Creates a new Literal with the given value, language, and datatype.</summary>
-        <remarks>A language and datatype cannot both be specified according to the RDF standard; however, SemWeb will accept such literals.</remarks>
+        <remarks>A language and datatype cannot both be specified, following to the RDF standard.  An exception will be thrown if both are given.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Value">
@@ -85,10 +85,11 @@
       </Parameters>
       <Docs>
         <param name="literal">An N3-encoded form of a literal.</param>
-        <param name="namespaces">A namespace manager used to resolve the literal's datatype, if present.</param>
+        <param name="namespaces">A namespace manager used to resolve the literal's datatype, if present, or <see langword="null" />.</param>
         <summary>Parses a literal value.</summary>
         <returns>A Literal object.</returns>
-        <remarks>The encoded literal is in the form of:   "value"[^^datatypeURI|@langcode].</remarks>
+        <remarks><para>The encoded literal must be in the form of:   "value"[@langcode | ^^datatypeURI].</para>
+<para>If <paramref name="namespaces" /> is <see langword="null" /> and a datatype was provided as a QName, or if the QName prefix was not found in the namespace manager, an ArgumentException is thrown.</para></remarks>
       </Docs>
     </Member>
     <Member MemberName="op_Explicit">
@@ -103,10 +104,10 @@
       <Docs>
         <param name="value">The string value to convert to a Literal object.</param>
         <summary>Converts a string to a Literal object
-        whose language and datatype are null.</summary>
+        whose language and datatype are <see langword="null" />.</summary>
         <returns>A literal object whose Value is the string,
         and whose language and datatype are null.</returns>
-        <remarks>None.</remarks>
+        <remarks>This is an explicit cast operator.</remarks>
       </Docs>
     </Member>
     <Member MemberName="ParseValue">
@@ -117,11 +118,11 @@
       </ReturnValue>
       <Parameters />
       <Docs>
-        <summary>Uses the DataType of the literal to turn it into a native .NET type.</summary>
+        <summary>Gets a native .NET type for the literl value using a XSD DataType.</summary>
         <returns>A string, boolean, integer, or other value, as described below.</returns>
         <remarks>
           <para>If the DataType of the literal is not set, or if the DataType is not one of the following recognized types, the literal's string value is returned.</para>
-          <para>The recognized types below are all in the http://www.w3.org/2001/XMLSchema# namespace.  That is, where it says "string" below, it means the DataType is http://www.w3.org/2001/XMLSchema#string.</para>
+          <para>The recognized types below are all in the <c>http://www.w3.org/2001/XMLSchema#</c> namespace.  That is, where it says "string" below, it means the DataType is <c>http://www.w3.org/2001/XMLSchema#string</c>.</para>
           <list type="table">
             <listheader>
               <term>DataType(s)</term>
@@ -163,12 +164,36 @@
         </remarks>
       </Docs>
     </Member>
+    <Member MemberName="Normalize">
+      <MemberSignature Language="C#" Value="public SemWeb.Literal Normalize ();" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>SemWeb.Literal</ReturnType>
+      </ReturnValue>
+      <Parameters />
+      <Docs>
+        <summary>To be added.</summary>
+        <returns>To be added.</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
   </Members>
   <Docs>
     <summary>A literal (text string) node in an RDF graph.</summary>
     <remarks>
-      <para>Literals are string values optionally with a language string or datatype URI.</para>
-      <para>An implicit conversion operator is defined from strings to literals.  The operator converts the string to a literal by returning a literal with that value, and <see langword="null" /> language and datatype.</para>
-    </remarks>
+      <para>Literals are string values optionally tagged with a language or datatype URI.</para>
+      <para>An explicit conversion operator is defined from strings to literals as a convenience.  The operator converts the string to a literal by returning a literal with that value, and <see langword="null" /> language and datatype.</para>
+
+<example>
+  <para>The following examples create literal nodes.</para>
+  <code lang="C#">Literal thing1 = new Literal("SemWeb: The C# Library");
+Literal thing2 = (Literal)"SemWeb: The C# Library"; // explicit operator overload
+Literal thing3 = new Literal("SemWeb: The C# Library", "en", null); // with language
+Literal thing3 = new Literal("SemWeb: The C# Library", null, "http://www.w3.org/2001/XMLSchema#string"); // with datatype
+
+Console.WriteLine(thing1.Value);
+Console.WriteLine(thing2.Language);
+Console.WriteLine(thing3.DataType);</code>
+</example></remarks>
   </Docs>
 </Type>

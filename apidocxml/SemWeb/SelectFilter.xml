@@ -1,0 +1,113 @@
+<Type Name="SelectFilter" FullName="SemWeb.SelectFilter">
+  <TypeSignature Language="C#" Value="public struct SelectFilter" />
+  <AssemblyInfo>
+    <AssemblyName>SemWeb</AssemblyName>
+    <AssemblyVersion>0.5.0.2</AssemblyVersion>
+  </AssemblyInfo>
+  <Base>
+    <BaseTypeName>System.ValueType</BaseTypeName>
+  </Base>
+  <Interfaces />
+  <Members>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public SelectFilter (SemWeb.Statement statement);" />
+      <MemberType>Constructor</MemberType>
+      <Parameters>
+        <Parameter Name="statement" Type="SemWeb.Statement" />
+      </Parameters>
+      <Docs>
+        <param name="statement">The statement template to select for.</param>
+        <summary>Creates a new SelectFilter which selects for statements matching the template.</summary>
+        <remarks>None.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public SelectFilter (SemWeb.Entity[] subjects, SemWeb.Entity[] predicates, SemWeb.Resource[] objects, SemWeb.Entity[] metas);" />
+      <MemberType>Constructor</MemberType>
+      <Parameters>
+        <Parameter Name="subjects" Type="SemWeb.Entity[]" />
+        <Parameter Name="predicates" Type="SemWeb.Entity[]" />
+        <Parameter Name="objects" Type="SemWeb.Resource[]" />
+        <Parameter Name="metas" Type="SemWeb.Entity[]" />
+      </Parameters>
+      <Docs>
+        <param name="subjects"><see langword="null" /> to match any entity, or an array of entities any of which match the filter.</param>
+        <param name="predicates"><see langword="null" /> to match any entity, or an array of entities any of which match the filter.</param>
+        <param name="objects"><see langword="null" /> to match any resource, or an array of resources any of which match the filter.</param>
+        <param name="metas"><see langword="null" /> to match any entity, or an array of entities any of which match the filter.</param>
+        <summary>Creates a SelectFilter to select for matching statements.</summary>
+        <remarks>None.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Subjects">
+      <MemberSignature Language="C#" Value="public SemWeb.Entity[] Subjects;" />
+      <MemberType>Field</MemberType>
+      <ReturnValue>
+        <ReturnType>SemWeb.Entity[]</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>The filter for the subject value of statements.</summary>
+        <remarks><see langword="null" /> to match any entity, or an array of entities any of which match the filter.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Predicates">
+      <MemberSignature Language="C#" Value="public SemWeb.Entity[] Predicates;" />
+      <MemberType>Field</MemberType>
+      <ReturnValue>
+        <ReturnType>SemWeb.Entity[]</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>The filter for the predicate value of statements.</summary>
+        <remarks><see langword="null" /> to match any entity, or an array of entities any of which match the filter.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Objects">
+      <MemberSignature Language="C#" Value="public SemWeb.Resource[] Objects;" />
+      <MemberType>Field</MemberType>
+      <ReturnValue>
+        <ReturnType>SemWeb.Resource[]</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>The filter for the object value of statements.</summary>
+        <remarks><see langword="null" /> to match any resource, or an array of resources any of which match the filter.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Metas">
+      <MemberSignature Language="C#" Value="public SemWeb.Entity[] Metas;" />
+      <MemberType>Field</MemberType>
+      <ReturnValue>
+        <ReturnType>SemWeb.Entity[]</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>The filter for the meta value of statements.</summary>
+        <remarks><see langword="null" /> to match any entity, or an array of entities any of which match the filter.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="LiteralFilters">
+      <MemberSignature Language="C#" Value="public SemWeb.LiteralFilter[] LiteralFilters;" />
+      <MemberType>Field</MemberType>
+      <ReturnValue>
+        <ReturnType>SemWeb.LiteralFilter[]</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>This field is in development.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Limit">
+      <MemberSignature Language="C#" Value="public int Limit;" />
+      <MemberType>Field</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Int32</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Maximum number of statements to return.</summary>
+        <remarks>Stores are free to ignore the limit provided.</remarks>
+      </Docs>
+    </Member>
+  </Members>
+  <Docs>
+    <summary>This structure provides the arguments to the more powerful Select overload.</summary>
+    <remarks>For examples, see <see cref="M:SemWeb.SelectableSource.Select(SemWeb.SelectFilter,SemWeb.StatementSink)" />.</remarks>
+  </Docs>
+</Type>

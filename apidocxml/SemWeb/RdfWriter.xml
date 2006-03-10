@@ -127,9 +127,7 @@
   </Members>
   <Docs>
     <summary>The base class of types that write statements to a stream.</summary>
-    <remarks>
-      <para>This is an abstract class. Implementations of writers are provided in this namespace and in <see cref="N:SemWeb.IO" />.</para>
-      <para>This class is a <see cref="T:SemWeb.StatementSinkEx" /> which allows the output of calls to Select on stores to be written directly to a stream.</para>
-    </remarks>
+    <remarks>      <para>This is an abstract class.  Two subclasses are provided: <see cref="T:SemWeb.N3Writer" /> and <see cref="T:SemWeb.RdfXmlWriter" />.</para>
+</remarks>
   </Docs>
 </Type>

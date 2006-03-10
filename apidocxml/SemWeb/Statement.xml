@@ -7,7 +7,11 @@
   <Base>
     <BaseTypeName>System.ValueType</BaseTypeName>
   </Base>
-  <Interfaces />
+  <Interfaces>
+    <Interface>
+      <InterfaceName>System.IComparable</InterfaceName>
+    </Interface>
+  </Interfaces>
   <Members>
     <Member MemberName=".ctor">
       <MemberSignature Language="C#" Value="public Statement (SemWeb.Entity subject, SemWeb.Entity predicate, SemWeb.Resource object);" />
@@ -23,7 +27,7 @@
         <param name="object">The object of the statement.</param>
         <summary>Creates a new Statement.</summary>
         <remarks>
-          <para>No arguments to this constructor may be <see langword="null" /> if this statement will be used in a call to the Add method of <see cref="T:SemWeb.Store" /> or <see cref="T:SemWeb.StatementSink" />.  Any of the arguments may be <see langword="null" /> if the statement will be used as a template for calls to a Contains or Select method of <see cref="T:SemWeb.Store" /> or <see cref="T:SemWeb.QueryableSource" />.</para>
+          <para>No arguments to this constructor may be <see langword="null" /> if this statement will be used in a call to the Add method of <see cref="T:SemWeb.Store" /> or <see cref="T:SemWeb.StatementSink" />.  Any of the arguments may be <see langword="null" /> if the statement will be used as a template for calls to a Contains or Select method.</para>
           <para>The value of the <see cref="P:SemWeb.Statement.Meta" /> is set to <see cref="P:SemWeb.Statement.DefaultMeta" />.</para>
         </remarks>
       </Docs>
@@ -41,10 +45,10 @@
         <param name="subject">The subject of the statement.</param>
         <param name="predicate">The predicate of the statement.</param>
         <param name="object">The object of the statement.</param>
-        <param name="meta">An entity with meta-information about the statement.</param>
+        <param name="meta">An entity providing meta-information about the statement.</param>
         <summary>Creates a new Statement with a meta entity.</summary>
         <remarks>
-          <para>No arguments to this constructor may be <see langword="null" /> if this statement will be used in a call to the Add method of <see cref="T:SemWeb.Store" /> or <see cref="T:SemWeb.StatementSink" />.  Any of the arguments may be <see langword="null" /> if the statement will be used as a template for calls to a Contains or Select method of <see cref="T:SemWeb.Store" /> or <see cref="T:SemWeb.QueryableSource" />.</para>
+          <para>No arguments to this constructor may be <see langword="null" /> if this statement will be used in a call to the Add method of <see cref="T:SemWeb.Store" /> or <see cref="T:SemWeb.StatementSink" />.  Any of the arguments may be <see langword="null" /> if the statement will be used as a template for calls to a Contains or Select method.</para>
         </remarks>
       </Docs>
     </Member>
@@ -118,7 +122,14 @@
       </ReturnValue>
       <Docs>
         <summary>A statement whose fields are all <see langword="null" />.</summary>
-        <remarks>This statement is provided as a convience to easily select all statements in a source by a call to Select.</remarks>
+        <remarks><para>This statement is provided as a convience to easily select all statements in a source by a call to Select.</para>
+
+<example>
+  <para>The following expression writes out all statements in a store.</para>
+  <code lang="C#">using (StatementSink sink = new N3Writer(Console.Out)) {
+    store.Select(Statement.All);
+}</code>
+</example></remarks>
       </Docs>
     </Member>
     <Member MemberName="AnyNull">
@@ -149,7 +160,7 @@
         <param name="replacement">The new resource to use.</param>
         <summary>Replaces occurrences of a resource with another resource.</summary>
         <returns>A new statement in which occurrences of <paramref name="find" /> have been replaced with <paramref name="replacement" />.</returns>
-        <remarks>To be added.</remarks>
+        <remarks>An ArgumentException is thrown if <paramref name="find" /> is the subject, predicate, or meta of the statement and <paramref name="replacement" /> is not an <see cref="T:SemWeb.Entity" />.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Subject">

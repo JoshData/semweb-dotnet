@@ -1,0 +1,77 @@
+<Type Name="Lean" FullName="SemWeb.Algos.Lean">
+  <TypeSignature Language="C#" Value="public class Lean" />
+  <AssemblyInfo>
+    <AssemblyName>SemWeb</AssemblyName>
+    <AssemblyVersion>0.5.0.2</AssemblyVersion>
+  </AssemblyInfo>
+  <Base>
+    <BaseTypeName>System.Object</BaseTypeName>
+  </Base>
+  <Interfaces />
+  <Members>
+    <Member MemberName="MakeLean">
+      <MemberSignature Language="C#" Value="public static void MakeLean (SemWeb.Store store);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="store" Type="SemWeb.Store" />
+      </Parameters>
+      <Docs>
+        <param name="store">To be added.</param>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="MakeLean">
+      <MemberSignature Language="C#" Value="public static void MakeLean (SemWeb.Store store, SemWeb.SelectableSource relativeTo);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="store" Type="SemWeb.Store" />
+        <Parameter Name="relativeTo" Type="SemWeb.SelectableSource" />
+      </Parameters>
+      <Docs>
+        <param name="store">To be added.</param>
+        <param name="relativeTo">To be added.</param>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="MakeLean">
+      <MemberSignature Language="C#" Value="public static void MakeLean (SemWeb.Store store, SemWeb.SelectableSource relativeTo, SemWeb.StatementSink removed);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="store" Type="SemWeb.Store" />
+        <Parameter Name="relativeTo" Type="SemWeb.SelectableSource" />
+        <Parameter Name="removed" Type="SemWeb.StatementSink" />
+      </Parameters>
+      <Docs>
+        <param name="store">To be added.</param>
+        <param name="relativeTo">To be added.</param>
+        <param name="removed">To be added.</param>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public Lean ();" />
+      <MemberType>Constructor</MemberType>
+      <Parameters />
+      <Docs>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+  </Members>
+  <Docs>
+    <summary>To be added.</summary>
+    <remarks>To be added.</remarks>
+  </Docs>
+</Type>

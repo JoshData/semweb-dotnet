@@ -14,8 +14,8 @@
       <MemberType>Constructor</MemberType>
       <Parameters />
       <Docs>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
+        <summary>The protected no-arg constructor used by subclasses.</summary>
+        <remarks>None.</remarks>
       </Docs>
     </Member>
     <Member MemberName="GetExplanation">
@@ -80,8 +80,25 @@
       <Docs>
         <param name="source">The data source to query.</param>
         <param name="resultsink">The sink to which each set of variable bindings is written.</param>
-        <summary>Runs the query on a data source.</summary>
+        <summary>Runs the query on a data source, outputting to a QueryResultSink.</summary>
         <remarks>None.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Run">
+      <MemberSignature Language="C#" Value="public virtual void Run (SemWeb.SelectableSource source, System.IO.TextWriter output);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="source" Type="SemWeb.SelectableSource" />
+        <Parameter Name="output" Type="System.IO.TextWriter" />
+      </Parameters>
+      <Docs>
+        <param name="source">The data source to query.</param>
+        <param name="output">The TextWriter to which to write results.</param>
+        <summary>Runs the query on a data source, outputting to a TextWriter.</summary>
+        <remarks>The normal output format uses the <see cref="T:SemWeb.Query.SparqlXmlQuerySink" />.</remarks>
       </Docs>
     </Member>
   </Members>

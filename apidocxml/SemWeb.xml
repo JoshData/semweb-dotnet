@@ -3,18 +3,20 @@
     <summary><para>The SemWeb namespace contains types related to using information in Resource Description Format (RDF).</para>
 
 </summary>
-    <remarks><para>Graphs, or repositories of statements, are contained in <see cref="T:SemWeb.Store" /> objects.  <see cref="T:SemWeb.Store" /> is an abstract class with a few implementations provided in this library.  The <see cref="T:SemWeb.MemoryStore" /> class is a graph held in memory.  Stores for holding graphs in MySQL or SQLite databases are also provided, but create them through <see cref="M:SemWeb.Store.CreateForInput(string)" /> or <see cref="M:SemWeb.Store.CreateForOutput(string)" />.</para>
+    <remarks><para>The <see cref="T:SemWeb.Statement" /> <see langword="struct" /> represents a RDF statement, with a subject. predicate, object, and meta value.  The use of the meta field is optional and application-specified.</para>
 
-<para>Stores contain <see cref="T:SemWeb.Statement" />s.  A statement is a quadruple: subject, predicate, object, and meta.  The use of the meta field is optional and application-specified.  Subjects, predicates, meta values are <see cref="T:SemWeb.Entity" /> objects, which represent named and blank nodes in the graph.  Objects can be either of type <see cref="T:SemWeb.Entity" /> or <see cref="T:SemWeb.Literal" />, both of which inherit from <see cref="T:SemWeb.Resource" />.  Note that <see cref="T:SemWeb.Statement" /> is a <see langword="struct" /> value type and not a class.</para>
+<para>Subjects, predicates, objects, and metas are all <see cref="T:SemWeb.Resource" /> objects.  <see cref="T:SemWeb.Resource" /> is an abstract class with two subclasses: <see cref="T:SemWeb.Entity" /> and <see cref="T:SemWeb.Literal" />.  Only objects can be literals.  The <see cref="T:SemWeb.Entity" /> class has one subclass, <see cref="T:SemWeb.BNode" />, for blank nodes (anonymous entities).</para>
 
-<para>The contents of stores are queried at a basic level with the various overloads for the Select method (and also the Contains method).  The Select methods all take a <see cref="T:SemWeb.Statement" /> as an argument.  These statements are called templates because <see langword="null" /> values are permissible for the subject, predicate, object, and meta fields.  The Select methods return statements that match the template, where <see langword="null" />s are treated as wild-cards. </para>
+<para>Graphs, or repositories of statements, are contained in <see cref="T:SemWeb.Store" /> objects.  <see cref="T:SemWeb.Store" /> is an abstract class with a few implementations provided in this library.  The <see cref="T:SemWeb.MemoryStore" /> class is a graph held in memory.  Stores for holding graphs in SQL databases are also provided.  Create them through either <see cref="M:SemWeb.Store.CreateForInput(string)" /> or <see cref="M:SemWeb.Store.CreateForOutput(string)" />.</para>
 
-<para>RDF input/output is done through the <see cref="T:SemWeb.RdfReader" /> and  <see cref="T:SemWeb.RdfWriter" /> classes.  These are abstract base classes with the following implementations.</para>
+<para>The contents of stores are queried at a basic level with the various overloads for the Select method (and also the Contains method).  The first form of the Select method takes a <see cref="T:SemWeb.Statement" /> as an argument.  These statements are called templates because <see langword="null" /> values are permissible for the subject, predicate, object, and meta fields.  The Select methods send back statements that match the template, where <see langword="null" />s are treated as wild-cards. There is also a Select overload which takes a <see cref="T:SemWeb.SelectFilter" />, which allows for a more powerful select.</para>
+
+<para>RDF input/output is done through the <see cref="T:SemWeb.RdfReader" /> and  <see cref="T:SemWeb.RdfWriter" /> classes.  These are abstract base classes with the following implementations:</para>
 
 <para>The <see cref="T:SemWeb.N3Reader" /> and <see cref="T:SemWeb.N3Writer" /> are used for reading and writing data in Notation 3 format.  Most of the N3 specification is supported, including everything in NTriples and Turtle.  N3 is the recommended format for IO because reading and writing N3 data does not require loading the entire data source into memory.</para>
 
 <para>The <see cref="T:SemWeb.RdfXmlReader" /> and <see cref="T:SemWeb.RdfXmlWriter" /> are used for reading and writing data in RDF/XML format.  Like the N3Reader, the RdfXmlReader streams statements as they are read from the stream. However, the RdfXmlWriter creates the entire output document in memory before writing anything to the stream, so it is not a recommended output form.</para>
 
-</remarks>
+<para>You can also use <see cref="M:SemWeb.RdfReader.LoadFromUri(System.Uri)" /> to load RDF data, in either format, from a web address.</para></remarks>
   </Docs>
 </Namespace>

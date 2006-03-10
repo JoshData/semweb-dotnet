@@ -10,10 +10,10 @@
   <Interfaces />
   <Members>
     <Member MemberName="Variable">
-      <MemberSignature Language="C#" Value="public SemWeb.Entity Variable { get; };" />
+      <MemberSignature Language="C#" Value="public SemWeb.BNode Variable { set; get; };" />
       <MemberType>Property</MemberType>
       <ReturnValue>
-        <ReturnType>SemWeb.Entity</ReturnType>
+        <ReturnType>SemWeb.BNode</ReturnType>
       </ReturnValue>
       <Docs>
         <summary>The variable.</summary>
@@ -22,7 +22,7 @@
       </Docs>
     </Member>
     <Member MemberName="Target">
-      <MemberSignature Language="C#" Value="public SemWeb.Resource Target { get; };" />
+      <MemberSignature Language="C#" Value="public SemWeb.Resource Target { set; get; };" />
       <MemberType>Property</MemberType>
       <ReturnValue>
         <ReturnType>SemWeb.Resource</ReturnType>
@@ -31,22 +31,6 @@
         <summary>The resource in the target data model that the variable is bound to, or <see langword="null" />.</summary>
         <value>The resource in the target data model that the variable is bound to, or <see langword="null" /> if the variable is not bound in this result.</value>
         <remarks>A variable may be unbound only if it was used exclusively in optional statements.</remarks>
-      </Docs>
-    </Member>
-    <Member MemberName=".ctor">
-      <MemberSignature Language="C#" Value="public VariableBinding (SemWeb.Entity variable, string name, SemWeb.Resource target);" />
-      <MemberType>Constructor</MemberType>
-      <Parameters>
-        <Parameter Name="variable" Type="SemWeb.Entity" />
-        <Parameter Name="name" Type="System.String" />
-        <Parameter Name="target" Type="SemWeb.Resource" />
-      </Parameters>
-      <Docs>
-        <param name="variable">The variable, an anonymous node.</param>
-        <param name="name">The name of the variable as it was used in the query, or <see langword="null" /> if it had no name.</param>
-        <param name="target">The resource that the variable is bound to, or <see langword="null" /> if the variable is not bound.</param>
-        <summary>Creates a new variable binding.</summary>
-        <remarks>None.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Substitute">
@@ -68,7 +52,7 @@
       </Docs>
     </Member>
     <Member MemberName="Name">
-      <MemberSignature Language="C#" Value="public string Name { get; };" />
+      <MemberSignature Language="C#" Value="public string Name { set; get; };" />
       <MemberType>Property</MemberType>
       <ReturnValue>
         <ReturnType>System.String</ReturnType>
@@ -76,6 +60,22 @@
       <Docs>
         <summary>The name of the variable as used in the query, or <see langword="null" /> if it had no name.</summary>
         <value>The name of the variable as used in the query, or <see langword="null" /> if it had no name.</value>
+        <remarks>None.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public VariableBinding (SemWeb.BNode variable, string name, SemWeb.Resource target);" />
+      <MemberType>Constructor</MemberType>
+      <Parameters>
+        <Parameter Name="variable" Type="SemWeb.BNode" />
+        <Parameter Name="name" Type="System.String" />
+        <Parameter Name="target" Type="SemWeb.Resource" />
+      </Parameters>
+      <Docs>
+        <param name="variable">The variable.</param>
+        <param name="name">The variable's name, or <see langword="null" />.</param>
+        <param name="target">The value bound to the variable, or <see langword="null" />.</param>
+        <summary>Creates a variable binding structure.</summary>
         <remarks>None.</remarks>
       </Docs>
     </Member>

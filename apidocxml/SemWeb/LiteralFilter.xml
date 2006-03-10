@@ -1,0 +1,100 @@
+<Type Name="LiteralFilter" FullName="SemWeb.LiteralFilter">
+  <TypeSignature Language="C#" Value="public abstract class LiteralFilter" />
+  <AssemblyInfo>
+    <AssemblyName>SemWeb</AssemblyName>
+    <AssemblyVersion>0.5.0.2</AssemblyVersion>
+  </AssemblyInfo>
+  <Base>
+    <BaseTypeName>System.Object</BaseTypeName>
+  </Base>
+  <Interfaces />
+  <Members>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="protected LiteralFilter ();" />
+      <MemberType>Constructor</MemberType>
+      <Parameters />
+      <Docs>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Filter">
+      <MemberSignature Language="C#" Value="public abstract bool Filter (SemWeb.Literal value, SemWeb.SelectableSource targetModel);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Boolean</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="value" Type="SemWeb.Literal" />
+        <Parameter Name="targetModel" Type="SemWeb.SelectableSource" />
+      </Parameters>
+      <Docs>
+        <param name="value">To be added.</param>
+        <param name="targetModel">To be added.</param>
+        <summary>To be added.</summary>
+        <returns>To be added.</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Comparison">
+      <MemberSignature Language="C#" Value="public SemWeb.LiteralFilter Comparison (SemWeb.LiteralFilter+CompType type, object value);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>SemWeb.LiteralFilter</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="type" Type="SemWeb.LiteralFilter+CompType" />
+        <Parameter Name="value" Type="System.Object" />
+      </Parameters>
+      <Docs>
+        <param name="type">To be added.</param>
+        <param name="value">To be added.</param>
+        <summary>To be added.</summary>
+        <returns>To be added.</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="CompareFilter">
+      <MemberSignature Language="C#" Value="protected bool CompareFilter (int cmp, SemWeb.LiteralFilter+CompType type);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Boolean</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="cmp" Type="System.Int32" />
+        <Parameter Name="type" Type="SemWeb.LiteralFilter+CompType" />
+      </Parameters>
+      <Docs>
+        <param name="cmp">To be added.</param>
+        <param name="type">To be added.</param>
+        <summary>To be added.</summary>
+        <returns>To be added.</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="MatchesFilters">
+      <MemberSignature Language="C#" Value="public static bool MatchesFilters (SemWeb.Resource literal, SemWeb.LiteralFilter[] filters, SemWeb.SelectableSource targetModel);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Boolean</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="literal" Type="SemWeb.Resource" />
+        <Parameter Name="filters" Type="SemWeb.LiteralFilter[]" />
+        <Parameter Name="targetModel" Type="SemWeb.SelectableSource" />
+      </Parameters>
+      <Docs>
+        <param name="literal">To be added.</param>
+        <param name="filters">To be added.</param>
+        <param name="targetModel">To be added.</param>
+        <summary>To be added.</summary>
+        <returns>To be added.</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+  </Members>
+  <Docs>
+    <summary>This class is in development.</summary>
+    <remarks>To be added.</remarks>
+  </Docs>
+</Type>

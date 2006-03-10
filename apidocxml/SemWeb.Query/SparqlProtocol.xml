@@ -59,22 +59,6 @@
         <remarks>This method is not meant to be called from user code.</remarks>
       </Docs>
     </Member>
-    <Member MemberName="GetDataSource">
-      <MemberSignature Language="C#" Value="protected virtual SemWeb.SelectableSource GetDataSource ();" />
-      <MemberType>Method</MemberType>
-      <ReturnValue>
-        <ReturnType>SemWeb.SelectableSource</ReturnType>
-      </ReturnValue>
-      <Parameters />
-      <Docs>
-        <summary>Constructs the data source for a query.</summary>
-        <returns>A data source for the query.</returns>
-        <remarks>The default implementation assumes a HttpRequest is currently being processed and uses the current HttpContext
-        to fetch a specification string from the web.config configuration file, and then constructs
-        the data source from that.  Override in subclasses to create a data source in a different way,
-        especially if this class is used outside of an ASP.NET HttpRequest.</remarks>
-      </Docs>
-    </Member>
     <Member MemberName="CreateQuery">
       <MemberSignature Language="C#" Value="protected virtual SemWeb.Query.Query CreateQuery (string query);" />
       <MemberType>Method</MemberType>
@@ -115,6 +99,22 @@
         limits on the query or output.</remarks>
       </Docs>
     </Member>
+    <Member MemberName="GetDataSource">
+      <MemberSignature Language="C#" Value="protected virtual SemWeb.SelectableSource GetDataSource (out bool closeAfterQuery);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>SemWeb.SelectableSource</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="closeAfterQuery" Type="System.Boolean&amp;" RefType="out" />
+      </Parameters>
+      <Docs>
+        <param name="closeAfterQuery">Set to true to indicate that the data source should be closed/disposed after the query is complete.</param>
+        <summary>Gets the data source to query.</summary>
+        <returns>A data source to query.</returns>
+        <remarks>None.</remarks>
+      </Docs>
+    </Member>
   </Members>
   <Docs>
     <summary>Implements a SPARQL Protocol server for ASP.NET.</summary>
@@ -144,9 +144,12 @@
 &lt;/configuration&gt;</code>
       </example>
       <para>Precede the data source specification string with "rdfs+" to wrap the data source with
-      the <see cref="T:SemWeb.Inference.RDFS" /> reasoning engine.  For instance:</para>
+      the <see cref="T:SemWeb.Inference.RDFS" /> reasoning engine.  And precede that with "noreuse," to
+	  create a new instance of the data source on each request, which is good for SQL-backed stores
+	  to allow for concurrent queries, but bad for file-backed stores which would be read from disk
+	  on each request.  For instance:</para>
       <example>
-        <code>&lt;add key="/sparql" value="rdfs+mysql:rdftable:Database=databasename;Server=localhost;User Id=username"/&gt;</code>
+        <code>&lt;add key="/sparql" value="noreuse,rdfs+mysql:rdftable:Database=databasename;Server=localhost;User Id=username"/&gt;</code>
       </example>
       <para>Using Mono's XSP light-weight web server, you can create a standalone SPARQL Protocol server by:</para>
       <list type="bullet">

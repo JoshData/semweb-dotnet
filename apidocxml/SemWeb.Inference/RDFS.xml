@@ -1,0 +1,98 @@
+<Type Name="RDFS" FullName="SemWeb.Inference.RDFS">
+  <TypeSignature Language="C#" Value="public class RDFS : SemWeb.SelectableSource, SemWeb.Stores.SupportsPersistableBNodes, System.IDisposable" />
+  <AssemblyInfo>
+    <AssemblyName>SemWeb</AssemblyName>
+    <AssemblyVersion>0.5.0.2</AssemblyVersion>
+  </AssemblyInfo>
+  <Base>
+    <BaseTypeName>System.Object</BaseTypeName>
+  </Base>
+  <Interfaces>
+    <Interface>
+      <InterfaceName>SemWeb.SelectableSource</InterfaceName>
+    </Interface>
+    <Interface>
+      <InterfaceName>SemWeb.Stores.SupportsPersistableBNodes</InterfaceName>
+    </Interface>
+    <Interface>
+      <InterfaceName>System.IDisposable</InterfaceName>
+    </Interface>
+  </Interfaces>
+  <Members>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public RDFS (SemWeb.SelectableSource data);" />
+      <MemberType>Constructor</MemberType>
+      <Parameters>
+        <Parameter Name="data" Type="SemWeb.SelectableSource" />
+      </Parameters>
+      <Docs>
+        <param name="data">The data and schema source.</param>
+        <summary>Creates a new RDFS reasoner over the provided data source.</summary>
+        <remarks>The data source is scanned for any RDFS schema information in it.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public RDFS (SemWeb.StatementSource schema, SemWeb.SelectableSource data);" />
+      <MemberType>Constructor</MemberType>
+      <Parameters>
+        <Parameter Name="schema" Type="SemWeb.StatementSource" />
+        <Parameter Name="data" Type="SemWeb.SelectableSource" />
+      </Parameters>
+      <Docs>
+        <param name="schema">The source of schema information.</param>
+        <param name="data">The data source.</param>
+        <summary>Creates a new RDFS reasoner over the provided data source using a separate source for schema information.</summary>
+        <remarks>
+          <paramref name="schema" /> is scanned for RDFS schema information, while <paramref name="data" /> is used as the underlying data source for this inferencer.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="LoadSchema">
+      <MemberSignature Language="C#" Value="public void LoadSchema (SemWeb.StatementSource source);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="source" Type="SemWeb.StatementSource" />
+      </Parameters>
+      <Docs>
+        <param name="source">A source of RDFS schema information.</param>
+        <summary>Adds schema information to the inferencer.</summary>
+        <remarks>The source will be scanned for schema information.  If the data source implements <see cref="T:SemWeb.SelectableSource" />, the source will be selected just for the relevant RDFS predicates.  Otherwise, the entire source will be scanned.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Schema">
+      <MemberSignature Language="C#" Value="public SemWeb.StatementSink Schema { get; };" />
+      <MemberType>Property</MemberType>
+      <ReturnValue>
+        <ReturnType>SemWeb.StatementSink</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>A StatementSink representing the schema used by the inferencer.</summary>
+        <value>A StatementSink that statements added to will contribute to the schema used by the inferencer.</value>
+        <remarks>Add statements to the value of this property to add schema information to the inferencer.</remarks>
+      </Docs>
+    </Member>
+  </Members>
+  <Docs>
+    <summary>A data source supporting RDFS inferencing which uses another data source as its underlying data model.</summary>
+    <remarks>
+      <para>The RDFS class wraps another data source and provides RDFS inferencing on top of it by adding inferencing to the Select methods.</para>
+      <para>The RDFS class first loads in a schema, either from the wrapped data source or another data source.  The class scans for rdf:subClassOf, rdf:subPropertyOf, rdf:domain, and rdf:range relations in the schema to establish the class and property hierarchies.</para>
+      <para>Entailments are queried by calls to Contains or Select (except the Select overload that only takes a StatementSink as an argument).</para>
+
+<example>
+  <para>This example creates a RDFS class that provides RDFS reasoning over another data source.  It then returns all entities that are <c>owl:FunctionalProperty</c>s, either because it was directly asserted, or indirectly because the entity was asserted to be a type that is a <c>rdfs:subClassOf</c> <c>owl:FunctionalProperty</c>, following the transitive closure of <c>rdfs:subClassOf</c>.</para>
+  <code lang="C#">SelectableSource rdfs = new RDFS(dataSource);
+using (N3Writer writer = new N3Writer(Console.Out))
+    rdfs.Select(new Statement(null, "http://www.w3.org/1999/02/22-rdf-syntax-ns#type", "http://www.w3.org/2002/07/owl#FunctionalProperty"));  </code>
+</example>
+
+      <para>There types of inferencing operations are supported:</para>
+      <para>Calling Contains(X rdf:type Y), i.e. asking whether X is typed Y, returns true if the entity is marked as being a type of any subclass of Y, or if X is found in the domain or range of a predicate whose domain or range type is Y.  Asking for all entities with a given type using Select(<see langword="null" /> rdf:type Y) returns all entities marked as being typed as Y or any of its subclasses.  Domains and ranges are not used in this case because it would require selecting for all occurrences of all properties with domains and ranges, which isn't scalable.  (This will probably be enable-able in the future.)  When the type of an entity is requested with a call to Select(X rdf:type <see langword="null" />), the type found for X in the underlying data source is returned and all of its superclasses, and if X is found in the domain or range of any predicates whose domain or range is given in the schema, the domain or range is returned as well.</para>
+      <para>When checking if X is a subclass or subproperty of Y with a call to Contains(X rdf:subClassOf/rdf:subPropertyOf Y), true is returned if Y is in the transitive closure of rdf:subClassOf or rdf:subPropertyOf for X, which was already loaded into memory when the schema information was loaded.  When asking for the subclasses, superclasses, subproperties, or superproperties using Select(X rdfs:subClass/PropertyOf <see langword="null" />) or Select(<see langword="null" /> rdfs:subClass/PropertyOf Y), the transitive closure is returned.</para>
+      <para>For all other queries of the form Contains(X P Y), where X and Y may be null but P may not be, Contains returns true if there is a statement X Q Y in the underlying data source where Q is P or is in the subproperty transitive closure of P.  Similarly, for queries Select(X P Y), statements of the form U P V are returned if there is a statement U Q V in the underlying data source where Q is a subproperty of P.  (If X is not <see langword="null" />, U=X; similarly for Y and V.)  Note that the returned statements all contain P as the predicate, the property actually queried on, and not the subproperties which were found in the underlying data source.</para>
+      <para>For all other queries, the query is passed down to the underlying data source without any RDFS processing.</para>
+    </remarks>
+  </Docs>
+</Type>

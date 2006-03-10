@@ -14,7 +14,7 @@
       <MemberType>Constructor</MemberType>
       <Parameters />
       <Docs>
-        <summary>The constructor used by inherited classes.</summary>
+        <summary>The protected no-arg constructor used by inherited classes.</summary>
         <remarks>None.</remarks>
       </Docs>
     </Member>
@@ -61,9 +61,24 @@
         <remarks>The <see cref="P:SemWeb.Query.VariableBinding.Target" /> property of the variable bindings will be <see langword="null" />.</remarks>
       </Docs>
     </Member>
+    <Member MemberName="AddComments">
+      <MemberSignature Language="C#" Value="public virtual void AddComments (string comments);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="comments" Type="System.String" />
+      </Parameters>
+      <Docs>
+        <param name="comments">Arbitrary comments.</param>
+        <summary>Adds comments about how the query has been processed.</summary>
+        <remarks>This method may be called at any time, before, during, and after all bindings have been written.</remarks>
+      </Docs>
+    </Member>
   </Members>
   <Docs>
-    <summary>To be added.</summary>
-    <remarks>To be added.</remarks>
+    <summary>A class that receives the results of a query.</summary>
+    <remarks>This is an abstract base class.  <see cref="T:SemWeb.Query.SparqlXmlQuerySink" /> is an implementation that writes out the results of a query in SPARQL XML Results Format.</remarks>
   </Docs>
 </Type>

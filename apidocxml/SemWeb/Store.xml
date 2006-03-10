@@ -1,5 +1,5 @@
 <Type Name="Store" FullName="SemWeb.Store">
-  <TypeSignature Language="C#" Value="public abstract class Store : SemWeb.ModifiableSource, SemWeb.QueryableSource, SemWeb.SelectableSource, System.IDisposable" />
+  <TypeSignature Language="C#" Value="public abstract class Store : SemWeb.ModifiableSource, SemWeb.SelectableSource, System.IDisposable" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
     <AssemblyVersion>0.5.0.2</AssemblyVersion>
@@ -10,9 +10,6 @@
   <Interfaces>
     <Interface>
       <InterfaceName>SemWeb.ModifiableSource</InterfaceName>
-    </Interface>
-    <Interface>
-      <InterfaceName>SemWeb.QueryableSource</InterfaceName>
     </Interface>
     <Interface>
       <InterfaceName>SemWeb.SelectableSource</InterfaceName>
@@ -62,7 +59,7 @@
       <Docs>
         <param name="statement">The statement to add.</param>
         <summary>Adds a statement to the store.</summary>
-        <remarks>The Subject, Predicate, and Object fields of the statement must not be <see langword="null" />.</remarks>
+        <remarks>The Subject, Predicate, Object, and Meta fields of the statement must not be <see langword="null" />.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Remove">
@@ -77,7 +74,7 @@
       <Docs>
         <param name="statement">A statement or statement template to remove from the store.</param>
         <summary>Removes statements from the store.</summary>
-        <remarks>All statements in the store that match <paramref name="statement" /> are removed.  The <paramref name="statement" /> argument is a template.  The non-<see langword="null" /> fields of <paramref name="statement" /> are used as a filter on the statements in the store.  Statements that match the filter are removed.  <see langword="null" /> fields of <paramref name="statement" /> are ignored during filtering.  Any field in <paramref name="statement" /> (Subject, Predicate, Object, and Meta) may be <see langword="null" />.</remarks>
+        <remarks>See <see cref="M:SemWeb.ModifiableSource.Remove(SemWeb.Statement)" />.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Import">
@@ -92,7 +89,7 @@
       <Docs>
         <param name="source">The source whose statements will be added into the store.</param>
         <summary>Loads the contents of a StatementSource into the store.</summary>
-        <remarks>This method wraps a call to <see cref="M:SemWeb.StatementSource.Select(SemWeb.StatementSink)" /> in store-specific code that prepares the store for receiving many statements.  The store may make itself locked for access by other processes to make the parsing faster.  To avoid this, call <see cref="M:SemWeb.StatementSource.Select(SemWeb.StatementSink)" /> directly.</remarks>
+        <remarks>See <see cref="M:SemWeb.ModifiableSource.Import(SemWeb.StatementSource)" />.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Contains">
@@ -111,7 +108,7 @@ statement that matches the template.</summary>
         <returns>
           <see langword="true" /> if the store contains the statement or
 any statement matching the template.</returns>
-        <remarks>None.</remarks>
+        <remarks>See <see cref="M:SemWeb.SelectableSource.Contains(SemWeb.Statement)" />.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Select">
@@ -128,11 +125,7 @@ any statement matching the template.</returns>
         <param name="template">A statement template.  Use <see cref="F:SemWeb.Statement.All" /> to select all statements in the store, or a statement with <see langword="null" /> fields to select statements that match the non-<see langword="null" /> parts of the statement.</param>
         <param name="result">A StatementSink to which each matching statement will be added.</param>
         <summary>Queries the story for matching statements, and writes the statements to a <see cref="T:SemWeb.StatementSink" />.</summary>
-        <remarks>
-          <para>Each statement in the store matching <paramref name="template" /> is added to <paramref name="result" /> with a call to <see cref="M:SemWeb.StatementSink.Add(SemWeb.Statement)" />.  If the call to Add returns <see langword="false" />, the select operation is aborted and returns immediately.</para>
-          <para>
-            <paramref name="template" /> is a statement template, which means any field in <paramref name="template" /> may be <see langword="null" />, and those fields are excluded from the statement filter. For example, setting the Subject and Predicate fields but leaving the Object and Meta fields <see langword="null" /> will match all statements in the store that have the given Subject and Predicate, and anything in their Object and Meta fields.</para>
-        </remarks>
+        <remarks>See <see cref="M:SemWeb.SelectableSource.Select(SemWeb.Statement,SemWeb.StatementSink)" />.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SelectObjects">
@@ -303,7 +296,7 @@ any statement matching the template.</returns>
       <MemberType>Constructor</MemberType>
       <Parameters />
       <Docs>
-        <summary>The constructor used by inherited classes.</summary>
+        <summary>The protected no-arg constructor used by inherited classes.</summary>
         <remarks>None.</remarks>
       </Docs>
     </Member>
@@ -363,11 +356,12 @@ Example:  "n3:mydata.n3"</description>
               <description>A <see cref="T:SemWeb.Stores.SQLStore" /> connected to the PostgreSQL database given in the connection string, using the tables prefixed by the table parameter.  The returned store can be both read from and written to, despite the name of this method.  Example:  "postgresql:rdf:Server=localhost;Port=5432;Database=SemanticWeb;User Id=user"</description>
             </item>
             <item>
-              <term>sparql-http:URL</term>
-              <description>A <see cref="T:SemWeb.Remote.SparqlHttpSource" />, which accesses a remote data source using the SPARQL Protocol.</description>
+              <term>sparql-http:[URL]</term>
+              <description>A <see cref="T:SemWeb.Remote.SparqlHttpSource" />, which accesses a remote data source using the SPARQL Protocol.  Example: "sparql-http:http://www.govtrack.us/sparql"</description>
             </item>
           </list>
-        </remarks>
+        
+<para>The SQL stores can be both read from and written to.</para></remarks>
       </Docs>
     </Member>
     <Member MemberName="CreateForOutput">
@@ -414,7 +408,7 @@ Example:  "turtle:mydata.turtle"</description>
             <item>
               <term>SQL-based stores</term>
               <description>
-For Sqlite, MySQL, and PostgreSQL-based stores, use the spec string described in <see cref="M:SemWeb.Store.CreateForInput(string)" />.</description>
+For Sqlite, MySQL, and PostgreSQL-based stores, use the spec string described in <see cref="M:SemWeb.Store.CreateForInput(string)" />.  These stores can be both read from and written to.</description>
             </item>
           </list>
         </remarks>
@@ -462,7 +456,7 @@ For Sqlite, MySQL, and PostgreSQL-based stores, use the spec string described in
         <param name="filters">A graph pattern to match in the store.</param>
         <summary>Finds all entities that match a simple graph pattern.</summary>
         <returns>An array of entities matching the pattern.</returns>
-        <remarks>The graph pattern must consist of a single variable node which is represented by <see langword="null" />.  Each statement in the graph pattern must have <see langword="null" /> in its subject, predicate, object, or meta fields (or more than one of those fields).  This method returns all entities that can be substituted into all of the <see langword="null" /> fields in the graph pattern such that the graph pattern is found in the store.</remarks>
+        <remarks>See <see cref="M:SemWeb.SelectableSource.FindEntities(SemWeb.Statement[])" />.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Select">
@@ -510,79 +504,6 @@ For Sqlite, MySQL, and PostgreSQL-based stores, use the spec string described in
         <remarks>None.</remarks>
       </Docs>
     </Member>
-    <Member MemberName="Select">
-      <MemberSignature Language="C#" Value="public abstract void Select (SemWeb.Entity[] subjects, SemWeb.Entity[] predicates, SemWeb.Resource[] objects, SemWeb.Entity[] metas, SemWeb.StatementSink result);" />
-      <MemberType>Method</MemberType>
-      <ReturnValue>
-        <ReturnType>System.Void</ReturnType>
-      </ReturnValue>
-      <Parameters>
-        <Parameter Name="subjects" Type="SemWeb.Entity[]" />
-        <Parameter Name="predicates" Type="SemWeb.Entity[]" />
-        <Parameter Name="objects" Type="SemWeb.Resource[]" />
-        <Parameter Name="metas" Type="SemWeb.Entity[]" />
-        <Parameter Name="result" Type="SemWeb.StatementSink" />
-      </Parameters>
-      <Docs>
-        <param name="subjects">An array of entities for matching subjects, or <see langword="null" /> if any subject matches.</param>
-        <param name="predicates">An array of entities for matching predicates, or <see langword="null" /> if any predicate matches.</param>
-        <param name="objects">An array of resources for matching objects, or <see langword="null" /> if any object matches.</param>
-        <param name="metas">An array of entities for matching meta fields, or <see langword="null" /> if any meta field matches.</param>
-        <param name="result">A sink to which each matching statement is written.</param>
-        <summary>Queries the store for matching statements, and writes the statements to a <see cref="T:SemWeb.StatementSink" />.</summary>
-        <remarks>
-          <para>Each statement in the store matching the parameters is added to <paramref name="result" /> with a call to <see cref="M:SemWeb.StatementSink.Add(SemWeb.Statement)" />.  If the call to Add returns <see langword="false" />, the select operation is aborted and returns immediately.</para>
-          <para>None of the argument arrays may be zero-length or contain <see langword="null" />.</para>
-        </remarks>
-      </Docs>
-    </Member>
-    <Member MemberName="Select">
-      <MemberSignature Language="C#" Value="public SemWeb.SelectResult Select (SemWeb.Entity[] subjects, SemWeb.Entity[] predicates, SemWeb.Resource[] objects, SemWeb.Entity[] metas);" />
-      <MemberType>Method</MemberType>
-      <ReturnValue>
-        <ReturnType>SemWeb.SelectResult</ReturnType>
-      </ReturnValue>
-      <Parameters>
-        <Parameter Name="subjects" Type="SemWeb.Entity[]" />
-        <Parameter Name="predicates" Type="SemWeb.Entity[]" />
-        <Parameter Name="objects" Type="SemWeb.Resource[]" />
-        <Parameter Name="metas" Type="SemWeb.Entity[]" />
-      </Parameters>
-      <Docs>
-        <param name="subjects">An array of entities for matching subjects, or <see langword="null" /> if any subject matches.</param>
-        <param name="predicates">An array of entities for matching predicates, or <see langword="null" /> if any predicate matches.</param>
-        <param name="objects">An array of resources for matching objects, or <see langword="null" /> if any object matches.</param>
-        <param name="metas">An array of entities for matching meta fields, or <see langword="null" /> if any meta field matches.</param>
-        <summary>Retuns a <see cref="T:SemWeb.SelectResult" /> object that represents matching statements in the store.</summary>
-        <returns>A SelectResult representing the result of the select statement.  See <see cref="M:SemWeb.Store.Select(SemWeb.Statement)" />.</returns>
-        <remarks>
-          <para>None of the argument arrays may be zero-length or contain <see langword="null" />.</para>
-        </remarks>
-      </Docs>
-    </Member>
-    <Member MemberName="Query">
-      <MemberSignature Language="C#" Value="public virtual void Query (SemWeb.Statement[] graph, SemWeb.Query.QueryResultSink sink);" />
-      <MemberType>Method</MemberType>
-      <ReturnValue>
-        <ReturnType>System.Void</ReturnType>
-      </ReturnValue>
-      <Parameters>
-        <Parameter Name="graph" Type="SemWeb.Statement[]" />
-        <Parameter Name="sink" Type="SemWeb.Query.QueryResultSink" />
-      </Parameters>
-      <Docs>
-        <param name="graph">The graph pattern to query.</param>
-        <param name="sink">The sink to which query bindings are returned.</param>
-        <summary>Queries the store using a simple conjunctive graph pattern.</summary>
-        <remarks>
-          <para>
-            <paramref name="graph" /> is an array of statements that make up the query.
-                 Blank nodes in the graph are considered variables to bind to resources
-                 in the store.</para>
-          <para>This method is generally implemented using the <see cref="T:SemWeb.Query.GraphMatch" /> class.</para>
-        </remarks>
-      </Docs>
-    </Member>
     <Member MemberName="RemoveAll">
       <MemberSignature Language="C#" Value="public void RemoveAll (SemWeb.Statement[] templates);" />
       <MemberType>Method</MemberType>
@@ -595,7 +516,7 @@ For Sqlite, MySQL, and PostgreSQL-based stores, use the spec string described in
       <Docs>
         <param name="templates">An array of statement templates.  Statement templates may contain a <see langword="null" /> subject, predicate, object, and/or meta.</param>
         <summary>Removes all statements matching an array of templates.</summary>
-        <remarks>None.</remarks>
+        <remarks>See <see cref="M:SemWeb.ModifiableSource.RemoveAll(SemWeb.Statement[])" />.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Close">
@@ -629,60 +550,6 @@ For Sqlite, MySQL, and PostgreSQL-based stores, use the spec string described in
         <remarks>This method is intended to be used by implementors of SelectableSource.</remarks>
       </Docs>
     </Member>
-    <Member MemberName="Select">
-      <MemberSignature Language="C#" Value="public virtual void Select (SemWeb.Entity[] subjects, SemWeb.Entity[] predicates, SemWeb.Entity[] metas, SemWeb.StatementSink sink, SemWeb.LiteralFilter[] literalFilters);" />
-      <MemberType>Method</MemberType>
-      <ReturnValue>
-        <ReturnType>System.Void</ReturnType>
-      </ReturnValue>
-      <Parameters>
-        <Parameter Name="subjects" Type="SemWeb.Entity[]" />
-        <Parameter Name="predicates" Type="SemWeb.Entity[]" />
-        <Parameter Name="metas" Type="SemWeb.Entity[]" />
-        <Parameter Name="sink" Type="SemWeb.StatementSink" />
-        <Parameter Name="literalFilters" Type="SemWeb.LiteralFilter[]" />
-      </Parameters>
-      <Docs>
-        <param name="subjects">An array of entities for matching subjects, or <see langword="null" /> if any subject matches.</param>
-        <param name="predicates">An array of entities for matching predicates, or <see langword="null" /> if any predicate matches.</param>
-        <param name="metas">An array of entities for matching meta fields, or <see langword="null" /> if any meta field matches.</param>
-        <param name="sink">A sink to which each matching statement is written.</param>
-        <param name="literalFilters">An array of literal filter objects.</param>
-        <summary>Queries the store for matching statements with literal objects that match filters, and writes the statements to a <see cref="T:SemWeb.StatementSink" />.</summary>
-        <remarks>
-          <para>**This operation is not fully implemented in all data sources yet.**</para>
-          <para>Each statement in the store matching the parameters is added to <paramref name="result" /> with a call to <see cref="M:SemWeb.StatementSink.Add(SemWeb.Statement)" />.  If the call to Add returns <see langword="false" />, the select operation is aborted and returns immediately.</para>
-          <para>None of the argument arrays may be zero-length or contain <see langword="null" />.</para>
-          <para>Only statements with <see cref="T:SemWeb.Literal" /> objects will match, and the literal
-		  value must match all of the provided filters.</para>
-        </remarks>
-      </Docs>
-    </Member>
-    <Member MemberName="DefaultSelect">
-      <MemberSignature Language="C#" Value="public static void DefaultSelect (SemWeb.SelectableSource source, SemWeb.Entity[] subjects, SemWeb.Entity[] predicates, SemWeb.Entity[] metas, SemWeb.StatementSink sink, SemWeb.LiteralFilter[] literalFilters);" />
-      <MemberType>Method</MemberType>
-      <ReturnValue>
-        <ReturnType>System.Void</ReturnType>
-      </ReturnValue>
-      <Parameters>
-        <Parameter Name="source" Type="SemWeb.SelectableSource" />
-        <Parameter Name="subjects" Type="SemWeb.Entity[]" />
-        <Parameter Name="predicates" Type="SemWeb.Entity[]" />
-        <Parameter Name="metas" Type="SemWeb.Entity[]" />
-        <Parameter Name="sink" Type="SemWeb.StatementSink" />
-        <Parameter Name="literalFilters" Type="SemWeb.LiteralFilter[]" />
-      </Parameters>
-      <Docs>
-        <param name="source">The data source to query.</param>
-        <param name="subjects">An array of entities for matching subjects, or <see langword="null" /> if any subject matches.</param>
-        <param name="predicates">An array of entities for matching predicates, or <see langword="null" /> if any predicate matches.</param>
-        <param name="metas">An array of entities for matching meta fields, or <see langword="null" /> if any meta field matches.</param>
-        <param name="sink">A sink to which each matching statement is written.</param>
-        <param name="literalFilters">An array of literal filter objects.</param>
-        <summary>A default implementation of the Select with LiteralFilter[] operation for implementors of SelectableSource.</summary>
-        <remarks>This method is intended to be used by implementors of SelectableSource.</remarks>
-      </Docs>
-    </Member>
     <Member MemberName="Distinct">
       <MemberSignature Language="C#" Value="public abstract bool Distinct { get; };" />
       <MemberType>Property</MemberType>
@@ -693,6 +560,39 @@ For Sqlite, MySQL, and PostgreSQL-based stores, use the spec string described in
         <summary>Gets whether the store returns only distinct statments from Select calls.</summary>
         <value>True if any call to Select and its overloads yields only distinct statements (i.e. no duplicates).</value>
         <remarks>When this property returns false, callers of Select may want to ensure the resulting statements have no duplicates.  It this property returns true, such a check is unnecessary.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Select">
+      <MemberSignature Language="C#" Value="public abstract void Select (SemWeb.SelectFilter filter, SemWeb.StatementSink result);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="filter" Type="SemWeb.SelectFilter" />
+        <Parameter Name="result" Type="SemWeb.StatementSink" />
+      </Parameters>
+      <Docs>
+        <param name="filter">A filter specifying what statements to return.</param>
+        <param name="result">A StatementSink to which each matching statement will be added.</param>
+        <summary>Queries the story for matching statements, with advanced options, and writes the statements to a <see cref="T:SemWeb.StatementSink" />.</summary>
+        <remarks>See <see cref="M:SemWeb.SelectableSource.Select(SemWeb.SelectFilter,SemWeb.StatementSink)" />.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Select">
+      <MemberSignature Language="C#" Value="public SemWeb.SelectResult Select (SemWeb.SelectFilter filter);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>SemWeb.SelectResult</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="filter" Type="SemWeb.SelectFilter" />
+      </Parameters>
+      <Docs>
+        <param name="filter">A filter specifying what statements to return.</param>
+        <summary>Retuns a <see cref="T:SemWeb.SelectResult" /> object that represents the result of the corresponding select call with a StatementSink.</summary>
+        <returns>A <see cref="T:SemWeb.SelectResult" /> representing the matching statements.</returns>
+        <remarks>See <see cref="M:SemWeb.Store.Select(SemWeb.SelectFilter,SemWeb.StatementSink)" />.</remarks>
       </Docs>
     </Member>
   </Members>

@@ -1,0 +1,57 @@
+<Type Name="BNode" FullName="SemWeb.BNode">
+  <TypeSignature Language="C#" Value="public class BNode : SemWeb.Entity" />
+  <AssemblyInfo>
+    <AssemblyName>SemWeb</AssemblyName>
+    <AssemblyVersion>0.5.0.2</AssemblyVersion>
+  </AssemblyInfo>
+  <Base>
+    <BaseTypeName>SemWeb.Entity</BaseTypeName>
+  </Base>
+  <Interfaces />
+  <Members>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public BNode ();" />
+      <MemberType>Constructor</MemberType>
+      <Parameters />
+      <Docs>
+        <summary>Creates a new blank node.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public BNode (string localName);" />
+      <MemberType>Constructor</MemberType>
+      <Parameters>
+        <Parameter Name="localName" Type="System.String" />
+      </Parameters>
+      <Docs>
+        <param name="localName">The local name of the node as used in some RDF document.</param>
+        <summary>Creates a new blank node with a local name.</summary>
+        <remarks>The local name does not affect whether two BNodes are considered equal.  It is merely used as a suggestion when serializing a RDF graph.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="LocalName">
+      <MemberSignature Language="C#" Value="public string LocalName { get; };" />
+      <MemberType>Property</MemberType>
+      <ReturnValue>
+        <ReturnType>System.String</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>The suggested local name of the node.</summary>
+        <value>The local name of the node, as it was found in some document or as it should be used when serializing the node.</value>
+        <remarks>The local name is set when the BNode is created, usually by RDF readers of streams that give local names to blank nodes.  The local name does not affect whether two BNodes are considered equal.  It is merely used as a suggestion when serializing a RDF graph.</remarks>
+      </Docs>
+    </Member>
+  </Members>
+  <Docs>
+    <summary>A blank (anonymous) node.</summary>
+    <remarks><para>Blank nodes are a type of <see cref="T:SemWeb.Entity" /> that have no globally unique identifier.
+    Two blank node instances are generally references to distinct nodes in a graph, unless they were created
+    in the same <see cref="T:SemWeb.StatementSource" /> which marked them as being equivalent.</para>
+
+<example>
+  <para>The following example creates a new blank node.</para>
+  <code lang="C#">BNode node = new BNode();  </code>
+</example></remarks>
+  </Docs>
+</Type>
