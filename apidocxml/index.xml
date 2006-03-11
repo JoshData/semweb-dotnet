@@ -83,7 +83,7 @@
     </Namespace>
   </Types>
   <Assemblies>
-    <Assembly Name="SemWeb" Version="0.5.0.2">
+    <Assembly Name="SemWeb" Version="0.7.1.0">
       <Attributes>
         <Attribute>
           <AttributeName>System.Reflection.AssemblyKeyName(KeyName="")</AttributeName>
@@ -92,7 +92,7 @@
           <AttributeName>System.Reflection.AssemblyTrademark(Trademark="")</AttributeName>
         </Attribute>
         <Attribute>
-          <AttributeName>System.Reflection.AssemblyCopyright(Copyright="Copyright (c) 2005 Joshua Tauberer &lt;tauberer@for.net&gt;")</AttributeName>
+          <AttributeName>System.Reflection.AssemblyCopyright(Copyright="Copyright (c) 2006 Joshua Tauberer &lt;tauberer@for.net&gt;")</AttributeName>
         </Attribute>
         <Attribute>
           <AttributeName>System.Reflection.AssemblyProduct(Product="")</AttributeName>
@@ -104,7 +104,7 @@
           <AttributeName>System.Reflection.AssemblyConfiguration(Configuration="")</AttributeName>
         </Attribute>
         <Attribute>
-          <AttributeName>System.Reflection.AssemblyDescription(Description="A library for applications using the semantic web.")</AttributeName>
+          <AttributeName>System.Reflection.AssemblyDescription(Description="A library for applications using RDF and the semantic web.")</AttributeName>
         </Attribute>
         <Attribute>
           <AttributeName>System.Reflection.AssemblyTitle(Title="SemWeb")</AttributeName>

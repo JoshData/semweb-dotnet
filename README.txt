@@ -5,7 +5,7 @@ By Joshua Tauberer <tauberer@for.net>
 
 http://taubz.for.net/code/semweb
 
-Copyright 2005 Joshua Tauberer.  This package is released under the 
+Copyright 2006 Joshua Tauberer.  This package is released under the 
 terms of the Creative Commons Attribution License:
 
 	http://creativecommons.org/licenses/by/2.0/
@@ -40,7 +40,8 @@ OTHER INCLUDED FILES
 bin/sparql-core.dll is based on the SPARQL Engine by Ryan Levering,
 which is covered by the GNU LGPL.  The original Java JAR was
 coverted to a .NET assembly using IKVM (see below).
-See: http://sourceforge.net/projects/sparql/
+See: http://sparql.sourceforge.net/
 
 bin/IKVM*.dll are auxiliary assemblies for running the SPARQL
 engine.  IKVM was written by Jeroen Frijters.  See http://www.ikvm.net.
+

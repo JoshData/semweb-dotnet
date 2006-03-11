@@ -15,6 +15,6 @@ public class Simple {
 		// complete so that the final statement is closed
 		// with a period.
 		using (RdfWriter writer = new N3Writer(Console.Out))
-			store.Write(writer);
+			writer.Write(store);
 	}
 }

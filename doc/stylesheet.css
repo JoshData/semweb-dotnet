@@ -4,3 +4,8 @@ pre.code {
 	background-color: #FAFAFF;
 	border: 1px solid #CCCCDD;
 }
+
+tt {
+	font-family: Verdana;
+	letter-spacing: 1px;
+}

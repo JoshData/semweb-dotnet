@@ -2,7 +2,7 @@
   <TypeSignature Language="C#" Value="public abstract class RdfReader : SemWeb.StatementSource, System.IDisposable" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
-    <AssemblyVersion>0.5.0.2</AssemblyVersion>
+    <AssemblyVersion>0.7.1.0</AssemblyVersion>
   </AssemblyInfo>
   <Base>
     <BaseTypeName>System.Object</BaseTypeName>

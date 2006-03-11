@@ -2,7 +2,7 @@
   <TypeSignature Language="C#" Value="public abstract class Store : SemWeb.ModifiableSource, SemWeb.SelectableSource, System.IDisposable" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
-    <AssemblyVersion>0.5.0.2</AssemblyVersion>
+    <AssemblyVersion>0.7.1.0</AssemblyVersion>
   </AssemblyInfo>
   <Base>
     <BaseTypeName>System.Object</BaseTypeName>
@@ -170,21 +170,6 @@ any statement matching the template.</returns>
             <para>This method is not recommended when the store can contain a large number of statements, as every matching entity must be loaded into memory before this method returns.</para>
           </block>
         </remarks>
-      </Docs>
-    </Member>
-    <Member MemberName="Write">
-      <MemberSignature Language="C#" Value="public void Write (SemWeb.RdfWriter writer);" />
-      <MemberType>Method</MemberType>
-      <ReturnValue>
-        <ReturnType>System.Void</ReturnType>
-      </ReturnValue>
-      <Parameters>
-        <Parameter Name="writer" Type="SemWeb.RdfWriter" />
-      </Parameters>
-      <Docs>
-        <param name="writer">The writer to which the statements of the store are sent.</param>
-        <summary>Writes the contents of the store to a <see cref="T:SemWeb.RdfWriter" />.</summary>
-        <remarks>None.</remarks>
       </Docs>
     </Member>
     <Member MemberName="StatementCount">

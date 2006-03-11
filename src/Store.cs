@@ -330,13 +330,9 @@ namespace SemWeb {
 			}
 		}
 		
-		public void Write(RdfWriter writer) {
-			writer.Write(this);
-		}
-		
 		public void Write(System.IO.TextWriter writer) {
 			using (RdfWriter w = new N3Writer(writer)) {
-				Write(w);
+				Select(w);
 			}
 		}
 		
