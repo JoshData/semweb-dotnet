@@ -36,7 +36,7 @@ bin/SemWeb.SqliteStore.dll: src/SQLiteStore.cs bin/SemWeb.dll
 	-r:bin/SemWeb.dll -r:System.Data -r:Mono.Data.SqliteClient
 	
 bin/SemWeb.MySQLStore.dll: src/MySQLStore.cs bin/SemWeb.dll
-	mcs -debug src/MySQLStore.cs -out:bin/SemWeb.MySQLStore-ByteFx.dll -t:library\
+	mcs -debug src/MySQLStore.cs -out:bin/SemWeb.MySQLStore.dll -t:library\
 	 -r:bin/SemWeb.dll -r:System.Data -r:ByteFX.Data -d:BYTEFX
 	#mcs -debug src/MySQLStore.cs -out:bin/SemWeb.MySQLStore-Connector.dll -t:library\
 	# -r:bin/SemWeb.dll -r:System.Data -r:MySql.Data -d:CONNECTOR
@@ -64,7 +64,7 @@ apidocxml: Makefile
 package: all
 	rm -rf package-workspace
 	mkdir -p package-workspace/semweb-$(VERSION)
-	cp -R bin src tools apidocs \
+	cp -R bin src tools apidocs doc \
 		ChangeLog Makefile README.txt semweb.mds \
 		package-workspace/semweb-$(VERSION)
 	mkdir package-workspace/semweb-$(VERSION)/examples
