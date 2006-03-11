@@ -16,6 +16,8 @@ namespace SemWeb.Stores {
 		string guid;
 		
 		bool firstUse = true;
+		
+		bool isImporting = false;
 		IDictionary lockedIdCache = null;
 		int cachedNextId = -1;
 		
@@ -138,7 +140,7 @@ namespace SemWeb.Stores {
 		}
 		
 		private int NextId() {
-			if (lockedIdCache != null && cachedNextId != -1)
+			if (isImporting && cachedNextId != -1)
 				return ++cachedNextId;
 			
 			RunAddBuffer();
@@ -256,25 +258,25 @@ namespace SemWeb.Stores {
 				b.Append(INSERT_INTO_LITERALS_VALUES);
 			} else {
 				if (b.Length > 0)
-					b.Append(",");
+					b.Append(',');
 			}
-			b.Append("(");
+			b.Append('(');
 			b.Append(id);
-			b.Append(",");
+			b.Append(',');
 			EscapedAppend(b, value);
-			b.Append(",");
+			b.Append(',');
 			if (language != null)
 				EscapedAppend(b, language);
 			else
 				b.Append("NULL");
-			b.Append(",");
+			b.Append(',');
 			if (datatype != null)
 				EscapedAppend(b, datatype);
 			else
 				b.Append("NULL");
-			b.Append(")");
+			b.Append(')');
 			if (!insertCombined)
-				b.Append(";");
+				b.Append(';');
 			
 			if (buffer == null)
 				RunCommand(b.ToString());
@@ -322,15 +324,15 @@ namespace SemWeb.Stores {
 				b.Append(INSERT_INTO_ENTITIES_VALUES);
 			} else {
 				if (b.Length > 0)
-					b.Append(",");
+					b.Append(',');
 			}
-			b.Append("(");
+			b.Append('(');
 			b.Append(id);
-			b.Append(",");
+			b.Append(',');
 			EscapedAppend(b, uri);
-			b.Append(")");
+			b.Append(')');
 			if (!insertCombined)
-				b.Append(";");
+				b.Append(';');
 			
 			if (entityInsertBuffer == null)
 				RunCommand(b.ToString());
@@ -371,7 +373,7 @@ namespace SemWeb.Stores {
 				// then just return 0 to signal the resource doesn't exist.
 				if (!create) return 0;
 
-				if (lockedIdCache != null) {
+				if (isImporting) {
 					// Can just increment the counter.
 					id = NextId();
 				} else {
@@ -442,16 +444,16 @@ namespace SemWeb.Stores {
 			StringBuilder addBuffer = cmdBuffer; addBuffer.Length = 0;
 			
 			addBuffer.Append(INSERT_INTO_STATEMENTS_VALUES);
-			addBuffer.Append("(");
+			addBuffer.Append('(');
 
 			addBuffer.Append(subj);
-			addBuffer.Append(", ");
+			addBuffer.Append(',');
 			addBuffer.Append(pred);
-			addBuffer.Append(", ");
+			addBuffer.Append(',');
 			addBuffer.Append(objtype);
-			addBuffer.Append(", ");
+			addBuffer.Append(',');
 			addBuffer.Append(obj);
-			addBuffer.Append(", ");
+			addBuffer.Append(',');
 			addBuffer.Append(meta);
 			addBuffer.Append("); ");
 			
@@ -477,7 +479,8 @@ namespace SemWeb.Stores {
 			cmd.Append("_literals WHERE ");
 			bool hasLiterals = false;
 			Hashtable litseen = new Hashtable();
-			foreach (Statement s in statements) {
+			for (int i = 0; i < statements.Count; i++) {
+				Statement s = (Statement)statements[i];
 				Literal lit = s.Object as Literal;
 				if (lit == null) continue;
 				if (litseen.ContainsKey(lit)) continue;
@@ -485,17 +488,16 @@ namespace SemWeb.Stores {
 				
 				if (hasLiterals)
 					cmd.Append(" or ");
-				cmd.Append("(");
+				cmd.Append('(');
 				WhereLiteral(cmd, lit);
-				cmd.Append(")");
+				cmd.Append(')');
 				hasLiterals = true;
 				litseen[lit] = litseen;
 			}
 			if (hasLiterals) {
-				cmd.Append(";");
+				cmd.Append(';');
 				using (IDataReader reader = RunReader(cmd.ToString())) {
 					while (reader.Read()) {
-						//int literalid = AsInt(reader[0]);	
 						int literalid = reader.GetInt32(0);
 						string val = AsString(reader[1]);
 						string lang = AsString(reader[2]);
@@ -528,15 +530,15 @@ namespace SemWeb.Stores {
 				if (!insertCombined)
 					cmd.Append(INSERT_INTO_STATEMENTS_VALUES);
 				
-				cmd.Append("(");
+				cmd.Append('(');
 				cmd.Append(subj);
-				cmd.Append(", ");
+				cmd.Append(',');
 				cmd.Append(pred);
-				cmd.Append(", ");
+				cmd.Append(',');
 				cmd.Append(objtype);
-				cmd.Append(", ");
+				cmd.Append(',');
 				cmd.Append(obj);
-				cmd.Append(", ");
+				cmd.Append(',');
 				cmd.Append(meta);
 				if (i == statements.Count-1 || !insertCombined)
 					cmd.Append(");");
@@ -576,7 +578,7 @@ namespace SemWeb.Stores {
 			cmd.Append(table);
 			cmd.Append("_statements ");
 			if (!WhereClause(template, cmd)) return;
-			cmd.Append(";");
+			cmd.Append(';');
 			
 			RunCommand(cmd.ToString());
 			
@@ -623,7 +625,7 @@ namespace SemWeb.Stores {
 			if (col.EndsWith("object")) {
 				if (r is MultiRes) {
 					// Assumption that ID space of literals and entities are the same.
-					cmd.Append("(");
+					cmd.Append('(');
 					cmd.Append(col);
 					cmd.Append(" IN (");
 					if (!AppendMultiRes((MultiRes)r, cmd)) return false;
@@ -632,23 +634,23 @@ namespace SemWeb.Stores {
 					Literal lit = (Literal)r;
 					int id = GetResourceId(lit, false);
 					if (id == 0) return false;
-					cmd.Append(" (");
+					cmd.Append('(');
 					cmd.Append(col);
-					cmd.Append(" = ");
+					cmd.Append('=');
 					cmd.Append(id);
-					cmd.Append(")");
+					cmd.Append(')');
 				} else {
 					int id = GetResourceId(r, false);
 					if (id == 0) return false;
-					cmd.Append(" (");
+					cmd.Append('(');
 					cmd.Append(col);
-					cmd.Append(" = ");
+					cmd.Append('=');
 					cmd.Append(id);
-					cmd.Append(")");
+					cmd.Append(')');
 				}
 			
 			} else if (r is MultiRes) {
-				cmd.Append("( ");
+				cmd.Append('(');
 				cmd.Append(col);
 				cmd.Append(" IN (");
 				if (!AppendMultiRes((MultiRes)r, cmd)) return false;
@@ -658,11 +660,11 @@ namespace SemWeb.Stores {
 				int id = GetResourceId(r, false);
 				if (id == 0) return false;
 				
-				cmd.Append("( ");
+				cmd.Append('(');
 				cmd.Append(col);
-				cmd.Append(" = ");
+				cmd.Append('=');
 				cmd.Append(id);
-				cmd.Append(" )");
+				cmd.Append(')');
 			}
 			
 			return true;
@@ -670,7 +672,7 @@ namespace SemWeb.Stores {
 		
 		private bool AppendMultiRes(MultiRes r, StringBuilder cmd) {
 			for (int i = 0; i < r.items.Length; i++) {
-				if (i != 0) cmd.Append(",");
+				if (i != 0) cmd.Append(',');
 				int id = GetResourceId(r.items[i], false);
 				if (id == 0) return false;
 				cmd.Append(id);
@@ -734,7 +736,7 @@ namespace SemWeb.Stores {
 		
 		private static void AppendComma(StringBuilder builder, string text, bool comma) {
 			if (comma)
-				builder.Append(", ");
+				builder.Append(',');
 			builder.Append(text);
 		}
 		
@@ -904,7 +906,7 @@ namespace SemWeb.Stores {
 					if (s != null) {
 						if (!wroteWhere) { cmd.Append(" WHERE "); wroteWhere = true; }
 						else { cmd.Append(" AND "); }
-						cmd.Append(" ");
+						cmd.Append(' ');
 						cmd.Append(s);
 					}
 				}
@@ -915,7 +917,7 @@ namespace SemWeb.Stores {
 				cmd.Append(limit);
 			}
 
-			cmd.Append(";");
+			cmd.Append(';');
 			
 			if (Debug || false) {
 				string cmd2 = cmd.ToString();
@@ -1069,7 +1071,7 @@ namespace SemWeb.Stores {
 
 		public override void Import(StatementSource source) {
 			if (source == null) throw new ArgumentNullException();
-			if (lockedIdCache != null) throw new InvalidOperationException("Store is already importing.");
+			if (isImporting) throw new InvalidOperationException("Store is already importing.");
 			
 			Init();
 			RunAddBuffer();
@@ -1086,6 +1088,7 @@ namespace SemWeb.Stores {
 			BeginTransaction();
 			
 			try {
+				isImporting = true;
 				base.Import(source);
 			} finally {
 				RunAddBuffer();
@@ -1093,6 +1096,7 @@ namespace SemWeb.Stores {
 				
 				lockedIdCache = null;
 				addStatementBuffer = null;
+				isImporting = false;
 				
 				literalCache.Clear();
 				literalCacheSize = 0;			
@@ -1110,10 +1114,10 @@ namespace SemWeb.Stores {
 				cmd.Append(table);
 				cmd.Append("_statements SET ");
 				cmd.Append(col);
-				cmd.Append("=");
+				cmd.Append('=');
 				cmd.Append(id);
 				if (!WhereItem(col, a, cmd, false)) return;
-				cmd.Append(";");
+				cmd.Append(';');
 				RunCommand(cmd.ToString());
 			}
 
@@ -1148,7 +1152,7 @@ namespace SemWeb.Stores {
 			cmd.Append(obj);
 			cmd.Append(", meta=");
 			cmd.Append(meta);
-			cmd.Append(" ");
+			cmd.Append(' ');
 			
 			if (!WhereClause(find, cmd))
 				return;
@@ -1190,7 +1194,7 @@ namespace SemWeb.Stores {
 				cmd.Append(f1pos);
 				cmd.Append("=f");
 				cmd.Append(i);
-				cmd.Append(".");
+				cmd.Append('.');
 				string fipos = is_spom(filters[i]);
 				if (fipos == null) throw new ArgumentException("Null must appear in every statement.");
 				cmd.Append(fipos);
@@ -1229,7 +1233,7 @@ namespace SemWeb.Stores {
 			if (filters[0].Object == null)
 				cmd.Append(" AND s.objecttype=0");
 				
-			cmd.Append(";");
+			cmd.Append(';');
 			
 			//Console.Error.WriteLine(cmd.ToString());
 			
