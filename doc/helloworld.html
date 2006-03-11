@@ -1,0 +1,185 @@
+<html>
+	<head>
+		<title>SemWeb: Docs: Hello World</title>
+		<link rel="stylesheet" type="text/css" href="stylesheet.css"/>
+	</head>
+	
+	<body>
+
+<h1>SemWeb: Hello World</h1>
+
+<p>Here's an example of using SemWeb to construct an RDF/XML or Notation 3 file.</p>
+
+<p>Create a new file called <tt>helloworld.cs</tt>.  If you're using Visual Studio, create this in a new project and reference <tt>SemWeb.dll</tt> provided in the download package.</p>
+
+<p>First, use the relevant namespaces and create a simple class.  Also add a constant for the RDF namespace.</p>
+
+<pre class="code">
+using System;
+using SemWeb;
+
+public class Example {
+	const string RDF = "http://www.w3.org/1999/02/22-rdf-syntax-ns#";
+
+	public static void Main() {
+	}
+}
+</pre>
+
+<p>In <tt>Main()</tt>, create a new <tt>MemoryStore</tt>, which is an in-memory store of RDF statements:</p>
+
+<pre class="code">
+MemoryStore store = new MemoryStore();
+</pre>
+
+<p>The next thing to do is create some entities for the things you will be asserting statements about.  You can do that simply by creating a new <tt>Entity</tt> object:</p>
+
+<pre class="code">
+Entity computer = new Entity("http://example.org/computer");
+Entity description = new Entity("http://example.org/description");
+</pre>
+
+<p>The <tt>Entity</tt> class has an implicit conversion operator from strings, which means you can just assign a string to an entity variable to save typing:</p>
+
+<pre class="code">
+Entity says = "http://example.org/says";
+Entity wants = "http://example.org/wants";
+</pre>
+
+<p>Blank nodes, a.k.a. anonymous entities, are created using the <tt>BNode</tt> class, which is a subclass of <tt>Entity</tt>.</p>
+
+<pre class="code">
+Entity desire = new BNode();
+</pre>
+
+<p>Next, we create statements using these entities.  To create a statement, use the <tt>Statement</tt> constructor, which takes a subject, predicate, and object.  Note that <tt>Statement</tt>s are <i>structs</i>, not classes.  In principle, this should allow applications to scale to large number of statements much better than if statements were objects (although I haven't tested it).</p>
+
+<pre class="code">
+Statement assertion = new Statement(computer, says, (Literal)"Hello world!");
+</pre>
+
+<p>Note that another conversion operator was used, here to convert a string into a <tt>Literal</tt>.  It's shorthand for <tt>new Literal("Hello world!")</tt>.  The Literal conversion operator is defined as <i>explicit</i>, which means you always have to use an explicit cast if you want to use the conversion operator.</p>
+
+<p>Statements have to be put into a <tt>Store</tt> like this:</p>
+
+<pre class="code">
+store.Add(assertion);
+</pre>
+
+<p>I'll condense that into this:</p>
+
+<pre class="code">
+store.Add(new Statement(computer, says, (Literal)"Hello world!"));
+store.Add(new Statement(computer, wants, desire));
+store.Add(new Statement(desire, description, (Literal)"to be human"));
+store.Add(new Statement(desire, RDF+"type", (Entity)"http://example.org/Desire"));
+</pre>
+
+<p>A store is a collection of statements.  In true RDF, the order and number of occurrences of a statement doesn't matter because a graph is simply a set of statements.  Some SemWeb stores act like sets, rather than collections.  The memory store is not one of these.</p>
+
+<p>Lastly, we want to write out the contents of the store to an RDF/XML file.  We do this by creating a new <tt>RdfXmlWriter</tt> object, sending the store's contents to the writer, and then <b>disposing the writer</b>.  It's very important to dispose of writers so they can finish, so you should always wrap writers with the <i>using</i> C# directive.</p>
+
+<pre class="code">
+using (RdfWriter writer = new RdfXmlWriter(Console.Out)) {
+	writer.Write(store);
+}
+</pre>
+
+<p>If you're using Mono, like I do, to compile and run the program, run the following commands.  Be sure to put <tt>SemWeb.dll</tt> in the current directory so Mono can find it at compile time, and then at run time.</p>
+
+<pre class="code">
+mcs helloworld.cs -r:SemWeb.dll
+mono helloworld.exe
+</pre>
+
+<p>If you're using VisualStudio, just compile and run.</p>
+
+<p>Here's the output:</p>
+
+<pre class="code">&lt;?xml version="1.0"?&gt;
+&lt;rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:exampleorg="http://example.org/"&gt;
+	&lt;rdf:Description rdf:about="http://example.org/computer"&gt;
+		&lt;exampleorg:says&gt;Hello world!&lt;/exampleorg:says&gt;
+		&lt;exampleorg:wants&gt;
+			&lt;exampleorg:Desire&gt;
+				&lt;exampleorg:description&gt;to be human&lt;/exampleorg:description&gt;
+			&lt;/exampleorg:Desire&gt;
+		&lt;/exampleorg:wants&gt;
+	&lt;/rdf:Description&gt;
+&lt;/rdf:RDF&gt;</pre>
+
+<p>We didn't provide the writer with any namespace prefixes, so it made one up.  To provide a prefix for a namespace, use a <tt>NamespaceManager</tt> and pass that to the writer:</p>
+
+<pre class="code">
+NamespaceManager nsmgr = new NamespaceManager();
+nsmgr.AddNamespace("http://example.org/", "ex");
+		
+using (RdfWriter writer = new RdfXmlWriter(Console.Out, nsmgr))
+	...
+</pre>
+
+<p>Here's the final output:</p>
+
+<pre class="code" file="../examples/helloworld.output.rdf">&lt;?xml version="1.0"?&gt;
+&lt;rdf:RDF xmlns:ex="http://example.org/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"&gt;
+	&lt;rdf:Description rdf:about="http://example.org/computer"&gt;
+		&lt;ex:says&gt;Hello world!&lt;/ex:says&gt;
+		&lt;ex:wants&gt;
+			&lt;ex:Desire&gt;
+				&lt;ex:description&gt;to be human&lt;/ex:description&gt;
+			&lt;/ex:Desire&gt;
+		&lt;/ex:wants&gt;
+	&lt;/rdf:Description&gt;
+&lt;/rdf:RDF&gt;</pre>
+
+<p>To write out the statements in Notation 3 format, just use the <tt>N3Writer</tt> class instead.  It produces this output:</p>
+
+<pre class="code">
+@prefix ex: &lt;http://example.org/&gt; .
+ex:computer ex:says "Hello world!" ;
+    ex:wants _:bnode0 .
+_:bnode0 ex:description "to be human" ;
+    &lt;http://www.w3.org/1999/02/22-rdf-syntax-ns#type&gt; ex:Desire .
+</pre>
+
+<p>Here's the complete program:</p>
+
+<pre class="code" file="../examples/helloworld.cs">// This example creates a few RDF statements and adds
+// them to a MemoryStore.  Then it writes out the
+// statements in RDF/XML format to the console.  Note
+// that the implicit string-to-Entity and string-to-
+// Literal conversion operators are being used.
+
+using System;
+using SemWeb;
+
+public class Example {
+
+	const string RDF = "http://www.w3.org/1999/02/22-rdf-syntax-ns#";
+
+	public static void Main() {
+		MemoryStore store = new MemoryStore();
+		
+		Entity computer = new Entity("http://example.org/computer");
+		Entity says = "http://example.org/says";
+		Entity wants = "http://example.org/wants";
+		Entity desire = new BNode();
+		Entity description = new Entity("http://example.org/description");
+		
+		store.Add(new Statement(computer, says, (Literal)"Hello world!"));
+		store.Add(new Statement(computer, wants, desire));
+		store.Add(new Statement(desire, description, (Literal)"to be human"));
+		store.Add(new Statement(desire, RDF+"type", (Entity)"http://example.org/Desire"));
+		
+		NamespaceManager nsmgr = new NamespaceManager();
+		nsmgr.AddNamespace("http://example.org/", "ex");
+		
+		using (RdfWriter writer = new RdfXmlWriter(Console.Out, nsmgr))
+			writer.Write(store);
+	}
+}
+</pre>
+
+
+	</body>
+</html>

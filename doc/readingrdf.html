@@ -1,0 +1,77 @@
+<html>
+	<head>
+		<title>SemWeb: Docs: Reading RDF</title>
+		<link rel="stylesheet" type="text/css" href="stylesheet.css"/>
+	</head>
+	
+	<body>
+
+<h1>SemWeb: Reading RDF</h1>
+
+<p>Reading RDF files is pretty easy so here are a few examples.</p>
+
+<p>This loads an RDF/XML file into the store:</p>
+
+<pre class="code">
+MemoryStore store = new MemoryStore();
+store.Import(new RdfXmlReader("data.rdf"));
+</pre>
+
+<p>This loads a N-Triples, Turtle, or Notation 3 file into a store:</p>
+
+<pre class="code">
+store.Import(new N3Reader("data.n3"));
+</pre>
+
+<p>This loads a RDF file from the web:</p>
+
+<pre class="code">
+store.Import(RdfReader.LoadFromUri(new Uri("http://www.mozilla.org/news.rdf")));
+</pre>
+
+<p><tt>LoadFromUri</tt> will determine the format of the file (XML or N3) based on the MIME type sent back from the server, or if that fails, the file extension.</p>
+
+<p>You don't have to put the contents of a file into memory.  All of the <tt>RdfReader</tt>s are "streaming, which means it doesn't need to load the entire file before getting statements out of it.  The reader can stream statements to a "sink" as soon as each is read.</p>
+
+<p>In fact, readers are one type of <tt>StatementSource</tt>.  <tt>StatementSource</tt>s provide a <tt>Select</tt> method which streams statements to a <tt>StatementSink</tt>, providing a corresponding <tt>Add</tt> method.</p>
+
+<p>Stores are one type of sink.  You saw the <tt>MemoryStore</tt>'s Add method in the last tutorial.</p>
+
+<p>The following is pretty much equivalent to the code above:</p>
+
+<pre class="code">
+RdfReader file = RdfReader.LoadFromUri(new Uri("http://www.mozilla.org/news.rdf"));
+file.Select(store);
+</pre>
+
+<p>For a <tt>MemoryStore</tt>, there is no difference.  Other stores may override <tt>Import</tt> with transaction or locking mechanics to speed up the process of loading a large data file.</p>
+
+<p>By creating your own sink, you can process statements in a streaming way:</p>
+
+<pre class="code">
+class StatementPrinter : StatementSink {
+	public bool Add(Statement assertion) {
+		Console.WriteLine(assertion.ToString());
+		return true;
+	}
+}
+</pre>
+
+<p>This class implements a sink that simply prints out each statement to the console as each statement is received.  It returns <tt>true</tt> to indicate to the source to continue.  Returning <tt>false</tt> would end the streaming.</p>
+
+<p>To stream the statements from the web directly to the custom sink, use:</p>
+
+<pre class="code">
+file.Select(new StatementPrinter());
+</pre>
+
+<p>There's one final twist.  Stores, as I mentioned, are a type of sink, letting you stream statements into them.  They are simultaneously a type of source!  This lets you stream statements out of them.  So if you have statements in a store, you can stream them to any sink, including your own custom sinks.  Furthermore, <tt>RdfWriter</tt>s are sinks, which means this is another way to write an RDF/XML file:</p>
+
+<pre class="code">
+using (RdfWriter writer = new RdfXmlWriter(Console.Out)) {
+	store.Select(writer); // exactly the same as writer.Write(store);
+}
+</pre>
+
+</body>
+</html>

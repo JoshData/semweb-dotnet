@@ -1,0 +1,95 @@
+<html>
+	<head>
+		<title>SemWeb: Docs: Using Databases</title>
+		<link rel="stylesheet" type="text/css" href="stylesheet.css"/>
+	</head>
+	
+	<body>
+
+<h1>SemWeb: Using Databases</h1>
+
+<p>Besides the <tt>MemoryStore</tt>, SemWeb provides three SQL-backed persistent stores: for MySQL, PostgreSQL, and Sqlite.  Since Sqlite is the simplest to get going, I'll use it as an example.</p>
+
+<h3>Getting set up</h3>
+
+<p>First, prepare your environment for using Sqlite.  To do that, <a href="http://www.sqlite.org">download SQLite</a> and make it available for your program at run time.  In Windows, put the <tt>dll</tt> into your System32 directoy.  In Unix, install the RPM, or put the <tt>so</tt> in <tt>/usr/local/lib</tt> or else make sure the <tt>LD_LIBRARY_PATH</tt> environment variable contains a path containing the Sqlite library.</p>
+
+<p>Second, make sure you have the Mono.Data.SqliteClient data adapter <a href="http://mono-project.com/Downloads">from Mono</a>.  If you're using Unix, be sure you have the mono-data-sqlite package installed.  If you're using Windows and don't have the adapter already, you can get it out of the <a href="http://mono.ximian.com/daily/monocharge-latest.tar.gz">latest daily MonoCharge</a> (either put it in the GAC, or put it along side the other SemWeb DLLs).</p>
+
+<p>Last, download the FOAF file we've been using to your hard disk: http://dannyayers.com/misc/foaf/foaf.rdf.</p>
+
+<h3>Moving data into a database</h3>
+
+<p>We want to get going quickly, so we'll use SemWeb's <tt>rdfstorage.exe</tt> tool to move some data into a Sqlite database.  Go to a command prompt in the bin directory of the SemWeb package.  Then run:</p>
+
+<pre class="code">
+mono rdfstorage.exe foaf.rdf --out "sqlite:rdf:Uri=file:foaf.sqlite;version=3"
+</pre>
+
+(In Windows, you can leave off the 'mono' to use the Microsoft runtime.)  You'll get the following output (or something like it):
+
+<pre class="code">
+foaf.rdf  0m0s, 162 statements, 2423 st/sec
+Total Time: 0m0s, 162 statements, 1857 st/sec
+</pre>
+
+<p>This command read the RDF/XML file and created a Sqlite version 3 database named foaf.sqlite.</p>
+
+<p>The "out" argument is what I call a "spec" string.  It tells SemWeb how to open up a storage mechanism.  This spec string has three parts.  The first part is "sqlite" which tells SemWeb to use the Sqlite storage engine.  The second part is "rdf" which is the prefix for the tables to use in the database.  The third part, "Uri=file:foaf.sqlite;version=3", is a connection string used by Mono.Data.SqliteClient.  (For more info on the connection string, see <a href="http://mono-project.com/SQLite">the Mono website</a>.)</p>
+
+<p>If you omit the "out" argument entirely, the program will dump the file to the console in Turtle format.</p>
+
+<h3>Getting data out of the database</h3>
+
+<p>To query the database, we'll write a program.</p>
+
+<p>Create a store backed by the database using the following method:</p>
+
+<pre class="code">
+Store store = (Store)Store.CreateForInput("sqlite:rdf:Uri=file:foaf.sqlite;version=3");
+</pre>
+
+<p>The argument to <tt>CreateForInput</tt> is the same "spec" string as before.  This method can be used to create various types of data sources in the factory design pattern.  For this type of store, you can read and write to it even though it was created with the <tt>CreateForInput</tt> method.  (You could just as well have used <tt>CreateForOutput</tt>.)</p>
+
+<p>The actual implementation of the Sqlite store is in the <tt>SemWeb.SqliteStore.dll</tt> assembly, but by using <tt>CreateForInput</tt> you don't need to reference that assembly at compile time.  Just make sure it's available at run time.</p>
+
+<p>Now you can select statements from it just as before.  It will be a little slower than the memory-backed store, but you haven't loaded the entire store into memory.</p>
+
+<p>You can also add statements into the store, just as with the memory store.  One limitation of the SQL stores is that you can't add blank nodes to the store unless it's through a call to <tt>Import</tt>.  This limitation should be addressed in the future.</p>
+
+<p>Be sure to close the database at the end.</p>
+
+<p>Here's a complete program:</p>
+
+<pre class="code" file="../examples/sqlite.cs">using System;
+using SemWeb;
+
+public class Sqlite {
+	const string RDF = "http://www.w3.org/1999/02/22-rdf-syntax-ns#";
+	const string FOAF = "http://xmlns.com/foaf/0.1/";
+	
+	static readonly Entity rdftype = RDF+"type";
+	static readonly Entity foafPerson = FOAF+"Person";
+	static readonly Entity foafname = FOAF+"name";
+
+	public static void Main() {
+		Store store = (Store)Store.CreateForInput("sqlite:rdf:Uri=file:foaf.sqlite;version=3");
+		
+		Entity newPerson = new Entity("http://www.example.org/me");
+		store.Add(new Statement(newPerson, rdftype, foafPerson));
+		store.Add(new Statement(newPerson, foafname, (Literal)"New Guy"));
+		
+		Console.WriteLine("These are the people in the file:");
+		foreach (Statement s in store.Select(new Statement(null, rdftype, foafPerson))) {
+			foreach (Resource r in store.SelectObjects(s.Subject, foafname))
+				Console.WriteLine(r);
+		}
+		Console.WriteLine();
+		
+		store.Close();
+	}
+}
+</pre>
+
+</body>
+</html>

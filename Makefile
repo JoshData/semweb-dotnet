@@ -39,7 +39,7 @@ bin/SemWeb.MySQLStore.dll: src/MySQLStore.cs bin/SemWeb.dll
 	mcs -debug src/MySQLStore.cs -out:bin/SemWeb.MySQLStore-ByteFx.dll -t:library\
 	 -r:bin/SemWeb.dll -r:System.Data -r:ByteFX.Data -d:BYTEFX
 	#mcs -debug src/MySQLStore.cs -out:bin/SemWeb.MySQLStore-Connector.dll -t:library\
-	# -r:bin/SemWeb.dll -r:System.Data -r:ByteFX.Data -d:ONNECTOR
+	# -r:bin/SemWeb.dll -r:System.Data -r:MySql.Data -d:CONNECTOR
 
 # Utility programs
 

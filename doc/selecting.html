@@ -1,0 +1,80 @@
+<html>
+	<head>
+		<title>SemWeb: Docs: Selecting Statements</title>
+		<link rel="stylesheet" type="text/css" href="stylesheet.css"/>
+	</head>
+	
+	<body>
+
+<h1>SemWeb: Selecting Statements</h1>
+
+<p>In the previous tutorial you saw the <tt>Select</tt> method of <tt>StatementSource</tt>s, which streams all of the statements into a sink.  The name "Select" was derived from SQL syntax, where it's used to retrieve rows that match a criteria.  In SemWeb, Select is used to retreive statements matching a filter.  (And as with SQL, when no criteria is given all statements are retrieved.)</p>
+
+<p>A filter is a <tt>Statement</tt> but with subject, predicate, and object possibly <tt>null</tt>.  <tt>null</tt>s are wildcards.  So here are a few examples:</p>
+
+<pre class="code">
+store.Select(sink);  // selects all statements
+store.Select(new Statement(null, null, null), sink);  // the same
+store.Select(Statement.All, sink);  // shorthand
+
+store.Select(new Statement(subj, null, null), sink);  // any statement with that particular subject entity
+store.Select(new Statement(subj, pred, null), sink);  // any statement with that particular subject and predicate
+store.Select(new Statement(subj, pred, obj), sink);  // just that statement, if it exists in the store
+</pre>
+
+<p>The sink can be any <tt>StatementSink</tt>.  This includes <tt>RdfWriters</tt>, which would let you write out just a part of a store, other stores, to move part of a store into another, or your own class, to do other processing.</p>
+
+<p>Stores provide a few convenience methods for selecting over small data sources.  Two methods are provided for getting all of the subjects found with a given predicate and object, and similarly all objects found with a given subject and predicate.  This can be used to move around in a graph:</p>
+
+<pre class="code">
+foreach (Resource r in store.SelectObjects(person, foafname))
+	Console.WriteLine(r);
+</pre>
+
+Other methods are overrides of Select that rather than sending the results to a sink, load them into memory so that you may for-each over them:
+
+<pre class="code">
+foreach (Statement statement in store.Select(new Statement(null, rdftype, foafPerson))) {
+	...
+}
+</pre>
+
+<p>You obviously shouldn't use these on data sources of unbounded size as you wouldn't necessarily want to load the results all into memory.</p>
+
+<p>Here's an example program that loads a FOAF document and extracts some information using Select:</p>
+
+<pre class="code" file="../examples/select.cs">using System;
+using SemWeb;
+
+public class Select {
+	const string RDF = "http://www.w3.org/1999/02/22-rdf-syntax-ns#";
+	const string FOAF = "http://xmlns.com/foaf/0.1/";
+	
+	static readonly Entity rdftype = RDF+"type";
+	static readonly Entity foafPerson = FOAF+"Person";
+	static readonly Entity foafknows = FOAF+"knows";
+	static readonly Entity foafname = FOAF+"name";
+
+	public static void Main() {
+		Store store = new MemoryStore();
+		store.Import(RdfReader.LoadFromUri(new Uri("http://dannyayers.com/misc/foaf/foaf.rdf")));
+		
+		Console.WriteLine("These are the people in the file:");
+		foreach (Statement s in store.Select(new Statement(null, rdftype, foafPerson))) {
+			foreach (Resource r in store.SelectObjects(s.Subject, foafname))
+				Console.WriteLine(r);
+		}
+		Console.WriteLine();
+
+		Console.WriteLine("And here's RDF/XML just for some of the file:");
+		using (RdfWriter w = new RdfXmlWriter(Console.Out)) {
+			store.Select(new Statement(null, foafname, null), w);
+			store.Select(new Statement(null, foafknows, null), w);
+		}
+		Console.WriteLine();	
+	}
+}
+</pre>
+
+</body>
+</html>
