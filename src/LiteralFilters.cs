@@ -57,6 +57,22 @@ namespace SemWeb {
 }
 
 namespace SemWeb.Filters {
+	public class FilterSink : StatementSink {
+		LiteralFilter[] filters;
+		StatementSink sink;
+		SelectableSource model;
+		public FilterSink(LiteralFilter[] filters, StatementSink sink, SelectableSource model) {
+			this.filters = filters;
+			this.sink = sink;
+		}
+		public bool Add(Statement s) {
+			if (filters != null && filters.Length > 0
+				&& !LiteralFilter.MatchesFilters(s.Object, filters, model))
+				return true;
+			return sink.Add(s);
+		}
+	}
+
 	public class StringCompareFilter : LiteralFilter {
 		public readonly string Pattern;
 		public readonly CompType Type;

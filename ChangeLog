@@ -1,3 +1,8 @@
+	* Added new classes: SimpleSourceWrapper, FilterSink.
+	* Added new spec string type: 'class' for loading a .NET class.
+	* Added multi-line spec strings for putting together multiple stores.
+	* Added Store.DefaultSelect().
+
 2006-03-11 Version 0.71
 
 	* The Select(Entity[],Entity[],Resource[]) API calls are

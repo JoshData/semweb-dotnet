@@ -76,6 +76,21 @@ namespace SemWeb {
 		}
 		
 		private static object Create(string spec, bool output) {
+			string[] multispecs = spec.Split('\n');
+			if (multispecs.Length > 1) {
+				SemWeb.Stores.MultiStore multistore = new SemWeb.Stores.MultiStore();
+				foreach (string mspec in multispecs) {
+					object mstore = Create(mspec.Trim(), output);
+					if (mstore is SelectableSource) {
+						multistore.Add((SelectableSource)mstore);
+					} else if (mstore is StatementSource) {
+						MemoryStore m = new MemoryStore((StatementSource)mstore);
+						multistore.Add(m);
+					}
+				}
+				return multistore;
+			}
+		
 			string type = spec;
 			
 			int c = spec.IndexOf(':');
@@ -85,6 +100,8 @@ namespace SemWeb {
 			} else {
 				spec = "";
 			}
+			
+			Type ttype;
 			
 			switch (type) {
 				case "mem":
@@ -135,7 +152,7 @@ namespace SemWeb {
 					} else if (type == "postgresql") {
 						classtype = "SemWeb.Stores.PostgreSQLStore, SemWeb.PostgreSQLStore";
 					}
-					Type ttype = Type.GetType(classtype);
+					ttype = Type.GetType(classtype);
 					if (ttype == null)
 						throw new NotSupportedException("The storage type in <" + classtype + "> could not be found.");
 					return Activator.CreateInstance(ttype, new object[] { spec, table });
@@ -143,6 +160,11 @@ namespace SemWeb {
 					return new SemWeb.Stores.BDBStore(spec);*/
 				case "sparql-http":
 					return new SemWeb.Remote.SparqlHttpSource(spec);
+				case "class":
+					ttype = Type.GetType(spec);
+					if (ttype == null)
+						throw new NotSupportedException("The class <" + spec + "> could not be found.");
+					return Activator.CreateInstance(ttype);
 				default:
 					throw new ArgumentException("Unknown parser type: " + type);
 			}
@@ -211,6 +233,17 @@ namespace SemWeb {
 			source.Select(filter, sink);
 			return sink.Exists;
 		}
+		
+		public static void DefaultSelect(SelectableSource source, SelectFilter filter, StatementSink sink) {
+			// This method should be avoided...
+			if (filter.LiteralFilters != null)
+				sink = new SemWeb.Filters.FilterSink(filter.LiteralFilters, sink, source);
+			foreach (Entity subject in filter.Subjects == null ? new Entity[] { null } : filter.Subjects)
+			foreach (Entity predicate in filter.Predicates == null ? new Entity[] { null } : filter.Predicates)
+			foreach (Resource objct in filter.Objects == null ? new Resource[] { null } : filter.Objects)
+			foreach (Entity meta in filter.Metas == null ? new Entity[] { null } : filter.Metas)
+				source.Select(new Statement(subject, predicate, objct, meta), sink);
+		}		
 		
 		public void Select(StatementSink result) {
 			Select(Statement.All, result);
@@ -541,4 +574,70 @@ namespace SemWeb.Stores {
 		
 	}
 	
+	public abstract class SimpleSourceWrapper : SelectableSource {
+	
+		public virtual bool Distinct { get { return true; } }
+		
+		public virtual void Select(StatementSink sink) {
+			// The default implementation does not return
+			// anything for this call.
+		}
+
+		public virtual bool Contains(Statement template) {
+			template.Object = null; // reduce to another case (else there would be recursion)
+			return Store.DefaultContains(this, template);
+		}
+		
+		protected virtual void SelectAllSubject(Entity subject, StatementSink sink) {
+		}
+
+		protected virtual void SelectAllObject(Resource @object, StatementSink sink) {
+		}
+
+		protected virtual void SelectRelationsBetween(Entity subject, Resource @object, StatementSink sink) {
+		}
+		
+		protected virtual void SelectAllPairs(Entity predicate, StatementSink sink) {
+		}
+
+		protected virtual void SelectSubjects(Entity predicate, Resource @object, StatementSink sink) {
+		}
+
+		protected virtual void SelectObjects(Entity subject, Entity predicate, StatementSink sink) {
+		}
+
+		public void Select(Statement template, StatementSink sink) {
+			if (template.Meta != null && template.Meta != Statement.DefaultMeta) return;
+			if (template.Predicate != null && template.Predicate.Uri == null) return;
+			
+			if (template.Subject == null && template.Predicate == null && template.Object == null) {
+				Select(sink);
+			} else if (template.Subject != null && template.Predicate != null && template.Object != null) {
+				template.Meta = Statement.DefaultMeta;
+				if (Contains(template))
+					sink.Add(template);
+			} else if (template.Predicate == null) {
+				if (template.Subject == null)
+					SelectAllObject(template.Object, sink); 
+				else if (template.Object == null)
+					SelectAllSubject(template.Subject, sink); 
+				else
+					SelectRelationsBetween(template.Subject, template.Object, sink);
+			} else if (template.Subject != null && template.Object == null) {
+				SelectObjects(template.Subject, template.Predicate, sink);
+			} else if (template.Subject == null && template.Object != null) {
+				SelectSubjects(template.Predicate, template.Object, sink);
+			} else if (template.Subject == null && template.Object == null) {
+				SelectAllPairs(template.Predicate, sink);
+			}
+		}
+	
+		public Entity[] FindEntities(Statement[] graph) {
+			return Store.DefaultFindEntities(this, graph);
+		}
+		
+		public void Select(SelectFilter filter, StatementSink sink) {
+			Store.DefaultSelect(this, filter, sink);
+		}
+	}
 }
