@@ -130,8 +130,18 @@ namespace SemWeb {
 		
 		private char ReadPredicates(Resource subject, ParseContext context) {			
 			char punctuation = ';';
-			while (punctuation == ';')
+			while (punctuation == ';') {
 				punctuation = ReadPredicate(subject, context);
+
+				// if we read a semicolon, we may still be done
+				// if it's followed by a period (end of statement)
+				// or bracket (end of bnode), or brace (end of formula, N3).
+				if (punctuation == ';') {
+					int npunc = NextPunc(context.source);
+					if (npunc == (int)'.' || npunc == (int)']' || npunc == (int)'}')
+						return ReadPunc(context.source);
+				}
+			}
 			return punctuation;
 		}
 		
@@ -149,7 +159,7 @@ namespace SemWeb {
 				punctuation = ReadPunc(context.source);
 			}
 			if (punctuation != '.' && punctuation != ';' && punctuation != ']' && punctuation != '}')
-				OnError("Expecting a period, semicolon, comma, or close-bracket but found '" + punctuation + "'", loc);
+				OnError("Expecting a period, semicolon, comma, close-bracket, or close-brace but found '" + punctuation + "'", loc);
 			
 			return punctuation;
 		}
