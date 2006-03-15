@@ -52,7 +52,7 @@ namespace SemWeb {
 			return null;
 		}
 		internal void SetResourceKey(object key, object value) {
-			if (extraKeys == null && (ekKey == null || ekKey == key)) {
+			if (ekKey == null || ekKey == key) {
 				ekKey = key;
 				ekValue = value;
 				return;
