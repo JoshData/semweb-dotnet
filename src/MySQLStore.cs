@@ -29,6 +29,7 @@ namespace SemWeb.Stores {
 		protected override bool SupportsNoDuplicates { get { return true; } }
 		protected override bool SupportsInsertIgnore { get { return true; } }
 		protected override bool SupportsInsertCombined { get { return true; } }
+		protected override bool SupportsSubquery { get { return true; } }
 		
 		protected override string CreateNullTest(string column) {
 			return "ISNULL(" + column + ")";

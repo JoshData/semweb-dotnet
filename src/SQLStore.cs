@@ -71,6 +71,7 @@ namespace SemWeb.Stores {
 		protected abstract bool SupportsInsertIgnore { get; }
 		protected abstract bool SupportsInsertCombined { get; }
 		protected virtual bool SupportsFastJoin { get { return true; } }
+		protected abstract bool SupportsSubquery { get; }
 		
 		protected abstract string CreateNullTest(string column);
 		
@@ -301,7 +302,6 @@ namespace SemWeb.Stores {
 				cmd.Append(table);
 				cmd.Append("_entities WHERE value =");
 				EscapedAppend(cmd, uri);
-				cmd.Append(" LIMIT 1;");
 				id = RunScalarInt(cmd.ToString(), 0);
 				if (id != 0 || !create) return id;
 			}
@@ -671,12 +671,14 @@ namespace SemWeb.Stores {
 		}
 		
 		private bool AppendMultiRes(MultiRes r, StringBuilder cmd) {
+			bool first = true;
 			for (int i = 0; i < r.items.Length; i++) {
-				if (i != 0) cmd.Append(',');
 				int id = GetResourceId(r.items[i], false);
-				if (id == 0) return false;
+				if (id == 0) continue;
+				if (!first) cmd.Append(','); first = false;
 				cmd.Append(id);
 			}
+			if (first) return false; // none are in the store
 			return true;
 		}
 		
@@ -806,7 +808,10 @@ namespace SemWeb.Stores {
 		Resource[][] SplitArray(Resource[] e) {
 			int lim = 1000;
 			if (e == null || e.Length <= lim) {
-				if (e is Entity[]) return new Entity[][] { (Entity[])e }; else return new Resource[][] { e };
+				if (e is Entity[])
+					return new Entity[][] { (Entity[])e };
+				else
+					return new Resource[][] { e };
 			}
 			int overflow = e.Length % lim;
 			int n = (e.Length / lim) + ((overflow != 0) ? 1 : 0);
@@ -868,14 +873,16 @@ namespace SemWeb.Stores {
 			columns.SubjectUri = templateSubject == null;
 			columns.PredicateUri = templatePredicate == null;
 			columns.ObjectData = templateObject == null || (templateObject is MultiRes && ((MultiRes)templateObject).ContainsLiterals());
-			columns.MetaUri = false; // templateMeta == null;
+			columns.MetaUri = templateMeta == null;
 			
 			// Meta URIs tend to be repeated a lot, so we don't
 			// want to ever select them from the database.
 			// This preloads them, although it makes the first
 			// select quite slow.
-			if (templateMeta == null)
+			if (templateMeta == null && SupportsSubquery) {
 				LoadMetaEntities();
+				columns.MetaUri = false;
+			}
 			
 			// Have to select something
 			if (!columns.SubjectId && !columns.PredicateId && !columns.ObjectId && !columns.MetaId)
@@ -934,7 +941,7 @@ namespace SemWeb.Stores {
 			CacheMultiObjects(entMap, templatePredicate);
 			CacheMultiObjects(entMap, templateObject);
 			CacheMultiObjects(entMap, templateMeta);
-						
+			
 			using (IDataReader reader = RunReader(cmd.ToString())) {
 				while (reader.Read()) {
 					int col = 0;
@@ -970,7 +977,13 @@ namespace SemWeb.Stores {
 
 		Entity GetSelectedEntity(int id, string uri, Resource given, bool idSelected, bool uriSelected, Hashtable entMap) {
 			if (!idSelected) return (Entity)given;
-			if (!uriSelected) return (Entity)entMap[id];
+			if (!uriSelected) {
+				Entity ent = (Entity)entMap[id];
+				if (ent != null)
+					return ent; // had a URI so was precached, or was otherwise precached
+				else // didn't have a URI
+					return MakeEntity(id, null, entMap);
+			}
 			return MakeEntity(id, uri, entMap);
 		}
 		
@@ -1018,6 +1031,7 @@ namespace SemWeb.Stores {
 		private void LoadMetaEntities() {
 			if (metaEntities != null) return;
 			metaEntities = new Hashtable();
+			// this misses meta entities that are anonymous, but that's ok
 			using (IDataReader reader = RunReader("select id, value from " + table + "_entities where id in (select distinct meta from " + table + "_statements)")) {
 				while (reader.Read()) {
 					int id = reader.GetInt32(0);
