@@ -552,6 +552,7 @@ namespace SemWeb.Stores {
 		public override void Select(Statement template, StatementSink result) {
 			SelectableSource[] sources = GetSources(template.Meta);
 			if (sources == null) return;
+			template.Meta = null;
 			foreach (SelectableSource s in sources)
 				s.Select(template, result);
 		}
