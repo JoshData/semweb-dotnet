@@ -10,6 +10,14 @@
 
 <p>Besides the <tt>MemoryStore</tt>, SemWeb provides three SQL-backed persistent stores: for MySQL, PostgreSQL, and Sqlite.  Since Sqlite is the simplest to get going, I'll use it as an example.</p>
 
+<h3>Overview of database storage</h3>
+
+<p>Just as a brief note, the MySQL store is several times faster than the Sqlite store, at least for adding statements into the store.  Sqlite is easier to work with, so it's appropriate for small stores of data maybe up to 100,000 statements.  Using the Import method of the MySQL store, the store can load over ten million statements in as little as 45 minutes on modest hardware, which is about 4,500 statements per second.  The Sqlite store loads the same graph at 1,400 statements per second.  The speed depends a lot on the structure of data being loaded.  I haven't tested the PostgreSQL store myself, so I don't know how fast it is.</p>
+
+<p>The SQL stores keep the RDF data in three tables, which have a common prefix provided by you.  The main table is the <i>prefix</i>_statements table, which has a row for each statement in the store.  The columns are numeric IDs for the subject, predicate, object, and meta.  The IDs are linked to URIs, for entities, and values, for Literals, in the _entities and _literals tables.</p>
+
+<p>The _statements table is indexed many ways to make the performance of Select fast.  In the MySQL store, the table has a UNIQUE index over all of the columns to ensure that an assertion can be added only once.  This speeds up operations later on when they don't have to check for duplicate statements and doesn't hurt the performance of adding statements significantly.</p>
+
 <h3>Getting set up</h3>
 
 <p>First, prepare your environment for using Sqlite.  To do that, <a href="http://www.sqlite.org">download SQLite</a> and make it available for your program at run time.  In Windows, put the <tt>dll</tt> into your System32 directoy.  In Unix, install the RPM, or put the <tt>so</tt> in <tt>/usr/local/lib</tt> or else make sure the <tt>LD_LIBRARY_PATH</tt> environment variable contains a path containing the Sqlite library.</p>

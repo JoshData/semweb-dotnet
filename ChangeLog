@@ -1,3 +1,9 @@
+2006-03-16 Version 0.711
+
+	* Corrected SQLStore bugs:  Select(SelectFilter) would fail and cancel
+	  the select if any of the items werent in the store.  The select
+	  optimization to precache metas also had two issues.
+	* Corrected a Turtle/N3 parsing error with semicolons
 	* Added new classes: SimpleSourceWrapper, FilterSink.
 	* Added new spec string type: 'class' for loading a .NET class.
 	* Added multi-line spec strings for putting together multiple stores.
