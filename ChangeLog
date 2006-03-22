@@ -1,3 +1,5 @@
+	* RdfXmlReader: Raise an error when an invalid parseType is used.
+
 2006-03-16 Version 0.711
 
 	* Corrected SQLStore bugs:  Select(SelectFilter) would fail and cancel

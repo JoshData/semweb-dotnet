@@ -307,9 +307,12 @@ namespace SemWeb {
 				
 				if (ParsePropertyAttributes(new BNode()))
 					OnError("Property attributes are not valid when parseType is Literal");
+
+				// TODO: Do we canonicalize according to:
+				// http://www.w3.org/TR/2002/REC-xml-exc-c14n-20020718/ ?
 				
 				objct = new Literal(xml.ReadInnerXml(), null, datatype);
-				
+
 			} else if (parseType != null && parseType == "Resource") {
 				objct = new BNode();
 				
@@ -347,6 +350,9 @@ namespace SemWeb {
 					objct = rdfNil;
 				else
 					objct = collection;
+					
+			} else if (parseType != null) {
+				OnError("Invalid value for parseType: '" + parseType + "'");
 				
 			} else if (datatype != null) {
 				// Forces even xml content to be read as in parseType=Literal?
