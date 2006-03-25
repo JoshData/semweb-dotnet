@@ -98,13 +98,17 @@ namespace SemWeb.Stores {
 		}
 		static string[] GetCreateIndexCommands(string table) {
 			return new string[] {
-				"CREATE INDEX subject_index ON " + table + "_statements(subject,predicate,object,meta);",
-				"CREATE INDEX predicate_index ON " + table + "_statements(predicate);",
-				"CREATE INDEX object_index ON " + table + "_statements(object);",
-				"CREATE INDEX meta_index ON " + table + "_statements(meta);",
+				// If we do this, only for sqlite3, then we also
+				// have to do INSERT OR IGNORE.
+				// "CREATE UNIQUE INDEX IF NOT EXISTS subject_index ON " + table + "_statements(subject,predicate,object,meta);",
+				
+				"CREATE INDEX IF NOT EXISTS subject_index ON " + table + "_statements(subject);",
+				"CREATE INDEX IF NOT EXISTS predicate_index ON " + table + "_statements(predicate);",
+				"CREATE INDEX IF NOT EXISTS object_index ON " + table + "_statements(object);",
+				"CREATE INDEX IF NOT EXISTS meta_index ON " + table + "_statements(meta);",
 			
-				"CREATE INDEX literal_index ON " + table + "_literals(value);",
-				"CREATE UNIQUE INDEX entity_index ON " + table + "_entities(value);"
+				"CREATE INDEX IF NOT EXISTS literal_index ON " + table + "_literals(value);",
+				"CREATE UNIQUE INDEX IF NOT EXISTS entity_index ON " + table + "_entities(value);"
 				};
 		}
 	}
