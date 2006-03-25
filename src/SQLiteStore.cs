@@ -26,8 +26,9 @@ namespace SemWeb.Stores {
 		protected override bool SupportsFastJoin { get { return false; } }
 		protected override bool SupportsSubquery { get { return false; } }
 		
-		protected override string CreateNullTest(string column) {
-			return column + " ISNULL";
+		protected override void CreateNullTest(string column, System.Text.StringBuilder command) {
+			command.Append(column);
+			command.Append(" ISNULL");
 		}
 		
 		protected override void EscapedAppend(StringBuilder b, string str, bool quotes) {

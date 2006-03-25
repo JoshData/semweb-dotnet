@@ -47,8 +47,9 @@ namespace SemWeb.Stores {
 		protected override bool SupportsInsertCombined { get { return false; } }
 		protected override bool SupportsSubquery { get { return false; } }
 		
-		protected override string CreateNullTest(string column) {
-			return column + " IS NULL";
+		protected override void CreateNullTest(string column, System.Text.StringBuilder command) {
+			command.Append(column);
+			command.Append(" IS NULL");
 		}
 
 		public override void Close() {

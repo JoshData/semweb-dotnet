@@ -1,4 +1,5 @@
 	* RdfXmlReader: Raise an error when an invalid parseType is used.
+	* SQL stores: Allow insertion of bnodes outside of Import().
 
 2006-03-16 Version 0.711
 

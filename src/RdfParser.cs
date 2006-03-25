@@ -75,6 +75,8 @@ namespace SemWeb {
 		}
 		
 		public static RdfReader LoadFromUri(Uri webresource) {
+			// TODO: Add Accept header for HTTP resources.
+			
 			System.Net.WebRequest rq = System.Net.WebRequest.Create(webresource);
 			System.Net.WebResponse resp = rq.GetResponse();
 			

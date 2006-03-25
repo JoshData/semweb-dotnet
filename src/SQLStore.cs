@@ -21,6 +21,8 @@ namespace SemWeb.Stores {
 		IDictionary lockedIdCache = null;
 		int cachedNextId = -1;
 		
+		ArrayList anonEntityHeldIds = new ArrayList();
+		
 		Hashtable literalCache = new Hashtable();
 		int literalCacheSize = 0;
 		
@@ -73,7 +75,7 @@ namespace SemWeb.Stores {
 		protected virtual bool SupportsFastJoin { get { return true; } }
 		protected abstract bool SupportsSubquery { get; }
 		
-		protected abstract string CreateNullTest(string column);
+		protected abstract void CreateNullTest(string column, System.Text.StringBuilder command);
 		
 		private void Init() {
 			if (!firstUse) return;
@@ -234,14 +236,14 @@ namespace SemWeb.Stores {
 				b.Append("language = ");
 				EscapedAppend(b, literal.Language);
 			} else {
-				b.Append(CreateNullTest("language"));
+				CreateNullTest("language", b);
 			}
 			b.Append(" AND ");
 			if (literal.DataType != null) {
 				b.Append("datatype = ");
 				EscapedAppend(b, literal.DataType);
 			} else {
-				b.Append(CreateNullTest("datatype"));
+				CreateNullTest("datatype", b);
 			}
 		}
 		
@@ -284,8 +286,8 @@ namespace SemWeb.Stores {
 			
 			return id;
 		}
-		
-		private int GetEntityId(string uri, bool create, StringBuilder entityInsertBuffer, bool insertCombined) {
+
+		private int GetEntityId(string uri, bool create, StringBuilder entityInsertBuffer, bool insertCombined, bool checkIfExists) {
 			// Returns the resource ID associated with the URI.  If a resource
 			// doesn't exist and create is true, a new resource is created,
 			// otherwise 0 is returned.
@@ -296,7 +298,7 @@ namespace SemWeb.Stores {
 				object idobj = lockedIdCache[uri];
 				if (idobj == null && !create) return 0;
 				if (idobj != null) return (int)idobj;
-			} else {
+			} else if (checkIfExists) {
 				StringBuilder cmd = cmdBuffer; cmdBuffer.Length = 0;
 				cmd.Append("SELECT id FROM ");
 				cmd.Append(table);
@@ -366,7 +368,7 @@ namespace SemWeb.Stores {
 			int id;
 			
 			if (resource.Uri != null) {
-				id = GetEntityId(resource.Uri, create, entityInsertBuffer, insertCombined);
+				id = GetEntityId(resource.Uri, create, entityInsertBuffer, insertCombined, true);
 			} else {
 				// This anonymous node didn't come from the database
 				// since it didn't have a resource key.  If !create,
@@ -379,9 +381,16 @@ namespace SemWeb.Stores {
 				} else {
 					// We need to reserve an id for this resource so that
 					// this function returns other ids for other anonymous
-					// resources.  Don't know how to do this yet, so
-					// just throw an exception.
-					throw new NotImplementedException("Anonymous nodes cannot be added to this store outside of an Import operation.");
+					// resources.  To do that, we'll insert a record
+					// into the entities table with a GUID for the entity.
+					// Inserting something into the table also gives us
+					// concurrency, I hope.  Then, once the resource is
+					// added to the statements table, this row can be
+					// removed.
+					string guid = "semweb-bnode-guid://taubz.for.net,2006/"
+						+ Guid.NewGuid().ToString("N");
+					id = GetEntityId(guid, create, entityInsertBuffer, insertCombined, false);
+					anonEntityHeldIds.Add(id);
 				}
 			}
 				
@@ -458,6 +467,23 @@ namespace SemWeb.Stores {
 			addBuffer.Append("); ");
 			
 			RunCommand(addBuffer.ToString());
+			
+			// Remove any entries in the entities table
+			// for anonymous nodes.
+			if (anonEntityHeldIds.Count > 0) {
+				addBuffer.Length = 0;
+				addBuffer.Append("DELETE FROM ");
+				addBuffer.Append(table);
+				addBuffer.Append("_entities where id IN (");
+				bool first = true;
+				foreach (int id in anonEntityHeldIds) {
+					if (!first) addBuffer.Append(','); first = false;
+					addBuffer.Append(id);
+				}
+				addBuffer.Append(')');
+				RunCommand(addBuffer.ToString());
+				anonEntityHeldIds.Clear();
+			}
 		}
 		
 		private void RunAddBuffer() {

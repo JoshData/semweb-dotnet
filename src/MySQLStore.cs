@@ -31,8 +31,10 @@ namespace SemWeb.Stores {
 		protected override bool SupportsInsertCombined { get { return true; } }
 		protected override bool SupportsSubquery { get { return true; } }
 		
-		protected override string CreateNullTest(string column) {
-			return "ISNULL(" + column + ")";
+		protected override void CreateNullTest(string column, System.Text.StringBuilder command) {
+			command.Append("ISNULL(");
+			command.Append(column);
+			command.Append(')');
 		}
 
 		public override void Close() {
@@ -79,6 +81,7 @@ namespace SemWeb.Stores {
 			//RunCommand("BEGIN");
 			RunCommand("LOCK TABLES " + TableName + "_statements WRITE, " + TableName + "_literals WRITE, " + TableName + "_entities WRITE");
 			locked = true;
+			locker = 0;
 		}
 		
 		protected override void EndTransaction() {
