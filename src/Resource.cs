@@ -141,6 +141,10 @@ namespace SemWeb {
 		public static bool operator !=(Entity a, Entity b) {
 			return !(a == b);
 		}
+		
+		public override string ToString() {
+			return "<" + Uri + ">";
+		}
 	}
 	
 	public class BNode : Entity {
@@ -175,6 +179,13 @@ namespace SemWeb {
 			return (ekKey != null && okKey != null)
 				&& (ekKey == okKey)
 				&& ekValue.Equals(okValue);
+		}
+		
+		public override string ToString() {
+			if (LocalName != null)
+				return "?" + LocalName;
+			else
+				return "?" + GetHashCode();
 		}
 	}
 

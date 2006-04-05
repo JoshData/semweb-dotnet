@@ -12,7 +12,7 @@ namespace SemWeb.Util {
 		public ResSet() {
 		}
 		
-		public ResSet(Resource[] items) {
+		public ResSet(ICollection items) {
 			AddRange(items);
 		}
 
@@ -25,7 +25,7 @@ namespace SemWeb.Util {
 			keys = null;
 		}
 		
-		public void AddRange(Resource[] items) {
+		public void AddRange(ICollection items) {
 			if (items == null) return;
 			foreach (Resource r in items)
 				Add(r);

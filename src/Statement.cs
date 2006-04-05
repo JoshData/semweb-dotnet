@@ -44,17 +44,10 @@ namespace SemWeb {
 		
 		public override string ToString() {
 			string ret = "";
-			if (Subject != null) ret += "<" + Subject + "> "; else ret += "? ";
-			if (Predicate != null) ret += "<" + Predicate + "> "; else ret += "? ";
-			if (Object != null) {
-				if (Object is Literal)
-					ret += Object;
-				else
-					ret += "<" + Object + ">";
-			} else {
-				ret += "?";
-			}
-			if (Meta != null && Meta != DefaultMeta) ret += " meta=<" + Meta + ">";
+			if (Subject != null) ret += Subject.ToString(); else ret += "?"; ret += " ";
+			if (Predicate != null) ret += Predicate.ToString(); else ret += "?"; ret += " ";
+			if (Object != null) ret += Object.ToString(); else ret += "?"; ret += " ";
+			if (Meta != null && Meta != DefaultMeta) ret += "meta=" + Meta.ToString();
 			return ret + ".";
 		}
 		
