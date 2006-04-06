@@ -7,7 +7,7 @@ using SemWeb.Util;
 
 namespace SemWeb {
 	public class MemoryStore : Store, SupportsPersistableBNodes, IEnumerable {
-		StatementList statements = new StatementList();
+		StatementList statements;
 		
 		Hashtable statementsAboutSubject = new Hashtable();
 		Hashtable statementsAboutObject = new Hashtable();
@@ -22,17 +22,21 @@ namespace SemWeb {
 		Hashtable pbnodeFromId = null;
 		
 		public MemoryStore() {
+			statements = new StatementList();
 		}
 		
-		public MemoryStore(StatementSource source) {
+		public MemoryStore(StatementSource source) : this() {
 			Import(source);
 		}
 		
+		public MemoryStore(Statement[] statements) {
+			this.statements = new StatementList(statements);
+		}
+
 		public Statement[] ToArray() {
 			return (Statement[])statements.ToArray(typeof(Statement));
 		}
 
-		//public IList Statements { get { return ArrayList.ReadOnly(statements); } }
 		public IList Statements { get { return statements.ToArray(); } }
 		
 		public override bool Distinct { get { return distinct; } }

@@ -57,6 +57,9 @@ namespace SemWeb {
 
 		
 		private string URI(Entity entity) {
+			if (entity is Variable && ((Variable)entity).LocalName != null)
+				return "?" + ((Variable)entity).LocalName;
+				
 			if (entity is BNode) {
 				string name = ((BNode)entity).LocalName;
 				if (name != null &&

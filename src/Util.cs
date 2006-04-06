@@ -133,6 +133,11 @@ namespace SemWeb.Util {
 			_items = new Statement[DefaultInitialCapacity];
 		}		
 
+		public StatementList(Statement[] statements) {
+			_items = (Statement[])statements.Clone();
+			_size = _items.Length;
+		}		
+
 		public Statement this[int index] { 
 			get { return _items[index]; }
 			set { _items[index] = value; } 

@@ -27,6 +27,10 @@ namespace SemWeb.Inference {
 				this.body = new Statement[0];
 			}
 			
+			public Rule ToRule() {
+				return new Rule(body, new Statement[] { head });
+			}
+			
 			public override string ToString() {
 				string ret = "";
 				foreach (Statement b in body) {
@@ -69,11 +73,22 @@ namespace SemWeb.Inference {
 				this.src = src;
 				this.env = env;
 			}
+			
+			public ProofStep ToProofStep() {
+				return new ProofStep(src.ToRule(), env);
+			}
 		}
 		
 		private class EvidenceItem {
 			public Statement head;
 			public ArrayList body; // of Ground
+			
+			public Proof ToProof() {
+				ProofStep[] steps = new ProofStep[body.Count];
+				for (int i = 0; i < body.Count; i++)
+					steps[i] = ((Ground)body[i]).ToProofStep();
+				return new Proof(new Statement[] { head }, steps);
+			}
 		}
 		
 		private class QueueItem {
@@ -92,15 +107,21 @@ namespace SemWeb.Inference {
 		private abstract class UserPredicate {
 			public abstract bool Evaluate(Resource subject, Resource obj);
 		}
+		
+		public Proof[] Prove(MemoryStore premises, Statement[] goal) {
+			return Prove(premises, goal, true);
+		}
 
-		public void Prove(MemoryStore premises, MemoryStore goal) {
+		public Proof[] Prove(MemoryStore premises, Statement[] goal, bool bnodesAsVariables) {
 			ArrayList axioms = new ArrayList();
 			
-			if (true) {
-				goal = new MemoryStore(goal);
-				foreach (Entity e in goal.GetEntities())
+			if (bnodesAsVariables) {
+				MemoryStore goal2 = new MemoryStore(goal);
+				foreach (Entity e in goal2.GetEntities())
 					if (e is BNode && !(e is Variable))
-						goal.Replace(e, new Variable(((BNode)e).LocalName));
+						goal2.Replace(e, new Variable(((BNode)e).LocalName));
+				goal = goal2.ToArray();
+				goal2.Write(Console.Out);
 			}
 			
 			foreach (Statement p in premises) {
@@ -121,16 +142,17 @@ namespace SemWeb.Inference {
 			
 			Sequent[] axioms2 = (Sequent[])axioms.ToArray(typeof(Sequent));
 			
-			ArrayList result = prove(axioms2, goal.ToArray(), -1);
+			ArrayList result = prove(axioms2, goal, -1);
 			if (result == null)
 				throw new Exception("Could not complete proof within the maximum number of steps allowed.");
 			
-			foreach (EvidenceItem e in result) {
-				Console.WriteLine("! " + e.head);
-				foreach (Ground g in e.body) {
-					Console.WriteLine("\t<= " + g.src.ToString(g.env));
-				}
+			Proof[] ret = new Proof[result.Count];
+			for (int i = 0; i < result.Count; i++) {
+				EvidenceItem e = (EvidenceItem)result[i];
+				ret[i] = e.ToProof(); 
 			}
+			
+			return ret;
 		}
 
 		private ArrayList prove(Sequent[] axioms, Statement[] goal, int maxNumberOfSteps) {
