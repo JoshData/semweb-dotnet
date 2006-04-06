@@ -69,6 +69,7 @@ namespace SemWeb.Inference {
 		private class Ground {
 			public Sequent src;  // evidence
 			public Hashtable env;  // substitution environment: Resource => Resource
+			
 			public Ground(Sequent src, Hashtable env) {
 				this.src = src;
 				this.env = env;
@@ -121,7 +122,6 @@ namespace SemWeb.Inference {
 					if (e is BNode && !(e is Variable))
 						goal2.Replace(e, new Variable(((BNode)e).LocalName));
 				goal = goal2.ToArray();
-				goal2.Write(Console.Out);
 			}
 			
 			foreach (Statement p in premises) {
