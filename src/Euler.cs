@@ -96,6 +96,13 @@ namespace SemWeb.Inference {
 		public void Prove(MemoryStore premises, MemoryStore goal) {
 			ArrayList axioms = new ArrayList();
 			
+			if (true) {
+				goal = new MemoryStore(goal);
+				foreach (Entity e in goal.GetEntities())
+					if (e is BNode && !(e is Variable))
+						goal.Replace(e, new Variable(((BNode)e).LocalName));
+			}
+			
 			foreach (Statement p in premises) {
 				if (p.Meta == Statement.DefaultMeta) {
 					if (p.Predicate == entLOGIMPLIES && p.Object is Entity) {
