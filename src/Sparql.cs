@@ -10,6 +10,9 @@ using name.levering.ryan.sparql.parser.model;
 using name.levering.ryan.sparql.model;
 using name.levering.ryan.sparql.common;
 
+using SemWebVariable = SemWeb.Variable;
+using SparqlVariable = name.levering.ryan.sparql.common.Variable;
+
 namespace SemWeb.Query {
 
 	public class Sparql : SemWeb.Query.Query {
@@ -154,66 +157,6 @@ namespace SemWeb.Query {
 				throw new InvalidOperationException("Only SELECT queries are supported by this method (" + query.GetType() + ").");
 			Run(source, sink);
 		}
-		
-		public GraphMatch ToGraphMatch() {
-			if (!(query is SelectQuery))
-				throw new InvalidOperationException("Only SELECT queries are supported by this method (" + query.GetType() + ").");
-			
-			SelectQuery sq = (SelectQuery)query;
-			ASTGroupConstraint gc = sq.getConstraint() as ASTGroupConstraint;
-			if (gc == null) throw new NotSupportedException();
-			
-			GraphMatch gm = new GraphMatch();
-			Hashtable vars = new Hashtable();
-			
-			gm.ReturnLimit = ReturnLimit;
-			gm.ReturnStart = ReturnStart;
-			
-			for (int i = 0; i < gc.jjtGetNumChildren(); i++) {
-				ASTTripleSet triple = gc.jjtGetChild(i) as ASTTripleSet;
-				if (triple == null) throw new NotSupportedException();
-
-				Resource subj = ToGMMakeRes(triple.jjtGetChild(0), sq, gm, vars);
-				if (!(subj is Entity)) continue;
-				
-				ASTPropertyList props = (ASTPropertyList)triple.jjtGetChild(1);
-				for (int k = 0; k < props.jjtGetNumChildren(); k++) {
-					ASTVerbObject vo = (ASTVerbObject)props.jjtGetChild(k);
-					Resource pred = ToGMMakeRes(vo.jjtGetChild(0), sq, gm, vars);
-					if (!(pred is Entity)) continue;
-					
-					ASTObjectList objs = (ASTObjectList)vo.jjtGetChild(1);
-					for (int j = 0; j < objs.jjtGetNumChildren(); j++) {
-						Resource obj = ToGMMakeRes(objs.jjtGetChild(j), sq, gm, vars);
-						Statement s = new Statement((Entity)subj, (Entity)pred, obj);
-						gm.AddEdge(s);
-					}
-				}
-			}
-			return gm;
-		}
-		Resource ToGMMakeRes(object obj, SelectQuery sq, GraphMatch gm, Hashtable vars) {
-			if (obj is ASTVar) {
-				ASTVar var = (ASTVar)obj;
-				if (vars.ContainsKey(var.getName())) return (Resource)vars[var.getName()];
-				BNode v = new BNode();
-				gm.SetVariableName(v, var.getName());
-				vars[var.getName()] = v;
-				return v;
-			} else if (obj is ASTQName) {
-				ASTQName qn = (ASTQName)obj;
-				qn.resolveURI(sq.getPrefixExpansions());
-				return new Entity(qn.getURI());
-			} else if (obj is ASTLiteral) {
-				ASTLiteral lit = (ASTLiteral)obj;
-				return Literal.Parse(lit.toString(), null);
-			} else if (obj is ASTQuotedIRIref) {
-				ASTQuotedIRIref iri = (ASTQuotedIRIref)obj;
-				return new Entity(iri.getURI());
-			} else {
-				throw new Exception(obj.GetType().ToString());
-			}
-		}
 
 		public override string GetExplanation() {
 			return query.ToString();
@@ -238,12 +181,12 @@ namespace SemWeb.Query {
 			// Prepare binding objects
 			java.util.List vars = results.getVariables();
 			VariableBinding[] bindings = new VariableBinding[vars.size()];
-			Variable[] svars = new Variable[vars.size()];
-			BNode[] vars2 = new BNode[vars.size()];
+			SparqlVariable[] svars = new SparqlVariable[vars.size()];
+			SemWebVariable[] vars2 = new SemWebVariable[vars.size()];
 			for (int i = 0; i < bindings.Length; i++) {
-				svars[i] = (Variable)vars.get(i);
-				vars2[i] = new BNode();
-				bindings[i] = new VariableBinding(vars2[i], svars[i].getName(), null);
+				svars[i] = (SparqlVariable)vars.get(i);
+				vars2[i] = new SemWebVariable(svars[i].getName());
+				bindings[i] = new VariableBinding(vars2[i], null);
 			}
 			
 			// Initialize the result sink
@@ -270,7 +213,7 @@ namespace SemWeb.Query {
 				for (int i = 0; i < bindings.Length; i++) {
 					Resource r = sourcewrapper.ToResource(row.getValue(svars[i]));
 					r = sourcewrapper.Persist(r);
-					bindings[i] = new VariableBinding(bindings[i].Variable, bindings[i].Name, r);
+					bindings[i] = new VariableBinding(bindings[i].Variable, r);
 				}
 
 				resultsink.AddComments(sourcewrapper.GetLog());

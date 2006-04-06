@@ -42,8 +42,6 @@ namespace SemWeb.Query {
 	public class GraphMatch : Query {
 		// Setup information
 	
-		Hashtable variableNames = new Hashtable();
-		Hashtable nonvariables = new Hashtable();
 		ArrayList setupVariablesDistinct = new ArrayList();
 		ArrayList setupValueFilters = new ArrayList();
 		ArrayList setupStatements = new ArrayList();
@@ -54,7 +52,7 @@ namespace SemWeb.Query {
 		bool init = false;
 		object sync = new object();
 		Variable[] variables;
-		BNode[] variableEntities;
+		SemWeb.Variable[] variableEntities;
 		QueryStatement[][] statements;
 		ArrayList novariablestatements = new ArrayList();
 		
@@ -63,7 +61,7 @@ namespace SemWeb.Query {
 		          ifps = new ResSet();
 		
 		private struct Variable {
-			public BNode Entity;
+			public SemWeb.Variable Entity;
 			public LiteralFilter[] Filters;
 		}
 		
@@ -174,14 +172,6 @@ namespace SemWeb.Query {
 			}
 		}
 		
-		public void SetNonVariable(BNode anonymousnode) {
-			nonvariables[anonymousnode] = anonymousnode;
-		}
-		
-		public void SetVariableName(BNode variable, string name) {
-			variableNames[variable] = name;
-		}
-
 		public void MakeDistinct(BNode a, BNode b) {
 			SetupVariablesDistinct d = new SetupVariablesDistinct();
 			d.a = a;
@@ -231,28 +221,19 @@ namespace SemWeb.Query {
 		
 		public GraphMatch(RdfReader query) :
 			this(new MemoryStore(query),
-				query.BaseUri == null ? null : new Entity(query.BaseUri),
-				query.Variables) {
+				query.BaseUri == null ? null : new Entity(query.BaseUri)) {
 		}
 
-		public GraphMatch(Store queryModel) : this(queryModel, null, null) {
+		public GraphMatch(Store queryModel) : this(queryModel, null) {
 		}
 		
-		private GraphMatch(Store queryModel, Entity queryNode) : this(queryModel, queryNode, null) {
-		}
-		
-		private GraphMatch(Store queryModel, Entity queryNode, IDictionary variableNames) {
+		private GraphMatch(Store queryModel, Entity queryNode) {
 			// Find the query options
 			if (queryNode != null) {
 				ReturnStart = GetIntOption(queryModel, queryNode, qStart);
 				ReturnLimit = GetIntOption(queryModel, queryNode, qLimit);
 			}
 
-			if (variableNames != null) {
-				foreach (DictionaryEntry entry in variableNames)
-					SetVariableName((BNode)entry.Key, (string)entry.Value);
-			}
-			
 			// Search the query for 'distinct' predicates between variables.
 			foreach (Statement s in queryModel.Select(new Statement(null, qDistinctFrom, null))) {
 				if (!(s.Object is BNode)) continue;
@@ -333,10 +314,8 @@ namespace SemWeb.Query {
 					return;
 			
 			VariableBinding[] finalbindings = new VariableBinding[variables.Length];
-			for (int i = 0; i < variables.Length; i++) {
+			for (int i = 0; i < variables.Length; i++)
 				finalbindings[i].Variable = variableEntities[i];
-				finalbindings[i].Name = (string)variableNames[ variableEntities[i] ];
-			}
 			
 			result.Init(finalbindings);
 			
@@ -810,10 +789,10 @@ namespace SemWeb.Query {
 		
 			// Set up the variables array.
 			variables = new Variable[setupVariables.Count];
-			variableEntities = new BNode[variables.Length];
+			variableEntities = new SemWeb.Variable[variables.Length];
 			Hashtable varIndex = new Hashtable();
 			for (int i = 0; i < variables.Length; i++) {
-				variables[i].Entity = (BNode)setupVariables[i];
+				variables[i].Entity = (SemWeb.Variable)setupVariables[i];
 				variableEntities[i] = variables[i].Entity;
 				varIndex[variables[i].Entity] = i;
 				
@@ -851,7 +830,7 @@ namespace SemWeb.Query {
 		}
 		
 		private void InitAnonVariable(Resource r, ArrayList setupVariables) {
-			if (r is Entity && r.Uri == null && !setupVariables.Contains(r) && !nonvariables.Contains(r))
+			if (r is SemWeb.Variable)
 				setupVariables.Add(r);
 		}
 		
@@ -1032,18 +1011,16 @@ namespace SemWeb.Query {
 	}
 
 	public struct VariableBinding {
-		BNode v;
-		string n;
+		Variable v;
 		Resource t;
 		
-		public VariableBinding(BNode variable, string name, Resource target) {
+		public VariableBinding(Variable variable, Resource target) {
 			v = variable;
-			n = name;
 			t = target;
 		}
 		
-		public BNode Variable { get { return v; } set { v = value; } }
-		public string Name { get { return n; } set { n = value; } }
+		public Variable Variable { get { return v; } set { v = value; } }
+		public string Name { get { return v.LocalName; } }
 		public Resource Target { get { return t; } set { t = value; } }
 
 		public static Statement Substitute(VariableBinding[] variables, Statement template) {

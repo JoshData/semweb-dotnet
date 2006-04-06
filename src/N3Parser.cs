@@ -550,8 +550,8 @@ namespace SemWeb {
 				string name = str.Substring(1);
 				Entity var = (Entity)context.variables[name];
 				if (var == null) {
-					var = new BNode(name);
-					AddVariableName(var, name);
+					var = new Variable(name);
+					AddVariable((Variable)var);
 					context.variables[name] = var;
 				}
 				return var;

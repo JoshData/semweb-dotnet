@@ -183,9 +183,24 @@ namespace SemWeb {
 		
 		public override string ToString() {
 			if (LocalName != null)
+				return "_:" + LocalName;
+			else
+				return "_:bnode" + GetHashCode();
+		}
+	}
+	
+	public class Variable : BNode {
+		public Variable() : base() {
+		}
+		
+		public Variable(string variableName) : base(variableName) {
+		}
+		
+		public override string ToString() {
+			if (LocalName != null)
 				return "?" + LocalName;
 			else
-				return "?" + GetHashCode();
+				return "?var" + GetHashCode();
 		}
 	}
 

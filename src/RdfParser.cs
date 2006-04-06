@@ -13,7 +13,7 @@ namespace SemWeb {
 		Entity meta = Statement.DefaultMeta;
 		string baseuri = null;
 		ArrayList warnings = new ArrayList();
-		Hashtable variablenames = new Hashtable();
+		Hashtable variables = new Hashtable();
 		bool reuseentities = false;
 		NamespaceManager nsmgr = new NamespaceManager();
 
@@ -48,12 +48,12 @@ namespace SemWeb {
 		
 		public NamespaceManager Namespaces { get { return nsmgr; } }
 		
-		public IDictionary Variables { get { return (Hashtable)variablenames.Clone(); } }
+		public ICollection Variables { get { return variables.Keys; } }
 		
 		public IList Warnings { get { return ArrayList.ReadOnly(warnings); } }
 		
-		protected void AddVariableName(Entity variable, string name) {
-			variablenames[variable] = name;
+		protected void AddVariable(Variable variable) {
+			variables[variable] = variable;
 		}
 
 		public abstract void Select(StatementSink sink);
