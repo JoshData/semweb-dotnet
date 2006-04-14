@@ -1,12 +1,12 @@
 <Combine name="semweb" fileversion="2.0">
   <Configurations active="Debug">
     <Configuration name="Debug" ctype="CombineConfiguration">
-      <Entry configuration="Debug" build="True" name="semweb" />
-      <Entry configuration="Debug" build="True" name="sparql" />
+      <Entry build="True" name="semweb" configuration="Debug" />
+      <Entry build="True" name="sparql" configuration="Debug" />
     </Configuration>
     <Configuration name="Release" ctype="CombineConfiguration">
-      <Entry configuration="Debug" build="True" name="semweb" />
-      <Entry configuration="Debug" build="True" name="sparql" />
+      <Entry build="True" name="semweb" configuration="Debug" />
+      <Entry build="True" name="sparql" configuration="Debug" />
     </Configuration>
   </Configurations>
   <StartMode startupentry="semweb" single="True">

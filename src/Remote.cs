@@ -111,11 +111,14 @@ namespace SemWeb.Remote {
 			
 			Hashtable bnodes = new Hashtable();
 			
-			foreach (XmlElement binding in bindings) {
-				Entity subj = (Entity)GetBinding(binding, "subject", subjects, bnodes);
-				Entity pred = (Entity)GetBinding(binding, "predicate", predicates, bnodes);
+			foreach (XmlNode bindingnode in bindings) {
+				if (!(bindingnode is XmlElement)) continue;
+				XmlElement binding = (XmlElement)bindingnode;
+				Resource subj = GetBinding(binding, "subject", subjects, bnodes);
+				Resource pred = GetBinding(binding, "predicate", predicates, bnodes);
 				Resource obj = GetBinding(binding, "object", objects, bnodes);
-				Statement s = new Statement(subj, pred, obj);
+				if (!(subj is Entity) || !(pred is Entity)) continue;
+				Statement s = new Statement((Entity)subj, (Entity)pred, obj);
 				if (distinctCheck != null && distinctCheck.Contains(s)) continue;
 				if (litFilters != null && !LiteralFilter.MatchesFilters(s.Object, litFilters, this)) continue;
 				if (!sink.Add(s)) return true;

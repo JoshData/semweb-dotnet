@@ -2,6 +2,8 @@ using System;
 using System.Collections;
 using System.Data;
 
+using SemWeb.Util;
+
 namespace SemWeb {
 	
 	public interface StatementSource {
@@ -16,9 +18,9 @@ namespace SemWeb {
 		Entity[] FindEntities(Statement[] graph);
 	}
 
-	public interface QueryableSource {
-		void Query(Statement[] graph, BNode[] variables, SemWeb.Query.QueryResultSink sink);
-		void Query(SelectFilter[] graph, BNode[] variables, SemWeb.Query.QueryResultSink sink);
+	public interface QueryableSource : SelectableSource {
+		void Query(Statement[] graph, SemWeb.Query.QueryResultSink sink);
+		void Query(SelectFilter[] graph, SemWeb.Query.QueryResultSink sink);
 	}
 	
 	public interface StatementSink {
@@ -76,7 +78,7 @@ namespace SemWeb {
 		}
 		
 		private static object Create(string spec, bool output) {
-			string[] multispecs = spec.Split('\n');
+			string[] multispecs = spec.Split('\n', '|');
 			if (multispecs.Length > 1) {
 				SemWeb.Stores.MultiStore multistore = new SemWeb.Stores.MultiStore();
 				foreach (string mspec in multispecs) {
@@ -639,6 +641,50 @@ namespace SemWeb.Stores {
 		
 		public void Select(SelectFilter filter, StatementSink sink) {
 			Store.DefaultSelect(this, filter, sink);
+		}
+	}
+	
+	public class CachedSource : SelectableSource {
+		SelectableSource source;
+
+		StatementMap containsresults = new StatementMap();
+		StatementMap selectresults = new StatementMap();
+		Hashtable selfilterresults = new Hashtable();
+	
+		public CachedSource(SelectableSource s) { source = s; }
+	
+		public bool Distinct { get { return source.Distinct; } }
+		
+		public void Select(StatementSink sink) {
+			Select(Statement.All, sink);
+		}
+
+		public bool Contains(Statement template) {
+			if (!containsresults.ContainsKey(template))
+				containsresults[template] = source.Contains(template);
+			return (bool)containsresults[template];
+		}
+		
+		public void Select(Statement template, StatementSink sink) {
+			if (!selectresults.ContainsKey(template)) {
+				MemoryStore s = new MemoryStore();
+				source.Select(template, s);
+				selectresults[template] = s;
+			}
+			((MemoryStore)selectresults[template]).Select(sink);
+		}
+	
+		public void Select(SelectFilter filter, StatementSink sink) {
+			if (!selfilterresults.ContainsKey(filter)) {
+				MemoryStore s = new MemoryStore();
+				source.Select(filter, s);
+				selfilterresults[filter] = s;
+			}
+			((MemoryStore)selfilterresults[filter]).Select(sink);
+		}
+
+		public Entity[] FindEntities(Statement[] graph) {
+			return source.FindEntities(graph);
 		}
 	}
 }
