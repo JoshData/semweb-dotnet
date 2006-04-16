@@ -7,7 +7,7 @@ namespace SemWeb {
 	public abstract class LiteralFilter {
 		public abstract bool Filter(Literal value, SelectableSource targetModel);
 	
-		public LiteralFilter Comparison(CompType type, object value) {
+		public static LiteralFilter Create(CompType type, object value) {
 			if (value is string)
 				return new StringCompareFilter((string)value, type);
 			if (value is decimal
@@ -39,6 +39,18 @@ namespace SemWeb {
 		
 		public enum CompType {
 			LT, LE, NE, EQ, GT, GE
+		}
+		
+		public static CompType Inverse(CompType comp) {
+			switch (comp) {
+			case CompType.LT: return CompType.GE;
+			case CompType.LE: return CompType.GT;
+			case CompType.NE: return CompType.EQ;
+			case CompType.EQ: return CompType.NE;
+			case CompType.GT: return CompType.LE;
+			case CompType.GE: return CompType.LT;
+			default: throw new ArgumentException();
+			}
 		}
 		
 		public static bool MatchesFilters(Resource literal, LiteralFilter[] filters, SelectableSource targetModel) {
@@ -114,6 +126,7 @@ namespace SemWeb.Filters {
 		public readonly CompType Type;
 
 		public NumericCompareFilter(Decimal number, CompType type) {
+			Number = number;
 			Type = type;
 		}
 		

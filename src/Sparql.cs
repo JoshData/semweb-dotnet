@@ -9,9 +9,12 @@ using name.levering.ryan.sparql.parser;
 using name.levering.ryan.sparql.parser.model;
 using name.levering.ryan.sparql.model;
 using name.levering.ryan.sparql.common;
+using name.levering.ryan.sparql.logic.expression;
+using name.levering.ryan.sparql.logic.function;
 
 using SemWebVariable = SemWeb.Variable;
 using SparqlVariable = name.levering.ryan.sparql.common.Variable;
+using ExpressionLogic = name.levering.ryan.sparql.model.logic.ExpressionLogic;
 
 namespace SemWeb.Query {
 
@@ -232,7 +235,7 @@ namespace SemWeb.Query {
 		
 		class MyLogicFactory : name.levering.ryan.sparql.logic.DefaultFactory {
 		    public override name.levering.ryan.sparql.model.logic.ConstraintLogic getGroupConstraintLogic(name.levering.ryan.sparql.model.data.GroupConstraintData data) {
-        		return new name.levering.ryan.sparql.logic.AdvancedGroupConstraintLogic(data, getSetIntersectLogic());
+        		return new RdfGroupLogic(data, getSetIntersectLogic());
     		}
 		    public override name.levering.ryan.sparql.model.logic.ConstraintLogic getTripleConstraintLogic(name.levering.ryan.sparql.model.data.TripleConstraintData data) {
 		        return new name.levering.ryan.sparql.logic.AdvancedStreamedTripleConstraintLogic(data);
@@ -622,6 +625,76 @@ namespace SemWeb.Query {
 					literal.getDatatype() == null ? null
 						: literal.getDatatype().toString());
 			}
+		}
+		
+		class RdfGroupLogic : name.levering.ryan.sparql.logic.AdvancedGroupConstraintLogic {
+		    public RdfGroupLogic(name.levering.ryan.sparql.model.data.GroupConstraintData data, name.levering.ryan.sparql.model.logic.SetIntersectLogic logic)
+		    	: base(data, logic) {
+		    }
+		    
+			protected override void extractLiteralFilters(name.levering.ryan.sparql.model.logic.ExpressionLogic node, java.util.Map literalFilters) {
+				base.extractLiteralFilters(node, literalFilters);
+			
+				if (node is BinaryExpressionNode) {
+					BinaryExpressionNode b = (BinaryExpressionNode)node;
+					
+					LiteralFilter.CompType comp;
+					if (node is ASTEqualsNode)
+						comp = LiteralFilter.CompType.EQ;
+					else if (node is ASTNotEqualsNode)
+						comp = LiteralFilter.CompType.NE;
+					else if (node is ASTGreaterThanNode)
+						comp = LiteralFilter.CompType.GT;
+					else if (node is ASTGreaterThanEqualsNode)
+						comp = LiteralFilter.CompType.GE;
+					else if (node is ASTLessThanNode)
+						comp = LiteralFilter.CompType.LT;
+					else if (node is ASTLessThanEqualsNode)
+						comp = LiteralFilter.CompType.LE;
+					else
+						return;
+					
+					SparqlVariable var;
+					org.openrdf.model.Literal val;
+					
+					object left = RemoveCast(b.getLeftExpression());
+					object right = RemoveCast(b.getRightExpression());
+					
+					if (left is ASTVar && right is org.openrdf.model.Literal) {
+						var = (SparqlVariable)left;
+						val = (org.openrdf.model.Literal)right;
+					} else if (right is ASTVar && left is org.openrdf.model.Literal) {
+						var = (SparqlVariable)right;
+						val = (org.openrdf.model.Literal)left;
+						if (comp != LiteralFilter.CompType.EQ && comp != LiteralFilter.CompType.NE)
+							comp = LiteralFilter.Inverse(comp);
+					} else {
+						return;
+					}
+					
+					object parsedvalue = new Literal(val.getLabel(), null, val.getDatatype().ToString()).ParseValue();
+					
+					LiteralFilter filter = LiteralFilter.Create(comp, parsedvalue);
+					addLiteralFilter(var, filter, literalFilters);
+				}
+			}
+		    
+		    object RemoveCast(object node) {
+		    	if (node is ASTFunctionCall) {
+		    		string name = ((ASTFunctionCall)node).getName(null).ToString();
+		    		if (name.StartsWith("http://www.w3.org/2001/XMLSchema#"))
+		    			return RemoveCast(((ASTFunctionCall)node).getArguments().get(0));
+		    	}
+		    	if (node is ASTMinusNode) {
+		    		object inside = RemoveCast(((ASTMinusNode)node).getExpression());
+		    		if (inside is ASTLiteral) {
+		    			string value = ((ASTLiteral)inside).getLabel();
+		    			double doublevalue = double.Parse(value);
+		    			return new LiteralWrapper(new Literal((-doublevalue).ToString(), null, ((ASTLiteral)inside).getDatatype().ToString()));
+		    		}
+		    	}
+		    	return node;
+		    }
 		}
 	}
 	

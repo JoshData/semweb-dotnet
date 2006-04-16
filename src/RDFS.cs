@@ -227,7 +227,12 @@ namespace SemWeb.Inference {
 				}
 				
 				//data.Select(subjects, qprops.ToEntityArray(), objects, metas, new LiteralDTMap(ranges, new PredMap(propfrom, sink)));
-				data.Select(new SelectFilter(subjects, qprops.ToEntityArray(), objects, metas), new PredMap(propfrom, sink));
+				
+				SelectFilter sf = new SelectFilter(subjects, qprops.ToEntityArray(), objects, metas);
+				sf.LiteralFilters = filter.LiteralFilters;
+				sf.Limit = filter.Limit;
+				
+				data.Select(sf, new PredMap(propfrom, sink));
 			}
 		}
 		
