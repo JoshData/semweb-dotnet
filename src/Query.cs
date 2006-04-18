@@ -18,6 +18,12 @@ namespace SemWeb.Query {
 		public QueryExecutionException(string message) : base(message) { }
 		public QueryExecutionException(string message, Exception cause) : base(message, cause) { }
 	}
+	
+	public abstract class RdfFunction {
+		public abstract string Uri { get; }
+		public abstract Resource Evaluate(Resource[] args);	
+	
+	}
 
 	public abstract class Query {
 		int start = 0;

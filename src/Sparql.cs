@@ -24,6 +24,7 @@ namespace SemWeb.Query {
 
 		string queryString;
 		name.levering.ryan.sparql.model.Query query;
+		ArrayList extFunctions = new ArrayList();
 		
 		public bool AllowPersistBNodes = true;
 		
@@ -52,6 +53,8 @@ namespace SemWeb.Query {
 			} catch (ParseException e) {
 				throw new QueryFormatException("SPARQL syntax error at: " + e.currentToken);
 			}
+			
+			extFunctions.Add(new TestFunction());
 		}
 		
 		public QueryType Type {
@@ -66,6 +69,10 @@ namespace SemWeb.Query {
 					return QueryType.Select;
 				throw new NotSupportedException("Query is of an unsupported type.");
 			}
+		}
+		
+		public void AddExternalFunction(RdfFunction function) {
+			extFunctions.Add(function);
 		}
 	
 		public override void Run(SelectableSource source, TextWriter output) {
@@ -171,9 +178,17 @@ namespace SemWeb.Query {
 
 			// Perform the query
 			SelectQuery squery = (SelectQuery)query;
-			squery.bindLogic(new MyLogicFactory());
 			
 			RdfSourceWrapper sourcewrapper = new RdfSourceWrapper(source, QueryMeta, this);
+
+			MyLogicFactory logic = new MyLogicFactory();
+			foreach (RdfFunction f in extFunctions)
+				logic.registerExternalFunction(
+					new URIWrapper(f.Uri),
+					new ExtFuncWrapper(sourcewrapper, f));
+
+			squery.bindLogic(logic);
+			
 			RdfBindingSet results;
 			try {
 				results = squery.execute(sourcewrapper);
@@ -206,7 +221,7 @@ namespace SemWeb.Query {
 				RdfBindingRow row = (RdfBindingRow)iter.next();
 
 				// Since SPARQL processing may be lazy-delayed,
-				// add any new comments that might have be logged.
+				// add any new comments that might have been logged.
 				resultsink.AddComments(sourcewrapper.GetLog());
 
 				ctr++;
@@ -521,6 +536,15 @@ namespace SemWeb.Query {
 				if (id == null) return r;
 				return new Entity(Sparql.BNodePersistUri + guid + ":" + id);
 			}
+			
+			public static org.openrdf.model.Value Wrap(Resource res) {
+				if (res is Literal)
+					return new LiteralWrapper((Literal)res);
+				else if (res.Uri == null)
+					return new BNodeWrapper((BNode)res);
+				else
+					return new URIWrapper((Entity)res);
+			}
 		}
 		
 		class StatementIterator : java.util.Iterator {
@@ -555,10 +579,7 @@ namespace SemWeb.Query {
 			}
 			
 			public org.openrdf.model.Value getSubject() {
-				if (s.Subject.Uri == null)
-					return new BNodeWrapper((BNode)s.Subject);
-				else
-					return new URIWrapper(s.Subject);
+				return RdfSourceWrapper.Wrap(s.Subject);
 			}
 	
 			public org.openrdf.model.URI getPredicate() {
@@ -568,12 +589,7 @@ namespace SemWeb.Query {
 			}
 	
 			public org.openrdf.model.Value getObject() {
-				if (s.Object is Literal)
-					return new LiteralWrapper((Literal)s.Object);
-				else if (s.Object.Uri == null)
-					return new BNodeWrapper((BNode)s.Object);
-				else
-					return new URIWrapper((Entity)s.Object);
+				return RdfSourceWrapper.Wrap(s.Object);
 			}
 		}
 		
@@ -624,6 +640,25 @@ namespace SemWeb.Query {
 				return new Literal(literal.getLabel(), literal.getLanguage(),
 					literal.getDatatype() == null ? null
 						: literal.getDatatype().toString());
+			}
+		}
+		
+		class ExtFuncWrapper : name.levering.ryan.sparql.logic.function.ExternalFunction {
+			RdfSourceWrapper source;
+			RdfFunction func;
+			
+			public ExtFuncWrapper(RdfSourceWrapper s, RdfFunction f) {
+				source = s;
+				func = f;
+			}
+
+			public org.openrdf.model.Value evaluate(org.openrdf.model.Value[] args) {
+				try {
+					Resource ret = func.Evaluate(source.ToResources(args));
+					return RdfSourceWrapper.Wrap(ret);
+				} catch (Exception e) {
+					throw new name.levering.ryan.sparql.logic.function.ExternalFunctionException(e); 
+				}
 			}
 		}
 		
@@ -695,6 +730,13 @@ namespace SemWeb.Query {
 		    	}
 		    	return node;
 		    }
+		}
+		
+		class TestFunction : RdfFunction {
+			public override string Uri { get { return "http://taubz.for.net/code/semweb/test/function"; } }
+			public override Resource Evaluate(Resource[] args) {
+				return Literal.Create(args.Length == 2 && args[0].Equals(args[1]));
+			}
 		}
 	}
 	

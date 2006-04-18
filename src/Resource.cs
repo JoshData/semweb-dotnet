@@ -205,6 +205,8 @@ namespace SemWeb {
 	}
 
 	public sealed class Literal : Resource { 
+		private const string XMLSCHEMANS = "http://www.w3.org/2001/XMLSchema#";
+
 		private string value, lang, type;
 		
 		public Literal(string value) : this(value, null, null) {
@@ -301,10 +303,9 @@ namespace SemWeb {
 		}
 		
 		public object ParseValue() {
-			string NS = "http://www.w3.org/2001/XMLSchema#";
 			string dt = DataType;
-			if (dt == null || !dt.StartsWith(NS)) return Value;
-			dt = dt.Substring(NS.Length);
+			if (dt == null || !dt.StartsWith(XMLSCHEMANS)) return Value;
+			dt = dt.Substring(XMLSCHEMANS.Length);
 			
 			if (dt == "string" || dt == "normalizedString" || dt == "anyURI") return Value;
 			if (dt == "boolean") return (Value == "true" || Value == "1");
@@ -328,6 +329,10 @@ namespace SemWeb {
 		public Literal Normalize() {
 			if (DataType == null) return this;
 			return new Literal(ParseValue().ToString(), Language, DataType);
+		}
+		
+		public static Literal Create(bool value) {
+			return new Literal(value ? "true" : "false", null, XMLSCHEMANS + "boolean");
 		}
 	}
 
