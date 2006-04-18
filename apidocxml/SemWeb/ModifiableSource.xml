@@ -54,8 +54,7 @@
 <example>
             <para>The following examples erase all statements in a store (although you should use <see cref="M:SemWeb.ModifiableSource.Clear()" />.</para>
             <code lang="C#">store.Remove(new Statement(null, null, null));
-store.Remove(Statement.All);</code>
-          </example></remarks>
+store.Remove(Statement.All);</code></example></remarks>
       </Docs>
     </Member>
     <Member MemberName="RemoveAll">

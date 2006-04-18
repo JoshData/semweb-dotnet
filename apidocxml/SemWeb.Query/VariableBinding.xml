@@ -10,10 +10,10 @@
   <Interfaces />
   <Members>
     <Member MemberName="Variable">
-      <MemberSignature Language="C#" Value="public SemWeb.BNode Variable { set; get; };" />
+      <MemberSignature Language="C#" Value="public SemWeb.Variable Variable { set; get; };" />
       <MemberType>Property</MemberType>
       <ReturnValue>
-        <ReturnType>SemWeb.BNode</ReturnType>
+        <ReturnType>SemWeb.Variable</ReturnType>
       </ReturnValue>
       <Docs>
         <summary>The variable.</summary>
@@ -52,7 +52,7 @@
       </Docs>
     </Member>
     <Member MemberName="Name">
-      <MemberSignature Language="C#" Value="public string Name { set; get; };" />
+      <MemberSignature Language="C#" Value="public string Name { get; };" />
       <MemberType>Property</MemberType>
       <ReturnValue>
         <ReturnType>System.String</ReturnType>
@@ -64,19 +64,17 @@
       </Docs>
     </Member>
     <Member MemberName=".ctor">
-      <MemberSignature Language="C#" Value="public VariableBinding (SemWeb.BNode variable, string name, SemWeb.Resource target);" />
+      <MemberSignature Language="C#" Value="public VariableBinding (SemWeb.Variable variable, SemWeb.Resource target);" />
       <MemberType>Constructor</MemberType>
       <Parameters>
-        <Parameter Name="variable" Type="SemWeb.BNode" />
-        <Parameter Name="name" Type="System.String" />
+        <Parameter Name="variable" Type="SemWeb.Variable" />
         <Parameter Name="target" Type="SemWeb.Resource" />
       </Parameters>
       <Docs>
-        <param name="variable">The variable.</param>
-        <param name="name">The variable's name, or <see langword="null" />.</param>
-        <param name="target">The value bound to the variable, or <see langword="null" />.</param>
-        <summary>Creates a variable binding structure.</summary>
-        <remarks>None.</remarks>
+        <param name="variable">To be added.</param>
+        <param name="target">To be added.</param>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

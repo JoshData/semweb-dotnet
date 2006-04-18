@@ -132,24 +132,6 @@
         <remarks>The two tables used by this store will be <paramref name="table" />_statements and <paramref name="table" />_literals.</remarks>
       </Docs>
     </Member>
-    <Member MemberName="CreateNullTest">
-      <MemberSignature Language="C#" Value="protected abstract string CreateNullTest (string column);" />
-      <MemberType>Method</MemberType>
-      <ReturnValue>
-        <ReturnType>System.String</ReturnType>
-      </ReturnValue>
-      <Parameters>
-        <Parameter Name="column" Type="System.String" />
-      </Parameters>
-      <Docs>
-        <param name="column">The column on which the test should be performed.</param>
-        <summary>Implemented by inheritors to construct a test to see whether a column has a null value.</summary>
-        <returns>A SQL test if the column in null.</returns>
-        <remarks>
-          <para>For example, the MySQL store returns:  ISNULL(<paramref name="column" />).  The SQLite store returns:  <paramref name="column" /> ISNULL.</para>
-        </remarks>
-      </Docs>
-    </Member>
     <Member MemberName="EscapedAppend">
       <MemberSignature Language="C#" Value="protected void EscapedAppend (System.Text.StringBuilder b, string str);" />
       <MemberType>Method</MemberType>
@@ -289,6 +271,172 @@
         <param name="persistentId">To be added.</param>
         <summary>To be added.</summary>
         <returns>To be added.</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="CreateNullTest">
+      <MemberSignature Language="C#" Value="protected abstract void CreateNullTest (string column, System.Text.StringBuilder command);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="column" Type="System.String" />
+        <Parameter Name="command" Type="System.Text.StringBuilder" />
+      </Parameters>
+      <Docs>
+        <param name="column">To be added.</param>
+        <param name="command">To be added.</param>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="GetNodeFromId">
+      <MemberSignature Language="C#" Value="public SemWeb.BNode GetNodeFromId (string persistentId);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>SemWeb.BNode</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="persistentId" Type="System.String" />
+      </Parameters>
+      <Docs>
+        <param name="persistentId">To be added.</param>
+        <summary>To be added.</summary>
+        <returns>To be added.</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="EscapedAppend">
+      <MemberSignature Language="C#" Value="protected void EscapedAppend (System.Text.StringBuilder b, string str);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="b" Type="System.Text.StringBuilder" />
+        <Parameter Name="str" Type="System.String" />
+      </Parameters>
+      <Docs>
+        <param name="b">To be added.</param>
+        <param name="str">To be added.</param>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="GetQuoteChar">
+      <MemberSignature Language="C#" Value="protected virtual char GetQuoteChar ();" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Char</ReturnType>
+      </ReturnValue>
+      <Parameters />
+      <Docs>
+        <summary>To be added.</summary>
+        <returns>To be added.</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="EscapedAppend">
+      <MemberSignature Language="C#" Value="protected virtual void EscapedAppend (System.Text.StringBuilder b, string str, bool quotes);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="b" Type="System.Text.StringBuilder" />
+        <Parameter Name="str" Type="System.String" />
+        <Parameter Name="quotes" Type="System.Boolean" />
+      </Parameters>
+      <Docs>
+        <param name="b">To be added.</param>
+        <param name="str">To be added.</param>
+        <param name="quotes">To be added.</param>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="SupportsNoDuplicates">
+      <MemberSignature Language="C#" Value="protected abstract bool SupportsNoDuplicates { get; };" />
+      <MemberType>Property</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Boolean</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+        <value>To be added.</value>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="SupportsInsertIgnore">
+      <MemberSignature Language="C#" Value="protected abstract bool SupportsInsertIgnore { get; };" />
+      <MemberType>Property</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Boolean</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+        <value>To be added.</value>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="SupportsInsertCombined">
+      <MemberSignature Language="C#" Value="protected abstract bool SupportsInsertCombined { get; };" />
+      <MemberType>Property</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Boolean</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+        <value>To be added.</value>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="SupportsFastJoin">
+      <MemberSignature Language="C#" Value="protected virtual bool SupportsFastJoin { get; };" />
+      <MemberType>Property</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Boolean</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+        <value>To be added.</value>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="SupportsSubquery">
+      <MemberSignature Language="C#" Value="protected abstract bool SupportsSubquery { get; };" />
+      <MemberType>Property</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Boolean</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+        <value>To be added.</value>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="SupportsSubquery">
+      <MemberSignature Language="C#" Value="protected abstract bool SupportsSubquery { get; };" />
+      <MemberType>Property</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Boolean</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+        <value>To be added.</value>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="SupportsSubquery">
+      <MemberSignature Language="C#" Value="protected abstract bool SupportsSubquery { get; };" />
+      <MemberType>Property</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Boolean</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+        <value>To be added.</value>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>

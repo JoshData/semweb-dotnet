@@ -1,5 +1,19 @@
-	* RdfXmlReader: Raise an error when an invalid parseType is used.
+2006-04-18 Version 0.72
+
+	* Added SemWeb.Variable class: A subclass of BNode.
+	  The N3Reader instantiates ?variables as Variable objects
+	  rather than plain BNodes, and the N3Writer will write them
+	  out in ?variable notation.  The GraphMatch class now
+	  assumes all variables are Variable objects, and nothing else.
+	* Added SemWeb.Inferencing.Euler: Inferencing based on
+	  Jos De Roo's Euler engine (http://www.agfa.com/w3c/euler/).
+	  Experimental and not documented yet.
 	* SQL stores: Allow insertion of bnodes outside of Import().
+	* SPARQL Extension Functions: New class SemWeb.Query.RdfFunction
+	  and new method Sparql.AddExtensionFunction.
+	* SPARQL: Numeric comparison filters (i.e. <, >), are optimized
+	  by passing them into underlying SQL stores.
+	* RdfXmlReader: Raise an error when an invalid parseType is used.
 
 2006-03-16 Version 0.711
 

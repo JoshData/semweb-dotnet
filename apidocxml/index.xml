@@ -33,6 +33,7 @@
       <Type Name="LiteralFilter" />
       <Type Name="LiteralFilter+CompType" />
       <Type Name="SelectFilter" />
+      <Type Name="Variable" />
     </Namespace>
     <Namespace Name="SemWeb.Query">
       <Type Name="QueryResultSink" />
@@ -45,11 +46,14 @@
       <Type Name="QueryFormatException" />
       <Type Name="QueryExecutionException" />
       <Type Name="SparqlProtocol" />
+      <Type Name="RdfFunction" />
     </Namespace>
     <Namespace Name="SemWeb.Stores">
       <Type Name="MultiStore" />
       <Type Name="SQLStore" />
       <Type Name="SupportsPersistableBNodes" />
+      <Type Name="SimpleSourceWrapper" />
+      <Type Name="CachedSource" />
     </Namespace>
     <Namespace Name="SemWeb.Util">
       <Type Name="XPathSemWebNavigator" />
@@ -77,9 +81,14 @@
       <Type Name="NumericCompareFilter" />
       <Type Name="DateTimeCompareFilter" />
       <Type Name="TimeSpanCompareFilter" />
+      <Type Name="FilterSink" />
     </Namespace>
     <Namespace Name="SemWeb.Inference">
       <Type Name="RDFS" />
+      <Type Name="Euler" />
+      <Type Name="Rule" />
+      <Type Name="ProofStep" />
+      <Type Name="Proof" />
     </Namespace>
   </Types>
   <Assemblies>

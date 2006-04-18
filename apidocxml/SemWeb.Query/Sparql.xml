@@ -180,19 +180,6 @@
         <remarks>None.</remarks>
       </Docs>
     </Member>
-    <Member MemberName="ToGraphMatch">
-      <MemberSignature Language="C#" Value="public SemWeb.Query.GraphMatch ToGraphMatch ();" />
-      <MemberType>Method</MemberType>
-      <ReturnValue>
-        <ReturnType>SemWeb.Query.GraphMatch</ReturnType>
-      </ReturnValue>
-      <Parameters />
-      <Docs>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
-      </Docs>
-    </Member>
     <Member MemberName="AllowPersistBNodes">
       <MemberSignature Language="C#" Value="public bool AllowPersistBNodes;" />
       <MemberType>Field</MemberType>
@@ -200,6 +187,21 @@
         <ReturnType>System.Boolean</ReturnType>
       </ReturnValue>
       <Docs>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="AddExternalFunction">
+      <MemberSignature Language="C#" Value="public void AddExternalFunction (SemWeb.Query.RdfFunction function);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="function" Type="SemWeb.Query.RdfFunction" />
+      </Parameters>
+      <Docs>
+        <param name="function">To be added.</param>
         <summary>To be added.</summary>
         <remarks>To be added.</remarks>
       </Docs>

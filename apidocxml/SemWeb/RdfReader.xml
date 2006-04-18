@@ -120,10 +120,10 @@
       </Docs>
     </Member>
     <Member MemberName="Variables">
-      <MemberSignature Language="C#" Value="public System.Collections.IDictionary Variables { get; };" />
+      <MemberSignature Language="C#" Value="public System.Collections.ICollection Variables { get; };" />
       <MemberType>Property</MemberType>
       <ReturnValue>
-        <ReturnType>System.Collections.IDictionary</ReturnType>
+        <ReturnType>System.Collections.ICollection</ReturnType>
       </ReturnValue>
       <Docs>
         <summary>A mapping of <see cref="T:SemWeb.Entity" />s found in the stream that were marked as being variables (e.g. for queries) to their string names.</summary>
@@ -156,23 +156,6 @@
         <summary>Determines whether the reader must reuse Entity objects that it creates.</summary>
         <value>If false (the default), the reader may create a new Entity object each time an entity is encoutered in the stream.  If true, the reader must return the same Entity object each time it encounters a reference to the same entity.</value>
         <remarks>Setting this property to true may slow down the performance of the reader, as it may need to consult a hashtable each time a URI is read mapping the URI to an Entity it has previously created.</remarks>
-      </Docs>
-    </Member>
-    <Member MemberName="AddVariableName">
-      <MemberSignature Language="C#" Value="protected void AddVariableName (SemWeb.Entity variable, string name);" />
-      <MemberType>Method</MemberType>
-      <ReturnValue>
-        <ReturnType>System.Void</ReturnType>
-      </ReturnValue>
-      <Parameters>
-        <Parameter Name="variable" Type="SemWeb.Entity" />
-        <Parameter Name="name" Type="System.String" />
-      </Parameters>
-      <Docs>
-        <param name="variable">An anonymous resource in the stream used as a variable.</param>
-        <param name="name">The name of the variable found in the stream.</param>
-        <summary>This method is used by implementions of RdfReader to indicate an anonymous node in the stream used as a variable was associated with a name.</summary>
-        <remarks>See <see cref="P:SemWeb.RdfReader.Variables" />.</remarks>
       </Docs>
     </Member>
     <Member MemberName="LoadFromUri">
@@ -217,6 +200,33 @@
         <summary>Gets a list of warnings generated while parsing the input stream.</summary>
         <value>A list of warnings generated while parsing the input stream.  Each element of the list is a string.</value>
         <remarks>None.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="AddVariable">
+      <MemberSignature Language="C#" Value="protected void AddVariable (SemWeb.Variable variable);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="variable" Type="SemWeb.Variable" />
+      </Parameters>
+      <Docs>
+        <param name="variable">To be added.</param>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Warnings">
+      <MemberSignature Language="C#" Value="public System.Collections.IList Warnings { get; };" />
+      <MemberType>Property</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Collections.IList</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+        <value>To be added.</value>
+        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

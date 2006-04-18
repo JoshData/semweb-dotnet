@@ -1,44 +1,61 @@
 <Type Name="QueryableSource" FullName="SemWeb.QueryableSource">
-  <TypeSignature Language="C#" Value="public interface QueryableSource" />
+  <TypeSignature Language="C#" Value="public interface QueryableSource : SemWeb.SelectableSource" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
     <AssemblyVersion>0.7.1.0</AssemblyVersion>
   </AssemblyInfo>
-  <Interfaces />
+  <Interfaces>
+    <Interface>
+      <InterfaceName>SemWeb.SelectableSource</InterfaceName>
+    </Interface>
+  </Interfaces>
   <Members>
     <Member MemberName="Query">
-      <MemberSignature Language="C#" Value="public void Query (SemWeb.Statement[] graph, SemWeb.BNode[] variables, SemWeb.Query.QueryResultSink sink);" />
+      <MemberSignature Language="C#" Value="public void Query (SemWeb.Statement[] graph, SemWeb.Query.QueryResultSink sink);" />
       <MemberType>Method</MemberType>
       <ReturnValue>
         <ReturnType>System.Void</ReturnType>
       </ReturnValue>
       <Parameters>
         <Parameter Name="graph" Type="SemWeb.Statement[]" />
-        <Parameter Name="variables" Type="SemWeb.BNode[]" />
         <Parameter Name="sink" Type="SemWeb.Query.QueryResultSink" />
       </Parameters>
       <Docs>
         <param name="graph">To be added.</param>
-        <param name="variables">To be added.</param>
         <param name="sink">To be added.</param>
         <summary>To be added.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Query">
-      <MemberSignature Language="C#" Value="public void Query (SemWeb.SelectFilter[] graph, SemWeb.BNode[] variables, SemWeb.Query.QueryResultSink sink);" />
+      <MemberSignature Language="C#" Value="public void Query (SemWeb.SelectFilter[] graph, SemWeb.Query.QueryResultSink sink);" />
       <MemberType>Method</MemberType>
       <ReturnValue>
         <ReturnType>System.Void</ReturnType>
       </ReturnValue>
       <Parameters>
         <Parameter Name="graph" Type="SemWeb.SelectFilter[]" />
-        <Parameter Name="variables" Type="SemWeb.BNode[]" />
         <Parameter Name="sink" Type="SemWeb.Query.QueryResultSink" />
       </Parameters>
       <Docs>
         <param name="graph">To be added.</param>
-        <param name="variables">To be added.</param>
+        <param name="sink">To be added.</param>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Query">
+      <MemberSignature Language="C#" Value="public void Query (SemWeb.SelectFilter[] graph, SemWeb.Query.QueryResultSink sink);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="graph" Type="SemWeb.SelectFilter[]" />
+        <Parameter Name="sink" Type="SemWeb.Query.QueryResultSink" />
+      </Parameters>
+      <Docs>
+        <param name="graph">To be added.</param>
         <param name="sink">To be added.</param>
         <summary>To be added.</summary>
         <remarks>To be added.</remarks>

@@ -103,38 +103,6 @@ new GraphMatch(queryGraph).Run(targetData, Console.Out);  </code>
         <remarks>None.</remarks>
       </Docs>
     </Member>
-    <Member MemberName="SetNonVariable">
-      <MemberSignature Language="C#" Value="public void SetNonVariable (SemWeb.BNode anonymousnode);" />
-      <MemberType>Method</MemberType>
-      <ReturnValue>
-        <ReturnType>System.Void</ReturnType>
-      </ReturnValue>
-      <Parameters>
-        <Parameter Name="anonymousnode" Type="SemWeb.BNode" />
-      </Parameters>
-      <Docs>
-        <param name="anonymousnode">An anonymous node in the graph.</param>
-        <summary>Indicates that an anonymous node in the query graph is not a varible.</summary>
-        <remarks>If the query graph was not created from the data source that contains the target model, no anonymous node in the query could possibly occur in the target model, and so this would prevent the variable from being bound.  However, when a query is derived from the target data model, the anonymous node may be treated as a constant.</remarks>
-      </Docs>
-    </Member>
-    <Member MemberName="SetVariableName">
-      <MemberSignature Language="C#" Value="public void SetVariableName (SemWeb.BNode variable, string name);" />
-      <MemberType>Method</MemberType>
-      <ReturnValue>
-        <ReturnType>System.Void</ReturnType>
-      </ReturnValue>
-      <Parameters>
-        <Parameter Name="variable" Type="SemWeb.BNode" />
-        <Parameter Name="name" Type="System.String" />
-      </Parameters>
-      <Docs>
-        <param name="variable">A variable.</param>
-        <param name="name">The name for the variable.</param>
-        <summary>Sets the variable name for a variable.</summary>
-        <remarks>Variable names are merely used for output.</remarks>
-      </Docs>
-    </Member>
     <Member MemberName="MakeDistinct">
       <MemberSignature Language="C#" Value="public void MakeDistinct (SemWeb.BNode a, SemWeb.BNode b);" />
       <MemberType>Method</MemberType>
@@ -150,6 +118,23 @@ new GraphMatch(queryGraph).Run(targetData, Console.Out);  </code>
         <param name="b">A variable.</param>
         <summary>Ensures two variables have distinct bindings.</summary>
         <remarks>Bindings returned by the query will not have the two variables bound to the same value.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="MakeDistinct">
+      <MemberSignature Language="C#" Value="public void MakeDistinct (SemWeb.BNode a, SemWeb.BNode b);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="a" Type="SemWeb.BNode" />
+        <Parameter Name="b" Type="SemWeb.BNode" />
+      </Parameters>
+      <Docs>
+        <param name="a">To be added.</param>
+        <param name="b">To be added.</param>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

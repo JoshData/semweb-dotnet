@@ -69,9 +69,11 @@
     </Member>
   </Members>
   <Docs>
-    <summary>The base class of <see cref="T:SemWeb.Entity" />, <see cref="T:SemWeb.BNode" />, and <see cref="T:SemWeb.Literal" />, the nodes in an RDF graph.</summary>
+    <summary>The base class of <see cref="T:SemWeb.Entity" />, <see cref="T:SemWeb.BNode" />, <see cref="T:SemWeb.Literal" />, and <see cref="T:SemWeb.Variable" />, the nodes in an RDF graph.</summary>
     <remarks>
-      <para>The <see cref="T:SemWeb.Entity" /> and <see cref="T:SemWeb.Literal" /> classes inherit from this class.  The <see cref="T:SemWeb.BNode" /> class inherits from <see cref="T:SemWeb.Entity" />.  This class cannot be inherited in user code.</para>
+      <para>There are two types of resources in the RDF world: entities and literals.  Entities are nodes in the graph.  They can be either named (i.e. they have a URI) or unnamed (i.e. they are anonymous, or "blank").  All of these things are represented by the <see cref="T:SemWeb.Entity" /> class, which is a subclass of <see cref="T:SemWeb.Resource" />.  However, unnamed "blank" nodes are represented by a special subclass of Entity, the <see cref="T:SemWeb.BNode" /> class.  So, when you want to create a named node, use <c>new Entity(uri)</c>, but when you want to create a new blank node, use <c>new BNode()</c>.  Never say <c>new Entity(null)</c>.</para>
+      <para>Literals, which are textual strings, are represented by the <see cref="T:SemWeb.Literal" /> class.  In RDF, literals can only be the objects of statements.  Use the <c>Value</c> property of a literal to get back its string value.</para>
+      <para>There is a special type of blank node in this library for variables used in queries and inferencing.  These are represented by the <see cref="T:SemWeb.Variable" /> class, which inherits from the <see cref="T:SemWeb.BNode" /> class. The <see cref="T:SemWeb.N3Reader" /> will read <c>?variable</c> resources as <see cref="T:SemWeb.Variable" />s.  The name of the variable will be put in its <see cref="P:SemWeb.BNode.LocalName" /> property.</para>
       <para>The == and != operators have been overloaded for Resources.  Two resources are equal if they are both <see cref="T:SemWeb.Entity" /> objects and the <see cref="T:SemWeb.Entity" /> overloaded == operator returns true, or if they are both <see cref="T:SemWeb.Literal" /> objects with equal values for Value, Language, and DataType.</para>
     </remarks>
   </Docs>

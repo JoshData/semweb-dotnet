@@ -580,6 +580,25 @@ For Sqlite, MySQL, and PostgreSQL-based stores, use the spec string described in
         <remarks>See <see cref="M:SemWeb.Store.Select(SemWeb.SelectFilter,SemWeb.StatementSink)" />.</remarks>
       </Docs>
     </Member>
+    <Member MemberName="DefaultSelect">
+      <MemberSignature Language="C#" Value="public static void DefaultSelect (SemWeb.SelectableSource source, SemWeb.SelectFilter filter, SemWeb.StatementSink sink);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="source" Type="SemWeb.SelectableSource" />
+        <Parameter Name="filter" Type="SemWeb.SelectFilter" />
+        <Parameter Name="sink" Type="SemWeb.StatementSink" />
+      </Parameters>
+      <Docs>
+        <param name="source">To be added.</param>
+        <param name="filter">To be added.</param>
+        <param name="sink">To be added.</param>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
   </Members>
   <Docs>
     <summary>A repository for <see cref="T:SemWeb.Statement" />s.</summary>

@@ -88,6 +88,18 @@ foreach (Statement s in memoryStore)
         <remarks>None.</remarks>
       </Docs>
     </Member>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public MemoryStore (SemWeb.Statement[] statements);" />
+      <MemberType>Constructor</MemberType>
+      <Parameters>
+        <Parameter Name="statements" Type="SemWeb.Statement[]" />
+      </Parameters>
+      <Docs>
+        <param name="statements">To be added.</param>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
   </Members>
   <Docs>
     <summary>A graph of statements held in memory.</summary>

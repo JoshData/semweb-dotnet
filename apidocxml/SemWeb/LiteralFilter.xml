@@ -36,24 +36,6 @@
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
-    <Member MemberName="Comparison">
-      <MemberSignature Language="C#" Value="public SemWeb.LiteralFilter Comparison (SemWeb.LiteralFilter+CompType type, object value);" />
-      <MemberType>Method</MemberType>
-      <ReturnValue>
-        <ReturnType>SemWeb.LiteralFilter</ReturnType>
-      </ReturnValue>
-      <Parameters>
-        <Parameter Name="type" Type="SemWeb.LiteralFilter+CompType" />
-        <Parameter Name="value" Type="System.Object" />
-      </Parameters>
-      <Docs>
-        <param name="type">To be added.</param>
-        <param name="value">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
-      </Docs>
-    </Member>
     <Member MemberName="CompareFilter">
       <MemberSignature Language="C#" Value="protected bool CompareFilter (int cmp, SemWeb.LiteralFilter+CompType type);" />
       <MemberType>Method</MemberType>
@@ -87,6 +69,56 @@
         <param name="literal">To be added.</param>
         <param name="filters">To be added.</param>
         <param name="targetModel">To be added.</param>
+        <summary>To be added.</summary>
+        <returns>To be added.</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Create">
+      <MemberSignature Language="C#" Value="public static SemWeb.LiteralFilter Create (SemWeb.LiteralFilter+CompType type, object value);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>SemWeb.LiteralFilter</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="type" Type="SemWeb.LiteralFilter+CompType" />
+        <Parameter Name="value" Type="System.Object" />
+      </Parameters>
+      <Docs>
+        <param name="type">To be added.</param>
+        <param name="value">To be added.</param>
+        <summary>To be added.</summary>
+        <returns>To be added.</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Inverse">
+      <MemberSignature Language="C#" Value="public static SemWeb.LiteralFilter+CompType Inverse (SemWeb.LiteralFilter+CompType comp);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>SemWeb.LiteralFilter+CompType</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="comp" Type="SemWeb.LiteralFilter+CompType" />
+      </Parameters>
+      <Docs>
+        <param name="comp">To be added.</param>
+        <summary>To be added.</summary>
+        <returns>To be added.</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Inverse">
+      <MemberSignature Language="C#" Value="public static SemWeb.LiteralFilter+CompType Inverse (SemWeb.LiteralFilter+CompType comp);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>SemWeb.LiteralFilter+CompType</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="comp" Type="SemWeb.LiteralFilter+CompType" />
+      </Parameters>
+      <Docs>
+        <param name="comp">To be added.</param>
         <summary>To be added.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>

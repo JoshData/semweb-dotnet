@@ -220,6 +220,18 @@
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public StatementList (SemWeb.Statement[] statements);" />
+      <MemberType>Constructor</MemberType>
+      <Parameters>
+        <Parameter Name="statements" Type="SemWeb.Statement[]" />
+      </Parameters>
+      <Docs>
+        <param name="statements">To be added.</param>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
   </Members>
   <Docs>
     <summary>An expandable array of Statements.</summary>
