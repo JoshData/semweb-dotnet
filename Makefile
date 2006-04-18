@@ -12,7 +12,7 @@ MAIN_SOURCES = \
 	src/RdfParser.cs src/XmlParser.cs src/N3Parser.cs \
 	src/RdfWriter.cs src/XmlWriter.cs src/N3Writer.cs \
 	src/RSquary.cs src/LiteralFilters.cs src/Query.cs \
-	src/Reasoning.cs \
+	src/Inference.cs src/RDFS.cs \
 	src/Algos.cs src/Remote.cs \
 	src/XPathSemWebNavigator.cs
 
