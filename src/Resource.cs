@@ -104,6 +104,7 @@ namespace SemWeb {
 		
 		public Entity(string uri) {
 			if (uri == null) throw new ArgumentNullException("To construct entities with no URI, use the BNode class.");
+			if (uri.Length == 0) throw new ArgumentException("uri cannot be the empty string");
 			this.uri = uri;
 		}
 		
@@ -155,6 +156,7 @@ namespace SemWeb {
 		
 		public BNode(string localName) {
 			localname = localName;
+			if (localname != null && localname.Length == 0) throw new ArgumentException("localname cannot be the empty string");
 		}
 		
 		public string LocalName { get { return localname; } }
@@ -218,6 +220,9 @@ namespace SemWeb {
 		  this.value = string.Intern(value);
 		  this.lang = language;
 		  this.type = dataType;
+		  
+		  if (language != null && language.Length == 0) throw new ArgumentException("language cannot be the empty string");
+		  if (dataType != null && dataType.Length == 0) throw new ArgumentException("dataType cannot be the empty string");
 		}
 		
 		public static explicit operator Literal(string value) { return new Literal(value); }

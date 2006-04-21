@@ -51,7 +51,7 @@ namespace SemWeb.Query {
 			} catch (TokenMgrError e) {
 				throw new QueryFormatException("SPARQL syntax error at: " + e.Message);
 			} catch (ParseException e) {
-				throw new QueryFormatException("SPARQL syntax error at: " + e.currentToken);
+				throw new QueryFormatException("SPARQL syntax error: " + e.getMessage());
 			}
 			
 			extFunctions.Add(new TestFunction());

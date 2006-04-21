@@ -13,7 +13,10 @@
 	  and new method Sparql.AddExtensionFunction.
 	* SPARQL: Numeric comparison filters (i.e. <, >), are optimized
 	  by passing them into underlying SQL stores.
+	* SPARQL: Better syntax error messages.
 	* RdfXmlReader: Raise an error when an invalid parseType is used.
+	* Literal: Disallow language and datatype being the empty string.
+	* BNode: Disallow localames being the empty string.
 
 2006-03-16 Version 0.711
 
