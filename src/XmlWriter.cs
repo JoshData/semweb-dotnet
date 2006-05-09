@@ -12,6 +12,7 @@ namespace SemWeb {
 		NamespaceManager ns;
 		
 		XmlDocument doc;
+		bool finished = false;
 		
 		Hashtable nodeMap = new Hashtable();
 		
@@ -22,6 +23,8 @@ namespace SemWeb {
 		ArrayList predicateNodes = new ArrayList();
 		
 		static Entity rdftype = "http://www.w3.org/1999/02/22-rdf-syntax-ns#type";
+		
+		public RdfXmlWriter() { }
 		
 		public RdfXmlWriter(string file) : this(file, null) { }
 		
@@ -287,6 +290,8 @@ namespace SemWeb {
 		}
 		
 		public override void Close() {
+			Start(); // make sure the document node was written
+			
 			// For any node that was referenced by exactly one predicate,
 			// move the node into that predicate.
 			foreach (DictionaryEntry e in nodeReferences) {
@@ -330,9 +335,13 @@ namespace SemWeb {
 			}
 		
 			base.Close();
-			if (doc != null)
+			
+			if (writer != null) {
 				doc.WriteTo(writer);
-			writer.Close();
+				writer.Close();
+			}
+			
+			finished = true;
 		}
 		
 		bool Relativize(string uri, out string fragment) {
@@ -344,6 +353,14 @@ namespace SemWeb {
 			if (rel[0] == '#') { fragment = rel; return true; }
 			return false;
 		}
+		
+		public XmlDocument Document {
+			get {
+			   if (!finished) throw new InvalidOperationException("Document not created yet.");
+		       return doc;
+			}
+		}
+
 	}
 
 }
