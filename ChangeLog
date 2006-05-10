@@ -1,3 +1,6 @@
+	* RdfXmlWriter: Provide a way to access the generated
+	  XmlDocument directly.
+
 2006-04-18 Version 0.72
 
 	* Added SemWeb.Variable class: A subclass of BNode.

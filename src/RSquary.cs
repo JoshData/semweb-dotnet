@@ -14,9 +14,6 @@ namespace SemWeb.Query {
 		int blankNodeCounter = 0;
 		Hashtable blankNodes = new Hashtable();
 		
-		public bool Ordered = false;
-		public bool Distinct = true;
-		
 		private static System.Xml.XmlWriter GetWriter(System.IO.TextWriter writer) {
 			System.Xml.XmlTextWriter w = new System.Xml.XmlTextWriter(writer);
 			w.Formatting = System.Xml.Formatting.Indented;
@@ -36,7 +33,7 @@ namespace SemWeb.Query {
 				output.WriteComment(comments);
 		}
 		
-		public override void Init(VariableBinding[] variables) {
+		public override void Init(VariableBinding[] variables, bool distinct, bool ordered) {
 			output.WriteStartElement("sparql");
 			output.WriteAttributeString("xmlns", "http://www.w3.org/2005/sparql-results#");
 			output.WriteStartElement("head");
@@ -48,8 +45,8 @@ namespace SemWeb.Query {
 			}
 			output.WriteEndElement(); // head
 			output.WriteStartElement("results");
-			output.WriteAttributeString("ordered", Ordered ? "true" : "false");
-			output.WriteAttributeString("distinct", Distinct ? "true" : "false");
+			output.WriteAttributeString("ordered", ordered ? "true" : "false");
+			output.WriteAttributeString("distinct", distinct ? "true" : "false");
 			
 			// instead of <results>, we might want <boolean>true</boolean>
 		}

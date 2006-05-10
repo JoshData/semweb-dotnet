@@ -12,6 +12,17 @@ namespace SemWeb.Inference {
 			Antecedent = antecedent;
 			Consequent = consequent;
 		}
+		
+		public override string ToString() {
+			string ret = "{";
+			foreach (Statement s in Antecedent)
+				ret += " " + s.ToString();
+			ret += " } => {";
+			foreach (Statement s in Consequent)
+				ret += " " + s.ToString();
+			ret += " }";
+			return ret;
+		}
 	}
 	
 	public class ProofStep {

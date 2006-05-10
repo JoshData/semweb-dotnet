@@ -208,7 +208,7 @@ namespace SemWeb.Query {
 			}
 			
 			// Initialize the result sink
-			resultsink.Init(bindings);
+			resultsink.Init(bindings, false, false); // set distinct and ordered
 			
 			// Set the comments
 			resultsink.AddComments(queryString + "\n");
@@ -851,7 +851,7 @@ namespace SemWeb.Query {
 			
 			public HTMLQuerySink(TextWriter output) { this.output = output; }
 
-			public override void Init(VariableBinding[] variables) {
+			public override void Init(VariableBinding[] variables, bool distinct, bool ordered) {
 				output.WriteLine("<table>");
 				output.WriteLine("<tr>");
 				foreach (VariableBinding var in variables) {

@@ -34,21 +34,27 @@ namespace SemWeb.Inference {
 		}
 		
 		public void Select(Statement template, StatementSink sink) {
-			if (template.Subject == null) template.Subject = new Variable("subject");
-			if (template.Predicate == null) template.Predicate = new Variable("predicate");
-			if (template.Object == null) template.Object = new Variable("object");
-			
-			Hashtable evidence = prove(rules, world, new Statement[] { template }, -1);
-			if (evidence == null)
-				return; // not provable (in max number of steps, if that were given)
-			
-			foreach (ArrayList e in evidence.Values)
-				foreach (EvidenceItem ei in e)
-					sink.Add(ei.head);
+			Select(new SelectFilter(template), sink);
 		}
 		
 		public void Select(SelectFilter filter, StatementSink sink) {
-			Store.DefaultSelect(this, filter, sink); // TODO!
+			if (filter.Subjects == null) filter.Subjects = new Entity[] { new Variable("subject") };
+			if (filter.Predicates == null) filter.Predicates = new Entity[] { new Variable("predicate") };
+			if (filter.Objects == null) filter.Objects = new Entity[] { new Variable("object") };
+			
+			ArrayList evidence = prove(rules, world, new SelectFilter[] { filter }, -1);
+			if (evidence == null)
+				return; // not provable (in max number of steps, if that were given)
+			
+			foreach (EvidenceItem ei in evidence) {
+				foreach (Statement h in ei.head) { // better be just one statement
+					if (filter.LiteralFilters != null
+						&& !LiteralFilter.MatchesFilters(h.Object, filter.LiteralFilters, world))
+						continue;
+					
+					sink.Add(h);
+				}
+			}
 		}
 		
 		public Entity[] FindEntities(Statement[] graph) {
@@ -56,32 +62,31 @@ namespace SemWeb.Inference {
 		}
 
 		public void Query(Statement[] graph, SemWeb.Query.QueryResultSink sink) {
-			Hashtable evidence = prove(rules, world, graph, -1);
+			ArrayList evidence = prove(rules, world, SelectFilter.FromGraph(graph), -1);
 			if (evidence == null)
 				return; // not provable (in max number of steps, if that were given)
 				
 			Hashtable vars = new Hashtable();
 			foreach (Statement s in graph) {
-				if (s.Subject is Variable && !vars.Contains(s.Subject)) vars[s.Subject] = vars.Count;
-				if (s.Predicate is Variable && !vars.Contains(s.Predicate)) vars[s.Predicate] = vars.Count;
-				if (s.Object is Variable && !vars.Contains(s.Object)) vars[s.Object] = vars.Count;
+				if (s.Subject is Variable && !vars.ContainsKey(s.Subject)) vars[s.Subject] = vars.Count;
+				if (s.Predicate is Variable && !vars.ContainsKey(s.Predicate)) vars[s.Predicate] = vars.Count;
+				if (s.Object is Variable && !vars.ContainsKey(s.Object)) vars[s.Object] = vars.Count;
 			}
 			
 			SemWeb.Query.VariableBinding[] bindings = new SemWeb.Query.VariableBinding[vars.Count];
 			foreach (Variable v in vars.Keys)
 				bindings[(int)vars[v]] = new SemWeb.Query.VariableBinding(v, null);
 			
-			foreach (ArrayList e in evidence.Values) {
-				foreach (EvidenceItem ei in e) {
-					foreach (Ground g in ei.body) {
-						foreach (Variable v in vars.Keys)
-							if (g.env.ContainsKey(v))
-								// vars in the query get bound to vars for rules
-								bindings[(int)vars[v]].Target = (Resource)g.env[g.env[v]];
-					}
-					sink.Add(bindings);
-				}
+			sink.Init(bindings, false, false);
+			
+			foreach (EvidenceItem ei in evidence) {
+				foreach (Variable v in vars.Keys)
+					if (ei.env.ContainsKey(v))
+						bindings[(int)vars[v]].Target = (Resource)ei.env[v];
+				sink.Add(bindings);
 			}
+			
+			sink.Finished();
 		}
 		
 		public void Query(SelectFilter[] graph, SemWeb.Query.QueryResultSink sink) {
@@ -148,14 +153,15 @@ namespace SemWeb.Inference {
 		}
 		
 		private class EvidenceItem {
-			public Statement head;
+			public Statement[] head;
 			public ArrayList body; // of Ground
+			public Hashtable env; // substitutions of goal-level variables
 			
 			public Proof ToProof() {
 				ProofStep[] steps = new ProofStep[body.Count];
 				for (int i = 0; i < body.Count; i++)
 					steps[i] = ((Ground)body[i]).ToProofStep();
-				return new Proof(new Statement[] { head }, steps);
+				return new Proof(head, steps);
 			}
 		}
 		
@@ -177,30 +183,24 @@ namespace SemWeb.Inference {
 		}
 		
 		public static Proof[] Prove(StatementSource rules, SelectableSource world, Statement[] goal) {
-			return Prove(rules, world, goal, true);
+			return Prove(rules, world, SelectFilter.FromGraph(goal));
 		}
 		
-		public static Proof[] Prove(StatementSource rules, SelectableSource world, Statement[] goal, bool bnodesAsVariables) {
-			if (bnodesAsVariables)
-				goal = BnodesToVariables(new MemoryStore(goal)).ToArray();
-			
+		public static Proof[] Prove(StatementSource rules, SelectableSource world, SelectFilter[] goal) {
 			Hashtable cases = RulesToCases(rules);
 			
-			Hashtable evidence = prove(cases, world, goal, -1);
+			ArrayList evidence = prove(cases, world, goal, -1);
 			if (evidence == null)
 				throw new Exception("Could not complete proof within the maximum number of steps allowed.");
 			
 			ArrayList ret = new ArrayList();
-			foreach (ArrayList e in evidence.Values) {
-				foreach (EvidenceItem ei in e) {
-					ret.Add(ei.ToProof());
-				}
-			}
+			foreach (EvidenceItem ei in evidence)
+				ret.Add(ei.ToProof());
 
 			return (Proof[])ret.ToArray(typeof(Proof));
 		}
 		
-		private static Hashtable prove(Hashtable cases, SelectableSource world, Statement[] goal, int maxNumberOfSteps) {
+		private static ArrayList prove(Hashtable cases, SelectableSource world, SelectFilter[] goal, int maxNumberOfSteps) {
 			// cases: Resource (predicate) => IList of Sequent
 			world = new SemWeb.Stores.CachedSource(world);
 		
@@ -208,112 +208,141 @@ namespace SemWeb.Inference {
 
 			{
 				QueueItem start = new QueueItem();
-				start.rule = new Sequent(Statement.All, goal);
+				start.env = new Hashtable();
+
+				Statement[] gst = new Statement[goal.Length];
+				for (int i = 0; i < goal.Length; i++) {
+					gst[i] = new Statement(
+						goal[i].Subjects.Length == 1 ? goal[i].Subjects[0] : new Variable(),
+						goal[i].Predicates.Length == 1 ? goal[i].Predicates[0] : new Variable(),
+						goal[i].Objects.Length == 1 ? goal[i].Objects[0] : new Variable()
+						);
+					if (goal[i].Subjects.Length > 1) start.env[gst[i].Subject] = goal[i].Subjects;
+					if (goal[i].Predicates.Length > 1) start.env[gst[i].Predicate] = goal[i].Predicates;
+					if (goal[i].Objects.Length > 1) start.env[gst[i].Object] = goal[i].Objects;
+				}
+				
+				start.rule = new Sequent(Statement.All, gst);
 				start.src = null;
 				start.ind = 0;
 				start.parent = null;
-				start.env = new Hashtable();
 				start.ground = new ArrayList();
 				queue.Add(start);
 			}
 			
-			// predicate => ArrayList of EvidenceItem
-			Hashtable evidence = new Hashtable();
+			ArrayList evidence = new ArrayList();
 			
 			int step = 0;
 			
 			while (queue.Count > 0) {
+				// deal with the QueueItem at the top of the queue
 				QueueItem c = (QueueItem)queue[queue.Count-1];
 				queue.RemoveAt(queue.Count-1);
 				ArrayList g = new ArrayList(c.ground);
 				
+				// have we done too much?
 				step++;
 				if (maxNumberOfSteps != -1 && step >= maxNumberOfSteps) return null;
 				
+				// if each statement in the body of the sequent has been proved
 				if (c.ind >= c.rule.body.Length) {
+					// if this is the top-level sequent being proved
 					if (c.parent == null) {
-						for (int i = 0; i < c.rule.body.Length; i++) {
-							Statement t2 = evaluate(c.rule.body[i], c.env);
-							if (evidence[t2.Predicate] == null) evidence[t2.Predicate] = new ArrayList();
-							EvidenceItem ev = new EvidenceItem();
-							ev.head = t2;
-							ev.body = c.ground;
-							((ArrayList)evidence[t2.Predicate]).Add(ev);
-						}
-						continue;
-					}
-					if (c.rule.body.Length != 0) g.Add(new Ground(c.rule, c.env));
+						EvidenceItem ev = new EvidenceItem();
+						ev.head = new Statement[c.rule.body.Length];
+						for (int i = 0; i < c.rule.body.Length; i++)
+							ev.head[i] = evaluate(c.rule.body[i], c.env);
+						ev.body = c.ground;
+						ev.env = c.env;
+						evidence.Add(ev);
+					
+					// this is a subproof
+					} else {
+						// note that the rule was used in a proof of this part
+						if (c.rule.body.Length != 0) g.Add(new Ground(c.rule, c.env));
 
-					QueueItem r = new QueueItem();
-					r.rule = new Sequent(c.parent.rule.head, c.parent.rule.body);
-					r.src = c.parent.src;
-					r.ind = c.parent.ind;
-					r.parent = c.parent.parent != null
-						? c.parent.parent.Clone()
-						: null;
-					r.env = (Hashtable)c.parent.env.Clone();
-					r.ground = g;
-					unify(c.rule.head, c.env, r.rule.body[r.ind], r.env, true);
-					r.ind++;
-					queue.Add(r);
-					continue;
-				}
-				
-				Statement t = c.rule.body[c.ind];
-				
-				UserPredicate b = FindUserPredicate(t.Predicate);
-				if (b != null) {
-					if (b.Evaluate(t.Subject, t.Object)) {
-						g.Add(new Ground(new Sequent(evaluate(t, c.env), new Statement[0]), new Hashtable()));
-
+						// advance the parent being proved and put the advanced
+						// parent into the queue; unify the parent variable assignments
+						// with this one's
 						QueueItem r = new QueueItem();
-						r.rule = new Sequent(c.rule.head, c.rule.body);
-						r.src = c.src;
-						r.ind = c.ind;
-						r.parent = c.parent;
-						r.env = c.env;
+						r.rule = new Sequent(c.parent.rule.head, c.parent.rule.body);
+						r.src = c.parent.src;
+						r.ind = c.parent.ind;
+						r.parent = c.parent.parent != null
+							? c.parent.parent.Clone()
+							: null;
+						r.env = (Hashtable)c.parent.env.Clone();
 						r.ground = g;
+						unify(c.rule.head, c.env, r.rule.body[r.ind], r.env, true);
 						r.ind++;
 						queue.Add(r);
 					}
-					continue;
-				}
-
-
-				ArrayList tcases = new ArrayList();
-				if (cases.ContainsKey(t.Predicate))
-					tcases.AddRange((IList)cases[t.Predicate]);
-				if (world != null) {
-					MemoryStore w = new MemoryStore();
-					//Console.WriteLine(evaluate(t, c.env));
-					world.Select(evaluate(t, c.env), w);
-					foreach (Statement s in w) {
-						Sequent seq = new Sequent(s);
-						tcases.Add(seq);
-					}
-				}
-				if (tcases.Count == 0) continue;
 				
-				for (int k = 0; k < tcases.Count; k++) {
-					Sequent rl = (Sequent)tcases[k];
-					ArrayList g2 = (ArrayList)c.ground.Clone();
-					if (rl.body.Length == 0) g2.Add(new Ground(rl, new Hashtable()));
+				// this sequent still has parts of the body left to be proved
+				} else {
+					Statement t = c.rule.body[c.ind];
 					
-					QueueItem r = new QueueItem();
-					r.rule = rl;
-					r.src = rl;
-					r.ind = 0;
-					r.parent = c;
-					r.env = new Hashtable();
-					r.ground = g2;
+					UserPredicate b = FindUserPredicate(t.Predicate);
+					if (b != null) {
+						if (b.Evaluate(t.Subject, t.Object)) {
+							g.Add(new Ground(new Sequent(evaluate(t, c.env), new Statement[0]), new Hashtable()));
+
+							QueueItem r = new QueueItem();
+							r.rule = new Sequent(c.rule.head, c.rule.body);
+							r.src = c.src;
+							r.ind = c.ind;
+							r.parent = c.parent;
+							r.env = c.env;
+							r.ground = g;
+							r.ind++;
+							queue.Add(r);
+						}
+						continue;
+					}
 					
-					if (unify(t, c.env, rl.head, r.env, true)) {
-						QueueItem ep = c;  // euler path
-					 	while ((ep = ep.parent) != null) 
-					  		if (ep.src == c.src && unify(ep.rule.head, ep.env, c.rule.head, c.env, false))
-					  			break;
-					 	if (ep == null)
-					 		queue.Insert(0, r);
+					// t can be proved either by the use of a rule
+					// or if t literally exists in the world
+
+					ArrayList tcases = new ArrayList();
+					
+					// get all of the rules that apply to the predicate in question
+					if (cases.ContainsKey(t.Predicate))
+						tcases.AddRange((IList)cases[t.Predicate]);
+						
+					// if there is a seprate world, get all of the world
+					// statements that witness t
+					if (world != null) {
+						MemoryStore w = new MemoryStore();
+						//Console.WriteLine("Q: " + evaluate_filter(t, c.env));
+						world.Select(evaluate_filter(t, c.env), w);
+						foreach (Statement s in w) {
+							//Console.WriteLine("  " + s);
+							Sequent seq = new Sequent(s);
+							tcases.Add(seq);
+						}
+					}
+					if (tcases.Count == 0) continue;
+					
+					foreach (Sequent rl in tcases) {
+						ArrayList g2 = (ArrayList)c.ground.Clone();
+						if (rl.body.Length == 0) g2.Add(new Ground(rl, new Hashtable()));
+						
+						QueueItem r = new QueueItem();
+						r.rule = rl;
+						r.src = rl;
+						r.ind = 0;
+						r.parent = c;
+						r.env = new Hashtable();
+						r.ground = g2;
+						
+						if (unify(t, c.env, rl.head, r.env, true)) {
+							QueueItem ep = c;  // euler path
+						 	while ((ep = ep.parent) != null) 
+						  		if (ep.src == c.src && unify(ep.rule.head, ep.env, c.rule.head, c.env, false))
+						  			break;
+						 	if (ep == null)
+						 		queue.Insert(0, r);
+						}
 					}
 				}
 			}
@@ -321,27 +350,24 @@ namespace SemWeb.Inference {
 			return evidence;
 		}
 		
-		private static bool unify(Resource s, Hashtable senv, Resource d, Hashtable denv, bool f) {
+		private static bool unify(object s, Hashtable senv, object d, Hashtable denv, bool f) {
 			if (s is Variable) {
-				Resource sval = evaluate(s, senv);
+				object sval = evaluate(s, senv);
 				if (sval != null) return unify(sval, senv, d, denv, f);
-				else {
-					// next line inserted to ensure variables in
-					// the goal get bindings to variables in the
-					// rules, which Euler doesn't
-					// care about, but we want to track
-					if (f) denv[s] = d;
-					return true;
-				}
+				else return true;
 			} else if (d is Variable) {
-				Resource dval = evaluate(d, denv);
-				if (dval != null) {
+				object dval = evaluate(d, denv);
+				if (dval != null && !(dval is Resource[])) {
 					return unify(s, senv, dval, denv, f);
 				} else {
 					if (f) denv[d] = evaluate(s, senv);
 					return true;
 				}
-			} else if (s == d) {
+			} else if (s is Resource[]) {
+				Resource[] rs = (Resource[])s;
+				object dval = evaluate(d, denv);
+				return dval == null || dval.Equals(s) || Array.IndexOf(rs, dval) >= 0;
+			} else if (s == d || (s != null && d != null && s.Equals(d))) {
 				return true;
 			} else {
 				return false;
@@ -355,27 +381,43 @@ namespace SemWeb.Inference {
 			return true;
 		}
 		
-		private static Resource evaluate(Resource t, Hashtable env) {
+		private static object evaluate(object t, Hashtable env) {
 			if (t is Variable) {
-				if (env.ContainsKey(t)) {
-					Resource a = (Resource)env[t];
-					return evaluate(a, env);
+				object val = env[t];
+				if (val is Resource) {
+					return evaluate((Resource)val, env);
 				} else {
-					return null;
+					return val;
 				}
 			}
 			return t;
 		}
-
+		
 		private static Statement evaluate(Statement t, Hashtable env) {
-			Statement ret = new Statement(
+			return new Statement(
 				(Entity)evaluate(t.Subject, env),
 				(Entity)evaluate(t.Predicate, env),
-				evaluate(t.Object, env)
-				);
-			return ret;
+				(Resource)evaluate(t.Object, env),
+				t.Meta);
 		}
 		
+		private static Resource[] evaluate_array(Resource r, Hashtable env) {
+			object v = evaluate(r, env);
+			if (v == null) return null;
+			if (v is Entity) return new Entity[] { (Entity)v };
+			if (v is Resource) return new Resource[] { (Resource)v };
+			if (v is Resource[]) return (Resource[])v;
+			throw new InvalidOperationException();
+		}
+		
+		private static SelectFilter evaluate_filter(Statement t, Hashtable env) {
+			return new SelectFilter(
+				(Entity[])evaluate_array(t.Subject, env),
+				(Entity[])evaluate_array(t.Predicate, env),
+				(Resource[])evaluate_array(t.Object, env),
+				new Entity[] { t.Meta });
+		}
+
 		private static UserPredicate FindUserPredicate(Entity predicate) {
 			return null;
 		}

@@ -323,7 +323,7 @@ namespace SemWeb.Query {
 			for (int i = 0; i < variables.Length; i++)
 				finalbindings[i].Variable = variableEntities[i];
 			
-			result.Init(finalbindings);
+			result.Init(finalbindings, true, false);
 			
 			Debug("Begnning Query");
 			
@@ -996,7 +996,7 @@ namespace SemWeb.Query {
 	}
 	
 	public abstract class QueryResultSink {
-		public virtual void Init(VariableBinding[] variables) {
+		public virtual void Init(VariableBinding[] variables, bool distinct, bool ordered) {
 		}
 		
 		public abstract bool Add(VariableBinding[] result);

@@ -810,5 +810,8 @@ namespace SemWeb.Util {
 
 			return ret;
 		}
+		public void Reset() {
+			state = new int[state.Length];
+		}
 	}
 }

@@ -126,6 +126,7 @@ namespace SemWeb {
 		}
 			
 		public override bool Equals(object other) {
+			if (!(other is Resource)) return false;
 			if (object.ReferenceEquals(this, other)) return true;
 			return ((Resource)other).Uri != null && ((Resource)other).Uri == Uri;
 		}

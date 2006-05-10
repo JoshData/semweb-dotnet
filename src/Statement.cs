@@ -121,13 +121,15 @@ namespace SemWeb {
 		}
 	}
 	
-	public struct SelectFilter {
+	public struct SelectFilter : IEnumerable {
 		public Entity[] Subjects;
 		public Entity[] Predicates;
 		public Resource[] Objects;
 		public Entity[] Metas;
 		public LiteralFilter[] LiteralFilters;
 		public int Limit;
+		
+		public static SelectFilter All = new SelectFilter(null, null, null, null);
 		
 		public SelectFilter(Statement statement) {
 			Subjects = null; Predicates = null; Objects = null; Metas = null; LiteralFilters = null; Limit = 0;
@@ -143,6 +145,89 @@ namespace SemWeb {
 			Predicates = predicates;
 			Objects = objects;
 			Metas = metas;
+		}
+		
+		public override string ToString() {
+			string ret = null;
+			foreach (Statement s in this) {
+				if (ret == null) ret = ""; else ret += ", ";
+				ret += s.ToString();
+			}
+			return ret;
+		}
+		
+		public override bool Equals(object other) {
+			return this == (SelectFilter)other;
+		}
+		
+		public override int GetHashCode() {
+			return base.GetHashCode();
+		}
+		
+		public static bool operator ==(SelectFilter a, SelectFilter b) {
+			return eq(a.Subjects, b.Subjects)
+				&& eq(a.Predicates, b.Predicates)
+				&& eq(a.Objects, b.Objects)
+				&& eq(a.Metas, b.Metas)
+				&& eq(a.LiteralFilters, b.LiteralFilters)
+				&& a.Limit == b.Limit;
+		}
+		public static bool operator !=(SelectFilter a, SelectFilter b) {
+			return !(a == b);
+		}
+		static bool eq(object[] a, object[] b) {
+			if (a == b) return true;
+			if (a == null || b == null) return false;
+			if (a.Length != b.Length) return false;
+			for (int i = 0; i < a.Length; i++)
+				if (!a[i].Equals(b[i]))
+					return false;
+			return true;
+		}
+		
+		public static SelectFilter[] FromGraph(Statement[] graph) {
+			SelectFilter[] ret = new SelectFilter[graph.Length];
+			for (int i = 0; i < ret.Length; i++)
+				ret[i] = new SelectFilter(graph[i]);
+			return ret;
+		}
+		
+		public IEnumerator GetEnumerator() {
+			return new StatementIterator(this);
+		}
+		
+		class StatementIterator : IEnumerator {
+			SelectFilter f;
+			SemWeb.Util.Permutation p;
+			int[] cur;
+			public StatementIterator(SelectFilter filter) {
+				f = filter;
+				p = new SemWeb.Util.Permutation(new int[] {
+					f.Subjects == null ? 1 : f.Subjects.Length,
+					f.Predicates == null ? 1 : f.Predicates.Length,
+					f.Objects == null ? 1 : f.Objects.Length,
+					f.Metas == null ? 1 : f.Metas.Length,
+					} );
+			}
+			
+			public object Current {
+				get {
+					if (cur == null) throw new InvalidOperationException("Call MoveNext!");
+					return new Statement(
+						f.Subjects == null ? null : f.Subjects[cur[0]],
+						f.Predicates == null ? null : f.Predicates[cur[1]],
+						f.Objects == null ? null : f.Objects[cur[2]],
+						f.Metas == null ? null : f.Metas[cur[3]]
+						);
+				}
+			}
+			
+			public bool MoveNext() {
+				cur = p.Next();
+				return cur != null;
+			}
+			
+			public void Reset() { cur = null; p.Reset(); } 
 		}
 	}
 }

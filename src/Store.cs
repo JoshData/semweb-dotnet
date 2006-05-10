@@ -644,6 +644,42 @@ namespace SemWeb.Stores {
 		}
 	}
 	
+	public class DebuggedSource : SelectableSource {
+		SelectableSource source;
+		System.IO.TextWriter output;
+		
+		public DebuggedSource(SelectableSource source, System.IO.TextWriter output) {
+			this.source = source;
+			this.output = output;
+		}
+		
+		public bool Distinct { get { return source.Distinct; } }
+		
+		public void Select(StatementSink sink) {
+			Select(Statement.All, sink);
+		}
+
+		public bool Contains(Statement template) {
+			output.WriteLine("CONTAINS: " + template);
+			return source.Contains(template);
+		}
+		
+		public void Select(Statement template, StatementSink sink) {
+			output.WriteLine("SELECT: " + template);
+			source.Select(template, sink);
+		}
+	
+		public void Select(SelectFilter filter, StatementSink sink) {
+			output.WriteLine("SELECT: " + filter);
+			source.Select(filter, sink);
+		}
+
+		public Entity[] FindEntities(Statement[] graph) {
+			output.WriteLine("FIND: (n/a)");
+			return source.FindEntities(graph);
+		}
+	}
+	
 	public class CachedSource : SelectableSource {
 		SelectableSource source;
 
