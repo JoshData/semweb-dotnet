@@ -1,3 +1,5 @@
+2006-05-11 Version 0.73
+
 	* RdfXmlWriter: Provide a way to access the generated
 	  XmlDocument directly.
 	* Fixes and optimization for OPTIONAL groups in Sparql.
