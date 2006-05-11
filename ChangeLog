@@ -1,5 +1,8 @@
 	* RdfXmlWriter: Provide a way to access the generated
 	  XmlDocument directly.
+	* Fixes and optimization for OPTIONAL groups in Sparql.
+	* Sparql CONSTRUCT scopes bnodes properly; DESCRIBE works;
+	  CONSTRUCT still has bugs.
 
 2006-04-18 Version 0.72
 

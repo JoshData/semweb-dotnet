@@ -1,6 +1,8 @@
 using System;
 using System.Collections;
 
+using SemWeb.Util;
+
 namespace SemWeb {
 	public struct Statement : IComparable {
 		public Entity Subject;
@@ -148,20 +150,43 @@ namespace SemWeb {
 		}
 		
 		public override string ToString() {
-			string ret = null;
-			foreach (Statement s in this) {
-				if (ret == null) ret = ""; else ret += ", ";
-				ret += s.ToString();
-			}
+			string ret =
+				ToString(Subjects) + " " +
+				ToString(Predicates) + " " +
+				ToString(Objects);
+			if (Metas == null || Metas.Length > 1 || Metas[0] != Statement.DefaultMeta)
+				ret += " meta=" + ToString(Metas);
 			return ret;
 		}
 		
+		private string ToString(Resource[] res) {
+			if (res == null) return "?";
+			if (res.Length == 1) return res[0].ToString();
+			System.Text.StringBuilder b = new System.Text.StringBuilder();
+			b.Append("{ ");
+			bool first = true;
+			bool cutoff = false;
+			foreach (Resource r in res) {
+				if (!first) b.Append(", "); first = false;
+				if (b.Length > 50) { b.Append("..."); cutoff = true; break; }
+				b.Append(r.ToString());
+			}
+			b.Append(" }");
+			if (cutoff) b.Insert(2, "(" + res.Length +") ");
+			return b.ToString();
+		}
+
 		public override bool Equals(object other) {
 			return this == (SelectFilter)other;
 		}
 		
 		public override int GetHashCode() {
-			return base.GetHashCode();
+			int hc = 0;
+			if (Subjects != null) hc ^= Subjects[0].GetHashCode();
+			if (Predicates != null) hc ^= Predicates[0].GetHashCode();
+			if (Objects != null) hc ^= Objects[0].GetHashCode();
+			if (Metas != null) hc ^= Metas[0].GetHashCode();
+			return hc;
 		}
 		
 		public static bool operator ==(SelectFilter a, SelectFilter b) {
@@ -179,10 +204,15 @@ namespace SemWeb {
 			if (a == b) return true;
 			if (a == null || b == null) return false;
 			if (a.Length != b.Length) return false;
+			bool alleq = true;
 			for (int i = 0; i < a.Length; i++)
 				if (!a[i].Equals(b[i]))
-					return false;
-			return true;
+					alleq = false;
+			if (alleq) return true;
+			ResSet xa = new ResSet(a);
+			ResSet xb = new ResSet(b);
+			xa.RetainAll(xb);
+			return xa.Count == xb.Count;
 		}
 		
 		public static SelectFilter[] FromGraph(Statement[] graph) {

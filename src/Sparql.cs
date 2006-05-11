@@ -133,8 +133,10 @@ namespace SemWeb.Query {
 						sourcewrapper.ToEntity(stmt.getSubject()),
 						sourcewrapper.ToEntity(stmt.getPredicate()),
 						sourcewrapper.ToResource(stmt.getObject()),
-						sourcewrapper.ToEntity(stmt.getGraphName()));
+						stmt.getGraphName() == null ? Statement.DefaultMeta : sourcewrapper.ToEntity(stmt.getGraphName()));
 				}
+				
+				if (s.AnyNull) continue; // unbound variable, or literal in bad position
 				sink.Add(s);
 			}
 		}
@@ -319,31 +321,9 @@ namespace SemWeb.Query {
 
 				source.Select(filter, sink);
 				
-				Log("SELECT: " + ToString(subjects) + " " + ToString(predicates) + " " + ToString(objects) + " => " + results.StatementCount + " statements [" + (DateTime.Now-start) + "s]");
+				Log("SELECT: " + filter + " => " + results.StatementCount + " statements [" + (DateTime.Now-start) + "s]");
 				
 				return new StatementIterator(results.ToArray());
-			}
-			
-			private string ToString(Resource[] res) {
-				if (res == null) return "?";
-				System.Text.StringBuilder b = new System.Text.StringBuilder();
-				if (res.Length > 1) {
-					b.Append("{ (");
-					b.Append(res.Length);
-					b.Append(") ");
-				}
-				foreach (Resource r in res) {
-					if (b.Length > 2) b.Append(", ");
-					if (b.Length > 50) { b.Append("..."); break; }
-					if (r is Entity && r.Uri == null)
-						b.Append("(anon)");
-					if (r is Entity && r.Uri != null)
-						b.Append("<" + r.Uri + ">");
-					if (r is Literal)
-						b.Append(r.ToString());
-				}
-				if (res.Length > 1) b.Append(" }");
-				return b.ToString();
 			}
 			
 		    /**
@@ -427,9 +407,11 @@ namespace SemWeb.Query {
 						bnodes[bnode.getID()] = r;
 					}
 					return r;
-				} else {
+				} else if (ent is org.openrdf.model.URI) {
 					org.openrdf.model.URI uri = (org.openrdf.model.URI)ent;
 					return new Entity(uri.toString());
+				} else {
+					return null;
 				}
 			}
 			
@@ -707,7 +689,7 @@ namespace SemWeb.Query {
 						return;
 					}
 					
-					object parsedvalue = new Literal(val.getLabel(), null, val.getDatatype().ToString()).ParseValue();
+					object parsedvalue = new Literal(val.getLabel(), null, val.getDatatype() == null ? null : val.getDatatype().ToString()).ParseValue();
 					
 					LiteralFilter filter = LiteralFilter.Create(comp, parsedvalue);
 					addLiteralFilter(var, filter, literalFilters);
@@ -761,18 +743,25 @@ namespace SemWeb.Query {
 				MemoryStream buffer = new MemoryStream();
 
 				bool closeAfterQuery;
+				string overrideMimeType = null;
+				
 				SelectableSource source = GetDataSource(out closeAfterQuery);
 				try {
 					Query sparql = CreateQuery(query);
 					TextWriter writer = new StreamWriter(buffer, System.Text.Encoding.UTF8);
 					RunQuery(sparql, source, writer);
 					writer.Flush();
+
+					if (sparql is Sparql && (((Sparql)sparql).Type == Sparql.QueryType.Construct || ((Sparql)sparql).Type == Sparql.QueryType.Describe))
+						overrideMimeType = "text/n3";
 				} finally {
 					if (closeAfterQuery && source is IDisposable)
 						((IDisposable)source).Dispose();
 				}
 				
-				if (context.Request["outputMimeType"] == null)
+				if (overrideMimeType != null)
+					context.Response.ContentType = overrideMimeType;
+				else if (context.Request["outputMimeType"] == null)
 					context.Response.ContentType = MimeType;
 				else
 					context.Response.ContentType = context.Request["outputMimeType"];

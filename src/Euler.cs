@@ -124,9 +124,20 @@ namespace SemWeb.Inference {
 				return base.GetHashCode();
 			}
 			
+			public override string ToString() {
+				string ret = "{ ";
+				foreach (Statement b in body) {
+					if (ret != "{ ") ret += ", ";
+					ret += b.ToString();
+				}
+				ret += " } => " + head;
+				return ret;
+			}
+			
 			public static bool operator ==(Sequent a, Sequent b) {
-				if (object.ReferenceEquals(a, null) && object.ReferenceEquals(a, null)) return true;
-				if (object.ReferenceEquals(a, null) || object.ReferenceEquals(a, null)) return false;
+				if (object.ReferenceEquals(a, b)) return true;
+				if (object.ReferenceEquals(a, null) && object.ReferenceEquals(b, null)) return true;
+				if (object.ReferenceEquals(a, null) || object.ReferenceEquals(b, null)) return false;
 				if (a.head != b.head) return false;
 				if (a.body.Length != b.body.Length) return false;
 				for (int i = 0; i < a.body.Length; i++)
@@ -213,9 +224,9 @@ namespace SemWeb.Inference {
 				Statement[] gst = new Statement[goal.Length];
 				for (int i = 0; i < goal.Length; i++) {
 					gst[i] = new Statement(
-						goal[i].Subjects.Length == 1 ? goal[i].Subjects[0] : new Variable(),
-						goal[i].Predicates.Length == 1 ? goal[i].Predicates[0] : new Variable(),
-						goal[i].Objects.Length == 1 ? goal[i].Objects[0] : new Variable()
+						goal[i].Subjects.Length == 1 ? goal[i].Subjects[0] : new Variable("multisubject"),
+						goal[i].Predicates.Length == 1 ? goal[i].Predicates[0] : new Variable("multipredicate"),
+						goal[i].Objects.Length == 1 ? goal[i].Objects[0] : new Variable("multiobject")
 						);
 					if (goal[i].Subjects.Length > 1) start.env[gst[i].Subject] = goal[i].Subjects;
 					if (goal[i].Predicates.Length > 1) start.env[gst[i].Predicate] = goal[i].Predicates;
@@ -231,6 +242,7 @@ namespace SemWeb.Inference {
 			}
 			
 			ArrayList evidence = new ArrayList();
+			ArrayList proved = new ArrayList();
 			
 			int step = 0;
 			
@@ -313,6 +325,7 @@ namespace SemWeb.Inference {
 					// statements that witness t
 					if (world != null) {
 						MemoryStore w = new MemoryStore();
+					
 						//Console.WriteLine("Q: " + evaluate_filter(t, c.env));
 						world.Select(evaluate_filter(t, c.env), w);
 						foreach (Statement s in w) {
@@ -337,7 +350,7 @@ namespace SemWeb.Inference {
 						
 						if (unify(t, c.env, rl.head, r.env, true)) {
 							QueueItem ep = c;  // euler path
-						 	while ((ep = ep.parent) != null) 
+						 	while ((ep = ep.parent) != null)
 						  		if (ep.src == c.src && unify(ep.rule.head, ep.env, c.rule.head, c.env, false))
 						  			break;
 						 	if (ep == null)
@@ -357,24 +370,32 @@ namespace SemWeb.Inference {
 				else return true;
 			} else if (d is Variable) {
 				object dval = evaluate(d, denv);
-				if (dval != null && !(dval is Resource[])) {
-					return unify(s, senv, dval, denv, f);
+				if (dval != null) {
+					if (dval is Resource[]) {
+						if (Array.IndexOf( (Resource[])dval , s) != -1) {
+							if (f) denv[d] = s;
+							return true;
+						}
+						return false;
+					} else {
+						return unify(s, senv, dval, denv, f);
+					}
 				} else {
-					if (f) denv[d] = evaluate(s, senv);
+					object sval = evaluate(s, senv);
+					if (f && sval != null) denv[d] = sval;
 					return true;
 				}
-			} else if (s is Resource[]) {
-				Resource[] rs = (Resource[])s;
-				object dval = evaluate(d, denv);
-				return dval == null || dval.Equals(s) || Array.IndexOf(rs, dval) >= 0;
-			} else if (s == d || (s != null && d != null && s.Equals(d))) {
+			} else if (s.Equals(d)) {
 				return true;
+			} else if (s is Resource[]) {
+				return Array.IndexOf( (Resource[])s , d) != -1;
 			} else {
 				return false;
 			}
 		}
 
 		private static bool unify(Statement s, Hashtable senv, Statement d, Hashtable denv, bool f) {
+			if (s == Statement.All) return false;
 			if (!unify(s.Subject, senv, d.Subject, denv, f)) return false;
 			if (!unify(s.Predicate, senv, d.Predicate, denv, f)) return false;
 			if (!unify(s.Object, senv, d.Object, denv, f)) return false;
