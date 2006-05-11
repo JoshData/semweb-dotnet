@@ -1,0 +1,2292 @@
+diff -ur sparql-0.7/build.xml sparql-0.7j/build.xml
+--- sparql-0.7/build.xml	2005-11-28 16:39:28.000000000 -0500
++++ sparql-0.7j/build.xml	2005-12-05 14:33:32.000000000 -0500
+@@ -76,12 +76,12 @@
+ 		<jar basedir="${temp_dir}" destfile="${libdir}/${library}" />
+ 		<delete dir="${temp_dir}" />
+ 		<mkdir dir="${temp_dir}" />
+-		<javac srcdir="${testdir}" destdir="${temp_dir}">
++		<!--<javac srcdir="${testdir}" destdir="${temp_dir}">
+ 			<classpath>
+ 				<path refid="test.classpath" />
+ 				<pathelement path="${libdir}/${library}" />
+ 			</classpath>
+-		</javac>
++		</javac>-->
+ 		<copy todir="${temp_dir}" includeemptydirs="false">
+ 			<fileset dir="test_files">
+ 				<include name="**/*" />
+@@ -173,4 +173,4 @@
+ 	<!-- THIS WILL BUILD THE WHOLE DISTRIBUTION FROM GRAMMAR -->
+ 	<target name="dist_from_grammar" depends="grammar,dist" />
+ 
+-</project>
+\ No newline at end of file
++</project>
+diff -ur sparql-0.7/conf/grammars/20050706.jjt sparql-0.7j/conf/grammars/20050706.jjt
+--- sparql-0.7/conf/grammars/20050706.jjt	2005-11-28 16:39:30.000000000 -0500
++++ sparql-0.7j/conf/grammars/20050706.jjt	2006-04-21 13:23:12.000000000 -0400
+@@ -64,7 +64,7 @@
+ 
+ TOKEN :
+ {
+-	<Q_IRIREF: "<" (~[">"])* ">"> /* Example - <http://purl.org/dc/elements/1.1/> */
++	<Q_IRIREF: "<" (~["<",">","'","{","}","`","\u0000"-"\u0020"])* ">"> /* Example - <http://purl.org/dc/elements/1.1/> */
+     | <QNAME_NS: (<NCNAME_PREFIX>)? ":" > /* Example - dc: or : */
+ 	| <QNAME: (<NCNAME_PREFIX>)? ":" (<NCNAME>)? > /* Example - dc:title */
+ 	| <BNODE_LABEL: "_:" <NCNAME> >
+@@ -187,7 +187,7 @@
+ }
+ {
+ 	( ( ( "ASC" | "DESC" {ascending = false;} ) BracketedExpression() #AscOrder(ascending) ) #DescOrder(!ascending) ) 
+-		| ( FunctionCall() | Var() | BracketedExpression() #DefaultOrder )
++		| ( ( FunctionCall() | Var() | BracketedExpression() )#DefaultOrder )
+ }
+ 
+ void LimitClause() #Limit :
+Binary files sparql-0.7/lib/sparql-core.jar and sparql-0.7j/lib/sparql-core.jar differ
+Binary files sparql-0.7/lib/sparql-tests.jar and sparql-0.7j/lib/sparql-tests.jar differ
+Only in sparql-0.7j/src/main/name/levering/ryan/sparql/common: AdvancedRdfSource.java
+diff -ur sparql-0.7/src/main/name/levering/ryan/sparql/common/impl/RdfBindingSetImpl.java sparql-0.7j/src/main/name/levering/ryan/sparql/common/impl/RdfBindingSetImpl.java
+--- sparql-0.7/src/main/name/levering/ryan/sparql/common/impl/RdfBindingSetImpl.java	2005-11-28 16:39:28.000000000 -0500
++++ sparql-0.7j/src/main/name/levering/ryan/sparql/common/impl/RdfBindingSetImpl.java	2006-01-07 09:32:39.000000000 -0500
+@@ -7,8 +7,11 @@
+ 
+ import java.util.ArrayList;
+ import java.util.Arrays;
++import java.util.HashSet;
+ import java.util.Iterator;
+ import java.util.List;
++import java.util.Map;
++import java.util.Set;
+ import java.util.NoSuchElementException;
+ 
+ import name.levering.ryan.sparql.common.RdfBindingRow;
+@@ -52,7 +55,7 @@
+      * values are bound.
+      */
+     private final Variable[] variables;
+-
++	
+     /**
+      * Creates an empty binding set. This is included for convenience and can't
+      * hold any value data.
+@@ -200,6 +203,24 @@
+     }
+ 
+     /**
++     * Gets a set containing all of the values for a variable accross all of
++	 * the bindings.
++     * 
++     * @param variable the variable to get the values for
++     * @return a set of the values known for a variable
++     */
++	 public Set getValues(Variable variable) {
++		 Set ret = new HashSet();
++		 for (Iterator i = iterator(); i.hasNext(); ) {
++			 RdfBindingRow row = (RdfBindingRow)i.next();
++			 Value v = row.getValue(variable);
++			 if (v != null)
++				 ret.add(v);
++		 }
++		 return ret;
++	 }
++
++    /**
+      * Returns whether the distinct flag has been set on this set, indicating
+      * that it's a distinct set. This is important for equality testing.
+      * 
+diff -ur sparql-0.7/src/main/name/levering/ryan/sparql/common/impl/SPARQLBNode.java sparql-0.7j/src/main/name/levering/ryan/sparql/common/impl/SPARQLBNode.java
+--- sparql-0.7/src/main/name/levering/ryan/sparql/common/impl/SPARQLBNode.java	2005-11-28 16:39:28.000000000 -0500
++++ sparql-0.7j/src/main/name/levering/ryan/sparql/common/impl/SPARQLBNode.java	2006-02-19 11:11:02.000000000 -0500
+@@ -1,7 +1,9 @@
+ package name.levering.ryan.sparql.common.impl;
+ 
+-import name.levering.ryan.sparql.common.RdfBindingRow;
++import java.util.Set;
+ 
++import name.levering.ryan.sparql.common.RdfBindingRow;
++
+ import org.openrdf.model.BNode;
+ import org.openrdf.model.Value;
+ 
+@@ -86,6 +88,9 @@
+      */
+     public String getName() {
+         return baseNode.getID();
++    }
++    
++    public void getVariables(Set variables) {
+     }
+ 
+ }
+diff -ur sparql-0.7/src/main/name/levering/ryan/sparql/common/impl/SPARQLLiteral.java sparql-0.7j/src/main/name/levering/ryan/sparql/common/impl/SPARQLLiteral.java
+--- sparql-0.7/src/main/name/levering/ryan/sparql/common/impl/SPARQLLiteral.java	2005-11-28 16:39:30.000000000 -0500
++++ sparql-0.7j/src/main/name/levering/ryan/sparql/common/impl/SPARQLLiteral.java	2006-03-10 11:05:01.000000000 -0500
+@@ -1,5 +1,7 @@
+ package name.levering.ryan.sparql.common.impl;
+ 
++import java.util.Set;
++
+ import name.levering.ryan.sparql.common.RdfBindingRow;
+ 
+ import org.openrdf.model.Literal;
+@@ -84,7 +86,7 @@
+      * @return the hash code of the internal literal
+      */
+     public int hashCode() {
+-        return baseLiteral.hashCode();
++        return getLabel().hashCode();
+     }
+ 
+     /**
+@@ -97,4 +99,6 @@
+         return baseLiteral.toString();
+     }
+ 
++	public void getVariables(Set variables) {
++	}
+ }
+diff -ur sparql-0.7/src/main/name/levering/ryan/sparql/common/impl/SPARQLURI.java sparql-0.7j/src/main/name/levering/ryan/sparql/common/impl/SPARQLURI.java
+--- sparql-0.7/src/main/name/levering/ryan/sparql/common/impl/SPARQLURI.java	2005-11-28 16:39:30.000000000 -0500
++++ sparql-0.7j/src/main/name/levering/ryan/sparql/common/impl/SPARQLURI.java	2006-03-10 10:46:40.000000000 -0500
+@@ -1,5 +1,7 @@
+ package name.levering.ryan.sparql.common.impl;
+ 
++import java.util.Set;
++
+ import name.levering.ryan.sparql.common.RdfBindingRow;
+ 
+ import org.openrdf.model.URI;
+@@ -65,7 +67,7 @@
+      * @return true if the object equals the internal URI
+      */
+     public boolean equals(Object o) {
+-        return baseURI.equals(o);
++		return baseURI.equals(o);
+     }
+     
+     /**
+@@ -74,7 +76,7 @@
+      * @return the hash code of the internal URI
+      */
+     public int hashCode() {
+-        return baseURI.hashCode();
++        return toString().hashCode();
+     }
+     
+     /**
+@@ -87,4 +89,6 @@
+         return baseURI.toString();
+     }
+ 
++	public void getVariables(Set variables) {
++	}
+ }
+diff -ur sparql-0.7/src/main/name/levering/ryan/sparql/common/RdfBindingSet.java sparql-0.7j/src/main/name/levering/ryan/sparql/common/RdfBindingSet.java
+--- sparql-0.7/src/main/name/levering/ryan/sparql/common/RdfBindingSet.java	2005-11-28 16:39:30.000000000 -0500
++++ sparql-0.7j/src/main/name/levering/ryan/sparql/common/RdfBindingSet.java	2005-12-07 10:03:32.000000000 -0500
+@@ -8,6 +8,7 @@
+ import java.util.Collection;
+ import java.util.Iterator;
+ import java.util.List;
++import java.util.Set;
+ 
+ /**
+  * This is a set of variables bound to associated values. Visually, this is
+@@ -41,6 +42,15 @@
+     public List getVariables();
+ 
+     /**
++     * Gets a set containing all of the values for a variable accross all of
++	 * the bindings.
++     * 
++     * @param variable the variable to get the values for
++     * @return a set of the values known for a variable
++     */
++    public Set getValues(Variable variable);
++
++    /**
+      * Returns true if the value rows in the set are explicitly distinct.
+      * 
+      * @return true if the rows are distinct
+diff -ur sparql-0.7/src/main/name/levering/ryan/sparql/common/RdfSource.java sparql-0.7j/src/main/name/levering/ryan/sparql/common/RdfSource.java
+--- sparql-0.7/src/main/name/levering/ryan/sparql/common/RdfSource.java	2005-11-28 16:39:30.000000000 -0500
++++ sparql-0.7j/src/main/name/levering/ryan/sparql/common/RdfSource.java	2005-12-06 08:48:20.000000000 -0500
+@@ -103,3 +103,5 @@
+      */
+     public ValueFactory getValueFactory();
+ }
++
++
+Only in sparql-0.7j/src/main/name/levering/ryan/sparql/logic: AdvancedGroupConstraintLogic.java
+Only in sparql-0.7j/src/main/name/levering/ryan/sparql/logic: AdvancedStreamedTripleConstraintLogic.java
+diff -ur sparql-0.7/src/main/name/levering/ryan/sparql/logic/DefaultAskQueryLogic.java sparql-0.7j/src/main/name/levering/ryan/sparql/logic/DefaultAskQueryLogic.java
+--- sparql-0.7/src/main/name/levering/ryan/sparql/logic/DefaultAskQueryLogic.java	2005-11-28 16:39:30.000000000 -0500
++++ sparql-0.7j/src/main/name/levering/ryan/sparql/logic/DefaultAskQueryLogic.java	2006-05-11 06:08:36.000000000 -0400
+@@ -55,7 +55,7 @@
+ 
+         // First bind the result table
+         RdfBindingSet results = constraint.constrain(new RdfBindingSetImpl(),
+-                source, defaultDatasets, namedDatasets);
++                source, defaultDatasets, namedDatasets, null);
+ 
+         // Return whether or not the iterator returns any rows
+         return results.iterator().hasNext();
+diff -ur sparql-0.7/src/main/name/levering/ryan/sparql/logic/DefaultConstructQueryLogic.java sparql-0.7j/src/main/name/levering/ryan/sparql/logic/DefaultConstructQueryLogic.java
+--- sparql-0.7/src/main/name/levering/ryan/sparql/logic/DefaultConstructQueryLogic.java	2005-11-28 16:39:30.000000000 -0500
++++ sparql-0.7j/src/main/name/levering/ryan/sparql/logic/DefaultConstructQueryLogic.java	2006-05-11 09:12:51.000000000 -0400
+@@ -6,6 +6,7 @@
+ package name.levering.ryan.sparql.logic;
+ 
+ import java.util.Collection;
++import java.util.HashMap;
+ import java.util.Iterator;
+ import java.util.List;
+ 
+@@ -25,6 +26,7 @@
+ 
+ import org.openrdf.model.URI;
+ import org.openrdf.model.Value;
++import org.openrdf.model.BNode;
+ 
+ /**
+  * This query logic constructs an RDF graph by applying an RDF template to a set
+@@ -75,7 +77,7 @@
+ 
+         // First bind the result table
+         RdfBindingSet results = constraint.constrain(new RdfBindingSetImpl(),
+-                source, defaultDatasets, namedDatasets);
++                source, defaultDatasets, namedDatasets, null);
+ 
+         // Now apply ordering in reverse order to give priority to the first variable
+         for (int i = orderExpressions.size() - 1; i >= 0; i--) {
+@@ -90,10 +92,27 @@
+         if (offset >= 0) {
+             results = rangeLogic.offset(results, offset);
+         }
+-
++		
++		// Each solution gets its own binding for bnodes.  Collect a list of the bnodes
++		// in the construct graph.
++		HashMap bnodeMap = new HashMap();
++		for (Iterator i = data.getTriples().iterator(); i.hasNext();) {
++			TripleConstraint triple = (TripleConstraint) i.next();
++			Object subject = triple.getSubjectExpression();
++			Object verb = triple.getPredicateExpression();
++			Object object = triple.getObjectExpression();
++			if (subject instanceof BNode) bnodeMap.put(subject, null);
++			if (verb instanceof BNode) bnodeMap.put(verb, null);
++			if (object instanceof BNode) bnodeMap.put(object, null);
++		}
++	
+         // Now apply the solutions to the template
+         RdfGraphImpl graph = new RdfGraphImpl();
+         for (Iterator solutions = results.iterator(); solutions.hasNext();) {
++			// Set up new bnode instances for bnodes in the construct graph.
++			for (Iterator bnodes = bnodeMap.keySet().iterator(); bnodes.hasNext(); )
++				bnodeMap.put(bnodes.next(), source.getValueFactory().createBNode());
++			
+             RdfBindingRow row = (RdfBindingRow) solutions.next();
+             for (Iterator i = data.getTriples().iterator(); i.hasNext();) {
+                 TripleConstraint triple = (TripleConstraint) i.next();
+@@ -102,6 +121,10 @@
+                 URI verb = (URI) triple.getPredicateExpression().evaluate(row);
+                 Value object = (Value) triple.getObjectExpression().evaluate(row);
+                 
++				if (bnodeMap.containsKey(subject)) subject = (Value)bnodeMap.get(subject);
++				//if (bnodeMap.containsKey(verb)) verb = (Value)bnodeMap.get(verb);
++				if (bnodeMap.containsKey(object)) object = (Value)bnodeMap.get(object);
++				
+                 graph.addTriple(new StatementImpl(subject, verb, object));
+             }
+         }
+diff -ur sparql-0.7/src/main/name/levering/ryan/sparql/logic/DefaultDescribeQueryLogic.java sparql-0.7j/src/main/name/levering/ryan/sparql/logic/DefaultDescribeQueryLogic.java
+--- sparql-0.7/src/main/name/levering/ryan/sparql/logic/DefaultDescribeQueryLogic.java	2005-11-28 16:39:28.000000000 -0500
++++ sparql-0.7j/src/main/name/levering/ryan/sparql/logic/DefaultDescribeQueryLogic.java	2006-05-11 09:27:21.000000000 -0400
+@@ -90,7 +90,7 @@
+ 
+         // First bind the result table
+         RdfBindingSet results = constraint.constrain(new RdfBindingSetImpl(),
+-                source, defaultDatasets, namedDatasets);
++                source, defaultDatasets, namedDatasets, null);
+ 
+         // Now project to the solution set
+         List variables = new ArrayList();
+@@ -103,7 +103,7 @@
+         results = logic.project(results, variables);
+ 
+         // Now apply ordering in reverse order
+-        for (int i = orderExpressions.size(); i >= 0; i--) {
++        for (int i = orderExpressions.size() - 1; i >= 0; i--) {
+             OrderExpressionLogic orderer = (OrderExpressionLogic) orderExpressions.get(i);
+             orderer.order(results);
+         }
+@@ -177,7 +177,7 @@
+                     descriptions.addAll(describe(statement.getObject(), source, alreadyDescribed));
+                 }
+             }
+-            descriptions.add(statements.next());
++            descriptions.add(statement);
+         }
+         return descriptions;
+     }
+diff -ur sparql-0.7/src/main/name/levering/ryan/sparql/logic/DefaultFactory.java sparql-0.7j/src/main/name/levering/ryan/sparql/logic/DefaultFactory.java
+--- sparql-0.7/src/main/name/levering/ryan/sparql/logic/DefaultFactory.java	2005-11-28 16:39:28.000000000 -0500
++++ sparql-0.7j/src/main/name/levering/ryan/sparql/logic/DefaultFactory.java	2006-03-10 10:40:37.000000000 -0500
+@@ -657,7 +657,7 @@
+      * @return a set join logic, indexed by default
+      */
+     public SetJoinLogic getSetJoinLogic() {
+-        return new IndexedSetJoinLogic();
++        return new IndexedSetIntersectLogic();
+     }
+ 
+     /**
+diff -ur sparql-0.7/src/main/name/levering/ryan/sparql/logic/DefaultFilterConstraintLogic.java sparql-0.7j/src/main/name/levering/ryan/sparql/logic/DefaultFilterConstraintLogic.java
+--- sparql-0.7/src/main/name/levering/ryan/sparql/logic/DefaultFilterConstraintLogic.java	2005-11-28 16:39:28.000000000 -0500
++++ sparql-0.7j/src/main/name/levering/ryan/sparql/logic/DefaultFilterConstraintLogic.java	2006-05-11 06:09:11.000000000 -0400
+@@ -8,6 +8,7 @@
+ import java.util.Collection;
+ import java.util.Iterator;
+ import java.util.LinkedList;
++import java.util.Map;
+ 
+ import name.levering.ryan.sparql.common.RdfBindingRow;
+ import name.levering.ryan.sparql.common.RdfBindingSet;
+@@ -75,7 +76,7 @@
+      * @return a binding set with values that pass through the filter expression
+      */
+     public RdfBindingSet constrain(RdfBindingSet bindings, RdfSource source,
+-            Collection defaultDatasets, Collection namedDatasets) {
++            Collection defaultDatasets, Collection namedDatasets, Map knownValues) {
+         // Grab the necessary fields from the data
+         ExpressionLogic filterExpression = this.data.getExpression();
+ 
+diff -ur sparql-0.7/src/main/name/levering/ryan/sparql/logic/DefaultGraphConstraintLogic.java sparql-0.7j/src/main/name/levering/ryan/sparql/logic/DefaultGraphConstraintLogic.java
+--- sparql-0.7/src/main/name/levering/ryan/sparql/logic/DefaultGraphConstraintLogic.java	2005-11-28 16:39:30.000000000 -0500
++++ sparql-0.7j/src/main/name/levering/ryan/sparql/logic/DefaultGraphConstraintLogic.java	2006-05-11 06:10:35.000000000 -0400
+@@ -10,6 +10,9 @@
+ import java.util.Collection;
+ import java.util.Iterator;
+ import java.util.List;
++import java.util.Map;
++import java.util.Set;
++import java.util.HashSet;
+ 
+ import name.levering.ryan.sparql.common.RdfBindingRow;
+ import name.levering.ryan.sparql.common.RdfBindingSet;
+@@ -79,7 +82,7 @@
+      *         with a bound graph variable
+      */
+     public RdfBindingSet constrain(RdfBindingSet bindings, RdfSource source,
+-            Collection defaultDatasets, Collection namedDatasets) {
++            Collection defaultDatasets, Collection namedDatasets, Map knownValues) {
+ 
+         RdfBindingSet fullSet = new RdfBindingSetImpl();
+         if (bindings.iterator().hasNext()) {
+@@ -92,7 +95,7 @@
+                     if (namedDatasets.isEmpty()) {
+                         // Here we want to use any named dataset in the data
+                         RdfBindingSet namedResults = data.getConstraint().constrain(
+-                                bindings, source, null, namedDatasets);
++                                bindings, source, null, namedDatasets, knownValues);
+ 
+                         RdfBindingSet sourcedSet = changeSource(
+                                 (Variable) evaluation, namedResults);
+@@ -105,7 +108,7 @@
+                             Collection datasets = Arrays.asList(new Object[] { namedSet });
+ 
+                             RdfBindingSet namedResults = data.getConstraint().constrain(
+-                                    bindings, source, datasets, namedDatasets);
++                                    bindings, source, datasets, namedDatasets, knownValues);
+ 
+                             RdfBindingSet sourcedSet = addSource(
+                                     (Variable) evaluation, namedSet,
+@@ -118,7 +121,7 @@
+                 } else if (data.getGraph() instanceof Variable) {
+                     Collection datasets = Arrays.asList(new Object[] { evaluation });
+                     RdfBindingSet namedResults = data.getConstraint().constrain(
+-                            bindings, source, datasets, namedDatasets);
++                            bindings, source, datasets, namedDatasets, knownValues);
+                     fullSet = unionLogic.union(fullSet, addSource(
+                             (Variable) data.getGraph(), (URI) evaluation,
+                             namedResults));
+@@ -126,7 +129,7 @@
+                     Collection datasets = Arrays.asList(new Object[] { evaluation });
+                     fullSet = unionLogic.union(fullSet,
+                             data.getConstraint().constrain(bindings, source,
+-                                    datasets, namedDatasets));
++                                    datasets, namedDatasets, knownValues));
+                 }
+             }
+         } else {
+@@ -134,7 +137,7 @@
+                 if (namedDatasets.isEmpty()) {
+                     // Here we want to use any named dataset in the data
+                     RdfBindingSet namedResults = data.getConstraint().constrain(
+-                            bindings, source, null, namedDatasets);
++                            bindings, source, null, namedDatasets, knownValues);
+ 
+                     RdfBindingSet sourcedSet = changeSource(
+                             (Variable) data.getGraph(), namedResults);
+@@ -147,7 +150,7 @@
+                         Collection datasets = Arrays.asList(new Object[] { namedSet });
+ 
+                         RdfBindingSet namedResults = data.getConstraint().constrain(
+-                                bindings, source, datasets, namedDatasets);
++                                bindings, source, datasets, namedDatasets, knownValues);
+ 
+                         RdfBindingSet sourcedSet = addSource(
+                                 (Variable) data.getGraph(), namedSet,
+@@ -160,7 +163,7 @@
+                 Collection datasets = Arrays.asList(new Object[] { data.getGraph() });
+                 fullSet = unionLogic.union(fullSet,
+                         data.getConstraint().constrain(bindings, source,
+-                                datasets, namedDatasets));
++                                datasets, namedDatasets, knownValues));
+             }
+         }
+         return fullSet;
+@@ -215,6 +218,13 @@
+             setVars.add(newVar);
+             return setVars;
+         }
++		
++		 public Set getValues(Variable variable) {
++			 if (variable.equals(newVar))
++				 variable = CONTEXT_VARIABLE;
++			 return this.set.getValues(variable);
++		 }
++		
+         
+         private class VariableNameChangeIterator implements Iterator {
+ 
+@@ -279,6 +289,15 @@
+             return setVars;
+         }
+         
++		 public Set getValues(Variable variable) {
++			 if (variable.equals(newVar)) {
++				 Set ret = new HashSet();
++				 ret.add(source);
++			 	 return ret;
++			 }
++			 return this.set.getValues(variable);
++		 }
++		
+         private class VariableAddSourceIterator implements Iterator {
+ 
+             private Iterator setIterator = set.iterator();
+diff -ur sparql-0.7/src/main/name/levering/ryan/sparql/logic/DefaultGroupConstraintLogic.java sparql-0.7j/src/main/name/levering/ryan/sparql/logic/DefaultGroupConstraintLogic.java
+--- sparql-0.7/src/main/name/levering/ryan/sparql/logic/DefaultGroupConstraintLogic.java	2005-11-28 16:39:28.000000000 -0500
++++ sparql-0.7j/src/main/name/levering/ryan/sparql/logic/DefaultGroupConstraintLogic.java	2006-05-11 06:11:22.000000000 -0400
+@@ -9,6 +9,7 @@
+ import java.util.Iterator;
+ import java.util.LinkedList;
+ import java.util.List;
++import java.util.Map;
+ 
+ import name.levering.ryan.sparql.common.RdfBindingSet;
+ import name.levering.ryan.sparql.common.RdfSource;
+@@ -65,7 +66,7 @@
+      *            query, passed on to subconstraints
+      */
+     public RdfBindingSet constrain(RdfBindingSet bindings, RdfSource source,
+-            Collection defaultDatasets, Collection namedDatasets) {
++            Collection defaultDatasets, Collection namedDatasets, Map knownValues) {
+ 
+         List filterQueue = new LinkedList();
+         List optionalQueue = new LinkedList();
+@@ -81,10 +82,10 @@
+             } else {
+                 if (current == null) {
+                     current = c.constrain(new RdfBindingSetImpl(), source,
+-                            defaultDatasets, namedDatasets);
++                            defaultDatasets, namedDatasets, knownValues);
+                 } else {
+                     current = logic.intersect(current, c.constrain(current, source,
+-                            defaultDatasets, namedDatasets));
++                            defaultDatasets, namedDatasets, knownValues));
+                 }
+             }
+ 
+@@ -98,12 +99,12 @@
+         for (Iterator optionals = optionalQueue.iterator(); optionals.hasNext();) {
+             ConstraintLogic c = (ConstraintLogic) optionals.next();
+             current = c.constrain(current, source, defaultDatasets,
+-                    namedDatasets);
++                    namedDatasets, knownValues);
+         }
+         for (Iterator filters = filterQueue.iterator(); filters.hasNext();) {
+             ConstraintLogic c = (ConstraintLogic) filters.next();
+             current = c.constrain(current, source, defaultDatasets,
+-                    namedDatasets);
++                    namedDatasets, knownValues);
+         }
+         return current;
+     }
+diff -ur sparql-0.7/src/main/name/levering/ryan/sparql/logic/DefaultOptionalConstraintLogic.java sparql-0.7j/src/main/name/levering/ryan/sparql/logic/DefaultOptionalConstraintLogic.java
+--- sparql-0.7/src/main/name/levering/ryan/sparql/logic/DefaultOptionalConstraintLogic.java	2005-11-28 16:39:30.000000000 -0500
++++ sparql-0.7j/src/main/name/levering/ryan/sparql/logic/DefaultOptionalConstraintLogic.java	2006-05-11 06:12:34.000000000 -0400
+@@ -6,6 +6,7 @@
+ package name.levering.ryan.sparql.logic;
+ 
+ import java.util.Collection;
++import java.util.Map;
+ 
+ import name.levering.ryan.sparql.common.RdfBindingSet;
+ import name.levering.ryan.sparql.common.RdfSource;
+@@ -59,9 +60,9 @@
+      *            the grouped constraint
+      */
+     public RdfBindingSet constrain(RdfBindingSet bindings, RdfSource source,
+-            Collection defaultDatasets, Collection namedDatasets) {
++            Collection defaultDatasets, Collection namedDatasets, Map knownValues) {
+         return logic.join(bindings, this.data.getConstraint().constrain(bindings,
+-                source, defaultDatasets, namedDatasets));
++                source, defaultDatasets, namedDatasets, knownValues));
+     }
+ 
+ }
+diff -ur sparql-0.7/src/main/name/levering/ryan/sparql/logic/DefaultSelectQueryLogic.java sparql-0.7j/src/main/name/levering/ryan/sparql/logic/DefaultSelectQueryLogic.java
+--- sparql-0.7/src/main/name/levering/ryan/sparql/logic/DefaultSelectQueryLogic.java	2005-11-28 16:39:30.000000000 -0500
++++ sparql-0.7j/src/main/name/levering/ryan/sparql/logic/DefaultSelectQueryLogic.java	2006-05-11 06:12:44.000000000 -0400
+@@ -86,7 +86,7 @@
+ 
+         // First bind the result table
+         RdfBindingSet results = constraint.constrain(new RdfBindingSetImpl(),
+-                source, defaultDatasets, namedDatasets);
++                source, defaultDatasets, namedDatasets, null);
+ 
+         // Now project to the solution set
+         if (queryVariables != null) {
+diff -ur sparql-0.7/src/main/name/levering/ryan/sparql/logic/DefaultTripleConstraintLogic.java sparql-0.7j/src/main/name/levering/ryan/sparql/logic/DefaultTripleConstraintLogic.java
+--- sparql-0.7/src/main/name/levering/ryan/sparql/logic/DefaultTripleConstraintLogic.java	2005-11-28 16:39:30.000000000 -0500
++++ sparql-0.7j/src/main/name/levering/ryan/sparql/logic/DefaultTripleConstraintLogic.java	2006-05-11 06:13:01.000000000 -0400
+@@ -9,6 +9,7 @@
+ import java.util.Collection;
+ import java.util.Iterator;
+ import java.util.List;
++import java.util.Map;
+ 
+ import name.levering.ryan.sparql.common.GraphStatement;
+ import name.levering.ryan.sparql.common.LenientStatement;
+@@ -61,7 +62,7 @@
+      *  
+      */
+     public RdfBindingSet constrain(RdfBindingSet bindings, RdfSource source,
+-            Collection defaultDatasets, Collection namedDatasets) {
++            Collection defaultDatasets, Collection namedDatasets, Map knownValues) {
+ 
+         int[] flags = new int[3];
+         List variables = new ArrayList();
+diff -ur sparql-0.7/src/main/name/levering/ryan/sparql/logic/DefaultUnionConstraintLogic.java sparql-0.7j/src/main/name/levering/ryan/sparql/logic/DefaultUnionConstraintLogic.java
+--- sparql-0.7/src/main/name/levering/ryan/sparql/logic/DefaultUnionConstraintLogic.java	2005-11-28 16:39:28.000000000 -0500
++++ sparql-0.7j/src/main/name/levering/ryan/sparql/logic/DefaultUnionConstraintLogic.java	2006-05-11 06:13:29.000000000 -0400
+@@ -7,6 +7,7 @@
+ 
+ import java.util.Collection;
+ import java.util.Iterator;
++import java.util.Map;
+ 
+ import name.levering.ryan.sparql.common.RdfBindingSet;
+ import name.levering.ryan.sparql.common.RdfSource;
+@@ -63,12 +64,12 @@
+      *         constraints
+      */
+     public RdfBindingSet constrain(RdfBindingSet bindings, RdfSource source,
+-            Collection defaultDatasets, Collection namedDatasets) {
++            Collection defaultDatasets, Collection namedDatasets, Map knownValues) {
+         RdfBindingSet current = new RdfBindingSetImpl();
+         for (Iterator groups = data.getConstraints().iterator(); groups.hasNext();) {
+             GroupConstraint group = (GroupConstraint) groups.next();
+             current = logic.union(current, group.constrain(current, source,
+-                    defaultDatasets, namedDatasets));
++                    defaultDatasets, namedDatasets, knownValues));
+         }
+ 
+         return current;
+diff -ur sparql-0.7/src/main/name/levering/ryan/sparql/logic/DefaultVariableLogic.java sparql-0.7j/src/main/name/levering/ryan/sparql/logic/DefaultVariableLogic.java
+--- sparql-0.7/src/main/name/levering/ryan/sparql/logic/DefaultVariableLogic.java	2005-11-28 16:39:30.000000000 -0500
++++ sparql-0.7j/src/main/name/levering/ryan/sparql/logic/DefaultVariableLogic.java	2006-02-19 10:49:27.000000000 -0500
+@@ -4,6 +4,8 @@
+  * See LICENSE for full license information
+  */
+ package name.levering.ryan.sparql.logic;
++
++import java.util.Set;
+ 
+ import name.levering.ryan.sparql.common.RdfBindingRow;
+ import name.levering.ryan.sparql.common.Variable;
+@@ -46,5 +48,8 @@
+     public Value evaluate(RdfBindingRow bindings) {
+         return bindings.getValue(variable);
+     }
+-
++
++	public void getVariables(Set variables) {
++		variables.add(variable);
++	}
+ }
+diff -ur sparql-0.7/src/main/name/levering/ryan/sparql/logic/expression/BinaryLogic.java sparql-0.7j/src/main/name/levering/ryan/sparql/logic/expression/BinaryLogic.java
+--- sparql-0.7/src/main/name/levering/ryan/sparql/logic/expression/BinaryLogic.java	2005-11-28 16:39:28.000000000 -0500
++++ sparql-0.7j/src/main/name/levering/ryan/sparql/logic/expression/BinaryLogic.java	2006-02-19 10:36:53.000000000 -0500
+@@ -4,7 +4,9 @@
+  * See LICENSE for full license information
+  */
+ package name.levering.ryan.sparql.logic.expression;
+-
++
++import java.util.Set;
++
+ import name.levering.ryan.sparql.common.RdfBindingRow;
+ import name.levering.ryan.sparql.model.data.BinaryExpressionData;
+ import name.levering.ryan.sparql.model.logic.ExpressionLogic;
+@@ -58,6 +60,16 @@
+      * @param rightValue the result of evaluating the right expression
+      * @return the result of evaluating the operation
+      */
+-    public abstract Value evaluate(Value leftValue, Value rightValue);
++    public abstract Value evaluate(Value leftValue, Value rightValue);
++
+ 
++    /**
++     * Gets a set of all variables tested by the logic.
++     * 
++     * @param variables a set to which to add all variables mentioned in expressions in this logic
++     */
++    public void getVariables(Set variables) {
++    	data.getLeftExpression().getVariables(variables);
++    	data.getRightExpression().getVariables(variables);
++    }      
+ }
+diff -ur sparql-0.7/src/main/name/levering/ryan/sparql/logic/expression/GreaterThanEqualsLogic.java sparql-0.7j/src/main/name/levering/ryan/sparql/logic/expression/GreaterThanEqualsLogic.java
+--- sparql-0.7/src/main/name/levering/ryan/sparql/logic/expression/GreaterThanEqualsLogic.java	2005-11-28 16:39:28.000000000 -0500
++++ sparql-0.7j/src/main/name/levering/ryan/sparql/logic/expression/GreaterThanEqualsLogic.java	2006-01-23 11:38:16.000000000 -0500
+@@ -96,11 +96,10 @@
+      * 
+      * @param string1 the first String to compare
+      * @param string2 the second String to compare
+-     * @return never
+-     * @throws UnsupportedOperationException always
++     * @return true if the first string is greater than or equal to the second
+      */
+     public boolean evaluateString(String string1, String string2) {
+-        throw new UnsupportedOperationException("Strings cannot be compared using a >= operation");
++        return string1.compareTo(string2) >= 0;
+     }
+ 
+     /**
+diff -ur sparql-0.7/src/main/name/levering/ryan/sparql/logic/expression/GreaterThanLogic.java sparql-0.7j/src/main/name/levering/ryan/sparql/logic/expression/GreaterThanLogic.java
+--- sparql-0.7/src/main/name/levering/ryan/sparql/logic/expression/GreaterThanLogic.java	2005-11-28 16:39:30.000000000 -0500
++++ sparql-0.7j/src/main/name/levering/ryan/sparql/logic/expression/GreaterThanLogic.java	2006-01-23 11:38:25.000000000 -0500
+@@ -96,11 +96,10 @@
+      * 
+      * @param string1 the first String to compare
+      * @param string2 the second String to compare
+-     * @return never
+-     * @throws UnsupportedOperationException always
++     * @return true if the first string is greater than the second
+      */
+     public boolean evaluateString(String string1, String string2) {
+-        throw new UnsupportedOperationException("Strings cannot be compared using a > operation");
++        return string1.compareTo(string2) > 0;
+     }
+ 
+     /**
+diff -ur sparql-0.7/src/main/name/levering/ryan/sparql/logic/expression/LessThanEqualsLogic.java sparql-0.7j/src/main/name/levering/ryan/sparql/logic/expression/LessThanEqualsLogic.java
+--- sparql-0.7/src/main/name/levering/ryan/sparql/logic/expression/LessThanEqualsLogic.java	2005-11-28 16:39:28.000000000 -0500
++++ sparql-0.7j/src/main/name/levering/ryan/sparql/logic/expression/LessThanEqualsLogic.java	2006-01-23 11:38:40.000000000 -0500
+@@ -96,11 +96,10 @@
+      * 
+      * @param string1 the first String to compare
+      * @param string2 the second String to compare
+-     * @return never
+-     * @throws UnsupportedOperationException always
++     * @return true if the first string is less than or equal to the second
+      */
+     public boolean evaluateString(String string1, String string2) {
+-        throw new UnsupportedOperationException("Strings cannot be compared using a <= operation");
++        return string1.compareTo(string2) <= 0;
+     }
+ 
+     /**
+diff -ur sparql-0.7/src/main/name/levering/ryan/sparql/logic/expression/LessThanLogic.java sparql-0.7j/src/main/name/levering/ryan/sparql/logic/expression/LessThanLogic.java
+--- sparql-0.7/src/main/name/levering/ryan/sparql/logic/expression/LessThanLogic.java	2005-11-28 16:39:30.000000000 -0500
++++ sparql-0.7j/src/main/name/levering/ryan/sparql/logic/expression/LessThanLogic.java	2006-01-23 11:38:56.000000000 -0500
+@@ -96,11 +96,10 @@
+      * 
+      * @param string1 the first String to compare
+      * @param string2 the second String to compare
+-     * @return never
+-     * @throws UnsupportedOperationException always
++     * @return true if the first string is less than the second
+      */
+     public boolean evaluateString(String string1, String string2) {
+-        throw new UnsupportedOperationException("Fix this");
++        return string1.compareTo(string2) < 0;
+     }
+     
+     /**
+diff -ur sparql-0.7/src/main/name/levering/ryan/sparql/logic/expression/UnaryLogic.java sparql-0.7j/src/main/name/levering/ryan/sparql/logic/expression/UnaryLogic.java
+--- sparql-0.7/src/main/name/levering/ryan/sparql/logic/expression/UnaryLogic.java	2005-11-28 16:39:28.000000000 -0500
++++ sparql-0.7j/src/main/name/levering/ryan/sparql/logic/expression/UnaryLogic.java	2006-02-19 10:37:04.000000000 -0500
+@@ -4,7 +4,9 @@
+  * See LICENSE for full license information
+  */
+ package name.levering.ryan.sparql.logic.expression;
+-
++
++import java.util.Set;
++
+ import name.levering.ryan.sparql.common.RdfBindingRow;
+ import name.levering.ryan.sparql.model.data.UnaryExpressionData;
+ import name.levering.ryan.sparql.model.logic.ExpressionLogic;
+@@ -55,5 +57,14 @@
+      * @param value the result of evaluating the expression
+      * @return the result of evaluating the operation
+      */
+-    public abstract Value evaluate(Value value);
++    public abstract Value evaluate(Value value);
++   
++    /**
++     * Gets a set of all variables tested by the logic.
++     * 
++     * @para variables a set to which to add all variables mentioned in expressions in this logic
++     */
++    public void getVariables(Set variables) {
++    	data.getExpression().getVariables(variables);
++    }   
+ }
+diff -ur sparql-0.7/src/main/name/levering/ryan/sparql/logic/function/BoundLogic.java sparql-0.7j/src/main/name/levering/ryan/sparql/logic/function/BoundLogic.java
+--- sparql-0.7/src/main/name/levering/ryan/sparql/logic/function/BoundLogic.java	2006-03-10 19:05:58.000000000 -0500
++++ sparql-0.7j/src/main/name/levering/ryan/sparql/logic/function/BoundLogic.java	2006-02-19 10:53:33.000000000 -0500
+@@ -21,12 +21,7 @@
+  * @author Ryan Levering
+  * @version 1.0
+  */
+-public class BoundLogic implements ExpressionLogic {
+-
+-    /**
+-     * The data holding the arguments of the bound function.
+-     */
+-    private CallExpressionData data;
++public class BoundLogic extends FunctionLogic {
+ 
+     /**
+      * The logic to return the correct boolean value.
+@@ -41,7 +36,7 @@
+      */
+     public BoundLogic(CallExpressionData data, ValueConversionLogic converter) {
+         //TODO Check for whether the argument is a variable
+-        this.data = data;
++        super(data);
+         this.converter = converter;
+     }
+ 
+@@ -56,5 +51,5 @@
+         boolean result = (bindings.getValue(variable) != null);
+         return this.converter.convertBoolean(result);
+     }
+-
++ 
+ }
+Only in sparql-0.7/src/main/name/levering/ryan/sparql/logic/function: BoundLogic.java.orig
+Only in sparql-0.7/src/main/name/levering/ryan/sparql/logic/function: BoundLogic.java.rej
+diff -ur sparql-0.7/src/main/name/levering/ryan/sparql/logic/function/DataTypeLogic.java sparql-0.7j/src/main/name/levering/ryan/sparql/logic/function/DataTypeLogic.java
+--- sparql-0.7/src/main/name/levering/ryan/sparql/logic/function/DataTypeLogic.java	2006-03-10 19:05:58.000000000 -0500
++++ sparql-0.7j/src/main/name/levering/ryan/sparql/logic/function/DataTypeLogic.java	2006-02-19 10:54:05.000000000 -0500
+@@ -21,12 +21,7 @@
+  * @author Ryan Levering
+  * @version 1.0
+  */
+-public class DataTypeLogic implements ExpressionLogic {
+-
+-    /**
+-     * The data holding the argument to evaluate.
+-     */
+-    private CallExpressionData data;
++public class DataTypeLogic extends FunctionLogic {
+ 
+     /**
+      * Creates a new logic object that returns the IRI of the datatype of a
+@@ -35,7 +30,7 @@
+      * @param data the argument data
+      */
+     public DataTypeLogic(CallExpressionData data) {
+-        this.data = data;
++        super(data);
+     }
+ 
+     /**
+Only in sparql-0.7/src/main/name/levering/ryan/sparql/logic/function: DataTypeLogic.java.orig
+Only in sparql-0.7/src/main/name/levering/ryan/sparql/logic/function: DataTypeLogic.java.rej
+diff -ur sparql-0.7/src/main/name/levering/ryan/sparql/logic/function/DecimalCastFunction.java sparql-0.7j/src/main/name/levering/ryan/sparql/logic/function/DecimalCastFunction.java
+--- sparql-0.7/src/main/name/levering/ryan/sparql/logic/function/DecimalCastFunction.java	2005-11-28 16:39:30.000000000 -0500
++++ sparql-0.7j/src/main/name/levering/ryan/sparql/logic/function/DecimalCastFunction.java	2006-04-16 07:33:20.000000000 -0400
+@@ -143,11 +143,11 @@
+      */
+     public Value castLiteral(Literal literal) throws IllegalCastException {
+         try {
+-            Long.parseLong(literal.getLabel());
++            Double.parseDouble(literal.getLabel());
+             return factory.createLiteral(literal.getLabel(),
+                     SPARQLConstants.DECIMAL_TYPE);
+         } catch (NumberFormatException e) {
+-            throw new IllegalCastException("Unable to cast string to integer");
++            throw new IllegalCastException("Unable to cast string to double");
+         }
+     }
+ 
+diff -ur sparql-0.7/src/main/name/levering/ryan/sparql/logic/function/ExternalFunctionLogic.java sparql-0.7j/src/main/name/levering/ryan/sparql/logic/function/ExternalFunctionLogic.java
+--- sparql-0.7/src/main/name/levering/ryan/sparql/logic/function/ExternalFunctionLogic.java	2006-03-10 19:05:58.000000000 -0500
++++ sparql-0.7j/src/main/name/levering/ryan/sparql/logic/function/ExternalFunctionLogic.java	2006-02-19 10:54:51.000000000 -0500
+@@ -7,7 +7,8 @@
+ 
+ import java.util.ArrayList;
+ import java.util.Iterator;
+-import java.util.List;
++import java.util.List;
++import java.util.Set;
+ 
+ import name.levering.ryan.sparql.common.RdfBindingRow;
+ import name.levering.ryan.sparql.common.impl.SPARQLValueFactory;
+@@ -25,14 +26,9 @@
+  * @author Ryan Levering
+  * @version 1.1
+  */
+-public class ExternalFunctionLogic implements ExpressionLogic {
++public class ExternalFunctionLogic extends FunctionLogic {
+ 
+     /**
+-     * The data containing the argument expressions to evaluate
+-     */
+-    private CallExpressionData data;
+-    
+-    /**
+      * The function to delegate the logic to.
+      */
+     private ExternalFunction function;
+@@ -49,7 +45,7 @@
+      * @param data the data containing the function arguments and it's name
+      */
+     public ExternalFunctionLogic(CallExpressionData data, ExternalFunction function, SPARQLValueFactory factory) {
+-        this.data = data;
++        super(data);
+         this.function = function;
+         this.factory = factory;
+     }
+@@ -77,6 +73,6 @@
+             //TODO Check on whether this should be some exception
+             return null;
+         }
+-    }
++    }
+ 
+ }
+Only in sparql-0.7/src/main/name/levering/ryan/sparql/logic/function: ExternalFunctionLogic.java.orig
+Only in sparql-0.7/src/main/name/levering/ryan/sparql/logic/function: ExternalFunctionLogic.java.rej
+Only in sparql-0.7j/src/main/name/levering/ryan/sparql/logic/function: FunctionLogic.java
+diff -ur sparql-0.7/src/main/name/levering/ryan/sparql/logic/function/IsBlankLogic.java sparql-0.7j/src/main/name/levering/ryan/sparql/logic/function/IsBlankLogic.java
+--- sparql-0.7/src/main/name/levering/ryan/sparql/logic/function/IsBlankLogic.java	2006-03-10 19:05:58.000000000 -0500
++++ sparql-0.7j/src/main/name/levering/ryan/sparql/logic/function/IsBlankLogic.java	2006-02-19 10:55:48.000000000 -0500
+@@ -21,13 +21,7 @@
+  * @author Ryan Levering
+  * @version 1.0
+  */
+-public class IsBlankLogic implements ExpressionLogic {
+-
+-    /**
+-     * The data that holds the argument to evaluate for blank node.
+-     */
+-    private CallExpressionData data;
+-
++public class IsBlankLogic extends FunctionLogic {
+     /**
+      * The converter used to return the true or false value.
+      */
+@@ -41,7 +35,7 @@
+      * @param converter the value conversion logic to convert the boolean to a literal
+      */
+     public IsBlankLogic(CallExpressionData data, ValueConversionLogic converter) {
+-        this.data = data;
++        super(data);
+         this.converter = converter;
+     }
+ 
+Only in sparql-0.7/src/main/name/levering/ryan/sparql/logic/function: IsBlankLogic.java.orig
+Only in sparql-0.7/src/main/name/levering/ryan/sparql/logic/function: IsBlankLogic.java.rej
+diff -ur sparql-0.7/src/main/name/levering/ryan/sparql/logic/function/IsIRILogic.java sparql-0.7j/src/main/name/levering/ryan/sparql/logic/function/IsIRILogic.java
+--- sparql-0.7/src/main/name/levering/ryan/sparql/logic/function/IsIRILogic.java	2006-03-10 19:05:58.000000000 -0500
++++ sparql-0.7j/src/main/name/levering/ryan/sparql/logic/function/IsIRILogic.java	2006-02-19 10:56:10.000000000 -0500
+@@ -21,14 +21,9 @@
+  * @author Ryan Levering
+  * @version 1.0
+  */
+-public class IsIRILogic implements ExpressionLogic {
++public class IsIRILogic extends FunctionLogic {
+ 	
+     /**
+-     * The data that holds the argument to evaluate for IRI.
+-     */
+-    private CallExpressionData data;
+-    
+-    /**
+      * The converter used to return the true or false value.
+      */
+     private ValueConversionLogic converter;
+@@ -41,7 +36,7 @@
+      * @param converter the value conversion logic to convert the boolean to a literal
+      */
+     public IsIRILogic(CallExpressionData data, ValueConversionLogic converter) {
+-        this.data = data;
++        super(data);
+         this.converter = converter;
+     }
+     
+Only in sparql-0.7/src/main/name/levering/ryan/sparql/logic/function: IsIRILogic.java.orig
+Only in sparql-0.7/src/main/name/levering/ryan/sparql/logic/function: IsIRILogic.java.rej
+diff -ur sparql-0.7/src/main/name/levering/ryan/sparql/logic/function/IsLiteralLogic.java sparql-0.7j/src/main/name/levering/ryan/sparql/logic/function/IsLiteralLogic.java
+--- sparql-0.7/src/main/name/levering/ryan/sparql/logic/function/IsLiteralLogic.java	2006-03-10 19:05:58.000000000 -0500
++++ sparql-0.7j/src/main/name/levering/ryan/sparql/logic/function/IsLiteralLogic.java	2006-02-19 10:56:31.000000000 -0500
+@@ -21,13 +21,8 @@
+  * @author Ryan Levering
+  * @version 1.0
+  */
+-public class IsLiteralLogic implements ExpressionLogic {
+-	
+-    /**
+-     * The data that holds the argument to evaluate for literal.
+-     */
+-    private CallExpressionData data;
+-    
++public class IsLiteralLogic extends FunctionLogic {
++   
+     /**
+      * The converter used to return the true or false value.
+      */
+@@ -41,7 +36,7 @@
+      * @param converter the value conversion logic to convert the boolean to a literal
+      */
+     public IsLiteralLogic(CallExpressionData data, ValueConversionLogic converter) {
+-        this.data = data;
++        super(data);
+         this.converter = converter;
+     }
+     
+Only in sparql-0.7/src/main/name/levering/ryan/sparql/logic/function: IsLiteralLogic.java.orig
+Only in sparql-0.7/src/main/name/levering/ryan/sparql/logic/function: IsLiteralLogic.java.rej
+diff -ur sparql-0.7/src/main/name/levering/ryan/sparql/logic/function/LangLogic.java sparql-0.7j/src/main/name/levering/ryan/sparql/logic/function/LangLogic.java
+--- sparql-0.7/src/main/name/levering/ryan/sparql/logic/function/LangLogic.java	2006-03-10 19:05:58.000000000 -0500
++++ sparql-0.7j/src/main/name/levering/ryan/sparql/logic/function/LangLogic.java	2006-02-19 10:59:08.000000000 -0500
+@@ -21,13 +21,7 @@
+  * @author Ryan Levering
+  * @version 1.0
+  */
+-public class LangLogic implements ExpressionLogic {
+-
+-    /**
+-     * The data that holds the argument to evaluate for literal language.
+-     */
+-    private CallExpressionData data;
+-
++public class LangLogic extends FunctionLogic {
+     /**
+      * The converter used to return the string value.
+      */
+@@ -40,7 +34,7 @@
+     * @param converter the value conversion logic to convert the string to a literal
+     */
+     public LangLogic(CallExpressionData data, ValueConversionLogic converter) {
+-        this.data = data;
++        super(data);
+         this.converter = converter;
+     }
+ 
+Only in sparql-0.7/src/main/name/levering/ryan/sparql/logic/function: LangLogic.java.orig
+Only in sparql-0.7/src/main/name/levering/ryan/sparql/logic/function: LangLogic.java.rej
+diff -ur sparql-0.7/src/main/name/levering/ryan/sparql/logic/function/RegexLogic.java sparql-0.7j/src/main/name/levering/ryan/sparql/logic/function/RegexLogic.java
+--- sparql-0.7/src/main/name/levering/ryan/sparql/logic/function/RegexLogic.java	2006-03-10 19:05:58.000000000 -0500
++++ sparql-0.7j/src/main/name/levering/ryan/sparql/logic/function/RegexLogic.java	2006-02-19 10:57:13.000000000 -0500
+@@ -22,13 +22,7 @@
+  * @author Ryan Levering
+  * @version 1.0
+  */
+-public class RegexLogic implements ExpressionLogic {
+-
+-    /**
+-     * The data that holds the argument to evaluate for string matching.
+-     */
+-    private CallExpressionData data;
+-
++public class RegexLogic extends FunctionLogic {
+     /**
+      * The converter used to return the boolean literal and convert the string
+      * value.
+@@ -44,7 +38,7 @@
+      *            literal and the strings to Java strings
+      */
+     public RegexLogic(CallExpressionData data, ValueConversionLogic converter) {
+-        this.data = data;
++        super(data);
+         this.converter = converter;
+     }
+ 
+Only in sparql-0.7/src/main/name/levering/ryan/sparql/logic/function: RegexLogic.java.orig
+Only in sparql-0.7/src/main/name/levering/ryan/sparql/logic/function: RegexLogic.java.rej
+diff -ur sparql-0.7/src/main/name/levering/ryan/sparql/logic/function/StrLogic.java sparql-0.7j/src/main/name/levering/ryan/sparql/logic/function/StrLogic.java
+--- sparql-0.7/src/main/name/levering/ryan/sparql/logic/function/StrLogic.java	2006-03-10 19:05:58.000000000 -0500
++++ sparql-0.7j/src/main/name/levering/ryan/sparql/logic/function/StrLogic.java	2006-02-19 10:56:53.000000000 -0500
+@@ -23,13 +23,7 @@
+  * @author Ryan Levering
+  * @version 1.2
+  */
+-public class StrLogic implements ExpressionLogic {
+-
+-    /**
+-     * The data that holds the argument to evaluate for string conversion.
+-     */
+-    private CallExpressionData data;
+-    
++public class StrLogic extends FunctionLogic {
+     /**
+      * The factory used to create new string literals.
+      */
+@@ -42,7 +36,7 @@
+      * @param data the data holding the argument for evaluation
+      */
+     public StrLogic(CallExpressionData data, SPARQLValueFactory factory) {
+-        this.data = data;
++        super(data);
+         this.factory = factory;
+     }
+ 
+Only in sparql-0.7/src/main/name/levering/ryan/sparql/logic/function: StrLogic.java.orig
+Only in sparql-0.7/src/main/name/levering/ryan/sparql/logic/function: StrLogic.java.rej
+diff -ur sparql-0.7/src/main/name/levering/ryan/sparql/logic/IndexedSetDistinctionLogic.java sparql-0.7j/src/main/name/levering/ryan/sparql/logic/IndexedSetDistinctionLogic.java
+--- sparql-0.7/src/main/name/levering/ryan/sparql/logic/IndexedSetDistinctionLogic.java	2005-11-28 16:39:30.000000000 -0500
++++ sparql-0.7j/src/main/name/levering/ryan/sparql/logic/IndexedSetDistinctionLogic.java	2005-12-07 10:14:31.000000000 -0500
+@@ -9,8 +9,10 @@
+ import java.util.Iterator;
+ import java.util.List;
+ import java.util.Map;
++import java.util.Set;
+ 
+ import name.levering.ryan.sparql.common.RdfBindingSet;
++import name.levering.ryan.sparql.common.Variable;
+ import name.levering.ryan.sparql.common.impl.AbstractRdfBindingSet;
+ import name.levering.ryan.sparql.model.logic.SetDistinctionLogic;
+ 
+@@ -67,6 +69,10 @@
+             return set.getVariables();
+         }
+ 
++		 public Set getValues(Variable variable) {
++			 return this.set.getValues(variable);
++		 }
++
+         public boolean contains(Object o) {
+             return set.contains(o);
+         }
+diff -ur sparql-0.7/src/main/name/levering/ryan/sparql/logic/IndexedSetIntersectLogic.java sparql-0.7j/src/main/name/levering/ryan/sparql/logic/IndexedSetIntersectLogic.java
+--- sparql-0.7/src/main/name/levering/ryan/sparql/logic/IndexedSetIntersectLogic.java	2005-11-28 16:39:28.000000000 -0500
++++ sparql-0.7j/src/main/name/levering/ryan/sparql/logic/IndexedSetIntersectLogic.java	2006-05-09 10:36:11.000000000 -0400
+@@ -12,13 +12,17 @@
+ import java.util.Iterator;
+ import java.util.List;
+ import java.util.Map;
++import java.util.Set;
++import java.util.HashSet;
+ 
+ import name.levering.ryan.sparql.common.RdfBindingRow;
+ import name.levering.ryan.sparql.common.RdfBindingSet;
+ import name.levering.ryan.sparql.common.Variable;
+ import name.levering.ryan.sparql.common.impl.AbstractRdfBindingRow;
+ import name.levering.ryan.sparql.common.impl.AbstractRdfBindingSet;
++import name.levering.ryan.sparql.common.impl.RdfBindingSetImpl;
+ import name.levering.ryan.sparql.model.logic.SetIntersectLogic;
++import name.levering.ryan.sparql.model.logic.SetJoinLogic;
+ 
+ import org.openrdf.model.Value;
+ 
+@@ -38,9 +42,9 @@
+  * @author Ryan Levering
+  * @version 1.0
+  */
+-public class IndexedSetIntersectLogic implements SetIntersectLogic {
+-
+-    /**
++public class IndexedSetIntersectLogic implements SetIntersectLogic, SetJoinLogic {
++	
++	/**
+      * Creates a new RdfBindingSet that holds a reference to the two other
+      * binding sets and uses their own iterators, passed through a variable
+      * projection to increase the efficiency of this method.
+@@ -51,7 +55,24 @@
+      *         sets
+      */
+     public RdfBindingSet intersect(RdfBindingSet set1, RdfBindingSet set2) {
+-        return new RdfBindingIntersect(set1, set2);
++        return new RdfBindingIntersect(set1, set2, false);
++    }
++
++    /**
++     * Calculates an expansion of this binding set, which is used for the
++     * optional constraint in the SPARQL language. This is similar to a LEFT
++     * JOIN in the SQL language. Any same variables are appended to the
++     * resulting binding set. Then, if any of the rows have values that are the
++     * same for the matching variables, the value for the newly appended
++     * variables are added to the row.
++     * 
++     * @param set1 the set to expand
++     * @param set2 the set to expand the invoked set with
++     * @return the expansion of the invoked set
++     * @throws NullPointerException if either set is null
++     */
++	public RdfBindingSet join(RdfBindingSet set1, RdfBindingSet set2) {
++        return new RdfBindingIntersect(set1, set2, true);
+     }
+ 
+     private class RdfBindingIntersect extends AbstractRdfBindingSet {
+@@ -63,8 +84,10 @@
+         private List variables = null;
+ 
+         private List commonVariables = null;
++		
++		boolean join;
+ 
+-        RdfBindingIntersect(RdfBindingSet set1, RdfBindingSet set2) {
++        RdfBindingIntersect(RdfBindingSet set1, RdfBindingSet set2, boolean join) {
+             this.set1 = set1;
+             this.set2 = set2;
+ 
+@@ -79,15 +102,37 @@
+             
+             this.commonVariables = new ArrayList(set1.getVariables());
+             this.commonVariables.retainAll(set2.getVariables());
++			
++			this.join = join;
+         }
+ 
+         public Iterator iterator() {
+-            return new IndexedIntersectIterator();
++			if (commonVariables.size() == 0)
++				return new ProductIterator();
++			else
++				return new IndexedIntersectIterator();
+         }
+ 
+         public List getVariables() {
+             return this.variables;
+         }
++		
++		public Set getValues(Variable variable) {
++			boolean s1 = set1.getVariables().contains(variable);
++			boolean s2 = set2.getVariables().contains(variable);
++			if (s1 && s2) {
++				Set ret = new HashSet();
++				ret.addAll(set1.getValues(variable));
++				ret.retainAll(set2.getValues(variable));
++				return ret;
++			} else if (s1) {
++				return set1.getValues(variable);
++			} else if (s2) {
++				return set2.getValues(variable);
++			} else {
++				return null;
++			}
++		}
+ 
+         public boolean contains(Object object) {
+             return set1.contains(object) || set2.contains(object);
+@@ -100,19 +145,49 @@
+         public boolean isEmpty() {
+             return set1.isEmpty() && set2.isEmpty();
+         }
++		
++		private class ProductIterator implements Iterator {
++			private RdfBindingSet s2;
++			private Iterator i1, i2;
++			private RdfBindingRow cur1;
++			private boolean i2empty;
++
++			ProductIterator() {
++				i1 = set1.iterator();
++				s2 = new RdfBindingSetImpl(set2); // Ensure set 2 is in memory.
++				i2 = s2.iterator();
++				i2empty = !i2.hasNext();
++			}
++			
++            public void remove() {
++                throw new UnsupportedOperationException(
++                        "Remove is unsupported on this binding set");
++            }
+ 
+-        private class IndexedIntersectIterator implements Iterator {
+-
+-            private Iterator currentMatches = null;
++            public boolean hasNext() {
++				if (i2empty) return false;
++                return i1.hasNext() || i2.hasNext();
++            }			
+ 
+-            private RdfBindingRow currentRow = null;
++            public Object next() {
++				if (cur1 == null) cur1 = (RdfBindingRow)i1.next();
++				if (!i2.hasNext()) {
++					cur1 = (RdfBindingRow)i1.next();
++					i2 = s2.iterator();
++				}
++				RdfBindingRow cur2 = (RdfBindingRow)i2.next();
++				return new RdfExtensionRow(cur1, cur2);
++			}
++		}
+ 
+-            private Iterator iterator1 = set1.iterator();
++        private class IndexedIntersectIterator implements Iterator {
+ 
+-            private Map[] indexMap = new Map[commonVariables.size()];
++			private RdfBindingSetImpl matches = new RdfBindingSetImpl(variables);
++			private Iterator iter;
+ 
+             IndexedIntersectIterator() {
+-                Iterator iterator2 = set2.iterator();
++				Map[] indexMap = new Map[commonVariables.size()];
++				Iterator iterator2 = set2.iterator();
+ 
+                 // Initialize the cache
+                 for (int i = 0; i < indexMap.length; i++) {
+@@ -120,6 +195,7 @@
+                 }
+ 
+                 // Build the cache
++                boolean hasRows = false;
+                 while (iterator2.hasNext()) {
+                     RdfBindingRow row2 = (RdfBindingRow) iterator2.next();
+                     Iterator vars = commonVariables.iterator();
+@@ -133,94 +209,59 @@
+                             indexMap[i].put(value, rowList);
+                         }
+                         rowList.add(row2);
++                        hasRows = true;
+                     }
+                 }
++                
++				Iterator iterator1 = set1.iterator();
++				while (iterator1.hasNext()) {
++					RdfBindingRow row1 = (RdfBindingRow) iterator1.next();
++					
++					List intersectedRows = null;
++					for (int i = 0; i < indexMap.length; i++) {
++						Variable var = (Variable)commonVariables.get(i);
++						Value value = row1.getValue(var);
++						
++						List matchingRows = (List) indexMap[i].get(value);
++						if (matchingRows == null) {
++							if (join) {
++								// There is no match in set 2, but since set 2 is optional,
++								// we can just include this row in the results.  But, we
++								// have to wrap it so it returns null for the variables
++								// in the other part, rather than possibly throwing an exception.
++								matches.add(new RdfExtensionRow(row1, null));
++							}
++							intersectedRows = null;
++							break;
++						} else if (intersectedRows == null) {
++							intersectedRows = new ArrayList();
++							intersectedRows.addAll(matchingRows);
++						} else {
++							intersectedRows.retainAll(matchingRows);
++						}
++						if (intersectedRows.size() == 0) break;
++					}
++					
++					if (intersectedRows == null) continue;
++					Iterator cross = intersectedRows.iterator();
++					while (cross.hasNext())
++						matches.add(new RdfExtensionRow(row1, (RdfBindingRow)cross.next()));
++				}
+ 
+-                // Prepare the first element
+-                advanceMatches();
++				iter = matches.iterator();
+             }
+ 
+             public void remove() {
+-                throw new UnsupportedOperationException(
+-                        "Remove is unsupported on this binding set");
++                iter.remove();
+             }
+ 
+             public boolean hasNext() {
+-                if (currentMatches.hasNext()) {
+-                    return true;
+-                }
+-                advanceMatches();
+-                return currentMatches.hasNext();
++                return iter.hasNext();
+             }
+ 
+             public Object next() {
+-                if (currentMatches.hasNext()) {
+-                    return new RdfExtensionRow(currentRow,
+-                            (RdfBindingRow) currentMatches.next());
+-                }
+-                advanceMatches();
+-                return new RdfExtensionRow(currentRow,
+-                        (RdfBindingRow) currentMatches.next());
+-            }
+-
+-            private void advanceMatches() {
+-                if (iterator1.hasNext()) {
+-                    this.currentRow = (RdfBindingRow) iterator1.next();
+-                    Iterator vars = commonVariables.iterator();
+-                    List currentMatches = null;
+-                    int varPos = 0;
+-                    while (varPos < indexMap.length) {
+-                        Variable var = (Variable) vars.next();
+-                        Value value = this.currentRow.getValue(var);
+-                        if (indexMap[varPos].containsKey(value)) {
+-                            if (currentMatches == null) {
+-                                currentMatches = new ArrayList(
+-                                        (Collection) indexMap[varPos].get(value));
+-                            } else {
+-                                currentMatches.retainAll((Collection) indexMap[varPos].get(value));
+-                                if (currentMatches.isEmpty()) {
+-                                    // Advance to next main row
+-                                    if (iterator1.hasNext()) {
+-                                        this.currentRow = (RdfBindingRow) iterator1.next();
+-                                        varPos = 0;
+-                                        vars = commonVariables.iterator();
+-                                        continue;
+-                                    } else {
+-                                        // No more base rows, so no more matching rows
+-                                        this.currentMatches = Collections.EMPTY_LIST.iterator();
+-                                        return;
+-                                    }
+-                                }
+-                            }
+-                        } else {
+-                            // Here we did not find a matching cache value
+-                            // Advance to next main row
+-                            if (iterator1.hasNext()) {
+-                                this.currentRow = (RdfBindingRow) iterator1.next();
+-                                varPos = 0;
+-                                vars = commonVariables.iterator();
+-                                continue;
+-                            } else {
+-                                // No more base rows, so no more matching rows
+-                               this.currentMatches = Collections.EMPTY_LIST.iterator();
+-                                return;
+-                            }
+-                        }
+-                        varPos++;
+-                    }
+-                    if (currentMatches == null) {
+-                        // There isn't any matching variables, which is not cool
+-                        // Return every combination
+-                        this.currentMatches = set2.iterator();
+-                    } else {
+-                        this.currentMatches = currentMatches.iterator();
+-                    }
+-                } else {
+-                    // No more base rows, so no more matching rows
+-                    this.currentMatches = Collections.EMPTY_LIST.iterator();
+-                }
++				return iter.next();
+             }
+-
+         }
+ 
+         private class RdfExtensionRow extends AbstractRdfBindingRow {
+@@ -237,9 +278,11 @@
+             public Value getValue(Variable variable) {
+                 if (row1.getVariables().contains(variable)) {
+                     return row1.getValue(variable);
+-                } else {
++                } else if (row2 != null) {
+                     return row2.getValue(variable);
+-                }
++                } else {
++					return null;
++				}
+             }
+ 
+             public List getVariables() {
+Only in sparql-0.7/src/main/name/levering/ryan/sparql/logic: IndexedSetJoinLogic.java
+Only in sparql-0.7/src/main/name/levering/ryan/sparql/logic: NaiveSetJoinLogic.java
+diff -ur sparql-0.7/src/main/name/levering/ryan/sparql/logic/StreamedFilterConstraintLogic.java sparql-0.7j/src/main/name/levering/ryan/sparql/logic/StreamedFilterConstraintLogic.java
+--- sparql-0.7/src/main/name/levering/ryan/sparql/logic/StreamedFilterConstraintLogic.java	2005-11-28 16:39:28.000000000 -0500
++++ sparql-0.7j/src/main/name/levering/ryan/sparql/logic/StreamedFilterConstraintLogic.java	2006-05-11 06:13:48.000000000 -0400
+@@ -9,10 +9,13 @@
+ import java.util.Iterator;
+ import java.util.LinkedList;
+ import java.util.List;
++import java.util.Map;
++import java.util.Set;
+ 
+ import name.levering.ryan.sparql.common.RdfBindingRow;
+ import name.levering.ryan.sparql.common.RdfBindingSet;
+ import name.levering.ryan.sparql.common.RdfSource;
++import name.levering.ryan.sparql.common.Variable;
+ import name.levering.ryan.sparql.common.impl.AbstractRdfBindingSet;
+ import name.levering.ryan.sparql.logic.expression.TypeError;
+ import name.levering.ryan.sparql.model.data.FilterConstraintData;
+@@ -76,7 +79,7 @@
+      * @return a binding set with values that pass through the filter expression
+      */
+     public RdfBindingSet constrain(RdfBindingSet bindings, RdfSource source,
+-            Collection defaultDatasets, Collection namedDatasets) {
++            Collection defaultDatasets, Collection namedDatasets, Map knownValues) {
+         return new FilterBindingSet(bindings, this.data.getExpression());
+     }
+ 
+@@ -99,6 +102,11 @@
+            return set.getVariables();
+         }
+         
++		public Set getValues(Variable variable) {
++			// Some might be filtered out.  TODO: Can we fix this easily.
++			return set.getValues(variable);
++		}
++					
+         private class FilterIterator implements Iterator {
+ 
+             private Iterator iterator = set.iterator();
+diff -ur sparql-0.7/src/main/name/levering/ryan/sparql/logic/StreamedSetDistinctionLogic.java sparql-0.7j/src/main/name/levering/ryan/sparql/logic/StreamedSetDistinctionLogic.java
+--- sparql-0.7/src/main/name/levering/ryan/sparql/logic/StreamedSetDistinctionLogic.java	2005-11-28 16:39:30.000000000 -0500
++++ sparql-0.7j/src/main/name/levering/ryan/sparql/logic/StreamedSetDistinctionLogic.java	2005-12-07 12:40:38.000000000 -0500
+@@ -7,8 +7,10 @@
+ 
+ import java.util.Iterator;
+ import java.util.List;
++import java.util.Set;
+ 
+ import name.levering.ryan.sparql.common.RdfBindingSet;
++import name.levering.ryan.sparql.common.Variable;
+ import name.levering.ryan.sparql.common.impl.AbstractRdfBindingSet;
+ import name.levering.ryan.sparql.model.logic.SetDistinctionLogic;
+ 
+@@ -48,6 +50,10 @@
+         public List getVariables() {
+             return set.getVariables();
+         }
++		
++		public Set getValues(Variable variable) {
++			return set.getValues(variable);
++		}
+ 
+         public boolean contains(Object o) {
+             return set.contains(o);
+diff -ur sparql-0.7/src/main/name/levering/ryan/sparql/logic/StreamedSetProjectionLogic.java sparql-0.7j/src/main/name/levering/ryan/sparql/logic/StreamedSetProjectionLogic.java
+--- sparql-0.7/src/main/name/levering/ryan/sparql/logic/StreamedSetProjectionLogic.java	2005-11-28 16:39:28.000000000 -0500
++++ sparql-0.7j/src/main/name/levering/ryan/sparql/logic/StreamedSetProjectionLogic.java	2005-12-07 10:22:59.000000000 -0500
+@@ -7,6 +7,8 @@
+ 
+ import java.util.Iterator;
+ import java.util.List;
++import java.util.Set;
++import java.util.HashSet;
+ 
+ import name.levering.ryan.sparql.common.RdfBindingRow;
+ import name.levering.ryan.sparql.common.RdfBindingSet;
+@@ -61,6 +63,12 @@
+         public List getVariables() {
+             return this.variables;
+         }
++		
++		public Set getValues(Variable variable) {
++			if (set.getVariables().contains(variable))
++				return set.getValues(variable);
++			return new HashSet();
++		}
+ 
+         public boolean contains(Object object) {
+             return set.contains(object);
+diff -ur sparql-0.7/src/main/name/levering/ryan/sparql/logic/StreamedSetRangeLogic.java sparql-0.7j/src/main/name/levering/ryan/sparql/logic/StreamedSetRangeLogic.java
+--- sparql-0.7/src/main/name/levering/ryan/sparql/logic/StreamedSetRangeLogic.java	2005-11-28 16:39:28.000000000 -0500
++++ sparql-0.7j/src/main/name/levering/ryan/sparql/logic/StreamedSetRangeLogic.java	2005-12-07 12:40:07.000000000 -0500
+@@ -8,8 +8,10 @@
+ import java.util.Iterator;
+ import java.util.List;
+ import java.util.NoSuchElementException;
++import java.util.Set;
+ 
+ import name.levering.ryan.sparql.common.RdfBindingSet;
++import name.levering.ryan.sparql.common.Variable;
+ import name.levering.ryan.sparql.common.impl.AbstractRdfBindingSet;
+ import name.levering.ryan.sparql.model.logic.SetRangeLogic;
+ 
+@@ -58,6 +60,10 @@
+         public List getVariables() {
+             return this.set.getVariables();
+         }
++		
++		public Set getValues(Variable variable) {
++			return this.set.getValues(variable);
++		}
+ 
+         public Iterator iterator() {
+             return new LimitedIterator();
+@@ -105,6 +111,10 @@
+             return this.set.getVariables();
+         }
+ 
++		public Set getValues(Variable variable) {
++			return this.set.getValues(variable);
++		}
++
+         public Iterator iterator() {
+             Iterator iterator = set.iterator();
+             for (int i = 0; i < offset && iterator.hasNext(); i++) {
+diff -ur sparql-0.7/src/main/name/levering/ryan/sparql/logic/StreamedSetUnionLogic.java sparql-0.7j/src/main/name/levering/ryan/sparql/logic/StreamedSetUnionLogic.java
+--- sparql-0.7/src/main/name/levering/ryan/sparql/logic/StreamedSetUnionLogic.java	2005-11-28 16:39:28.000000000 -0500
++++ sparql-0.7j/src/main/name/levering/ryan/sparql/logic/StreamedSetUnionLogic.java	2005-12-07 12:42:13.000000000 -0500
+@@ -6,8 +6,10 @@
+ package name.levering.ryan.sparql.logic;
+ 
+ import java.util.ArrayList;
++import java.util.HashSet;
+ import java.util.Iterator;
+ import java.util.List;
++import java.util.Set;
+ 
+ import name.levering.ryan.sparql.common.RdfBindingRow;
+ import name.levering.ryan.sparql.common.RdfBindingSet;
+@@ -71,6 +73,13 @@
+         public List getVariables() {
+             return this.variables;
+         }
++		
++		public Set getValues(Variable variable) {
++			Set ret = new HashSet();
++			if (set1.getVariables().contains(variable)) ret.addAll(set1.getValues(variable));
++			if (set2.getVariables().contains(variable)) ret.addAll(set2.getValues(variable));
++			return ret;
++		}
+ 
+         public boolean contains(Object object) {
+             return set1.contains(object) || set2.contains(object);
+diff -ur sparql-0.7/src/main/name/levering/ryan/sparql/logic/StreamedTripleConstraintLogic.java sparql-0.7j/src/main/name/levering/ryan/sparql/logic/StreamedTripleConstraintLogic.java
+--- sparql-0.7/src/main/name/levering/ryan/sparql/logic/StreamedTripleConstraintLogic.java	2005-11-28 16:39:28.000000000 -0500
++++ sparql-0.7j/src/main/name/levering/ryan/sparql/logic/StreamedTripleConstraintLogic.java	2006-05-11 06:14:10.000000000 -0400
+@@ -9,7 +9,9 @@
+ import java.util.Collection;
+ import java.util.Iterator;
+ import java.util.List;
++import java.util.Map;
+ import java.util.NoSuchElementException;
++import java.util.Set;
+ 
+ import name.levering.ryan.sparql.common.GraphStatement;
+ import name.levering.ryan.sparql.common.RdfBindingRow;
+@@ -65,7 +67,7 @@
+      *  
+      */
+     public RdfBindingSet constrain(RdfBindingSet bindings, RdfSource source,
+-            Collection defaultDatasets, Collection namedDatasets) {
++            Collection defaultDatasets, Collection namedDatasets, Map knownValues) {
+ 
+         int[] flags = new int[3];
+         List variables = new ArrayList();
+@@ -168,7 +170,11 @@
+             return variables;
+         }
+ 
+-        private class BoundStatementIterator implements Iterator {
++ 		public Set getValues(Variable variable) {
++			return null;
++		}
++		
++       private class BoundStatementIterator implements Iterator {
+ 
+             private Iterator itIterator = statementIterators.iterator();
+ 
+diff -ur sparql-0.7/src/main/name/levering/ryan/sparql/model/data/CallExpressionData.java sparql-0.7j/src/main/name/levering/ryan/sparql/model/data/CallExpressionData.java
+--- sparql-0.7/src/main/name/levering/ryan/sparql/model/data/CallExpressionData.java	2005-11-28 16:39:28.000000000 -0500
++++ sparql-0.7j/src/main/name/levering/ryan/sparql/model/data/CallExpressionData.java	2006-02-19 10:43:38.000000000 -0500
+@@ -5,7 +5,9 @@
+  */
+ package name.levering.ryan.sparql.model.data;
+ 
+-import java.util.List;
++import java.util.List;
++import java.util.Iterator;
++import java.util.Set;
+ 
+ import org.openrdf.model.URI;
+ 
+@@ -34,5 +36,4 @@
+      *         to the function logic
+      */
+     public abstract List getArguments(); // Type ExpressionLogic
+-
+ }
+diff -ur sparql-0.7/src/main/name/levering/ryan/sparql/model/logic/ConstraintLogic.java sparql-0.7j/src/main/name/levering/ryan/sparql/model/logic/ConstraintLogic.java
+--- sparql-0.7/src/main/name/levering/ryan/sparql/model/logic/ConstraintLogic.java	2005-11-28 16:39:28.000000000 -0500
++++ sparql-0.7j/src/main/name/levering/ryan/sparql/model/logic/ConstraintLogic.java	2006-05-11 06:06:25.000000000 -0400
+@@ -6,6 +6,7 @@
+ package name.levering.ryan.sparql.model.logic;
+ 
+ import java.util.Collection;
++import java.util.Map;
+ 
+ import name.levering.ryan.sparql.common.RdfBindingSet;
+ import name.levering.ryan.sparql.common.RdfSource;
+@@ -28,6 +29,9 @@
+      * bindings or returning a set that will be constrained via intersection
+      * with the current set.
+      * 
++	 * @param knownValues a mapping from variables to lists of values that
++	 *            the variable must be drawn from, or null if there are
++	 *            no such constraints.
+      * @param bindings the set of current bindings to evaluate against
+      * @param source the RDF source, which is dealt with by the triple
+      *            constraint
+@@ -37,6 +41,6 @@
+      *            for unbound variables
+      */
+     public RdfBindingSet constrain(RdfBindingSet bindings, RdfSource source,
+-            Collection defaultDatasets, Collection namedDatasets);
++            Collection defaultDatasets, Collection namedDatasets, Map knownValues);
+ 
+ }
+diff -ur sparql-0.7/src/main/name/levering/ryan/sparql/model/logic/ExpressionLogic.java sparql-0.7j/src/main/name/levering/ryan/sparql/model/logic/ExpressionLogic.java
+--- sparql-0.7/src/main/name/levering/ryan/sparql/model/logic/ExpressionLogic.java	2005-11-28 16:39:28.000000000 -0500
++++ sparql-0.7j/src/main/name/levering/ryan/sparql/model/logic/ExpressionLogic.java	2006-03-10 11:32:05.000000000 -0500
+@@ -5,9 +5,12 @@
+  */
+ package name.levering.ryan.sparql.model.logic;
+ 
++import java.util.Set;
++
+ import name.levering.ryan.sparql.common.RdfBindingRow;
+ 
+ import org.openrdf.model.Value;
++import name.levering.ryan.sparql.common.Variable;
+ 
+ /**
+  * A very powerful and prevalent logic in the design of the SPARQL engine, this
+@@ -29,5 +32,12 @@
+      *         binding
+      */
+     public Value evaluate(RdfBindingRow bindings);
++    
+ 
++    /**
++     * Gets a set of all variables tested by the logic.
++     * 
++     * @param variables a set to which to add all variables mentioned in expressions in this logic
++     */
++    public void getVariables(Set variables);    
+ }
+\ No newline at end of file
+diff -ur sparql-0.7/src/main/name/levering/ryan/sparql/parser/model/ASTFilterConstraint.java sparql-0.7j/src/main/name/levering/ryan/sparql/parser/model/ASTFilterConstraint.java
+--- sparql-0.7/src/main/name/levering/ryan/sparql/parser/model/ASTFilterConstraint.java	2005-11-28 16:39:30.000000000 -0500
++++ sparql-0.7j/src/main/name/levering/ryan/sparql/parser/model/ASTFilterConstraint.java	2006-05-11 06:14:48.000000000 -0400
+@@ -4,6 +4,7 @@
+ 
+ import java.util.Collection;
+ import java.util.Collections;
++import java.util.Map;
+ import java.util.Set;
+ 
+ import name.levering.ryan.sparql.common.RdfBindingSet;
+@@ -25,8 +26,8 @@
+         return (ExpressionLogic) this.jjtGetChild(0);
+     }
+ 
+-    public RdfBindingSet constrain(RdfBindingSet bindings, RdfSource source, Collection defaultDatasets, Collection namedDatasets) {
+-        return logic.constrain(bindings, source, defaultDatasets, namedDatasets);
++    public RdfBindingSet constrain(RdfBindingSet bindings, RdfSource source, Collection defaultDatasets, Collection namedDatasets, Map knownValues) {
++        return logic.constrain(bindings, source, defaultDatasets, namedDatasets, knownValues);
+     }
+ 
+     public Set getVariables() {
+diff -ur sparql-0.7/src/main/name/levering/ryan/sparql/parser/model/ASTGraphConstraint.java sparql-0.7j/src/main/name/levering/ryan/sparql/parser/model/ASTGraphConstraint.java
+--- sparql-0.7/src/main/name/levering/ryan/sparql/parser/model/ASTGraphConstraint.java	2005-11-28 16:39:28.000000000 -0500
++++ sparql-0.7j/src/main/name/levering/ryan/sparql/parser/model/ASTGraphConstraint.java	2006-05-11 06:15:03.000000000 -0400
+@@ -3,6 +3,7 @@
+ package name.levering.ryan.sparql.parser.model;
+ 
+ import java.util.Collection;
++import java.util.Map;
+ import java.util.Set;
+ 
+ import name.levering.ryan.sparql.common.RdfBindingSet;
+@@ -41,8 +42,8 @@
+         return null;
+     }
+ 
+-    public RdfBindingSet constrain(RdfBindingSet bindings, RdfSource source, Collection defaultDatasets, Collection namedDatasets) {
+-        return logic.constrain(bindings, source, defaultDatasets, namedDatasets);
++    public RdfBindingSet constrain(RdfBindingSet bindings, RdfSource source, Collection defaultDatasets, Collection namedDatasets, Map knownValues) {
++        return logic.constrain(bindings, source, defaultDatasets, namedDatasets, knownValues);
+     }
+ 
+     public Set getVariables() {
+diff -ur sparql-0.7/src/main/name/levering/ryan/sparql/parser/model/ASTGroupConstraint.java sparql-0.7j/src/main/name/levering/ryan/sparql/parser/model/ASTGroupConstraint.java
+--- sparql-0.7/src/main/name/levering/ryan/sparql/parser/model/ASTGroupConstraint.java	2005-11-28 16:39:28.000000000 -0500
++++ sparql-0.7j/src/main/name/levering/ryan/sparql/parser/model/ASTGroupConstraint.java	2006-05-11 06:15:21.000000000 -0400
+@@ -6,6 +6,7 @@
+ import java.util.Collection;
+ import java.util.HashSet;
+ import java.util.Iterator;
++import java.util.Map;
+ import java.util.Set;
+ 
+ import name.levering.ryan.sparql.common.RdfBindingSet;
+@@ -61,8 +62,8 @@
+         }
+     }
+ 
+-    public RdfBindingSet constrain(RdfBindingSet bindings, RdfSource source, Collection defaultDatasets, Collection namedDatasets) {
+-        return logic.constrain(bindings, source, defaultDatasets, namedDatasets);
++    public RdfBindingSet constrain(RdfBindingSet bindings, RdfSource source, Collection defaultDatasets, Collection namedDatasets, Map knownValues) {
++        return logic.constrain(bindings, source, defaultDatasets, namedDatasets, knownValues);
+     }
+ 
+     public Set getVariables() {
+diff -ur sparql-0.7/src/main/name/levering/ryan/sparql/parser/model/ASTLiteral.java sparql-0.7j/src/main/name/levering/ryan/sparql/parser/model/ASTLiteral.java
+--- sparql-0.7/src/main/name/levering/ryan/sparql/parser/model/ASTLiteral.java	2005-11-28 16:39:30.000000000 -0500
++++ sparql-0.7j/src/main/name/levering/ryan/sparql/parser/model/ASTLiteral.java	2006-01-07 11:03:30.000000000 -0500
+@@ -72,4 +72,15 @@
+         }
+     }
+     
++	public int hashCode() {
++		return label.hashCode();
++	}
++	
++	public boolean equals(Object other) {
++		if (!(other instanceof Literal)) return false;
++		Literal lit = (Literal)other;
++		return label.equals(lit.getLabel())
++			&& ((language == null && lit.getLanguage() == null) || (language != null && lit.getLanguage() != null && language.equals(lit.getLanguage())))
++			&& ((datatype == null && lit.getDatatype() == null) || (datatype != null && lit.getDatatype() != null && datatype.equals(lit.getDatatype()))); 
++	}
+ }
+diff -ur sparql-0.7/src/main/name/levering/ryan/sparql/parser/model/ASTOptionalConstraint.java sparql-0.7j/src/main/name/levering/ryan/sparql/parser/model/ASTOptionalConstraint.java
+--- sparql-0.7/src/main/name/levering/ryan/sparql/parser/model/ASTOptionalConstraint.java	2005-11-28 16:39:30.000000000 -0500
++++ sparql-0.7j/src/main/name/levering/ryan/sparql/parser/model/ASTOptionalConstraint.java	2006-05-11 06:15:36.000000000 -0400
+@@ -3,6 +3,7 @@
+ package name.levering.ryan.sparql.parser.model;
+ 
+ import java.util.Collection;
++import java.util.Map;
+ import java.util.Set;
+ 
+ import name.levering.ryan.sparql.common.RdfBindingSet;
+@@ -25,8 +26,8 @@
+         return (GroupConstraint) this.jjtGetChild(0);
+     }
+ 
+-    public RdfBindingSet constrain(RdfBindingSet bindings, RdfSource source, Collection defaultDatasets, Collection namedDatasets) {
+-        return logic.constrain(bindings, source, defaultDatasets, namedDatasets);
++    public RdfBindingSet constrain(RdfBindingSet bindings, RdfSource source, Collection defaultDatasets, Collection namedDatasets, Map knownValues) {
++        return logic.constrain(bindings, source, defaultDatasets, namedDatasets, knownValues);
+     }
+ 
+     public Set getVariables() {
+diff -ur sparql-0.7/src/main/name/levering/ryan/sparql/parser/model/ASTUnionConstraint.java sparql-0.7j/src/main/name/levering/ryan/sparql/parser/model/ASTUnionConstraint.java
+--- sparql-0.7/src/main/name/levering/ryan/sparql/parser/model/ASTUnionConstraint.java	2005-11-28 16:39:28.000000000 -0500
++++ sparql-0.7j/src/main/name/levering/ryan/sparql/parser/model/ASTUnionConstraint.java	2006-05-11 06:15:54.000000000 -0400
+@@ -6,6 +6,7 @@
+ import java.util.Collection;
+ import java.util.HashSet;
+ import java.util.Iterator;
++import java.util.Map;
+ import java.util.Set;
+ 
+ import name.levering.ryan.sparql.common.RdfBindingSet;
+@@ -32,8 +33,8 @@
+         return constraints;
+     }
+ 
+-    public RdfBindingSet constrain(RdfBindingSet bindings, RdfSource source, Collection defaultDatasets, Collection namedDatasets) {
+-        return logic.constrain(bindings, source, defaultDatasets, namedDatasets);
++    public RdfBindingSet constrain(RdfBindingSet bindings, RdfSource source, Collection defaultDatasets, Collection namedDatasets, Map knownValues) {
++        return logic.constrain(bindings, source, defaultDatasets, namedDatasets, knownValues);
+     }
+ 
+     public Set getVariables() {
+diff -ur sparql-0.7/src/main/name/levering/ryan/sparql/parser/model/ASTVar.java sparql-0.7j/src/main/name/levering/ryan/sparql/parser/model/ASTVar.java
+--- sparql-0.7/src/main/name/levering/ryan/sparql/parser/model/ASTVar.java	2005-11-28 16:39:28.000000000 -0500
++++ sparql-0.7j/src/main/name/levering/ryan/sparql/parser/model/ASTVar.java	2006-02-19 10:48:17.000000000 -0500
+@@ -1,6 +1,8 @@
+ /* Generated By:JJTree: Do not edit this line. ASTVar.java */
+ 
+ package name.levering.ryan.sparql.parser.model;
++
++import java.util.Set;
+ 
+ import name.levering.ryan.sparql.common.RdfBindingRow;
+ import name.levering.ryan.sparql.common.Variable;
+@@ -49,4 +51,7 @@
+         this.logic = factory.getVariableLogic(this);
+     }
+ 
++    public void getVariables(Set variables) {
++    	variables.add(this);
++    }
+ }
+diff -ur sparql-0.7/src/main/name/levering/ryan/sparql/parser/model/BinaryExpressionNode.java sparql-0.7j/src/main/name/levering/ryan/sparql/parser/model/BinaryExpressionNode.java
+--- sparql-0.7/src/main/name/levering/ryan/sparql/parser/model/BinaryExpressionNode.java	2005-11-28 16:39:28.000000000 -0500
++++ sparql-0.7j/src/main/name/levering/ryan/sparql/parser/model/BinaryExpressionNode.java	2006-03-10 09:51:32.000000000 -0500
+@@ -5,6 +5,8 @@
+  */
+ package name.levering.ryan.sparql.parser.model;
+ 
++import java.util.Set;
++
+ import name.levering.ryan.sparql.common.RdfBindingRow;
+ import name.levering.ryan.sparql.model.data.BinaryExpressionData;
+ import name.levering.ryan.sparql.model.logic.ExpressionLogic;
+@@ -44,6 +46,11 @@
+     }
+     
+     public void applyLogic(LogicFactory factory) {
+-        this.logic = getLogic(factory);
++       this.logic = getLogic(factory);
+     }
++
++    public void getVariables(Set variables) {
++    	getLeftExpression().getVariables(variables);
++    	getRightExpression().getVariables(variables);
++    }    
+ }
+diff -ur sparql-0.7/src/main/name/levering/ryan/sparql/parser/model/DelegatingTripleConstraint.java sparql-0.7j/src/main/name/levering/ryan/sparql/parser/model/DelegatingTripleConstraint.java
+--- sparql-0.7/src/main/name/levering/ryan/sparql/parser/model/DelegatingTripleConstraint.java	2005-11-28 16:39:28.000000000 -0500
++++ sparql-0.7j/src/main/name/levering/ryan/sparql/parser/model/DelegatingTripleConstraint.java	2006-05-11 06:16:03.000000000 -0400
+@@ -7,6 +7,7 @@
+ 
+ import java.util.Collection;
+ import java.util.HashSet;
++import java.util.Map;
+ import java.util.Set;
+ 
+ import name.levering.ryan.sparql.common.RdfBindingSet;
+@@ -17,6 +18,8 @@
+ import name.levering.ryan.sparql.model.logic.ConstraintLogic;
+ import name.levering.ryan.sparql.model.logic.ExpressionLogic;
+ 
++import name.levering.ryan.sparql.logic.AdvancedStreamedTripleConstraintLogic;
++
+ public class DelegatingTripleConstraint implements TripleConstraint {
+     
+     private ConstraintLogic logic;
+@@ -39,8 +42,8 @@
+         return statement.getObjectExpression();
+     }
+ 
+-    public RdfBindingSet constrain(RdfBindingSet bindings, RdfSource source, Collection defaultDatasets, Collection namedDatasets) {
+-        return this.logic.constrain(bindings, source, defaultDatasets, namedDatasets);
++    public RdfBindingSet constrain(RdfBindingSet bindings, RdfSource source, Collection defaultDatasets, Collection namedDatasets, Map knownValues) {
++        return this.logic.constrain(bindings, source, defaultDatasets, namedDatasets, knownValues);
+     }
+ 
+     public Set getVariables() {
+@@ -64,5 +67,11 @@
+     public void setLogic(ConstraintLogic logic) {
+         this.logic = logic;
+     }
++	
++	public void setLiteralFilters(Map literalFilters) {
++		if (logic instanceof AdvancedStreamedTripleConstraintLogic) {
++			((AdvancedStreamedTripleConstraintLogic)logic).literalFilters = literalFilters;
++		}
++	}
+ 
+ }
+diff -ur sparql-0.7/src/main/name/levering/ryan/sparql/parser/model/FunctionNode.java sparql-0.7j/src/main/name/levering/ryan/sparql/parser/model/FunctionNode.java
+--- sparql-0.7/src/main/name/levering/ryan/sparql/parser/model/FunctionNode.java	2005-11-28 16:39:30.000000000 -0500
++++ sparql-0.7j/src/main/name/levering/ryan/sparql/parser/model/FunctionNode.java	2006-03-10 10:45:46.000000000 -0500
+@@ -8,6 +8,7 @@
+ import java.util.ArrayList;
+ import java.util.Iterator;
+ import java.util.List;
++import java.util.Set;
+ 
+ import name.levering.ryan.sparql.common.RdfBindingRow;
+ import name.levering.ryan.sparql.common.impl.SPARQLValueFactory;
+@@ -71,4 +72,8 @@
+         this.logic = getLogic(factory);
+     }
+     
++    public void getVariables(Set variables) {
++    	for (Iterator i = getArguments().iterator(); i.hasNext(); )
++    		((ExpressionLogic)i.next()).getVariables(variables);
++    }
+ }
+diff -ur sparql-0.7/src/main/name/levering/ryan/sparql/parser/model/SimpleNode.java sparql-0.7j/src/main/name/levering/ryan/sparql/parser/model/SimpleNode.java
+--- sparql-0.7/src/main/name/levering/ryan/sparql/parser/model/SimpleNode.java	2005-11-28 16:39:28.000000000 -0500
++++ sparql-0.7j/src/main/name/levering/ryan/sparql/parser/model/SimpleNode.java	2006-03-10 10:29:46.000000000 -0500
+@@ -2,9 +2,11 @@
+ 
+ package name.levering.ryan.sparql.parser.model;
+ 
++import java.util.Set;
+ import java.lang.reflect.InvocationTargetException;
+ import java.lang.reflect.Method;
+ 
++import name.levering.ryan.sparql.common.QueryException;
+ import name.levering.ryan.sparql.model.logic.LogicFactory;
+ 
+ public abstract class SimpleNode implements Node {
+@@ -63,7 +65,7 @@
+         } catch (IllegalAccessException e) {
+             // Do nothing
+         } catch (InvocationTargetException e) {
+-            // Do nothing
++			throw new QueryException(e.getCause().getMessage());
+         }
+     }
+ 
+@@ -91,4 +93,5 @@
+     public String toString(String prefix) {
+         return prefix + toString();
+     }
++  
+ }
+diff -ur sparql-0.7/src/main/name/levering/ryan/sparql/parser/model/UnaryExpressionNode.java sparql-0.7j/src/main/name/levering/ryan/sparql/parser/model/UnaryExpressionNode.java
+--- sparql-0.7/src/main/name/levering/ryan/sparql/parser/model/UnaryExpressionNode.java	2005-11-28 16:39:28.000000000 -0500
++++ sparql-0.7j/src/main/name/levering/ryan/sparql/parser/model/UnaryExpressionNode.java	2006-02-19 10:33:46.000000000 -0500
+@@ -4,6 +4,8 @@
+  * See LICENSE for full license information
+  */
+ package name.levering.ryan.sparql.parser.model;
++
++import java.util.Set;
+ 
+ import name.levering.ryan.sparql.common.RdfBindingRow;
+ import name.levering.ryan.sparql.model.data.UnaryExpressionData;
+@@ -37,6 +39,9 @@
+     
+     public void applyLogic(LogicFactory factory) {
+         this.logic = getLogic(factory);
+-    }
+-
++    }
++    
++    public void getVariables(Set variables) {
++    	getExpression().getVariables(variables);
++    }
+ }
+diff -ur sparql-0.7/src/main/name/levering/ryan/sparql/parser/model/URINode.java sparql-0.7j/src/main/name/levering/ryan/sparql/parser/model/URINode.java
+--- sparql-0.7/src/main/name/levering/ryan/sparql/parser/model/URINode.java	2005-11-28 16:39:28.000000000 -0500
++++ sparql-0.7j/src/main/name/levering/ryan/sparql/parser/model/URINode.java	2006-01-07 10:55:08.000000000 -0500
+@@ -35,4 +35,12 @@
+ 
+     public abstract String getURI();
+     
++	public int hashCode() {
++		return getURI().hashCode();
++	}
++	
++	public boolean equals(Object other) {
++		if (other instanceof URI) return getURI().equals(((URI)other).toString());
++		return false;
++	}
+ }
+diff -ur sparql-0.7/src/main/name/levering/ryan/sparql/parser/model/ValueNode.java sparql-0.7j/src/main/name/levering/ryan/sparql/parser/model/ValueNode.java
+--- sparql-0.7/src/main/name/levering/ryan/sparql/parser/model/ValueNode.java	2005-11-28 16:39:28.000000000 -0500
++++ sparql-0.7j/src/main/name/levering/ryan/sparql/parser/model/ValueNode.java	2006-02-19 10:29:45.000000000 -0500
+@@ -4,6 +4,8 @@
+  * See LICENSE for full license information
+  */
+ package name.levering.ryan.sparql.parser.model;
++
++import java.util.Set;
+ 
+ import name.levering.ryan.sparql.common.RdfBindingRow;
+ import name.levering.ryan.sparql.common.impl.SPARQLValueFactory;
+@@ -49,5 +51,8 @@
+     
+     protected abstract ValueExpression getValue(SPARQLValueFactory factory);
+     
+-    protected abstract String toQueryString();
++    protected abstract String toQueryString();
++    
++    public void getVariables(Set variables) {
++    }       
+ }
+diff -ur sparql-0.7/src/main/name/levering/ryan/sparql/parser/SPARQLParser.java sparql-0.7j/src/main/name/levering/ryan/sparql/parser/SPARQLParser.java
+--- sparql-0.7/src/main/name/levering/ryan/sparql/parser/SPARQLParser.java	2005-11-28 16:39:28.000000000 -0500
++++ sparql-0.7j/src/main/name/levering/ryan/sparql/parser/SPARQLParser.java	2006-04-21 13:28:50.000000000 -0400
+@@ -631,46 +631,46 @@
+     case VAR1:
+     case VAR2:
+     case 57:
+-      switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+-      case Q_IRIREF:
+-      case QNAME_NS:
+-      case QNAME:
+-        FunctionCall();
+-        break;
+-      case VAR1:
+-      case VAR2:
+-        Var();
+-        break;
+-      case 57:
+-                                               ASTDefaultOrder jjtn003 = new ASTDefaultOrder(JJTDEFAULTORDER);
+-                                               boolean jjtc003 = true;
+-                                               jjtree.openNodeScope(jjtn003);
+-        try {
++                      ASTDefaultOrder jjtn003 = new ASTDefaultOrder(JJTDEFAULTORDER);
++                      boolean jjtc003 = true;
++                      jjtree.openNodeScope(jjtn003);
++      try {
++        switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
++        case Q_IRIREF:
++        case QNAME_NS:
++        case QNAME:
++          FunctionCall();
++          break;
++        case VAR1:
++        case VAR2:
++          Var();
++          break;
++        case 57:
+           BracketedExpression();
+-        } catch (Throwable jjte003) {
+-                                               if (jjtc003) {
+-                                                 jjtree.clearNodeScope(jjtn003);
+-                                                 jjtc003 = false;
+-                                               } else {
+-                                                 jjtree.popNode();
+-                                               }
+-                                               if (jjte003 instanceof RuntimeException) {
+-                                                 {if (true) throw (RuntimeException)jjte003;}
+-                                               }
+-                                               if (jjte003 instanceof ParseException) {
+-                                                 {if (true) throw (ParseException)jjte003;}
+-                                               }
+-                                               {if (true) throw (Error)jjte003;}
+-        } finally {
+-                                               if (jjtc003) {
+-                                                 jjtree.closeNodeScope(jjtn003, true);
+-                                               }
++          break;
++        default:
++          jj_la1[20] = jj_gen;
++          jj_consume_token(-1);
++          throw new ParseException();
+         }
+-        break;
+-      default:
+-        jj_la1[20] = jj_gen;
+-        jj_consume_token(-1);
+-        throw new ParseException();
++      } catch (Throwable jjte003) {
++                      if (jjtc003) {
++                        jjtree.clearNodeScope(jjtn003);
++                        jjtc003 = false;
++                      } else {
++                        jjtree.popNode();
++                      }
++                      if (jjte003 instanceof RuntimeException) {
++                        {if (true) throw (RuntimeException)jjte003;}
++                      }
++                      if (jjte003 instanceof ParseException) {
++                        {if (true) throw (ParseException)jjte003;}
++                      }
++                      {if (true) throw (Error)jjte003;}
++      } finally {
++                      if (jjtc003) {
++                        jjtree.closeNodeScope(jjtn003, true);
++                      }
+       }
+       break;
+     default:
+diff -ur sparql-0.7/src/main/name/levering/ryan/sparql/parser/SPARQLParserTokenManager.java sparql-0.7j/src/main/name/levering/ryan/sparql/parser/SPARQLParserTokenManager.java
+--- sparql-0.7/src/main/name/levering/ryan/sparql/parser/SPARQLParserTokenManager.java	2005-11-28 16:39:30.000000000 -0500
++++ sparql-0.7j/src/main/name/levering/ryan/sparql/parser/SPARQLParserTokenManager.java	2006-04-21 13:28:50.000000000 -0400
+@@ -1,15 +1,15 @@
+ /* Generated By:JJTree&JavaCC: Do not edit this line. SPARQLParserTokenManager.java */
+ package name.levering.ryan.sparql.parser;
+-
++import name.levering.ryan.sparql.parser.model.*;
+ import name.levering.ryan.sparql.model.Query;
+ 
+ public class SPARQLParserTokenManager implements SPARQLParserConstants
+ {
+   public  java.io.PrintStream debugStream = System.out;
+   public  void setDebugStream(java.io.PrintStream ds) { debugStream = ds; }
+-private final int jjStopStringLiteralDfa_0(int pos, long active0, long active1)
++private final int jjStopStringLiteralDfa_0(int pos, long active0, long active1)
+ {
+-   switch (pos)
++   switch (pos)
+    {
+       case 0:
+          if ((active0 & 0x4f1ffef0000000L) != 0L || (active1 & 0x37f80L) != 0L)
+@@ -53,7 +53,7 @@
+          return -1;
+    }
+ }
+-private final int jjStartNfa_0(int pos, long active0, long active1)
++private final int jjStartNfa_0(int pos, long active0, long active1)
+ {
+    return jjMoveNfa_0(jjStopStringLiteralDfa_0(pos, active0, active1), pos + 1);
+ }
+@@ -637,44 +637,44 @@
+    jjCheckNAdd(jjnextStates[start]);
+    jjCheckNAdd(jjnextStates[start + 1]);
+ }
+-static final long[] jjbitVec0 = {
+-   0xfffffffffffffffeL, 0xffffffffffffffffL, 0xffffffffffffffffL, 0xffffffffffffffffL
++static final long[] jjbitVec0 = {
++   0xfffffffffffffffeL, 0xffffffffffffffffL, 0xffffffffffffffffL, 0xffffffffffffffffL
+ };
+-static final long[] jjbitVec2 = {
+-   0x0L, 0x0L, 0xffffffffffffffffL, 0xffffffffffffffffL
++static final long[] jjbitVec2 = {
++   0x0L, 0x0L, 0xffffffffffffffffL, 0xffffffffffffffffL
+ };
+-static final long[] jjbitVec3 = {
+-   0xfffe7000fffffff6L, 0xffffffffffffffffL, 0xffffffffffffffffL, 0x5e00000000ffffffL
++static final long[] jjbitVec3 = {
++   0xfffe7000fffffff6L, 0xffffffffffffffffL, 0xffffffffffffffffL, 0x5e00000000ffffffL
+ };
+-static final long[] jjbitVec4 = {
+-   0x0L, 0x0L, 0x0L, 0xff7fffffff7fffffL
++static final long[] jjbitVec4 = {
++   0x0L, 0x0L, 0x0L, 0xff7fffffff7fffffL
+ };
+-static final long[] jjbitVec5 = {
+-   0x0L, 0xbfff000000000000L, 0xffffffffffffffffL, 0xffffffffffffffffL
++static final long[] jjbitVec5 = {
++   0x0L, 0xbfff000000000000L, 0xffffffffffffffffL, 0xffffffffffffffffL
+ };
+-static final long[] jjbitVec6 = {
+-   0x3000L, 0xffff000000000000L, 0xffffffffffffffffL, 0xffffffffffffffffL
++static final long[] jjbitVec6 = {
++   0x3000L, 0xffff000000000000L, 0xffffffffffffffffL, 0xffffffffffffffffL
+ };
+-static final long[] jjbitVec7 = {
+-   0xffffffffffffffffL, 0xffffffffffffffffL, 0xffffL, 0x0L
++static final long[] jjbitVec7 = {
++   0xffffffffffffffffL, 0xffffffffffffffffL, 0xffffL, 0x0L
+ };
+-static final long[] jjbitVec8 = {
+-   0xffffffffffffffffL, 0xffffffffffffffffL, 0xffffffffffffffffL, 0xffffffffffffL
++static final long[] jjbitVec8 = {
++   0xffffffffffffffffL, 0xffffffffffffffffL, 0xffffffffffffffffL, 0xffffffffffffL
+ };
+-static final long[] jjbitVec9 = {
+-   0xffffffffffffffffL, 0xffffffffffffffffL, 0xffffffffffffffffL, 0xffff00000000ffffL
++static final long[] jjbitVec9 = {
++   0xffffffffffffffffL, 0xffffffffffffffffL, 0xffffffffffffffffL, 0xffff00000000ffffL
+ };
+-static final long[] jjbitVec10 = {
+-   0xffffffffffffffffL, 0xffffffffffffffffL, 0xffffffffffffffffL, 0x3fffffffffffffffL
++static final long[] jjbitVec10 = {
++   0xffffffffffffffffL, 0xffffffffffffffffL, 0xffffffffffffffffL, 0x3fffffffffffffffL
+ };
+-static final long[] jjbitVec11 = {
+-   0x0L, 0x0L, 0x80000000000000L, 0xff7fffffff7fffffL
++static final long[] jjbitVec11 = {
++   0x0L, 0x0L, 0x80000000000000L, 0xff7fffffff7fffffL
+ };
+-static final long[] jjbitVec12 = {
+-   0xffffffffffffffffL, 0xbfffffffffffffffL, 0xffffffffffffffffL, 0xffffffffffffffffL
++static final long[] jjbitVec12 = {
++   0xffffffffffffffffL, 0xbfffffffffffffffL, 0xffffffffffffffffL, 0xffffffffffffffffL
+ };
+-static final long[] jjbitVec13 = {
+-   0x8000000000003000L, 0xffff000000000001L, 0xffffffffffffffffL, 0xffffffffffffffffL
++static final long[] jjbitVec13 = {
++   0x8000000000003000L, 0xffff000000000001L, 0xffffffffffffffffL, 0xffffffffffffffffL
+ };
+ private final int jjMoveNfa_0(int startState, int curPos)
+ {
+@@ -726,7 +726,7 @@
+                      jjCheckNAddStates(8, 10);
+                   break;
+                case 81:
+-                  if ((0xbfffffffffffffffL & l) != 0L)
++                  if ((0xafffff7e00000000L & l) != 0L)
+                      jjCheckNAddTwoStates(1, 2);
+                   else if (curChar == 62)
+                   {
+@@ -756,7 +756,7 @@
+                      jjstateSet[jjnewStateCnt++] = 60;
+                   break;
+                case 1:
+-                  if ((0xbfffffffffffffffL & l) != 0L)
++                  if ((0xafffff7e00000000L & l) != 0L)
+                      jjCheckNAddTwoStates(1, 2);
+                   break;
+                case 2:
+@@ -1061,7 +1061,8 @@
+                   break;
+                case 81:
+                case 1:
+-                  jjCheckNAddTwoStates(1, 2);
++                  if ((0xd7fffffeffffffffL & l) != 0L)
++                     jjCheckNAddTwoStates(1, 2);
+                   break;
+                case 80:
+                   if ((0x7fffffe87fffffeL & l) != 0L)
+@@ -1461,10 +1462,10 @@
+       catch(java.io.IOException e) { return curPos; }
+    }
+ }
+-static final int[] jjnextStates = {
+-   69, 70, 71, 76, 77, 29, 30, 32, 24, 25, 27, 5, 6, 34, 35, 37, 
+-   39, 40, 42, 46, 47, 49, 51, 52, 54, 65, 66, 58, 59, 60, 61, 62, 
+-   63, 21, 22, 74, 75, 78, 79, 
++static final int[] jjnextStates = {
++   69, 70, 71, 76, 77, 29, 30, 32, 24, 25, 27, 5, 6, 34, 35, 37, 
++   39, 40, 42, 46, 47, 49, 51, 52, 54, 65, 66, 58, 59, 60, 61, 62, 
++   63, 21, 22, 74, 75, 78, 79, 
+ };
+ private static final boolean jjCanMove_0(int hiByte, int i1, int i2, long l1, long l2)
+ {
+@@ -1542,23 +1543,23 @@
+    "DEFAULT", 
+    "IN_SINGLE_LINE_COMMENT", 
+ };
+-public static final int[] jjnewLexState = {
+-   -1, -1, -1, -1, -1, -1, 1, 0, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 
+-   -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 
+-   -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 
+-   -1, -1, -1, -1, -1, -1, -1, 
++public static final int[] jjnewLexState = {
++   -1, -1, -1, -1, -1, -1, 1, 0, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 
++   -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 
++   -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 
++   -1, -1, -1, -1, -1, -1, -1, 
+ };
+-static final long[] jjtoToken = {
+-   0xfffffffff03ffe01L, 0x3ffffL, 
++static final long[] jjtoToken = {
++   0xfffffffff03ffe01L, 0x3ffffL, 
+ };
+-static final long[] jjtoSkip = {
+-   0xbeL, 0x0L, 
++static final long[] jjtoSkip = {
++   0xbeL, 0x0L, 
+ };
+-static final long[] jjtoSpecial = {
+-   0x80L, 0x0L, 
++static final long[] jjtoSpecial = {
++   0x80L, 0x0L, 
+ };
+-static final long[] jjtoMore = {
+-   0x140L, 0x0L, 
++static final long[] jjtoMore = {
++   0x140L, 0x0L, 
+ };
+ protected JavaCharStream input_stream;
+ private final int[] jjrounds = new int[80];
+@@ -1632,7 +1633,7 @@
+   Token matchedToken;
+   int curPos = 0;
+ 
+-  EOFLoop :
++  EOFLoop :
+   for (;;)
+   {   
+    try   
