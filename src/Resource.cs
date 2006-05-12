@@ -18,11 +18,6 @@ namespace SemWeb {
 		internal Resource() {
 		}
 		
-		public override string ToString() {
-			if (Uri != null) return Uri;
-			return "_";
-		}
-		
 		// These get rid of the warning about overring ==, !=.
 		// Since Entity and Literal override these, we're ok.
 		public override bool Equals(object other) {

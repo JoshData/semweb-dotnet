@@ -306,6 +306,11 @@ namespace SemWeb.Query {
 				if (objects != null) Depersist(objects);
 				if (metas != null) Depersist(metas);
 				
+				if (subjects != null && subjects.Length == 0) return new StatementIterator(null);
+				if (predicates != null && predicates.Length == 0) return new StatementIterator(null);
+				if (objects != null && objects.Length == 0) return new StatementIterator(null);
+				if (metas != null && metas.Length == 0) return new StatementIterator(null);
+				
 				MemoryStore results = new MemoryStore();
 				StatementSink sink = results;
 				
@@ -538,6 +543,7 @@ namespace SemWeb.Query {
 			}
 			
 			public bool hasNext() {
+				if (statements == null) return false;
 				return curindex + 1 < statements.Length;
 			}
 			
