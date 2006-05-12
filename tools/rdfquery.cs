@@ -107,7 +107,7 @@ public class HTMLQuerySink : QueryResultSink {
 	
 	public HTMLQuerySink(TextWriter output) { this.output = output; }
 
-	public override void Init(VariableBinding[] variables) {
+	public override void Init(VariableBinding[] variables, bool distinct, bool ordered) {
 		output.WriteLine("<table>");
 		output.WriteLine("<tr>");
 		foreach (VariableBinding var in variables) {
@@ -204,7 +204,7 @@ public class SQLQuerySink : QueryResultSink {
 		return "TEXT";
 	}
 	
-	public override void Init(VariableBinding[] variables) {
+	public override void Init(VariableBinding[] variables, bool distinct, bool ordered) {
 		output.Write("CREATE TABLE " + table + " (");
 		
 		bool f = true;

@@ -5,6 +5,7 @@
 	* Fixes and optimization for OPTIONAL groups in Sparql.
 	* Sparql CONSTRUCT scopes bnodes properly; DESCRIBE works;
 	  CONSTRUCT still has bugs.
+	* Ensure XML output uses empty elements where possible.
 
 2006-04-18 Version 0.72
 

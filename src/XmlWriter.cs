@@ -291,7 +291,7 @@ namespace SemWeb {
 		
 		public override void Close() {
 			Start(); // make sure the document node was written
-			
+
 			// For any node that was referenced by exactly one predicate,
 			// move the node into that predicate.
 			foreach (DictionaryEntry e in nodeReferences) {
@@ -331,9 +331,11 @@ namespace SemWeb {
 					foreach (XmlElement opred in obj.ChildNodes)
 						SetAttribute(pred, opred.NamespaceURI, ns.GetPrefix(opred.NamespaceURI), opred.LocalName, opred.InnerText);
 					pred.RemoveChild(obj);
+					
+					if (pred.ChildNodes.Count == 0) pred.IsEmpty = true;
 				}
 			}
-		
+
 			base.Close();
 			
 			if (writer != null) {
