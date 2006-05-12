@@ -1091,7 +1091,7 @@ diff -ur sparql-0.7/src/main/name/levering/ryan/sparql/logic/IndexedSetDistincti
          }
 diff -ur sparql-0.7/src/main/name/levering/ryan/sparql/logic/IndexedSetIntersectLogic.java sparql-0.7j/src/main/name/levering/ryan/sparql/logic/IndexedSetIntersectLogic.java
 --- sparql-0.7/src/main/name/levering/ryan/sparql/logic/IndexedSetIntersectLogic.java	2005-11-28 16:39:28.000000000 -0500
-+++ sparql-0.7j/src/main/name/levering/ryan/sparql/logic/IndexedSetIntersectLogic.java	2006-05-09 10:36:11.000000000 -0400
++++ sparql-0.7j/src/main/name/levering/ryan/sparql/logic/IndexedSetIntersectLogic.java	2006-05-12 07:17:33.000000000 -0400
 @@ -12,13 +12,17 @@
  import java.util.Iterator;
  import java.util.List;
@@ -1200,7 +1200,7 @@ diff -ur sparql-0.7/src/main/name/levering/ryan/sparql/logic/IndexedSetIntersect
  
          public boolean contains(Object object) {
              return set1.contains(object) || set2.contains(object);
-@@ -100,19 +145,49 @@
+@@ -100,19 +145,50 @@
          public boolean isEmpty() {
              return set1.isEmpty() && set2.isEmpty();
          }
@@ -1209,12 +1209,13 @@ diff -ur sparql-0.7/src/main/name/levering/ryan/sparql/logic/IndexedSetIntersect
 +			private RdfBindingSet s2;
 +			private Iterator i1, i2;
 +			private RdfBindingRow cur1;
-+			private boolean i2empty;
++			private boolean i1empty, i2empty;
 +
 +			ProductIterator() {
 +				i1 = set1.iterator();
 +				s2 = new RdfBindingSetImpl(set2); // Ensure set 2 is in memory.
 +				i2 = s2.iterator();
++				i1empty = !i1.hasNext();
 +				i2empty = !i2.hasNext();
 +			}
 +			
@@ -1227,7 +1228,7 @@ diff -ur sparql-0.7/src/main/name/levering/ryan/sparql/logic/IndexedSetIntersect
 -
 -            private Iterator currentMatches = null;
 +            public boolean hasNext() {
-+				if (i2empty) return false;
++				if (i1empty || i2empty) return false;
 +                return i1.hasNext() || i2.hasNext();
 +            }			
  
@@ -1257,7 +1258,7 @@ diff -ur sparql-0.7/src/main/name/levering/ryan/sparql/logic/IndexedSetIntersect
  
                  // Initialize the cache
                  for (int i = 0; i < indexMap.length; i++) {
-@@ -120,6 +195,7 @@
+@@ -120,6 +196,7 @@
                  }
  
                  // Build the cache
@@ -1265,7 +1266,7 @@ diff -ur sparql-0.7/src/main/name/levering/ryan/sparql/logic/IndexedSetIntersect
                  while (iterator2.hasNext()) {
                      RdfBindingRow row2 = (RdfBindingRow) iterator2.next();
                      Iterator vars = commonVariables.iterator();
-@@ -133,94 +209,59 @@
+@@ -133,94 +210,59 @@
                              indexMap[i].put(value, rowList);
                          }
                          rowList.add(row2);
@@ -1400,7 +1401,7 @@ diff -ur sparql-0.7/src/main/name/levering/ryan/sparql/logic/IndexedSetIntersect
          }
  
          private class RdfExtensionRow extends AbstractRdfBindingRow {
-@@ -237,9 +278,11 @@
+@@ -237,9 +279,11 @@
              public Value getValue(Variable variable) {
                  if (row1.getVariables().contains(variable)) {
                      return row1.getValue(variable);
