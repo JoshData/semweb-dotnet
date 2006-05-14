@@ -55,6 +55,8 @@ namespace SemWeb.Query {
 			}
 			
 			extFunctions.Add(new TestFunction());
+			extFunctions.Add(new LCFunction());
+			extFunctions.Add(new UCFunction());
 		}
 		
 		public QueryType Type {
@@ -724,6 +726,20 @@ namespace SemWeb.Query {
 			public override string Uri { get { return "http://taubz.for.net/code/semweb/test/function"; } }
 			public override Resource Evaluate(Resource[] args) {
 				return Literal.Create(args.Length == 2 && args[0].Equals(args[1]));
+			}
+		}
+		class LCFunction : RdfFunction {
+			public override string Uri { get { return "http://taubz.for.net/code/semweb/test/lc"; } }
+			public override Resource Evaluate(Resource[] args) {
+				if (args.Length != 1 || !(args[0] is Literal)) throw new InvalidOperationException();
+				return new Literal(((Literal)args[0]).Value.ToLower());
+			}
+		}
+		class UCFunction : RdfFunction {
+			public override string Uri { get { return "http://taubz.for.net/code/semweb/test/uc"; } }
+			public override Resource Evaluate(Resource[] args) {
+				if (args.Length != 1 || !(args[0] is Literal)) throw new InvalidOperationException();
+				return new Literal(((Literal)args[0]).Value.ToUpper());
 			}
 		}
 	}

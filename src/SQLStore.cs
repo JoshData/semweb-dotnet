@@ -758,10 +758,6 @@ namespace SemWeb.Stores {
 				throw new FormatException("SQL store returned a literal value as " + r.GetType());
 		}
 		
-		private struct SPOLM {
-			public int S, P, OT, OID, M;
-		}
-		
 		private static void AppendComma(StringBuilder builder, string text, bool comma) {
 			if (comma)
 				builder.Append(',');

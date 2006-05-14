@@ -76,6 +76,7 @@ namespace SemWeb.Filters {
 		public FilterSink(LiteralFilter[] filters, StatementSink sink, SelectableSource model) {
 			this.filters = filters;
 			this.sink = sink;
+			this.model = model;
 		}
 		public bool Add(Statement s) {
 			if (filters != null && filters.Length > 0

@@ -250,8 +250,8 @@ diff -urN sparql-0.7/src/main/name/levering/ryan/sparql/common/RdfSource.java sp
 +
 diff -urN sparql-0.7/src/main/name/levering/ryan/sparql/logic/AdvancedGroupConstraintLogic.java sparql-0.7j/src/main/name/levering/ryan/sparql/logic/AdvancedGroupConstraintLogic.java
 --- sparql-0.7/src/main/name/levering/ryan/sparql/logic/AdvancedGroupConstraintLogic.java	1969-12-31 19:00:00.000000000 -0500
-+++ sparql-0.7j/src/main/name/levering/ryan/sparql/logic/AdvancedGroupConstraintLogic.java	2006-05-13 16:24:17.000000000 -0400
-@@ -0,0 +1,410 @@
++++ sparql-0.7j/src/main/name/levering/ryan/sparql/logic/AdvancedGroupConstraintLogic.java	2006-05-13 17:03:08.000000000 -0400
+@@ -0,0 +1,416 @@
 +/*
 + * SPARQL Engine
 + * Copyright (C) 2005 Ryan Levering, All rights reserved.
@@ -269,6 +269,9 @@ diff -urN sparql-0.7/src/main/name/levering/ryan/sparql/logic/AdvancedGroupConst
 +import java.util.Set;
 +
 +import org.openrdf.model.URI;
++import org.openrdf.model.BNode;
++import org.openrdf.model.Literal;
++import org.openrdf.model.Value;
 +
 +import name.levering.ryan.sparql.common.RdfBindingSet;
 +import name.levering.ryan.sparql.common.RdfSource;
@@ -358,6 +361,7 @@ diff -urN sparql-0.7/src/main/name/levering/ryan/sparql/logic/AdvancedGroupConst
 +				filterQueue.add(c);
 +				
 +				FilterConstraintData f = (FilterConstraintData)c;
++				f.getExpression().getVariables(cheapVars);
 +				if (f.getExpression() instanceof BinaryExpressionNode) {
 +					// If this filter is of the form FILTER(?var = <uri> || ?var = <uri> || ...)
 +					// then this is giving us some known values for the variable.
@@ -369,7 +373,7 @@ diff -urN sparql-0.7/src/main/name/levering/ryan/sparql/logic/AdvancedGroupConst
 +						if (!filterKnownValues.containsKey(v)) {
 +							filterKnownValues.put(v, values);
 +							knownVars.add(v);
-+							cheapVars.add(v);
++							//cheapVars.add(v);
 +						} else {
 +							Set othervalues = (Set)filterKnownValues.get(v);
 +							othervalues.retainAll(values);
@@ -483,6 +487,7 @@ diff -urN sparql-0.7/src/main/name/levering/ryan/sparql/logic/AdvancedGroupConst
 +					newValues.put(v, current.getValues(v));
 +				}
 +				knownValues = interset(knownValues, newValues);
++				extractVariableFunctions(knownValues);
 +			}
 +        }
 +        
@@ -528,28 +533,28 @@ diff -urN sparql-0.7/src/main/name/levering/ryan/sparql/logic/AdvancedGroupConst
 +		list.add(filter);
 +	}
 +	
-+	private void extractLiteralFunctions(Map knownValues) {
++	private void extractVariableFunctions(Map knownValues) {
 +        for (Iterator cons = data.getConstraints().iterator(); cons.hasNext();) {
 +            ConstraintLogic c = (ConstraintLogic) cons.next();
 +            if (c instanceof FilterConstraintData) {
 +				FilterConstraintData f = (FilterConstraintData)c;
-+				extractLiteralFunctions(f.getExpression(), knownValues);
++				extractVariableFunctions(f.getExpression(), knownValues);
 +			}
 +		}
 +	}
 +	
-+	private void extractLiteralFunctions(ExpressionLogic node, Map knownValues) {
++	private void extractVariableFunctions(ExpressionLogic node, Map knownValues) {
 +		if (node instanceof ASTAndNode) {
-+			extractLiteralFunctions(((ASTAndNode)node).getLeftExpression(), knownValues);
-+			extractLiteralFunctions(((ASTAndNode)node).getRightExpression(), knownValues);
++			extractVariableFunctions(((ASTAndNode)node).getLeftExpression(), knownValues);
++			extractVariableFunctions(((ASTAndNode)node).getRightExpression(), knownValues);
 +		}
 +		if (node instanceof ASTEqualsNode) {
-+			extractLiteralFunctions(((ASTEqualsNode)node).getLeftExpression(), ((ASTEqualsNode)node).getRightExpression(), knownValues);
-+			extractLiteralFunctions(((ASTEqualsNode)node).getRightExpression(), ((ASTEqualsNode)node).getLeftExpression(), knownValues);
++			extractVariableFunctions(((ASTEqualsNode)node).getLeftExpression(), ((ASTEqualsNode)node).getRightExpression(), knownValues);
++			extractVariableFunctions(((ASTEqualsNode)node).getRightExpression(), ((ASTEqualsNode)node).getLeftExpression(), knownValues);
 +		}
 +	}
 +	
-+	private void extractLiteralFunctions(ExpressionLogic a, ExpressionLogic b, Map knownValues) {
++	private void extractVariableFunctions(ExpressionLogic a, ExpressionLogic b, Map knownValues) {
 +		if (!(a instanceof Variable)) return;
 +		if (knownValues.containsKey(a)) return; // we could intersect with existing values, but be sure not to do this for values we just inserted into the hash
 +		if (b instanceof Variable && knownValues.containsKey(b)) {
@@ -624,8 +629,9 @@ diff -urN sparql-0.7/src/main/name/levering/ryan/sparql/logic/AdvancedGroupConst
 +			Variable left = getFilterVariable((BinaryExpressionNode)expr.getLeftExpression());
 +			Variable right = getFilterVariable((BinaryExpressionNode)expr.getRightExpression());
 +			if (left != null && right != null && left.equals(right)) return left;
-+		} else if (expr instanceof ASTEqualsNode) {
-+			if (expr.getLeftExpression() instanceof Variable) return (Variable)expr.getLeftExpression(); 
++		} else if (expr instanceof ASTEqualsNode
++			&& expr.getLeftExpression() instanceof Variable && (expr.getRightExpression() instanceof URI || expr.getRightExpression() instanceof BNode || expr.getRightExpression() instanceof Literal)) {
++			return (Variable)expr.getLeftExpression(); 
 +		}
 +		return null;
 +	}
@@ -638,7 +644,7 @@ diff -urN sparql-0.7/src/main/name/levering/ryan/sparql/logic/AdvancedGroupConst
 +		if (expr instanceof ASTOrNode) {
 +			getFilterValues((BinaryExpressionNode)expr.getLeftExpression(), set);
 +			getFilterValues((BinaryExpressionNode)expr.getRightExpression(), set);
-+		} else if (expr instanceof ASTEqualsNode) {
++		} else if (expr instanceof ASTEqualsNode && (expr.getRightExpression() instanceof URI || expr.getRightExpression() instanceof BNode || expr.getRightExpression() instanceof Literal)) {
 +			set.add(expr.getRightExpression());
 +		}
 +	}

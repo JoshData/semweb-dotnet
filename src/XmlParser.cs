@@ -355,13 +355,18 @@ namespace SemWeb {
 				OnError("Invalid value for parseType: '" + parseType + "'");
 				
 			} else if (datatype != null) {
-				// Forces even xml content to be read as in parseType=Literal?
 				// Note that any xml:lang is discarded.
 				
 				if (ParsePropertyAttributes(new BNode()))
-					OnError("Property attributes are not valid when a data type is given");
+					OnError("Property attributes are not valid when a datatype is given");
 					
-				objct = new Literal(xml.ReadInnerXml(), null, datatype);
+				if (xml.IsEmptyElement) {
+					objct = new Literal("", null, datatype);
+				} else {
+					objct = new Literal(xml.ReadString(), null, datatype);
+					if (xml.NodeType != XmlNodeType.EndElement)
+						OnError("XML markup may not appear in a datatyped literal property.");
+				}
 			
 			} else {
 				// We don't know whether the contents of this element
