@@ -25,6 +25,7 @@ namespace SemWeb.Stores {
 		
 		Hashtable literalCache = new Hashtable();
 		int literalCacheSize = 0;
+		bool noclearliteralcache = false;
 		
 		bool statementsRemoved = false;
 
@@ -213,7 +214,7 @@ namespace SemWeb.Stores {
 				if (literal.Value.Length < 50) {
 					literalCache[literal] = id;
 					literalCacheSize += literal.Value.Length;
-					CheckLiteralCacheSize();
+					if (!noclearliteralcache) CheckLiteralCacheSize();
 				}
 				return id;
 			}
@@ -520,6 +521,7 @@ namespace SemWeb.Stores {
 				hasLiterals = true;
 				litseen[lit] = litseen;
 			}
+			noclearliteralcache = true;
 			if (hasLiterals) {
 				cmd.Append(';');
 				using (IDataReader reader = RunReader(cmd.ToString())) {
@@ -593,6 +595,7 @@ namespace SemWeb.Stores {
 			// Clear the array and reuse it.
 			statements.Clear();
 			addStatementBuffer = statements;
+			noclearliteralcache = false;
 			CheckLiteralCacheSize();
 		}
 		
