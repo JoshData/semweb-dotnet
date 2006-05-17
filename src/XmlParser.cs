@@ -236,6 +236,12 @@ namespace SemWeb {
 			while (xml.Read()) {
 				if (xml.NodeType == XmlNodeType.EndElement)
 					break;
+
+				if (xml.NodeType == XmlNodeType.Text) {
+					OnWarning("Text \"" + xml.Value + "\" ignored in description node");
+					continue;
+				}
+
 				if (xml.NodeType != XmlNodeType.Element)
 					continue;
 				
@@ -400,9 +406,13 @@ namespace SemWeb {
 						if (xml.NodeType == XmlNodeType.Element) {
 							if (hadText)
 								OnError("Both text and elements are present as a property value");
+							if (hadElement)
+								OnError("A property node cannot contain more than one entity description.  " + objct + " already found.");
+							
 							hadElement = true;
 							
 							objct = ParseDescription();
+							
 						} else if (xml.NodeType == XmlNodeType.Text || xml.NodeType == XmlNodeType.SignificantWhitespace) {
 							if (hadElement)
 								OnError("Both text and elements are present as a property value");
