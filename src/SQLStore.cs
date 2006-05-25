@@ -651,44 +651,16 @@ namespace SemWeb.Stores {
 		private bool WhereItem(string col, Resource r, System.Text.StringBuilder cmd, bool and) {
 			if (and) cmd.Append(" and ");
 			
-			if (col.EndsWith("object")) {
-				if (r is MultiRes) {
-					// Assumption that ID space of literals and entities are the same.
-					cmd.Append('(');
-					cmd.Append(col);
-					cmd.Append(" IN (");
-					if (!AppendMultiRes((MultiRes)r, cmd)) return false;
-					cmd.Append(" ))");
-				} else if (r is Literal) {
-					Literal lit = (Literal)r;
-					int id = GetResourceId(lit, false);
-					if (id == 0) return false;
-					cmd.Append('(');
-					cmd.Append(col);
-					cmd.Append('=');
-					cmd.Append(id);
-					cmd.Append(')');
-				} else {
-					int id = GetResourceId(r, false);
-					if (id == 0) return false;
-					cmd.Append('(');
-					cmd.Append(col);
-					cmd.Append('=');
-					cmd.Append(id);
-					cmd.Append(')');
-				}
-			
-			} else if (r is MultiRes) {
+			if (r is MultiRes) {
+				// Assumption that ID space of literals and entities are the same.
 				cmd.Append('(');
 				cmd.Append(col);
 				cmd.Append(" IN (");
 				if (!AppendMultiRes((MultiRes)r, cmd)) return false;
 				cmd.Append(" ))");
-				
 			} else {
 				int id = GetResourceId(r, false);
 				if (id == 0) return false;
-				
 				cmd.Append('(');
 				cmd.Append(col);
 				cmd.Append('=');
