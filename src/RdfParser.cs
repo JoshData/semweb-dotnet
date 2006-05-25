@@ -117,7 +117,11 @@ namespace SemWeb {
 		}
 		
 		internal string GetAbsoluteUri(string baseuri, string uri) {
-			if (baseuri == null) return uri;
+			if (baseuri == null) {
+				if (uri == "")
+					throw new ParserException("An empty relative URI was found in the document but could not be converted into an absolute URI because no base URI is known for the document.");
+				return uri;
+			}
 			if (uri.IndexOf(':') != -1) return uri;
 			try {
 				UriBuilder b = new UriBuilder(baseuri);
