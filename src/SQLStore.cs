@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Specialized;
 using System.Data;
 using System.IO;
+using System.Security.Cryptography;
 using System.Text;
 
 using SemWeb.Util;
@@ -44,6 +45,8 @@ namespace SemWeb.Stores {
 		object syncroot = new object();
 		
 		Hashtable metaEntities;
+		
+		SHA1 sha = SHA1.Create();
 				
 		private class ResourceKey {
 			public int ResId;
@@ -187,6 +190,12 @@ namespace SemWeb.Stores {
 			//RunCommand("DELETE FROM " + table + "_entities;");
 		}
 		
+		private string GetLiteralHash(Literal literal) {
+			byte[] data = System.Text.Encoding.Unicode.GetBytes(literal.ToString());
+			byte[] hash = sha.ComputeHash(data);
+			return Convert.ToBase64String(hash);
+		}
+		
 		private int GetLiteralId(Literal literal, bool create, bool cacheIsComplete, StringBuilder buffer, bool insertCombined) {
 			// Returns the literal ID associated with the literal.  If a literal
 			// doesn't exist and create is true, a new literal is created,
@@ -210,7 +219,7 @@ namespace SemWeb.Stores {
 			}
 				
 			if (create) {
-				int id = AddLiteral(literal.Value, literal.Language, literal.DataType, buffer, insertCombined);
+				int id = AddLiteral(literal, buffer, insertCombined);
 				if (literal.Value.Length < 50) {
 					literalCache[literal] = id;
 					literalCacheSize += literal.Value.Length;
@@ -248,7 +257,7 @@ namespace SemWeb.Stores {
 			}
 		}
 		
-		private int AddLiteral(string value, string language, string datatype, StringBuilder buffer, bool insertCombined) {
+		private int AddLiteral(Literal literal, StringBuilder buffer, bool insertCombined) {
 			int id = NextId();
 			
 			StringBuilder b;
@@ -267,18 +276,20 @@ namespace SemWeb.Stores {
 			b.Append('(');
 			b.Append(id);
 			b.Append(',');
-			EscapedAppend(b, value);
+			EscapedAppend(b, literal.Value);
 			b.Append(',');
-			if (language != null)
-				EscapedAppend(b, language);
+			if (literal.Language != null)
+				EscapedAppend(b, literal.Language);
 			else
 				b.Append("NULL");
 			b.Append(',');
-			if (datatype != null)
-				EscapedAppend(b, datatype);
+			if (literal.DataType != null)
+				EscapedAppend(b, literal.DataType);
 			else
 				b.Append("NULL");
-			b.Append(')');
+			b.Append(",\"");
+			b.Append(GetLiteralHash(literal));
+			b.Append("\")");
 			if (!insertCombined)
 				b.Append(';');
 			
@@ -501,40 +512,40 @@ namespace SemWeb.Stores {
 			// Prefetch the IDs of all literals that aren't
 			// in the literal map.
 			StringBuilder cmd = new StringBuilder();
-			cmd.Append("SELECT id, value, language, datatype FROM ");
+			cmd.Append("SELECT id, hash FROM ");
 			cmd.Append(table);
-			cmd.Append("_literals WHERE ");
+			cmd.Append("_literals WHERE hash IN (");
 			bool hasLiterals = false;
 			Hashtable litseen = new Hashtable();
 			for (int i = 0; i < statements.Count; i++) {
 				Statement s = (Statement)statements[i];
 				Literal lit = s.Object as Literal;
 				if (lit == null) continue;
-				if (litseen.ContainsKey(lit)) continue;
 				if (literalCache.ContainsKey(lit)) continue;
 				
+				string hash = GetLiteralHash(lit);
+				if (litseen.ContainsKey(hash)) continue;
+				
 				if (hasLiterals)
-					cmd.Append(" or ");
-				cmd.Append('(');
-				WhereLiteral(cmd, lit);
-				cmd.Append(')');
+					cmd.Append(" , ");
+				cmd.Append('"');
+				cmd.Append(hash);
+				cmd.Append('"');
 				hasLiterals = true;
-				litseen[lit] = litseen;
+				litseen[hash] = lit;
 			}
 			noclearliteralcache = true;
 			if (hasLiterals) {
-				cmd.Append(';');
+				cmd.Append(");");
 				using (IDataReader reader = RunReader(cmd.ToString())) {
 					while (reader.Read()) {
 						int literalid = reader.GetInt32(0);
-						string val = AsString(reader[1]);
-						string lang = AsString(reader[2]);
-						string dt = AsString(reader[3]);
+						string hash = AsString(reader[1]);
 
-						Literal lit = new Literal(val, lang, dt);
+						Literal lit = (Literal)litseen[hash];
 						
 						literalCache[lit] = literalid;
-						literalCacheSize += val.Length;
+						literalCacheSize += lit.Value.Length;
 					}
 				}
 			}
@@ -652,7 +663,6 @@ namespace SemWeb.Stores {
 			if (and) cmd.Append(" and ");
 			
 			if (r is MultiRes) {
-				// Assumption that ID space of literals and entities are the same.
 				cmd.Append('(');
 				cmd.Append(col);
 				cmd.Append(" IN (");
@@ -1353,7 +1363,7 @@ namespace SemWeb.Stores {
 				"(subject int UNSIGNED NOT NULL, predicate int UNSIGNED NOT NULL, objecttype int NOT NULL, object int UNSIGNED NOT NULL, meta int UNSIGNED NOT NULL);",
 				
 				"CREATE TABLE " + table + "_literals" +
-				"(id INT NOT NULL, value BLOB NOT NULL, language TEXT, datatype TEXT, PRIMARY KEY(id));",
+				"(id INT NOT NULL, value BLOB NOT NULL, language TEXT, datatype TEXT, hash BINARY(28), PRIMARY KEY(id));",
 				
 				"CREATE TABLE " + table + "_entities" +
 				"(id INT NOT NULL, value BLOB NOT NULL, PRIMARY KEY(id));"
@@ -1368,6 +1378,7 @@ namespace SemWeb.Stores {
 				"CREATE INDEX meta_index ON " + table + "_statements(meta);",
 			
 				"CREATE INDEX literal_index ON " + table + "_literals(value(30));",
+				"CREATE UNIQUE INDEX literal_hash_index ON " + table + "_literals(hash);",
 				"CREATE UNIQUE INDEX entity_index ON " + table + "_entities(value(255));"
 				};
 		}
