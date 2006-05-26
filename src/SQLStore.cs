@@ -19,8 +19,8 @@ namespace SemWeb.Stores {
 		bool firstUse = true;
 		
 		bool isImporting = false;
-		IDictionary lockedIdCache = null;
 		int cachedNextId = -1;
+		Hashtable entityCache = new Hashtable();
 		Hashtable literalCache = new Hashtable();
 		
 		ArrayList anonEntityHeldIds = new ArrayList();
@@ -294,8 +294,8 @@ namespace SemWeb.Stores {
 			
 			int id;	
 			
-			if (lockedIdCache != null) {
-				object idobj = lockedIdCache[uri];
+			if (isImporting) {
+				object idobj = entityCache[uri];
 				if (idobj == null && !create) return 0;
 				if (idobj != null) return (int)idobj;
 			} else if (checkIfExists) {
@@ -341,8 +341,8 @@ namespace SemWeb.Stores {
 				
 			// Add it to the URI map
 					
-			if (lockedIdCache != null)
-				lockedIdCache[uri] = id;
+			if (isImporting)
+				entityCache[uri] = id;
 			
 			return id;
 		}
@@ -518,9 +518,44 @@ namespace SemWeb.Stores {
 			StatementList statements = addStatementBuffer;
 			addStatementBuffer = null;
 			
-			// Prefetch the IDs of all literals that aren't
-			// in the literal map.
+			// Prefetch the IDs of all entities mentioned in statements.
 			StringBuilder cmd = new StringBuilder();
+			cmd.Append("SELECT id, value FROM ");
+			cmd.Append(table);
+			cmd.Append("_entities WHERE value IN (");
+			Hashtable entseen = new Hashtable();
+			bool hasEnts = false;
+			for (int i = 0; i < statements.Count; i++) {
+				Statement s = (Statement)statements[i];
+				for (int j = 0; j < 4; j++) {
+					Entity ent = s.GetComponent(j) as Entity;
+					if (ent == null || ent.Uri == null) continue;
+					if (entityCache.ContainsKey(ent.Uri)) continue;
+					if (entseen.ContainsKey(ent.Uri)) continue;
+					
+					if (hasEnts)
+						cmd.Append(" , ");
+					cmd.Append('"');
+					EscapedAppend(cmd, ent.Uri);
+					cmd.Append('"');
+					hasEnts = true;
+					entseen[ent.Uri] = ent.Uri;
+				}
+			}
+			if (hasEnts) {
+				cmd.Append(");");
+				using (IDataReader reader = RunReader(cmd.ToString())) {
+					while (reader.Read()) {
+						int id = reader.GetInt32(0);
+						string uri = AsString(reader[1]);
+						entityCache[uri] = id;
+					}
+				}
+			}
+			
+			
+			// Prefetch the IDs of all literals mentioned in statements.
+			cmd.Length = 0;
 			cmd.Append("SELECT id, hash FROM ");
 			cmd.Append(table);
 			cmd.Append("_literals WHERE hash IN (");
@@ -547,10 +582,10 @@ namespace SemWeb.Stores {
 				cmd.Append(");");
 				using (IDataReader reader = RunReader(cmd.ToString())) {
 					while (reader.Read()) {
-						int literalid = reader.GetInt32(0);
+						int id = reader.GetInt32(0);
 						string hash = AsString(reader[1]);
 						Literal lit = (Literal)litseen[hash];
-						literalCache[lit] = literalid;
+						literalCache[lit] = id;
 					}
 				}
 			}
@@ -611,6 +646,7 @@ namespace SemWeb.Stores {
 			// Clear the array and reuse it.
 			statements.Clear();
 			addStatementBuffer = statements;
+			entityCache.Clear();
 			literalCache.Clear();
 		}
 		
@@ -1102,13 +1138,7 @@ namespace SemWeb.Stores {
 			RunAddBuffer();
 			
 			cachedNextId = -1;
-			lockedIdCache = new UriMap();
 			addStatementBuffer = new StatementList();
-			
-			using (IDataReader reader = RunReader("SELECT id, value from " + table + "_entities;")) {
-				while (reader.Read())
-					lockedIdCache[AsString(reader[1])] = reader.GetInt32(0);
-			}
 			
 			BeginTransaction();
 			
@@ -1119,10 +1149,10 @@ namespace SemWeb.Stores {
 				RunAddBuffer();
 				EndTransaction();
 				
-				lockedIdCache = null;
 				addStatementBuffer = null;
 				isImporting = false;
-				
+
+				entityCache.Clear();
 				literalCache.Clear();
 			}
 		}

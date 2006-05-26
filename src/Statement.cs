@@ -121,6 +121,16 @@ namespace SemWeb {
 			if (b == null) return 1;
 			return ((IComparable)a).CompareTo(b);
 		}
+		
+		internal Resource GetComponent(int index) {
+			switch (index) {
+				case 0: return Subject;
+				case 1: return Predicate;
+				case 2: return Object;
+				case 3: return Meta;
+			}
+			throw new ArgumentException("index");
+		}
 	}
 	
 	public struct SelectFilter : IEnumerable {
