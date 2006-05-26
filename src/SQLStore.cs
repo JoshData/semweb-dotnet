@@ -21,12 +21,9 @@ namespace SemWeb.Stores {
 		bool isImporting = false;
 		IDictionary lockedIdCache = null;
 		int cachedNextId = -1;
+		Hashtable literalCache = new Hashtable();
 		
 		ArrayList anonEntityHeldIds = new ArrayList();
-		
-		Hashtable literalCache = new Hashtable();
-		int literalCacheSize = 0;
-		bool noclearliteralcache = false;
 		
 		bool statementsRemoved = false;
 
@@ -47,6 +44,9 @@ namespace SemWeb.Stores {
 		Hashtable metaEntities;
 		
 		SHA1 sha = SHA1.Create();
+		
+		int importAddBufferSize = 200, importAddBufferRotation = 0;
+		TimeSpan importAddBufferTime = TimeSpan.MinValue;
 				
 		private class ResourceKey {
 			public int ResId;
@@ -196,17 +196,15 @@ namespace SemWeb.Stores {
 			return Convert.ToBase64String(hash);
 		}
 		
-		private int GetLiteralId(Literal literal, bool create, bool cacheIsComplete, StringBuilder buffer, bool insertCombined) {
+		private int GetLiteralId(Literal literal, bool create, StringBuilder buffer, bool insertCombined) {
 			// Returns the literal ID associated with the literal.  If a literal
 			// doesn't exist and create is true, a new literal is created,
 			// otherwise 0 is returned.
 			
-			if (literalCache.Count > 0) {
+			if (isImporting) {
 				object ret = literalCache[literal];
 				if (ret != null) return (int)ret;
-			}
-
-			if (!cacheIsComplete) { 
+			} else {
 				StringBuilder b = cmdBuffer; cmdBuffer.Length = 0;
 				b.Append("SELECT id FROM ");
 				b.Append(table);
@@ -220,22 +218,12 @@ namespace SemWeb.Stores {
 				
 			if (create) {
 				int id = AddLiteral(literal, buffer, insertCombined);
-				if (literal.Value.Length < 50) {
+				if (isImporting)
 					literalCache[literal] = id;
-					literalCacheSize += literal.Value.Length;
-					if (!noclearliteralcache) CheckLiteralCacheSize();
-				}
 				return id;
 			}
 			
 			return 0;
-		}
-		
-		void CheckLiteralCacheSize() {
-			if (literalCacheSize + 32*8*literalCache.Count > 10000000) {
-				literalCacheSize = 0;
-				literalCache.Clear();
-			}
 		}
 		
 		private void WhereLiteral(StringBuilder b, Literal literal) {
@@ -360,15 +348,15 @@ namespace SemWeb.Stores {
 		}
 		
 		private int GetResourceId(Resource resource, bool create) {
-			return GetResourceIdBuffer(resource, create, false, null, null, false);
+			return GetResourceIdBuffer(resource, create, null, null, false);
 		}
 		
-		private int GetResourceIdBuffer(Resource resource, bool create, bool literalCacheComplete, StringBuilder literalInsertBuffer, StringBuilder entityInsertBuffer, bool insertCombined) {
+		private int GetResourceIdBuffer(Resource resource, bool create, StringBuilder literalInsertBuffer, StringBuilder entityInsertBuffer, bool insertCombined) {
 			if (resource == null) return 0;
 			
 			if (resource is Literal) {
 				Literal lit = (Literal)resource;
-				return GetLiteralId(lit, create, literalCacheComplete, literalInsertBuffer, insertCombined);
+				return GetLiteralId(lit, create, literalInsertBuffer, insertCombined);
 			}
 			
 			if (object.ReferenceEquals(resource, Statement.DefaultMeta))
@@ -449,8 +437,29 @@ namespace SemWeb.Stores {
 
 			if (addStatementBuffer != null) {
 				addStatementBuffer.Add(statement);
-				if (addStatementBuffer.Count >= 400)
+				
+				// This complicated code here adjusts the size of the add
+				// buffer dynamically to maximize performance.
+				int thresh = importAddBufferSize;
+				if (importAddBufferRotation == 1) thresh += 100; // experiment with changing
+				if (importAddBufferRotation == 2) thresh -= 100; // the buffer size
+				
+				if (addStatementBuffer.Count >= thresh) {
+					DateTime start = DateTime.Now;
 					RunAddBuffer();
+					TimeSpan duration = DateTime.Now - start;
+					
+					// If there was an improvement in speed, per statement, on an 
+					// experimental change in buffer size, keep the change.
+					if (importAddBufferRotation != 0
+						&& duration.TotalSeconds/thresh < importAddBufferTime.TotalSeconds/importAddBufferSize
+						&& thresh >= 200 && thresh <= 4000)
+						importAddBufferSize = thresh;
+
+					importAddBufferTime = duration;
+					importAddBufferRotation++;
+					if (importAddBufferRotation == 3) importAddBufferRotation = 0;
+				}
 				return;
 			}
 			
@@ -534,18 +543,14 @@ namespace SemWeb.Stores {
 				hasLiterals = true;
 				litseen[hash] = lit;
 			}
-			noclearliteralcache = true;
 			if (hasLiterals) {
 				cmd.Append(");");
 				using (IDataReader reader = RunReader(cmd.ToString())) {
 					while (reader.Read()) {
 						int literalid = reader.GetInt32(0);
 						string hash = AsString(reader[1]);
-
 						Literal lit = (Literal)litseen[hash];
-						
 						literalCache[lit] = literalid;
-						literalCacheSize += lit.Value.Length;
 					}
 				}
 			}
@@ -560,11 +565,11 @@ namespace SemWeb.Stores {
 			for (int i = 0; i < statements.Count; i++) {
 				Statement statement = (Statement)statements[i];
 			
-				int subj = GetResourceIdBuffer(statement.Subject, true, true, literalInsertions, entityInsertions, insertCombined);
-				int pred = GetResourceIdBuffer(statement.Predicate, true,  true, literalInsertions, entityInsertions, insertCombined);
+				int subj = GetResourceIdBuffer(statement.Subject, true, literalInsertions, entityInsertions, insertCombined);
+				int pred = GetResourceIdBuffer(statement.Predicate, true,  literalInsertions, entityInsertions, insertCombined);
 				int objtype = ObjectType(statement.Object);
-				int obj = GetResourceIdBuffer(statement.Object, true, true, literalInsertions, entityInsertions, insertCombined);
-				int meta = GetResourceIdBuffer(statement.Meta, true, true, literalInsertions, entityInsertions, insertCombined);
+				int obj = GetResourceIdBuffer(statement.Object, true, literalInsertions, entityInsertions, insertCombined);
+				int meta = GetResourceIdBuffer(statement.Meta, true, literalInsertions, entityInsertions, insertCombined);
 				
 				if (!insertCombined)
 					cmd.Append(INSERT_INTO_STATEMENTS_VALUES);
@@ -606,8 +611,7 @@ namespace SemWeb.Stores {
 			// Clear the array and reuse it.
 			statements.Clear();
 			addStatementBuffer = statements;
-			noclearliteralcache = false;
-			CheckLiteralCacheSize();
+			literalCache.Clear();
 		}
 		
 		public override void Remove(Statement template) {
@@ -1120,7 +1124,6 @@ namespace SemWeb.Stores {
 				isImporting = false;
 				
 				literalCache.Clear();
-				literalCacheSize = 0;			
 			}
 		}
 
