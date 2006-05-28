@@ -9,10 +9,10 @@ using SemWeb;
 namespace SemWeb {
 	public class RdfXmlWriter : RdfWriter {
 		XmlWriter writer;
-		NamespaceManager ns;
+		NamespaceManager ns = new NamespaceManager();
 		
 		XmlDocument doc;
-		bool finished = false;
+		bool initialized = false;
 		
 		Hashtable nodeMap = new Hashtable();
 		
@@ -24,15 +24,11 @@ namespace SemWeb {
 		
 		static Entity rdftype = "http://www.w3.org/1999/02/22-rdf-syntax-ns#type";
 		
-		public RdfXmlWriter() { }
+		public RdfXmlWriter(XmlDocument dest) { doc = dest; }
 		
-		public RdfXmlWriter(string file) : this(file, null) { }
-		
-		public RdfXmlWriter(string file, NamespaceManager ns) : this(GetWriter(file), ns) { }
+		public RdfXmlWriter(string file) : this(GetWriter(file)) { }
 
-		public RdfXmlWriter(TextWriter writer) : this(writer, null) { }
-		
-		public RdfXmlWriter(TextWriter writer, NamespaceManager ns) : this(NewWriter(writer), ns) { }
+		public RdfXmlWriter(TextWriter writer) : this(NewWriter(writer)) { }
 		
 		private static XmlWriter NewWriter(TextWriter writer) {
 			XmlTextWriter ret = new XmlTextWriter(writer);
@@ -43,18 +39,15 @@ namespace SemWeb {
 			return ret;
 		}
 		
-		public RdfXmlWriter(XmlWriter writer) : this(writer, null) { }
-		
-		public RdfXmlWriter(XmlWriter writer, NamespaceManager ns) {
-			if (ns == null)
-				ns = new NamespaceManager();
+		public RdfXmlWriter(XmlWriter writer) {
 			this.writer = writer;
-			this.ns = ns;
 		}
 		
 		private void Start() {
-			if (doc != null) return;
-			doc = new XmlDocument();
+			if (initialized) return;
+			initialized = true;
+			
+			if (doc == null) doc = new XmlDocument();
 			
 			doc.AppendChild(doc.CreateXmlDeclaration("1.0", null, null));
 			
@@ -342,8 +335,6 @@ namespace SemWeb {
 				doc.WriteTo(writer);
 				writer.Close();
 			}
-			
-			finished = true;
 		}
 		
 		bool Relativize(string uri, out string fragment) {
@@ -356,13 +347,6 @@ namespace SemWeb {
 			return false;
 		}
 		
-		public XmlDocument Document {
-			get {
-			   if (!finished) throw new InvalidOperationException("Document not created yet.");
-		       return doc;
-			}
-		}
-
 	}
 
 }

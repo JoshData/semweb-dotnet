@@ -25,7 +25,7 @@ namespace SemWeb {
 			throw new ArgumentException("Invalid type: " + value.GetType());
 		}
 		
-		protected bool CompareFilter(int cmp, CompType type) {
+		internal bool CompareFilter(int cmp, CompType type) {
 			switch (type) {
 			case CompType.LT: return cmp < 0;
 			case CompType.LE: return cmp <= 0;
@@ -41,7 +41,7 @@ namespace SemWeb {
 			LT, LE, NE, EQ, GT, GE
 		}
 		
-		public static CompType Inverse(CompType comp) {
+		internal static CompType Inverse(CompType comp) {
 			switch (comp) {
 			case CompType.LT: return CompType.GE;
 			case CompType.LE: return CompType.GT;

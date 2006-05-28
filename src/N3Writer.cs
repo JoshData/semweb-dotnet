@@ -8,7 +8,7 @@ using SemWeb;
 namespace SemWeb {
 	public class N3Writer : RdfWriter {
 		TextWriter writer;
-		NamespaceManager ns;
+		NamespaceManager ns = new NamespaceManager();
 		bool hasWritten = false;
 		bool closed = false;
 		
@@ -25,14 +25,10 @@ namespace SemWeb {
 			Notation3
 		}
 		
-		public N3Writer(string file) : this(file, null) { }
-		
-		public N3Writer(string file, NamespaceManager ns) : this(GetWriter(file), ns) { }
+		public N3Writer(string file) : this(GetWriter(file)) { }
 
-		public N3Writer(TextWriter writer) : this(writer, null) { }
-		
-		public N3Writer(TextWriter writer, NamespaceManager ns) {
-			this.writer = writer; this.ns = ns;
+		public N3Writer(TextWriter writer) {
+			this.writer = writer;
 		}
 		
 		public override NamespaceManager Namespaces { get { return ns; } }
