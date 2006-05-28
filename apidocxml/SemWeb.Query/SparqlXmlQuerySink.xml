@@ -33,28 +33,6 @@
         <remarks>None.</remarks>
       </Docs>
     </Member>
-    <Member MemberName="Ordered">
-      <MemberSignature Language="C#" Value="public bool Ordered;" />
-      <MemberType>Field</MemberType>
-      <ReturnValue>
-        <ReturnType>System.Boolean</ReturnType>
-      </ReturnValue>
-      <Docs>
-        <summary>The value of the Ordered attribute in the results document.</summary>
-        <remarks>None.</remarks>
-      </Docs>
-    </Member>
-    <Member MemberName="Distinct">
-      <MemberSignature Language="C#" Value="public bool Distinct;" />
-      <MemberType>Field</MemberType>
-      <ReturnValue>
-        <ReturnType>System.Boolean</ReturnType>
-      </ReturnValue>
-      <Docs>
-        <summary>The value of the Distinct attribute in the results document.</summary>
-        <remarks>None.</remarks>
-      </Docs>
-    </Member>
   </Members>
   <Docs>
     <summary>A QueryResultSink outputting results in the SPARQL output XML format.</summary>

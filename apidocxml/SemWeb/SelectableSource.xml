@@ -61,32 +61,6 @@ any statement matching the template.</returns>
         </remarks>
       </Docs>
     </Member>
-    <Member MemberName="FindEntities">
-      <MemberSignature Language="C#" Value="public SemWeb.Entity[] FindEntities (SemWeb.Statement[] graph);" />
-      <MemberType>Method</MemberType>
-      <ReturnValue>
-        <ReturnType>SemWeb.Entity[]</ReturnType>
-      </ReturnValue>
-      <Parameters>
-        <Parameter Name="graph" Type="SemWeb.Statement[]" />
-      </Parameters>
-      <Docs>
-        <param name="graph">A graph.  Each statement in the graph must contain at least one <see langword="null" /> field which represents the single variable in the query.</param>
-        <summary>Finds all entities that can substitute into a graph.</summary>
-        <returns>An array of entities that match the variable in the query graph.</returns>
-        <remarks>
-          <para>Implementors of SelectableSource can use <see cref="M:SemWeb.Store.DefaultFindEntities(SemWeb.Statement[])" /> as a default, unoptimized implementation.</para>
-          <example>
-            <para>The following expression finds all entities that are typed as a <c>foaf:Person</c> and have a particular name..</para>
-            <code lang="C#">Entity[] ents =
-    store.FindEntities(new Statement[] {
-        new Statement(null, "http://www.w3.org/1999/02/22-rdf-syntax-ns#type", (Entity)"http://xmlns.com/foaf/0.1/Person"),
-        new Statement(null, "http://xmlns.com/foaf/0.1/name", (Literal)"John Smith")
-        });  </code>
-          </example>
-        </remarks>
-      </Docs>
-    </Member>
     <Member MemberName="Select">
       <MemberSignature Language="C#" Value="public void Select (SemWeb.SelectFilter filter, SemWeb.StatementSink sink);" />
       <MemberType>Method</MemberType>

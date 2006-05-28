@@ -7,7 +7,11 @@
   <Base>
     <BaseTypeName>System.ValueType</BaseTypeName>
   </Base>
-  <Interfaces />
+  <Interfaces>
+    <Interface>
+      <InterfaceName>System.Collections.IEnumerable</InterfaceName>
+    </Interface>
+  </Interfaces>
   <Members>
     <Member MemberName=".ctor">
       <MemberSignature Language="C#" Value="public SelectFilter (SemWeb.Statement statement);" />
@@ -111,6 +115,82 @@
       <Docs>
         <summary>Maximum number of statements to return.</summary>
         <remarks>Stores are free to ignore the limit provided.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="All">
+      <MemberSignature Language="C#" Value="public static SemWeb.SelectFilter All;" />
+      <MemberType>Field</MemberType>
+      <ReturnValue>
+        <ReturnType>SemWeb.SelectFilter</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>A SelectFilter than selects for all statements.</summary>
+        <remarks>This is equivalent to <see cref="F:SemWeb.Statement.All"/>.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="FromGraph">
+      <MemberSignature Language="C#" Value="public static SemWeb.SelectFilter[] FromGraph (SemWeb.Statement[] graph);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>SemWeb.SelectFilter[]</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="graph" Type="SemWeb.Statement[]" />
+      </Parameters>
+      <Docs>
+        <param name="graph">To be added.</param>
+        <summary>To be added.</summary>
+        <returns>To be added.</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="GetEnumerator">
+      <MemberSignature Language="C#" Value="public System.Collections.IEnumerator GetEnumerator ();" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Collections.IEnumerator</ReturnType>
+      </ReturnValue>
+      <Parameters />
+      <Docs>
+        <summary>To be added.</summary>
+        <returns>To be added.</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="op_Equality">
+      <MemberSignature Language="C#" Value="public static bool op_Equality (SemWeb.SelectFilter a, SemWeb.SelectFilter b);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Boolean</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="a" Type="SemWeb.SelectFilter" />
+        <Parameter Name="b" Type="SemWeb.SelectFilter" />
+      </Parameters>
+      <Docs>
+        <param name="a">A SelectFilter.</param>
+        <param name="b">A SelectFilter.</param>
+        <summary>Tests two SelectFilters for equality.</summary>
+        <returns>True if the two SelectFilters have equivalent values for all fields.</returns>
+        <remarks>None.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="op_Inequality">
+      <MemberSignature Language="C#" Value="public static bool op_Inequality (SemWeb.SelectFilter a, SemWeb.SelectFilter b);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Boolean</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="a" Type="SemWeb.SelectFilter" />
+        <Parameter Name="b" Type="SemWeb.SelectFilter" />
+      </Parameters>
+      <Docs>
+        <param name="a">A SelectFilter.</param>
+        <param name="b">A SelectFilter.</param>
+        <summary>Tests two SelectFilters for inequality.</summary>
+        <returns>False if the two SelectFilters have equivalent values for all fields.</returns>
+        <remarks>None.</remarks>
       </Docs>
     </Member>
   </Members>

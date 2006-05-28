@@ -428,22 +428,6 @@ For Sqlite, MySQL, and PostgreSQL-based stores, use the spec string described in
         </remarks>
       </Docs>
     </Member>
-    <Member MemberName="FindEntities">
-      <MemberSignature Language="C#" Value="public virtual SemWeb.Entity[] FindEntities (SemWeb.Statement[] filters);" />
-      <MemberType>Method</MemberType>
-      <ReturnValue>
-        <ReturnType>SemWeb.Entity[]</ReturnType>
-      </ReturnValue>
-      <Parameters>
-        <Parameter Name="filters" Type="SemWeb.Statement[]" />
-      </Parameters>
-      <Docs>
-        <param name="filters">A graph pattern to match in the store.</param>
-        <summary>Finds all entities that match a simple graph pattern.</summary>
-        <returns>An array of entities matching the pattern.</returns>
-        <remarks>See <see cref="M:SemWeb.SelectableSource.FindEntities(SemWeb.Statement[])" />.</remarks>
-      </Docs>
-    </Member>
     <Member MemberName="Select">
       <MemberSignature Language="C#" Value="public void Select (SemWeb.StatementSink result);" />
       <MemberType>Method</MemberType>

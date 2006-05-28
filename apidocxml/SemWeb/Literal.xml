@@ -174,9 +174,9 @@
       </ReturnValue>
       <Parameters />
       <Docs>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
+        <summary>Creates a normalized form of the literal.</summary>
+        <returns>A normalized form of the literal.</returns>
+        <remarks>If this literal has a DataType recognized by the <see cref="M:SemWeb.Literal.ParseValue()" /> method, this method returns a new literal whose value is a normalized form of the value of this literal.  Otherwise, Normalize returns the literal unchanged.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Create">
@@ -189,10 +189,10 @@
         <Parameter Name="value" Type="System.Boolean" />
       </Parameters>
       <Docs>
-        <param name="value">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
+        <param name="value">A boolean value.</param>
+        <summary>Creates an xsd:boolean literal representing the boolean value.</summary>
+        <returns>Either "true"^^xsd:boolean or "false"^^xsd:boolean.</returns>
+        <remarks>This method is a convenience function for creating typed literals.</remarks>
       </Docs>
     </Member>
   </Members>

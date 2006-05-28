@@ -22,20 +22,6 @@
       </Docs>
     </Member>
     <Member MemberName=".ctor">
-      <MemberSignature Language="C#" Value="public N3Writer (string file, SemWeb.NamespaceManager ns);" />
-      <MemberType>Constructor</MemberType>
-      <Parameters>
-        <Parameter Name="file" Type="System.String" />
-        <Parameter Name="ns" Type="SemWeb.NamespaceManager" />
-      </Parameters>
-      <Docs>
-        <param name="file">The path to a file where the statements will be stored, or "-" to output to Console.Out.</param>
-        <param name="ns">A NamespaceManager containing a mapping from prefixes to namespace URIs.</param>
-        <summary>Creates an N3Writer that outputs statements to a file, using a list of namespace prefixes.</summary>
-        <remarks>A "@prefix" directive is written for each prefix in the NamespaceManager, and other N3 syntactic constructs are used, if <see cref="P:SemWeb.N3Writer.Format" /> is Notation3, which is the default. The NamespaceManager should not be modified once statements have been written.</remarks>
-      </Docs>
-    </Member>
-    <Member MemberName=".ctor">
       <MemberSignature Language="C#" Value="public N3Writer (System.IO.TextWriter writer);" />
       <MemberType>Constructor</MemberType>
       <Parameters>
@@ -45,20 +31,6 @@
         <param name="writer">The TextWriter to which statements will be written.</param>
         <summary>Creates an N3Writer that outputs statements to a TextWriter.</summary>
         <remarks>None.</remarks>
-      </Docs>
-    </Member>
-    <Member MemberName=".ctor">
-      <MemberSignature Language="C#" Value="public N3Writer (System.IO.TextWriter writer, SemWeb.NamespaceManager ns);" />
-      <MemberType>Constructor</MemberType>
-      <Parameters>
-        <Parameter Name="writer" Type="System.IO.TextWriter" />
-        <Parameter Name="ns" Type="SemWeb.NamespaceManager" />
-      </Parameters>
-      <Docs>
-        <param name="writer">The TextWriter to which statements will be written.</param>
-        <param name="ns">A NamespaceManager containing a mapping from prefixes to namespace URIs.</param>
-        <summary>Creates an N3Writer that outputs statements to a TextWriter, using a list of namespace prefixes.</summary>
-        <remarks>A "@prefix" directive is written for each prefix in the NamespaceManager, and other N3 syntactic constructs are used, if <see cref="P:SemWeb.N3Writer.Format" /> is Notation3, which is the default. The NamespaceManager should not be modified once statements have been written.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Format">

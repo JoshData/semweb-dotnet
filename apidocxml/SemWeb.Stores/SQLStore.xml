@@ -291,73 +291,8 @@
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
-    <Member MemberName="GetNodeFromId">
-      <MemberSignature Language="C#" Value="public SemWeb.BNode GetNodeFromId (string persistentId);" />
-      <MemberType>Method</MemberType>
-      <ReturnValue>
-        <ReturnType>SemWeb.BNode</ReturnType>
-      </ReturnValue>
-      <Parameters>
-        <Parameter Name="persistentId" Type="System.String" />
-      </Parameters>
-      <Docs>
-        <param name="persistentId">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
-      </Docs>
-    </Member>
-    <Member MemberName="EscapedAppend">
-      <MemberSignature Language="C#" Value="protected void EscapedAppend (System.Text.StringBuilder b, string str);" />
-      <MemberType>Method</MemberType>
-      <ReturnValue>
-        <ReturnType>System.Void</ReturnType>
-      </ReturnValue>
-      <Parameters>
-        <Parameter Name="b" Type="System.Text.StringBuilder" />
-        <Parameter Name="str" Type="System.String" />
-      </Parameters>
-      <Docs>
-        <param name="b">To be added.</param>
-        <param name="str">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
-      </Docs>
-    </Member>
-    <Member MemberName="GetQuoteChar">
-      <MemberSignature Language="C#" Value="protected virtual char GetQuoteChar ();" />
-      <MemberType>Method</MemberType>
-      <ReturnValue>
-        <ReturnType>System.Char</ReturnType>
-      </ReturnValue>
-      <Parameters />
-      <Docs>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
-      </Docs>
-    </Member>
-    <Member MemberName="EscapedAppend">
-      <MemberSignature Language="C#" Value="protected virtual void EscapedAppend (System.Text.StringBuilder b, string str, bool quotes);" />
-      <MemberType>Method</MemberType>
-      <ReturnValue>
-        <ReturnType>System.Void</ReturnType>
-      </ReturnValue>
-      <Parameters>
-        <Parameter Name="b" Type="System.Text.StringBuilder" />
-        <Parameter Name="str" Type="System.String" />
-        <Parameter Name="quotes" Type="System.Boolean" />
-      </Parameters>
-      <Docs>
-        <param name="b">To be added.</param>
-        <param name="str">To be added.</param>
-        <param name="quotes">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
-      </Docs>
-    </Member>
-    <Member MemberName="SupportsNoDuplicates">
-      <MemberSignature Language="C#" Value="protected abstract bool SupportsNoDuplicates { get; };" />
+    <Member MemberName="SupportsSubquery">
+      <MemberSignature Language="C#" Value="protected abstract bool SupportsSubquery { get; };" />
       <MemberType>Property</MemberType>
       <ReturnValue>
         <ReturnType>System.Boolean</ReturnType>
@@ -368,8 +303,8 @@
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
-    <Member MemberName="SupportsInsertIgnore">
-      <MemberSignature Language="C#" Value="protected abstract bool SupportsInsertIgnore { get; };" />
+    <Member MemberName="SupportsSubquery">
+      <MemberSignature Language="C#" Value="protected abstract bool SupportsSubquery { get; };" />
       <MemberType>Property</MemberType>
       <ReturnValue>
         <ReturnType>System.Boolean</ReturnType>
@@ -380,8 +315,8 @@
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
-    <Member MemberName="SupportsInsertCombined">
-      <MemberSignature Language="C#" Value="protected abstract bool SupportsInsertCombined { get; };" />
+    <Member MemberName="SupportsSubquery">
+      <MemberSignature Language="C#" Value="protected abstract bool SupportsSubquery { get; };" />
       <MemberType>Property</MemberType>
       <ReturnValue>
         <ReturnType>System.Boolean</ReturnType>
@@ -392,8 +327,8 @@
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
-    <Member MemberName="SupportsFastJoin">
-      <MemberSignature Language="C#" Value="protected virtual bool SupportsFastJoin { get; };" />
+    <Member MemberName="SupportsSubquery">
+      <MemberSignature Language="C#" Value="protected abstract bool SupportsSubquery { get; };" />
       <MemberType>Property</MemberType>
       <ReturnValue>
         <ReturnType>System.Boolean</ReturnType>

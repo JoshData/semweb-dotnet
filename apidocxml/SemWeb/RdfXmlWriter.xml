@@ -22,20 +22,6 @@
       </Docs>
     </Member>
     <Member MemberName=".ctor">
-      <MemberSignature Language="C#" Value="public RdfXmlWriter (string file, SemWeb.NamespaceManager ns);" />
-      <MemberType>Constructor</MemberType>
-      <Parameters>
-        <Parameter Name="file" Type="System.String" />
-        <Parameter Name="ns" Type="SemWeb.NamespaceManager" />
-      </Parameters>
-      <Docs>
-        <param name="file">A file name, or "-" for standard output.</param>
-        <param name="ns">A namespace manager.</param>
-        <summary>Creates an RDF/XML writer that writes to the named file, with the given namespace declarations.</summary>
-        <remarks>None.</remarks>
-      </Docs>
-    </Member>
-    <Member MemberName=".ctor">
       <MemberSignature Language="C#" Value="public RdfXmlWriter (System.IO.TextWriter writer);" />
       <MemberType>Constructor</MemberType>
       <Parameters>
@@ -44,20 +30,6 @@
       <Docs>
         <param name="writer">A TextWriter.</param>
         <summary>Creates an RDF/XML writer that writes to the given TextWriter.</summary>
-        <remarks>None.</remarks>
-      </Docs>
-    </Member>
-    <Member MemberName=".ctor">
-      <MemberSignature Language="C#" Value="public RdfXmlWriter (System.IO.TextWriter writer, SemWeb.NamespaceManager ns);" />
-      <MemberType>Constructor</MemberType>
-      <Parameters>
-        <Parameter Name="writer" Type="System.IO.TextWriter" />
-        <Parameter Name="ns" Type="SemWeb.NamespaceManager" />
-      </Parameters>
-      <Docs>
-        <param name="writer">A TextWriter.</param>
-        <param name="ns">A namespace manager.</param>
-        <summary>Creates an RDF/XML writer that writes to the given TextWriter, with the given namespace declarations.</summary>
         <remarks>None.</remarks>
       </Docs>
     </Member>
@@ -74,17 +46,15 @@
       </Docs>
     </Member>
     <Member MemberName=".ctor">
-      <MemberSignature Language="C#" Value="public RdfXmlWriter (System.Xml.XmlWriter writer, SemWeb.NamespaceManager ns);" />
+      <MemberSignature Language="C#" Value="public RdfXmlWriter (System.Xml.XmlDocument dest);" />
       <MemberType>Constructor</MemberType>
       <Parameters>
-        <Parameter Name="writer" Type="System.Xml.XmlWriter" />
-        <Parameter Name="ns" Type="SemWeb.NamespaceManager" />
+        <Parameter Name="dest" Type="System.Xml.XmlDocument" />
       </Parameters>
       <Docs>
-        <param name="writer">An XmlWriter.</param>
-        <param name="ns">A namespace manager.</param>
-        <summary>Creates an RDF/XML writer that writes to the given XmlWriter, with the given namespace declarations.</summary>
-        <remarks>None.</remarks>
+        <param name="dest">A new, empty XmlDocument.</param>
+        <summary>Creates an RDF/XML writer that writes to the given XmlDocument.</summary>
+        <remarks>The document must be empty.</remarks>
       </Docs>
     </Member>
   </Members>
@@ -92,14 +62,14 @@
     <summary>Writes RDF statements to an RDF/XML file.</summary>
     <remarks>
       <para>The RdfXmlWriter buffers the entire output document in memory, before writing the document to the stream when Close is called.</para>
-      <para>The namespaces used in the output data must be registered with the NamespaceManager in the <see cref="P:SemWeb.RdfWriter.Namespaces" /> property before the first call to Add or WriteStatement.  Failure to do so may prevent the document from being written to the stream, as not all URIs can be automatically converted into an XML qualified name.</para>
+      <para>The namespaces used in the output data must be registered with the NamespaceManager in the <see cref="P:SemWeb.RdfWriter.Namespaces" /> property before the first call to Add.  Failure to do so may prevent the document from being written to the stream, as not all URIs can be automatically converted into an XML qualified name.</para>
       <example>
         <para>The following example writes out RDF statements in RDF/XML format to a file:</para>
         <code lang="C#">NamespaceManager namespaces = new NamespaceManager();
 namespaces.AddNamespace("http://xmlns.com/foaf/0.1/", "foaf");
 using (RdfXmlWriter output = new RdfXmlWriter("filename.rdf", namespaces)) {
     output.BaseUri = "http://www.example.org/";
-    store.Write(data);
+    output.Write(datasource);
 }  </code>
       </example>
     </remarks>

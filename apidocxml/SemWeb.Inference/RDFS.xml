@@ -138,22 +138,6 @@
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
-    <Member MemberName="FindEntities">
-      <MemberSignature Language="C#" Value="public SemWeb.Entity[] FindEntities (SemWeb.Statement[] graph);" />
-      <MemberType>Method</MemberType>
-      <ReturnValue>
-        <ReturnType>SemWeb.Entity[]</ReturnType>
-      </ReturnValue>
-      <Parameters>
-        <Parameter Name="graph" Type="SemWeb.Statement[]" />
-      </Parameters>
-      <Docs>
-        <param name="graph">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
-      </Docs>
-    </Member>
     <Member MemberName="Distinct">
       <MemberSignature Language="C#" Value="public bool Distinct { get; };" />
       <MemberType>Property</MemberType>

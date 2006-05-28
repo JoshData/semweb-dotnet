@@ -46,21 +46,6 @@
         <remarks>None.</remarks>
       </Docs>
     </Member>
-    <Member MemberName="Init">
-      <MemberSignature Language="C#" Value="public virtual void Init (SemWeb.Query.VariableBinding[] variables);" />
-      <MemberType>Method</MemberType>
-      <ReturnValue>
-        <ReturnType>System.Void</ReturnType>
-      </ReturnValue>
-      <Parameters>
-        <Parameter Name="variables" Type="SemWeb.Query.VariableBinding[]" />
-      </Parameters>
-      <Docs>
-        <param name="variables">An array of variables used in the query (anonymous nodes) and their names.</param>
-        <summary>This method is called by a Query object before the first binding is added.</summary>
-        <remarks>The <see cref="P:SemWeb.Query.VariableBinding.Target" /> property of the variable bindings will be <see langword="null" />.</remarks>
-      </Docs>
-    </Member>
     <Member MemberName="AddComments">
       <MemberSignature Language="C#" Value="public virtual void AddComments (string comments);" />
       <MemberType>Method</MemberType>
@@ -74,6 +59,25 @@
         <param name="comments">Arbitrary comments.</param>
         <summary>Adds comments about how the query has been processed.</summary>
         <remarks>This method may be called at any time, before, during, and after all bindings have been written.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Init">
+      <MemberSignature Language="C#" Value="public virtual void Init (SemWeb.Query.VariableBinding[] variables, bool distinct, bool ordered);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="variables" Type="SemWeb.Query.VariableBinding[]" />
+        <Parameter Name="distinct" Type="System.Boolean" />
+        <Parameter Name="ordered" Type="System.Boolean" />
+      </Parameters>
+      <Docs>
+        <param name="variables">To be added.</param>
+        <param name="distinct">To be added.</param>
+        <param name="ordered">To be added.</param>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

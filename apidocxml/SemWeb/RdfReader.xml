@@ -126,9 +126,9 @@
         <ReturnType>System.Collections.ICollection</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>A mapping of <see cref="T:SemWeb.Entity" />s found in the stream that were marked as being variables (e.g. for queries) to their string names.</summary>
-        <value>A dictionary whose keys are anonymous <see cref="T:SemWeb.Entity" />s found in the stream that were marked as being variables and whose values are the string names of those variables in the stream.</value>
-        <remarks>The mapping of variables is set by the reader implementation.  Not all readers support variables.  (N3-formatted RDF does, but XML formatted RDF doesn't.)</remarks>
+        <summary>A list of <see cref="T:SemWeb.Variable" />s found in the stream.</summary>
+        <value>A list of <see cref="T:SemWeb.Variable" />s found in the stream.</value>
+        <remarks>Not all readers support variables.  (N3-formatted RDF does, but XML formatted RDF doesn't.)</remarks>
       </Docs>
     </Member>
     <Member MemberName="Select">
@@ -212,21 +212,9 @@
         <Parameter Name="variable" Type="SemWeb.Variable" />
       </Parameters>
       <Docs>
-        <param name="variable">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
-      </Docs>
-    </Member>
-    <Member MemberName="Warnings">
-      <MemberSignature Language="C#" Value="public System.Collections.IList Warnings { get; };" />
-      <MemberType>Property</MemberType>
-      <ReturnValue>
-        <ReturnType>System.Collections.IList</ReturnType>
-      </ReturnValue>
-      <Docs>
-        <summary>To be added.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
+        <param name="variable">A variable.</param>
+        <summary>Adds a Variable to the Variables collection.</summary>
+        <remarks>Used by RdfReader implementations to add a variable into the Variables collection.</remarks>
       </Docs>
     </Member>
   </Members>

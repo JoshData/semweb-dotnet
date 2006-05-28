@@ -54,6 +54,7 @@
       <Type Name="SupportsPersistableBNodes" />
       <Type Name="SimpleSourceWrapper" />
       <Type Name="CachedSource" />
+      <Type Name="DebuggedSource" />
     </Namespace>
     <Namespace Name="SemWeb.Util">
       <Type Name="XPathSemWebNavigator" />

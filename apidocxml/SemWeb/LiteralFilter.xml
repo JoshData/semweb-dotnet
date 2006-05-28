@@ -14,8 +14,8 @@
       <MemberType>Constructor</MemberType>
       <Parameters />
       <Docs>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
+        <summary>This is the protected constructor used by subclasses.</summary>
+        <remarks>None.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Filter">
@@ -29,29 +29,11 @@
         <Parameter Name="targetModel" Type="SemWeb.SelectableSource" />
       </Parameters>
       <Docs>
-        <param name="value">To be added.</param>
-        <param name="targetModel">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
-      </Docs>
-    </Member>
-    <Member MemberName="CompareFilter">
-      <MemberSignature Language="C#" Value="protected bool CompareFilter (int cmp, SemWeb.LiteralFilter+CompType type);" />
-      <MemberType>Method</MemberType>
-      <ReturnValue>
-        <ReturnType>System.Boolean</ReturnType>
-      </ReturnValue>
-      <Parameters>
-        <Parameter Name="cmp" Type="System.Int32" />
-        <Parameter Name="type" Type="SemWeb.LiteralFilter+CompType" />
-      </Parameters>
-      <Docs>
-        <param name="cmp">To be added.</param>
-        <param name="type">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
+        <param name="value">The literal value to be filtered.</param>
+        <param name="targetModel">The model over which the literal was selected from.</param>
+        <summary>Filters a literal value.</summary>
+        <returns>True if the literal matches the filter; false otherwise.</returns>
+        <remarks>None.</remarks>
       </Docs>
     </Member>
     <Member MemberName="MatchesFilters">
@@ -67,11 +49,11 @@
       </Parameters>
       <Docs>
         <param name="literal">To be added.</param>
-        <param name="filters">To be added.</param>
-        <param name="targetModel">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
+        <param name="filters">An array of filters to test.</param>
+        <param name="targetModel">The model over which the literal was selected from.</param>
+        <summary>Filters a literal value against multiple filters.</summary>
+        <returns>True if the literal value matches all of the filters; false otherwise.</returns>
+        <remarks>None.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Create">
@@ -85,48 +67,16 @@
         <Parameter Name="value" Type="System.Object" />
       </Parameters>
       <Docs>
-        <param name="type">To be added.</param>
-        <param name="value">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
-      </Docs>
-    </Member>
-    <Member MemberName="Inverse">
-      <MemberSignature Language="C#" Value="public static SemWeb.LiteralFilter+CompType Inverse (SemWeb.LiteralFilter+CompType comp);" />
-      <MemberType>Method</MemberType>
-      <ReturnValue>
-        <ReturnType>SemWeb.LiteralFilter+CompType</ReturnType>
-      </ReturnValue>
-      <Parameters>
-        <Parameter Name="comp" Type="SemWeb.LiteralFilter+CompType" />
-      </Parameters>
-      <Docs>
-        <param name="comp">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
-      </Docs>
-    </Member>
-    <Member MemberName="Inverse">
-      <MemberSignature Language="C#" Value="public static SemWeb.LiteralFilter+CompType Inverse (SemWeb.LiteralFilter+CompType comp);" />
-      <MemberType>Method</MemberType>
-      <ReturnValue>
-        <ReturnType>SemWeb.LiteralFilter+CompType</ReturnType>
-      </ReturnValue>
-      <Parameters>
-        <Parameter Name="comp" Type="SemWeb.LiteralFilter+CompType" />
-      </Parameters>
-      <Docs>
-        <param name="comp">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
+        <param name="type">The type of comparison: less than (or equal), equal, not equal, or greater than (or equal).</param>
+        <param name="value">The value to compare literals against.</param>
+        <summary>Creates a comparison filter.</summary>
+        <returns>A LiteralFilter that compares literals against <paramref name="value" />.</returns>
+        <remarks>None.</remarks>
       </Docs>
     </Member>
   </Members>
   <Docs>
-    <summary>This class is in development.</summary>
-    <remarks>To be added.</remarks>
+    <summary>The LiteralFilter represents a filter over literal values.</summary>
+    <remarks>This class is used to filter the results of a Select using the <see cref="T:SemWeb.SelectFilter" /> type.</remarks>
   </Docs>
 </Type>

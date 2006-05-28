@@ -95,9 +95,9 @@ foreach (Statement s in memoryStore)
         <Parameter Name="statements" Type="SemWeb.Statement[]" />
       </Parameters>
       <Docs>
-        <param name="statements">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
+        <param name="statements">An array of statements.</param>
+        <summary>Creates a MemoryStore initialized with the given array of statements.</summary>
+        <remarks>The statements in the array are added to the MemoryStore on creation.</remarks>
       </Docs>
     </Member>
   </Members>

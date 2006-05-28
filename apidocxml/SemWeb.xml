@@ -5,7 +5,7 @@
 </summary>
     <remarks><para>The <see cref="T:SemWeb.Statement" /> <see langword="struct" /> represents a RDF statement, with a subject. predicate, object, and meta value.  The use of the meta field is optional and application-specified.</para>
 
-<para>Subjects, predicates, objects, and metas are all <see cref="T:SemWeb.Resource" /> objects.  <see cref="T:SemWeb.Resource" /> is an abstract class with two subclasses: <see cref="T:SemWeb.Entity" /> and <see cref="T:SemWeb.Literal" />.  Only objects can be literals.  The <see cref="T:SemWeb.Entity" /> class has one subclass, <see cref="T:SemWeb.BNode" />, for blank nodes (anonymous entities).</para>
+<para>Subjects, predicates, objects, and metas are all <see cref="T:SemWeb.Resource" /> objects.  <see cref="T:SemWeb.Resource" /> is an abstract class with two subclasses: <see cref="T:SemWeb.Entity" /> and <see cref="T:SemWeb.Literal" />.  Only objects can be literals.  The <see cref="T:SemWeb.Entity" /> class has one subclass, <see cref="T:SemWeb.BNode" />, for blank nodes (anonymous entities), which itself has a subclass <see cref="T:SemWeb.Variable" /> for use with queries.</para>
 
 <para>Graphs, or repositories of statements, are contained in <see cref="T:SemWeb.Store" /> objects.  <see cref="T:SemWeb.Store" /> is an abstract class with a few implementations provided in this library.  The <see cref="T:SemWeb.MemoryStore" /> class is a graph held in memory.  Stores for holding graphs in SQL databases are also provided.  Create them through either <see cref="M:SemWeb.Store.CreateForInput(string)" /> or <see cref="M:SemWeb.Store.CreateForOutput(string)" />.</para>
 
