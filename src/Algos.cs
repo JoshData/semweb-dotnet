@@ -26,9 +26,6 @@ namespace SemWeb.Algos {
 		public void Select(SelectFilter filter, StatementSink sink) {
 			a.Select(filter, new Tester(b, sink));
 		}
-		public Entity[] FindEntities(Statement[] graph) {
-			throw new InvalidOperationException();
-		}
 		class Tester : StatementSink {
 			SelectableSource b;
 			StatementSink c;

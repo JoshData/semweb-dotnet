@@ -236,10 +236,6 @@ namespace SemWeb.Inference {
 			}
 		}
 		
-		public Entity[] FindEntities(Statement[] graph) {
-			return Store.DefaultFindEntities(this, graph);
-		}
-		
 		static Entity[] GetClosure(ResSet starts, Hashtable table) {
 			if (starts == null) return null;
 			return GetClosure(starts.ToArray(), table);

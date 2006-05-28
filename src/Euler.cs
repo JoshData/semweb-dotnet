@@ -57,10 +57,6 @@ namespace SemWeb.Inference {
 			}
 		}
 		
-		public Entity[] FindEntities(Statement[] graph) {
-			return Store.DefaultFindEntities(this, graph);
-		}
-
 		public void Query(Statement[] graph, SemWeb.Query.QueryResultSink sink) {
 			ArrayList evidence = prove(rules, world, SelectFilter.FromGraph(graph), -1);
 			if (evidence == null)

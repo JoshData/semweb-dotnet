@@ -433,274 +433,226 @@ namespace SemWeb.Query {
 		private bool Query(int groupindex, BindingSet bindings, SelectableSource targetModel) {
 			QueryStatement[] group = statements[groupindex];
 			
-			if (group.Length == 1) {
-				QueryStatement qs = group[0];
+			QueryStatement qs = group[0];
+			
+			int numMultiplyBound = IsMultiplyBound(qs.Subject, bindings)
+				+ IsMultiplyBound(qs.Predicate, bindings)
+				+ IsMultiplyBound(qs.Object, bindings);
+			
+			if (numMultiplyBound >= 1) {
+				// If there is one or more multiply-bound variable,
+				// then we need to iterate through the permutations
+				// of the variables in the statement.
 				
-				int numMultiplyBound = IsMultiplyBound(qs.Subject, bindings)
-					+ IsMultiplyBound(qs.Predicate, bindings)
-					+ IsMultiplyBound(qs.Object, bindings);
+				Debug(qs.ToString() + " Something Multiply Bound");
 				
-				if (numMultiplyBound >= 1) {
-					// If there is one or more multiply-bound variable,
-					// then we need to iterate through the permutations
-					// of the variables in the statement.
-					
-					Debug(qs.ToString() + " Something Multiply Bound");
-					
-					MemoryStore matches = new MemoryStore();
-					targetModel.Select(
-						new SelectFilter(
-							(Entity[])qs.Subject.GetValues(bindings.Union, true),
-							(Entity[])qs.Predicate.GetValues(bindings.Union, true),
-							qs.Object.GetValues(bindings.Union, false),
-							QueryMeta == null ? null : new Entity[] { QueryMeta }
-							),
-						new ClearMetaDupCheck(matches));
-					
-					Debug("\t" + matches.StatementCount + " Matches");
-					
-					if (matches.StatementCount == 0) {
-						// This statement doesn't match any of
-						// the existing bindings.  If this was
-						// optional, preserve the bindings.
-						return qs.Optional;
-					}
-					
-					// We need to preserve the pairings of
-					// the multiply bound variable with the matching
-					// statements.
-					
-					ArrayList newbindings = new ArrayList();
-					
-					if (!qs.Optional) bindings.Union.Clear(qs);
-					
-					foreach (QueryResult binding in bindings.Results) {
-						// Break apart the permutations in this binding.
-						BindingEnumerator enumer2 = new BindingEnumerator(qs, binding);
-						Entity s, p;
-						Resource o;
-						while (enumer2.MoveNext(out s, out p, out o)) {
-							// Get the matching statements from the union query
-							Statement bs = new Statement(s, p, o);
-							MemoryStore innermatches = matches.Select(bs).Load();
-							
-							// If no matches, the binding didn't match the filter.
-							if (innermatches.StatementCount == 0) {
+				MemoryStore matches = new MemoryStore();
+				targetModel.Select(
+					new SelectFilter(
+						(Entity[])qs.Subject.GetValues(bindings.Union, true),
+						(Entity[])qs.Predicate.GetValues(bindings.Union, true),
+						qs.Object.GetValues(bindings.Union, false),
+						QueryMeta == null ? null : new Entity[] { QueryMeta }
+						),
+					new ClearMetaDupCheck(matches));
+				
+				Debug("\t" + matches.StatementCount + " Matches");
+				
+				if (matches.StatementCount == 0) {
+					// This statement doesn't match any of
+					// the existing bindings.  If this was
+					// optional, preserve the bindings.
+					return qs.Optional;
+				}
+				
+				// We need to preserve the pairings of
+				// the multiply bound variable with the matching
+				// statements.
+				
+				ArrayList newbindings = new ArrayList();
+				
+				if (!qs.Optional) bindings.Union.Clear(qs);
+				
+				foreach (QueryResult binding in bindings.Results) {
+					// Break apart the permutations in this binding.
+					BindingEnumerator enumer2 = new BindingEnumerator(qs, binding);
+					Entity s, p;
+					Resource o;
+					while (enumer2.MoveNext(out s, out p, out o)) {
+						// Get the matching statements from the union query
+						Statement bs = new Statement(s, p, o);
+						MemoryStore innermatches = matches.Select(bs).Load();
+						
+						// If no matches, the binding didn't match the filter.
+						if (innermatches.StatementCount == 0) {
+							if (qs.Optional) {
+								// Preserve the binding.
+								QueryResult bc = binding.Clone();
+								bc.Set(qs, bs);
+								newbindings.Add(bc);
+								continue;
+							} else {
+								// Toss out the binding.
+								continue;
+							}
+						}
+						
+						for (int si = 0; si < innermatches.StatementCount; si++) {
+							Statement m = innermatches[si];
+							if (!MatchesFilters(m, qs, targetModel)) {
 								if (qs.Optional) {
-									// Preserve the binding.
 									QueryResult bc = binding.Clone();
 									bc.Set(qs, bs);
 									newbindings.Add(bc);
-									continue;
-								} else {
-									// Toss out the binding.
-									continue;
 								}
+								continue;
 							}
+							bindings.Union.Add(qs, m);
 							
-							for (int si = 0; si < innermatches.StatementCount; si++) {
-								Statement m = innermatches[si];
-								if (!MatchesFilters(m, qs, targetModel)) {
-									if (qs.Optional) {
-										QueryResult bc = binding.Clone();
-										bc.Set(qs, bs);
-										newbindings.Add(bc);
-									}
-									continue;
-								}
-								bindings.Union.Add(qs, m);
-								
-								QueryResult r = binding.Clone();
-								r.Set(qs, m);
-								r.StatementMatched[groupindex] = true;
-								newbindings.Add(r);
-							}
+							QueryResult r = binding.Clone();
+							r.Set(qs, m);
+							r.StatementMatched[groupindex] = true;
+							newbindings.Add(r);
 						}
 					}
+				}
+				
+				bindings.Results = newbindings;
+				
+			} else {
+				// There are no multiply bound variables, but if
+				// there are more than two unbound variables,
+				// we need to be sure to preserve the pairings
+				// of the matching values.
+			
+				int numUnbound = IsUnbound(qs.Subject, bindings)
+					+ IsUnbound(qs.Predicate, bindings)
+					+ IsUnbound(qs.Object, bindings);
 					
-					bindings.Results = newbindings;
+				bool sunbound = IsUnbound(qs.Subject, bindings) == 1;
+				bool punbound = IsUnbound(qs.Predicate, bindings) == 1;
+				bool ounbound = IsUnbound(qs.Object, bindings) == 1;
+				
+				Statement s = GetStatement(qs, bindings);
+				
+				// If we couldn't get a statement out of this,
+				// then if this was not an optional filter,
+				// fail.  If this was optional, don't change
+				// the bindings any. 
+				if (s == StatementFailed) return qs.Optional;
+				
+				if (numUnbound == 0) {
+					Debug(qs.ToString() + " All bound");
+					
+					// All variables are singly bound already.
+					// We can just test if the statement exists.
+					if (targetModel.Contains(s)) {
+						// Mark each binding that it matched this statement.
+						foreach (QueryResult r in bindings.Results)
+							r.StatementMatched[groupindex] = true;
+					} else {
+						return qs.Optional;
+					}
+				
+				} else if (numUnbound == 1) {
+					Debug(qs.ToString() + " 1 Unbound");
+				
+					// There is just one unbound variable.  The others
+					// are not multiply bound, so they must be uniquely
+					// bound (but they may not be bound in all results).
+					// Run a combined select to find all possible values
+					// of the unbound variable at once, and set these to
+					// be the values of the variable for matching results.
+					
+					ResSet values = new ResSet();
+					MemoryStore ms = new MemoryStore();
+					targetModel.Select(s, ms);
+					for (int si = 0; si < ms.StatementCount; si++) {
+						Statement match = ms[si];
+						if (!MatchesFilters(match, qs, targetModel)) continue;
+						if (sunbound) values.Add(match.Subject);
+						if (punbound) values.Add(match.Predicate);
+						if (ounbound) values.Add(match.Object);
+					}
+					
+					Debug("\t" + values.Count + " matches");
+					
+					if (values.Count == 0)
+						return qs.Optional;
+						
+					int varIndex = -1;
+					if (sunbound) varIndex = qs.Subject.VarIndex;
+					if (punbound) varIndex = qs.Predicate.VarIndex;
+					if (ounbound) varIndex = qs.Object.VarIndex;
+					
+					if (bindings.Results.Count == 0)
+						bindings.Results.Add(new QueryResult(this));
+					
+					bindings.Union.Bindings[varIndex] = new ResSet();
+					foreach (Resource r in values)
+						bindings.Union.Bindings[varIndex].Add(r);
+						
+					foreach (QueryResult r in bindings.Results) {
+						// Check that the bound variables are bound in this result.
+						// If it is bound, it will be bound to the correct resource,
+						// but it might not be bound at all if an optional statement
+						// failed to match -- in which case, don't modify the binding.
+						if (qs.Subject.IsVariable && !sunbound && r.Bindings[qs.Subject.VarIndex] == null) continue;
+						if (qs.Predicate.IsVariable && !punbound && r.Bindings[qs.Predicate.VarIndex] == null) continue;
+						if (qs.Object.IsVariable && !ounbound && r.Bindings[qs.Object.VarIndex] == null) continue;
+					
+						r.Bindings[varIndex] = values;
+						r.StatementMatched[groupindex] = true;
+					}
 					
 				} else {
-					// There are no multiply bound variables, but if
-					// there are more than two unbound variables,
-					// we need to be sure to preserve the pairings
-					// of the matching values.
+					// There are two or more unbound variables, the
+					// third variable being uniquely bound, if bound.
+					// Keep track of the pairing of unbound variables.
+					
+					if (numUnbound == 3)
+						throw new QueryExecutionException("Query would select all statements in the store.");
+					
+					Debug(qs.ToString() + " 2 or 3 Unbound");
 				
-					int numUnbound = IsUnbound(qs.Subject, bindings)
-						+ IsUnbound(qs.Predicate, bindings)
-						+ IsUnbound(qs.Object, bindings);
+					if (bindings.Results.Count == 0)
+						bindings.Results.Add(new QueryResult(this));
 						
-					bool sunbound = IsUnbound(qs.Subject, bindings) == 1;
-					bool punbound = IsUnbound(qs.Predicate, bindings) == 1;
-					bool ounbound = IsUnbound(qs.Object, bindings) == 1;
-					
-					Statement s = GetStatement(qs, bindings);
-					
-					// If we couldn't get a statement out of this,
-					// then if this was not an optional filter,
-					// fail.  If this was optional, don't change
-					// the bindings any. 
-					if (s == StatementFailed) return qs.Optional;
-					
-					if (numUnbound == 0) {
-						Debug(qs.ToString() + " All bound");
-						
-						// All variables are singly bound already.
-						// We can just test if the statement exists.
-						if (targetModel.Contains(s)) {
-							// Mark each binding that it matched this statement.
-							foreach (QueryResult r in bindings.Results)
-								r.StatementMatched[groupindex] = true;
-						} else {
-							return qs.Optional;
-						}
-					
-					} else if (numUnbound == 1) {
-						Debug(qs.ToString() + " 1 Unbound");
-					
-						// There is just one unbound variable.  The others
-						// are not multiply bound, so they must be uniquely
-						// bound (but they may not be bound in all results).
-						// Run a combined select to find all possible values
-						// of the unbound variable at once, and set these to
-						// be the values of the variable for matching results.
-						
-						ResSet values = new ResSet();
-						MemoryStore ms = new MemoryStore();
-						targetModel.Select(s, ms);
-						for (int si = 0; si < ms.StatementCount; si++) {
-							Statement match = ms[si];
-							if (!MatchesFilters(match, qs, targetModel)) continue;
-							if (sunbound) values.Add(match.Subject);
-							if (punbound) values.Add(match.Predicate);
-							if (ounbound) values.Add(match.Object);
-						}
-						
-						Debug("\t" + values.Count + " matches");
-						
-						if (values.Count == 0)
-							return qs.Optional;
-							
-						int varIndex = -1;
-						if (sunbound) varIndex = qs.Subject.VarIndex;
-						if (punbound) varIndex = qs.Predicate.VarIndex;
-						if (ounbound) varIndex = qs.Object.VarIndex;
-						
-						if (bindings.Results.Count == 0)
-							bindings.Results.Add(new QueryResult(this));
-						
-						bindings.Union.Bindings[varIndex] = new ResSet();
-						foreach (Resource r in values)
-							bindings.Union.Bindings[varIndex].Add(r);
-							
+					ArrayList newbindings = new ArrayList();
+					MemoryStore ms = new MemoryStore();
+					targetModel.Select(s, ms);
+					for (int si = 0; si < ms.StatementCount; si++) {
+						Statement match = ms[si];
+						if (!MatchesFilters(match, qs, targetModel)) continue;
+						bindings.Union.Add(qs, match);
 						foreach (QueryResult r in bindings.Results) {
-							// Check that the bound variables are bound in this result.
-							// If it is bound, it will be bound to the correct resource,
-							// but it might not be bound at all if an optional statement
-							// failed to match -- in which case, don't modify the binding.
-							if (qs.Subject.IsVariable && !sunbound && r.Bindings[qs.Subject.VarIndex] == null) continue;
-							if (qs.Predicate.IsVariable && !punbound && r.Bindings[qs.Predicate.VarIndex] == null) continue;
-							if (qs.Object.IsVariable && !ounbound && r.Bindings[qs.Object.VarIndex] == null) continue;
-						
-							r.Bindings[varIndex] = values;
-							r.StatementMatched[groupindex] = true;
-						}
-						
-					} else {
-						// There are two or more unbound variables, the
-						// third variable being uniquely bound, if bound.
-						// Keep track of the pairing of unbound variables.
-						
-						if (numUnbound == 3)
-							throw new QueryExecutionException("Query would select all statements in the store.");
-						
-						Debug(qs.ToString() + " 2 or 3 Unbound");
-					
-						if (bindings.Results.Count == 0)
-							bindings.Results.Add(new QueryResult(this));
-							
-						ArrayList newbindings = new ArrayList();
-						MemoryStore ms = new MemoryStore();
-						targetModel.Select(s, ms);
-						for (int si = 0; si < ms.StatementCount; si++) {
-							Statement match = ms[si];
-							if (!MatchesFilters(match, qs, targetModel)) continue;
-							bindings.Union.Add(qs, match);
-							foreach (QueryResult r in bindings.Results) {
-								if (numUnbound == 2) {
-									// Check that the bound variable is bound in this result.
-									// If it is bound, it will be bound to the correct resource,
-									// but it might not be bound at all if an optional statement
-									// failed to match -- in which case, preserve the binding if
-									// this was an optional statement.
-									bool matches = true;
-									if (qs.Subject.IsVariable && !sunbound && r.Bindings[qs.Subject.VarIndex] == null) matches = false;
-									if (qs.Predicate.IsVariable && !punbound && r.Bindings[qs.Predicate.VarIndex] == null) matches = false;
-									if (qs.Object.IsVariable && !ounbound && r.Bindings[qs.Object.VarIndex] == null) matches = false;
-									if (!matches) {
-										if (qs.Optional)
-											newbindings.Add(r);
-										continue;
-									}
+							if (numUnbound == 2) {
+								// Check that the bound variable is bound in this result.
+								// If it is bound, it will be bound to the correct resource,
+								// but it might not be bound at all if an optional statement
+								// failed to match -- in which case, preserve the binding if
+								// this was an optional statement.
+								bool matches = true;
+								if (qs.Subject.IsVariable && !sunbound && r.Bindings[qs.Subject.VarIndex] == null) matches = false;
+								if (qs.Predicate.IsVariable && !punbound && r.Bindings[qs.Predicate.VarIndex] == null) matches = false;
+								if (qs.Object.IsVariable && !ounbound && r.Bindings[qs.Object.VarIndex] == null) matches = false;
+								if (!matches) {
+									if (qs.Optional)
+										newbindings.Add(r);
+									continue;
 								}
-							
-								QueryResult r2 = r.Clone();
-								r2.Add(qs, match);
-								r2.StatementMatched[groupindex] = true;
-								newbindings.Add(r2);
 							}
+						
+							QueryResult r2 = r.Clone();
+							r2.Add(qs, match);
+							r2.StatementMatched[groupindex] = true;
+							newbindings.Add(r2);
 						}
-						if (newbindings.Count == 0)
-							return qs.Optional; // don't clear out bindings if this was optional and it failed
-						bindings.Results = newbindings;
 					}
+					if (newbindings.Count == 0)
+						return qs.Optional; // don't clear out bindings if this was optional and it failed
+					bindings.Results = newbindings;
 				}
-			
-			} else {
-				// There is more than one statement in the group.
-				// These are never optional.
-
-				Debug("Statement group.");
-		
-				VarOrAnchor var = new VarOrAnchor();
-				foreach (QueryStatement qs in group) {
-					if (qs.Subject.IsVariable && bindings.Union.Bindings[qs.Subject.VarIndex] == null) var = qs.Subject;
-					if (qs.Predicate.IsVariable && bindings.Union.Bindings[qs.Predicate.VarIndex] == null) var = qs.Predicate;
-					if (qs.Object.IsVariable && bindings.Union.Bindings[qs.Object.VarIndex] == null) var = qs.Object;
-					break;
-				}
-				// The variable should be unbound so far.
-				if (bindings.Union.Bindings[var.VarIndex] != null)
-					throw new Exception();
-				
-				ArrayList findstatements = new ArrayList();
-				foreach (QueryStatement qs in group) {
-					Statement s = GetStatement(qs, bindings);
-					if (s == StatementFailed) return false;
-					s.Meta = QueryMeta;
-					Debug("  " + s);
-					findstatements.Add(s);
-				}
-				
-				ResSet values = new ResSet();
-				
-				Statement[] findstatementsarray = (Statement[])findstatements.ToArray(typeof(Statement));
-				Entity[] targetentities = targetModel.FindEntities(findstatementsarray);
-				
-				foreach (Entity r in targetentities) {
-					if (!MatchesFilters(r, var, targetModel)) continue;
-					Debug("  > " + r);
-					values.Add(r);
-				}
-				if (values.Count == 0) return false;
-				
-				bindings.Union.Bindings[var.VarIndex] = values;
-				
-				if (bindings.Results.Count == 0)
-					bindings.Results.Add(new QueryResult(this));
-			
-				foreach (QueryResult result in bindings.Results)
-					result.Bindings[var.VarIndex] = values;
 			}
 			
 			return true;
@@ -934,33 +886,6 @@ namespace SemWeb.Query {
 				if (comp > 0) // clear out worse possibilities
 					considerations.Clear();
 				
-				// next is equal to what we have.  we can either
-				// group it with an existing statement, or make
-				// a new group out of it.
-				
-				bool grouped = false;
-				foreach (ArrayList g in considerations) {
-					// We can group next in g, if the only
-					// unset variables in next are the only
-					// unset variables in the statements in g.
-					// AND if nothing else is a variable,
-					// because of having multiply-bound variables
-					// with FindEntities.  And none may be optional.
-					QueryStatement s = (QueryStatement)g[0];
-					int su = InitBuildNodeGetUniqueUnsetVar(s, setVars);
-					int nu = InitBuildNodeGetUniqueUnsetVar(next, setVars);
-					if (su == nu && su != -1 && s.NumVars() == 1 && next.NumVars() == 1
-						&& !s.Optional && !next.Optional) {
-						g.Add(next);
-						grouped = true;
-						break;
-					}
-				}
-				if (grouped) continue;
-				
-				// we didn't group it with anything existing,
-				// so make a new group
-				
 				ArrayList group = new ArrayList();
 				group.Add(next);
 				considerations.Add(group);
@@ -978,21 +903,7 @@ namespace SemWeb.Query {
 			
 			return (QueryStatement[])bestgroup.ToArray(typeof(QueryStatement));
 		}
-		
-		int InitBuildNodeGetUniqueUnsetVar(QueryStatement s, Hashtable setVars) {
-			int ret = -1;
-			if (s.Subject.IsVariable && !setVars.ContainsKey(s.Subject.VarIndex))
-				ret = s.Subject.VarIndex;
-			if (s.Predicate.IsVariable && !setVars.ContainsKey(s.Predicate.VarIndex)) {
-				if (ret != -1) return -1;
-				ret = s.Predicate.VarIndex;
-			}
-			if (s.Object.IsVariable && !setVars.ContainsKey(s.Object.VarIndex)) {
-				if (ret != -1) return -1;
-				ret = s.Object.VarIndex;
-			}
-			return ret;
-		}
+
 	}
 	
 	public abstract class QueryResultSink {

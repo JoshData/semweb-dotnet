@@ -15,7 +15,6 @@ namespace SemWeb {
 		bool Contains(Statement template);
 		void Select(Statement template, StatementSink sink);
 		void Select(SelectFilter filter, StatementSink sink);
-		Entity[] FindEntities(Statement[] graph);
 	}
 
 	public interface QueryableSource : SelectableSource {
@@ -312,60 +311,7 @@ namespace SemWeb {
 			Remove(find);
 			Add(replacement);
 		}
-		
-		public virtual Entity[] FindEntities(Statement[] filters) {
-			return DefaultFindEntities(this, filters);
-		}
-		
-		internal static Entity[] DefaultFindEntities(SelectableSource source, Statement[] filters) {
-			Hashtable ents = new Hashtable();
-			source.Select(filters[0], new FindEntitiesSink(ents, spom(filters[0])));
-			for (int i = 1; i < filters.Length; i++) {
-				Hashtable ents2 = new Hashtable();
-				source.Select(filters[i], new FindEntitiesSink(ents2, spom(filters[i])));
-
-				Hashtable ents3 = new Hashtable();
-				if (ents.Count < ents2.Count) {
-					foreach (Entity r in ents.Keys)
-						if (ents2.ContainsKey(r))
-							ents3[r] = r;
-				} else {
-					foreach (Entity r in ents2.Keys)
-						if (ents.ContainsKey(r))
-							ents3[r] = r;
-				}
-				ents = ents3;
-			}
-			
-			ArrayList ret = new ArrayList();
-			ret.AddRange(ents.Keys);
-			return (Entity[])ret.ToArray(typeof(Entity));
-		}
-		
-		private static int spom(Statement s) {
-			if (s.Subject == null) return 0;
-			if (s.Predicate == null) return 1;
-			if (s.Object == null) return 2;
-			if (s.Meta == null) return 3;
-			throw new InvalidOperationException("A statement did not have a null field.");
-		}
-		
-		private class FindEntitiesSink : StatementSink {
-			Hashtable ents;
-			int spom;
-			public FindEntitiesSink(Hashtable ents, int spom) { this.ents = ents; this.spom = spom; }
-			public bool Add(Statement s) {
-				Entity e = null;
-				if (spom == 0) e = s.Subject;
-				if (spom == 1) e = s.Predicate;
-				if (spom == 2) e = s.Object as Entity;
-				if (spom == 3) e = s.Meta;
-				if (e != null) ents[e] = ents;
-				return true;
-			}
-		}
-		
-		public void Write(System.IO.TextWriter writer) {
+				public void Write(System.IO.TextWriter writer) {
 			using (RdfWriter w = new N3Writer(writer)) {
 				Select(w);
 			}
@@ -635,10 +581,6 @@ namespace SemWeb.Stores {
 			}
 		}
 	
-		public Entity[] FindEntities(Statement[] graph) {
-			return Store.DefaultFindEntities(this, graph);
-		}
-		
 		public void Select(SelectFilter filter, StatementSink sink) {
 			Store.DefaultSelect(this, filter, sink);
 		}
@@ -672,11 +614,6 @@ namespace SemWeb.Stores {
 		public void Select(SelectFilter filter, StatementSink sink) {
 			output.WriteLine("SELECT: " + filter);
 			source.Select(filter, sink);
-		}
-
-		public Entity[] FindEntities(Statement[] graph) {
-			output.WriteLine("FIND: (n/a)");
-			return source.FindEntities(graph);
 		}
 	}
 	
@@ -719,8 +656,5 @@ namespace SemWeb.Stores {
 			((MemoryStore)selfilterresults[filter]).Select(sink);
 		}
 
-		public Entity[] FindEntities(Statement[] graph) {
-			return source.FindEntities(graph);
-		}
 	}
 }
