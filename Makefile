@@ -1,4 +1,4 @@
-VERSION=0.73
+VERSION=0.74
 
 all: bin/SemWeb.dll bin/SemWeb.PostgreSQLStore.dll bin/SemWeb.MySQLStore.dll bin/SemWeb.SqliteStore.dll bin/SemWeb.Sparql.dll bin/rdfstorage.exe bin/rdfquery.exe
 
@@ -9,8 +9,8 @@ MAIN_SOURCES = \
 	src/NamespaceManager.cs src/Util.cs src/UriMap.cs \
 	src/Resource.cs src/Statement.cs \
 	src/Store.cs src/MemoryStore.cs src/SQLStore.cs \
-	src/RdfParser.cs src/XmlParser.cs src/N3Parser.cs \
-	src/RdfWriter.cs src/XmlWriter.cs src/N3Writer.cs \
+	src/RdfReader.cs src/RdfXmlReader.cs src/N3Reader.cs \
+	src/RdfWriter.cs src/RdfXmlWriter.cs src/N3Writer.cs \
 	src/RSquary.cs src/LiteralFilters.cs src/Query.cs \
 	src/Inference.cs src/RDFS.cs \
 	src/Algos.cs src/Remote.cs \
