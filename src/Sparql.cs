@@ -691,8 +691,12 @@ namespace SemWeb.Query {
 					} else if (right is ASTVar && left is org.openrdf.model.Literal) {
 						var = (SparqlVariable)right;
 						val = (org.openrdf.model.Literal)left;
-						if (comp != LiteralFilter.CompType.EQ && comp != LiteralFilter.CompType.NE)
-							comp = LiteralFilter.Inverse(comp);
+						switch (comp) {
+						case LiteralFilter.CompType.LT: comp = LiteralFilter.CompType.GE; break;
+						case LiteralFilter.CompType.LE: comp = LiteralFilter.CompType.GT; break;
+						case LiteralFilter.CompType.GT: comp = LiteralFilter.CompType.LE; break;
+						case LiteralFilter.CompType.GE: comp = LiteralFilter.CompType.LT; break;
+						}
 					} else {
 						return;
 					}

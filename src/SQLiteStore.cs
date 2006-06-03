@@ -107,7 +107,7 @@ namespace SemWeb.Stores {
 				"CREATE INDEX IF NOT EXISTS object_index ON " + table + "_statements(object);",
 				"CREATE INDEX IF NOT EXISTS meta_index ON " + table + "_statements(meta);",
 			
-				"CREATE INDEX IF NOT EXISTS literal_index ON " + table + "_literals(value);",
+				"CREATE UNIQUE INDEX IF NOT EXISTS literal_index ON " + table + "_literals(hash);",
 				"CREATE UNIQUE INDEX IF NOT EXISTS entity_index ON " + table + "_entities(value);"
 				};
 		}

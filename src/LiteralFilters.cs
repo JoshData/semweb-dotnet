@@ -41,18 +41,6 @@ namespace SemWeb {
 			LT, LE, NE, EQ, GT, GE
 		}
 		
-		internal static CompType Inverse(CompType comp) {
-			switch (comp) {
-			case CompType.LT: return CompType.GE;
-			case CompType.LE: return CompType.GT;
-			case CompType.NE: return CompType.EQ;
-			case CompType.EQ: return CompType.NE;
-			case CompType.GT: return CompType.LE;
-			case CompType.GE: return CompType.LT;
-			default: throw new ArgumentException();
-			}
-		}
-		
 		public static bool MatchesFilters(Resource literal, LiteralFilter[] filters, SelectableSource targetModel) {
 			if (literal is Literal)
 				return MatchesFilters((Literal)literal, filters, targetModel);

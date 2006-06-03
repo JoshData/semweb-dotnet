@@ -250,8 +250,8 @@ diff -urN sparql-0.7/src/main/name/levering/ryan/sparql/common/RdfSource.java sp
 +
 diff -urN sparql-0.7/src/main/name/levering/ryan/sparql/logic/AdvancedGroupConstraintLogic.java sparql-0.7j/src/main/name/levering/ryan/sparql/logic/AdvancedGroupConstraintLogic.java
 --- sparql-0.7/src/main/name/levering/ryan/sparql/logic/AdvancedGroupConstraintLogic.java	1969-12-31 19:00:00.000000000 -0500
-+++ sparql-0.7j/src/main/name/levering/ryan/sparql/logic/AdvancedGroupConstraintLogic.java	2006-05-15 11:05:50.000000000 -0400
-@@ -0,0 +1,436 @@
++++ sparql-0.7j/src/main/name/levering/ryan/sparql/logic/AdvancedGroupConstraintLogic.java	2006-05-15 17:40:30.000000000 -0400
+@@ -0,0 +1,482 @@
 +/*
 + * SPARQL Engine
 + * Copyright (C) 2005 Ryan Levering, All rights reserved.
@@ -273,10 +273,12 @@ diff -urN sparql-0.7/src/main/name/levering/ryan/sparql/logic/AdvancedGroupConst
 +import org.openrdf.model.Literal;
 +import org.openrdf.model.Value;
 +
++import name.levering.ryan.sparql.common.impl.AbstractRdfBindingRow;
 +import name.levering.ryan.sparql.common.RdfBindingSet;
 +import name.levering.ryan.sparql.common.RdfSource;
 +import name.levering.ryan.sparql.common.Variable;
 +import name.levering.ryan.sparql.common.impl.RdfBindingSetImpl;
++import name.levering.ryan.sparql.logic.function.ExternalFunctionLogic;
 +import name.levering.ryan.sparql.model.TripleConstraint;
 +import name.levering.ryan.sparql.model.data.FilterConstraintData;
 +import name.levering.ryan.sparql.model.data.GroupConstraintData;
@@ -576,10 +578,54 @@ diff -urN sparql-0.7/src/main/name/levering/ryan/sparql/logic/AdvancedGroupConst
 +	private void extractVariableFunctions(ExpressionLogic a, ExpressionLogic b, Map knownValues) {
 +		if (!(a instanceof Variable)) return;
 +		if (knownValues.containsKey(a)) return; // we could intersect with existing values, but be sure not to do this for values we just inserted into the hash
++		
 +		if (b instanceof Variable && knownValues.containsKey(b)) {
 +			knownValues.put(a, knownValues.get(b));
++		
++		} else if (b instanceof ExternalFunctionLogic) {
++			// if this is a function of one variable, get the values by applying the function
++			// to all of the variables values.  (if it's of more than one variable, we could
++			// permute through the variables...)
++			ExternalFunctionLogic f = (ExternalFunctionLogic)b;
++			Set varargs =  new HashSet();
++			f.getVariables(varargs);
++			
++			if (varargs.size() == 0) { // a constant, ok
++				Value v = f.evaluate(new MyBindingRow(new HashMap()));
++				HashSet vs = new HashSet();
++				vs.add(v);
++				knownValues.put(a, vs);
++				return;
++			}
++			
++			if (varargs.size() > 1) return;
++			
++			for (Iterator i = varargs.iterator(); i.hasNext(); ) {
++				Variable var = (Variable)i.next();
++				if (!knownValues.containsKey(var))
++					return;
++				
++				Set varvalues = (Set)knownValues.get(var);
++				Set newvalues = new HashSet();
++				Map bindings = new HashMap();
++				for (Iterator j = varvalues.iterator(); j.hasNext(); ) {
++					bindings.put(var, j.next());
++					newvalues.add( f.evaluate(new MyBindingRow(bindings)) );
++				}
++				
++				knownValues.put(a, newvalues);
++			}
 +		}
++		
++		
 +		// TODO: if b is a function whose arguments are all constants or known values, evaluate the function
++	}
++	
++	private class MyBindingRow extends AbstractRdfBindingRow {
++		Map values;
++		public MyBindingRow(Map values) { this.values = values; }
++		public List getVariables() { return new java.util.ArrayList(values.keySet()); }
++		public Value getValue(Variable v) { return (Value)values.get(v); }
 +	}
 +	
 +    /**
@@ -1979,13 +2025,11 @@ diff -urN sparql-0.7/src/main/name/levering/ryan/sparql/logic/function/DecimalCa
  
 diff -urN sparql-0.7/src/main/name/levering/ryan/sparql/logic/function/ExternalFunctionLogic.java sparql-0.7j/src/main/name/levering/ryan/sparql/logic/function/ExternalFunctionLogic.java
 --- sparql-0.7/src/main/name/levering/ryan/sparql/logic/function/ExternalFunctionLogic.java	2006-03-10 19:05:58.000000000 -0500
-+++ sparql-0.7j/src/main/name/levering/ryan/sparql/logic/function/ExternalFunctionLogic.java	2006-02-19 10:54:51.000000000 -0500
-@@ -7,7 +7,8 @@
- 
++++ sparql-0.7j/src/main/name/levering/ryan/sparql/logic/function/ExternalFunctionLogic.java	2006-05-15 17:21:21.000000000 -0400
+@@ -8,6 +8,7 @@
  import java.util.ArrayList;
  import java.util.Iterator;
--import java.util.List;
-+import java.util.List;
+ import java.util.List;
 +import java.util.Set;
  
  import name.levering.ryan.sparql.common.RdfBindingRow;
@@ -2015,14 +2059,6 @@ diff -urN sparql-0.7/src/main/name/levering/ryan/sparql/logic/function/ExternalF
          this.function = function;
          this.factory = factory;
      }
-@@ -77,6 +73,6 @@
-             //TODO Check on whether this should be some exception
-             return null;
-         }
--    }
-+    }
- 
- }
 diff -urN sparql-0.7/src/main/name/levering/ryan/sparql/logic/function/ExternalFunctionLogic.java.orig sparql-0.7j/src/main/name/levering/ryan/sparql/logic/function/ExternalFunctionLogic.java.orig
 --- sparql-0.7/src/main/name/levering/ryan/sparql/logic/function/ExternalFunctionLogic.java.orig	2005-11-28 16:39:30.000000000 -0500
 +++ sparql-0.7j/src/main/name/levering/ryan/sparql/logic/function/ExternalFunctionLogic.java.orig	1969-12-31 19:00:00.000000000 -0500

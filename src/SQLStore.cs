@@ -94,6 +94,9 @@ namespace SemWeb.Stores {
 			string verdatastr = RunScalarString("SELECT value FROM " + table + "_literals WHERE id = 0");
 			NameValueCollection verdata = ParseVersionInfo(verdatastr);
 			
+			if (verdatastr != null && verdata["ver"] == null)
+				throw new InvalidOperationException("The SQLStore has undergone changes making it impossible to read old databases.");
+			
 			if (verdata["guid"] == null) {
 				guid = Guid.NewGuid().ToString("N");
 				verdata["guid"] = guid;
@@ -208,8 +211,10 @@ namespace SemWeb.Stores {
 				StringBuilder b = cmdBuffer; cmdBuffer.Length = 0;
 				b.Append("SELECT id FROM ");
 				b.Append(table);
-				b.Append("_literals WHERE ");
-				WhereLiteral(b, literal);
+				b.Append("_literals WHERE hash =");
+				b.Append(",\"");
+				b.Append(GetLiteralHash(literal));
+				b.Append("\"");
 				b.Append(" LIMIT 1;");
 				
 				object id = RunScalar(b.ToString());
@@ -224,25 +229,6 @@ namespace SemWeb.Stores {
 			}
 			
 			return 0;
-		}
-		
-		private void WhereLiteral(StringBuilder b, Literal literal) {
-			b.Append("value = ");
-			EscapedAppend(b, literal.Value);
-			b.Append(" AND ");
-			if (literal.Language != null) {
-				b.Append("language = ");
-				EscapedAppend(b, literal.Language);
-			} else {
-				CreateNullTest("language", b);
-			}
-			b.Append(" AND ");
-			if (literal.DataType != null) {
-				b.Append("datatype = ");
-				EscapedAppend(b, literal.DataType);
-			} else {
-				CreateNullTest("datatype", b);
-			}
 		}
 		
 		private int AddLiteral(Literal literal, StringBuilder buffer, bool insertCombined) {
@@ -1288,8 +1274,7 @@ namespace SemWeb.Stores {
 				"CREATE INDEX object_index ON " + table + "_statements(object);",
 				"CREATE INDEX meta_index ON " + table + "_statements(meta);",
 			
-				"CREATE INDEX literal_index ON " + table + "_literals(value(30));",
-				"CREATE UNIQUE INDEX literal_hash_index ON " + table + "_literals(hash);",
+				"CREATE UNIQUE INDEX literal_index ON " + table + "_literals(hash);",
 				"CREATE UNIQUE INDEX entity_index ON " + table + "_entities(value(255));"
 				};
 		}

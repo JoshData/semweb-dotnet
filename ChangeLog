@@ -1,3 +1,24 @@
+2006-06-03 Version 0.74
+
+	* SQLStore:
+	  - Improvements to the Import() methodology, now letting
+	    the store scale to billions of triples, and a dynamic adjustment
+	    of the statement-buffer size increases performance a bit.
+	  - The literals table is now unique-indexed with a new hash column
+	    containing a SHA1 hash of the literal value, language, and
+	    datatype.  This also puts an upper limit on the amount of
+	    bytes needed to be transfered to the SQL server in order
+	    to find a literal: just the hash, and not the whole value.
+	    Beware: This makes old databases unreadable.
+	  - Also, a bug fix related to literals being added to the literals
+	    table multiple times.
+	* RdfXmlReader: Detect two cases of invalid RDF.
+	* RdfXmlWriter: Better API for writing directly to a XmlDocument.
+	  Also, a minor bug fix.
+	* RdfWriters: No need to pass your own NamespaceManager.
+	* SelectableSource: The FindEntities method is removed in favor
+	  of the as-yet-unimplemented QueryableSource interface.
+
 2006-05-11 Version 0.73
 
 	* RdfXmlWriter: Provide a way to access the generated

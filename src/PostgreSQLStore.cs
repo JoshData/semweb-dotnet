@@ -35,7 +35,7 @@ namespace SemWeb.Stores {
 				"CREATE INDEX object_index ON " + table + "_statements(object);",
 				"CREATE INDEX meta_index ON " + table + "_statements(meta);",
 			
-				"CREATE INDEX literal_index ON " + table + "_literals(value);",
+				"CREATE UNIQUE INDEX literal_index ON " + table + "_literals(hash);",
 				"CREATE UNIQUE INDEX entity_index ON " + table + "_entities(value);"
 				};
 			this.connectionString = connectionString;
