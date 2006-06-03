@@ -13,6 +13,8 @@ namespace SemWeb.Stores {
 	// because the creation of new entities will use the same IDs.
 	
 	public abstract class SQLStore : Store, SupportsPersistableBNodes {
+		int dbformat = 1;
+	
 		string table;
 		string guid;
 		
@@ -27,7 +29,7 @@ namespace SemWeb.Stores {
 		
 		bool statementsRemoved = false;
 
-		bool Debug = false;
+		static bool Debug = System.Environment.GetEnvironmentVariable("SEMWEB_DEBUG_SQL") != null;
 		
 		StringBuilder cmdBuffer = new StringBuilder();
 		
@@ -96,6 +98,8 @@ namespace SemWeb.Stores {
 			
 			if (verdatastr != null && verdata["ver"] == null)
 				throw new InvalidOperationException("The SQLStore has undergone changes making it impossible to read old databases.");
+			
+			verdata["ver"] = dbformat.ToString();
 			
 			if (verdata["guid"] == null) {
 				guid = Guid.NewGuid().ToString("N");
@@ -267,8 +271,10 @@ namespace SemWeb.Stores {
 			if (!insertCombined)
 				b.Append(';');
 			
-			if (buffer == null)
+			if (buffer == null) {
+				if (Debug) Console.Error.WriteLine(b.ToString());
 				RunCommand(b.ToString());
+			}
 			
 			return id;
 		}
@@ -504,136 +510,138 @@ namespace SemWeb.Stores {
 			StatementList statements = addStatementBuffer;
 			addStatementBuffer = null;
 			
-			// Prefetch the IDs of all entities mentioned in statements.
-			StringBuilder cmd = new StringBuilder();
-			cmd.Append("SELECT id, value FROM ");
-			cmd.Append(table);
-			cmd.Append("_entities WHERE value IN (");
-			Hashtable entseen = new Hashtable();
-			bool hasEnts = false;
-			for (int i = 0; i < statements.Count; i++) {
-				Statement s = (Statement)statements[i];
-				for (int j = 0; j < 4; j++) {
-					Entity ent = s.GetComponent(j) as Entity;
-					if (ent == null || ent.Uri == null) continue;
-					if (entityCache.ContainsKey(ent.Uri)) continue;
-					if (entseen.ContainsKey(ent.Uri)) continue;
+			try {
+				// Prefetch the IDs of all entities mentioned in statements.
+				StringBuilder cmd = new StringBuilder();
+				cmd.Append("SELECT id, value FROM ");
+				cmd.Append(table);
+				cmd.Append("_entities WHERE value IN (");
+				Hashtable entseen = new Hashtable();
+				bool hasEnts = false;
+				for (int i = 0; i < statements.Count; i++) {
+					Statement s = (Statement)statements[i];
+					for (int j = 0; j < 4; j++) {
+						Entity ent = s.GetComponent(j) as Entity;
+						if (ent == null || ent.Uri == null) continue;
+						if (entityCache.ContainsKey(ent.Uri)) continue;
+						if (entseen.ContainsKey(ent.Uri)) continue;
+						
+						if (hasEnts)
+							cmd.Append(" , ");
+						EscapedAppend(cmd, ent.Uri);
+						hasEnts = true;
+						entseen[ent.Uri] = ent.Uri;
+					}
+				}
+				if (hasEnts) {
+					cmd.Append(");");
+					if (Debug) Console.Error.WriteLine(cmd.ToString());
+					using (IDataReader reader = RunReader(cmd.ToString())) {
+						while (reader.Read()) {
+							int id = reader.GetInt32(0);
+							string uri = AsString(reader[1]);
+							entityCache[uri] = id;
+						}
+					}
+				}
+				
+				
+				// Prefetch the IDs of all literals mentioned in statements.
+				cmd.Length = 0;
+				cmd.Append("SELECT id, hash FROM ");
+				cmd.Append(table);
+				cmd.Append("_literals WHERE hash IN (");
+				bool hasLiterals = false;
+				Hashtable litseen = new Hashtable();
+				for (int i = 0; i < statements.Count; i++) {
+					Statement s = (Statement)statements[i];
+					Literal lit = s.Object as Literal;
+					if (lit == null) continue;
+					if (literalCache.ContainsKey(lit)) continue;
 					
-					if (hasEnts)
+					string hash = GetLiteralHash(lit);
+					if (litseen.ContainsKey(hash)) continue;
+					
+					if (hasLiterals)
 						cmd.Append(" , ");
 					cmd.Append('"');
-					EscapedAppend(cmd, ent.Uri);
+					cmd.Append(hash);
 					cmd.Append('"');
-					hasEnts = true;
-					entseen[ent.Uri] = ent.Uri;
+					hasLiterals = true;
+					litseen[hash] = lit;
 				}
-			}
-			if (hasEnts) {
-				cmd.Append(");");
-				using (IDataReader reader = RunReader(cmd.ToString())) {
-					while (reader.Read()) {
-						int id = reader.GetInt32(0);
-						string uri = AsString(reader[1]);
-						entityCache[uri] = id;
-					}
-				}
-			}
-			
-			
-			// Prefetch the IDs of all literals mentioned in statements.
-			cmd.Length = 0;
-			cmd.Append("SELECT id, hash FROM ");
-			cmd.Append(table);
-			cmd.Append("_literals WHERE hash IN (");
-			bool hasLiterals = false;
-			Hashtable litseen = new Hashtable();
-			for (int i = 0; i < statements.Count; i++) {
-				Statement s = (Statement)statements[i];
-				Literal lit = s.Object as Literal;
-				if (lit == null) continue;
-				if (literalCache.ContainsKey(lit)) continue;
-				
-				string hash = GetLiteralHash(lit);
-				if (litseen.ContainsKey(hash)) continue;
-				
-				if (hasLiterals)
-					cmd.Append(" , ");
-				cmd.Append('"');
-				cmd.Append(hash);
-				cmd.Append('"');
-				hasLiterals = true;
-				litseen[hash] = lit;
-			}
-			if (hasLiterals) {
-				cmd.Append(");");
-				using (IDataReader reader = RunReader(cmd.ToString())) {
-					while (reader.Read()) {
-						int id = reader.GetInt32(0);
-						string hash = AsString(reader[1]);
-						Literal lit = (Literal)litseen[hash];
-						literalCache[lit] = id;
-					}
-				}
-			}
-			
-			StringBuilder entityInsertions = new StringBuilder();
-			StringBuilder literalInsertions = new StringBuilder();
-			
-			cmd = new StringBuilder();
-			if (insertCombined)
-				cmd.Append(INSERT_INTO_STATEMENTS_VALUES);
-
-			for (int i = 0; i < statements.Count; i++) {
-				Statement statement = (Statement)statements[i];
-			
-				int subj = GetResourceIdBuffer(statement.Subject, true, literalInsertions, entityInsertions, insertCombined);
-				int pred = GetResourceIdBuffer(statement.Predicate, true,  literalInsertions, entityInsertions, insertCombined);
-				int objtype = ObjectType(statement.Object);
-				int obj = GetResourceIdBuffer(statement.Object, true, literalInsertions, entityInsertions, insertCombined);
-				int meta = GetResourceIdBuffer(statement.Meta, true, literalInsertions, entityInsertions, insertCombined);
-				
-				if (!insertCombined)
-					cmd.Append(INSERT_INTO_STATEMENTS_VALUES);
-				
-				cmd.Append('(');
-				cmd.Append(subj);
-				cmd.Append(',');
-				cmd.Append(pred);
-				cmd.Append(',');
-				cmd.Append(objtype);
-				cmd.Append(',');
-				cmd.Append(obj);
-				cmd.Append(',');
-				cmd.Append(meta);
-				if (i == statements.Count-1 || !insertCombined)
+				if (hasLiterals) {
 					cmd.Append(");");
-				else
-					cmd.Append("),");
-			}
-			
-			if (literalInsertions.Length > 0) {
-				if (insertCombined) {
-					literalInsertions.Insert(0, INSERT_INTO_LITERALS_VALUES);
-					literalInsertions.Append(';');
+					using (IDataReader reader = RunReader(cmd.ToString())) {
+						while (reader.Read()) {
+							int id = reader.GetInt32(0);
+							string hash = AsString(reader[1]);
+							Literal lit = (Literal)litseen[hash];
+							literalCache[lit] = id;
+						}
+					}
 				}
-				RunCommand(literalInsertions.ToString());
-			}
-			
-			if (entityInsertions.Length > 0) {
-				if (insertCombined) {
-					entityInsertions.Insert(0, INSERT_INTO_ENTITIES_VALUES);
-					entityInsertions.Append(';');
+				
+				StringBuilder entityInsertions = new StringBuilder();
+				StringBuilder literalInsertions = new StringBuilder();
+				
+				cmd = new StringBuilder();
+				if (insertCombined)
+					cmd.Append(INSERT_INTO_STATEMENTS_VALUES);
+
+				for (int i = 0; i < statements.Count; i++) {
+					Statement statement = (Statement)statements[i];
+				
+					int subj = GetResourceIdBuffer(statement.Subject, true, literalInsertions, entityInsertions, insertCombined);
+					int pred = GetResourceIdBuffer(statement.Predicate, true,  literalInsertions, entityInsertions, insertCombined);
+					int objtype = ObjectType(statement.Object);
+					int obj = GetResourceIdBuffer(statement.Object, true, literalInsertions, entityInsertions, insertCombined);
+					int meta = GetResourceIdBuffer(statement.Meta, true, literalInsertions, entityInsertions, insertCombined);
+					
+					if (!insertCombined)
+						cmd.Append(INSERT_INTO_STATEMENTS_VALUES);
+					
+					cmd.Append('(');
+					cmd.Append(subj);
+					cmd.Append(',');
+					cmd.Append(pred);
+					cmd.Append(',');
+					cmd.Append(objtype);
+					cmd.Append(',');
+					cmd.Append(obj);
+					cmd.Append(',');
+					cmd.Append(meta);
+					if (i == statements.Count-1 || !insertCombined)
+						cmd.Append(");");
+					else
+						cmd.Append("),");
 				}
-				RunCommand(entityInsertions.ToString());
+				
+				if (literalInsertions.Length > 0) {
+					if (insertCombined) {
+						literalInsertions.Insert(0, INSERT_INTO_LITERALS_VALUES);
+						literalInsertions.Append(';');
+					}
+					RunCommand(literalInsertions.ToString());
+				}
+				
+				if (entityInsertions.Length > 0) {
+					if (insertCombined) {
+						entityInsertions.Insert(0, INSERT_INTO_ENTITIES_VALUES);
+						entityInsertions.Append(';');
+					}
+					RunCommand(entityInsertions.ToString());
+				}
+				
+				RunCommand(cmd.ToString());
+			
+			} finally {
+				// Clear the array and reuse it.
+				statements.Clear();
+				addStatementBuffer = statements;
+				entityCache.Clear();
+				literalCache.Clear();
 			}
-			
-			RunCommand(cmd.ToString());
-			
-			// Clear the array and reuse it.
-			statements.Clear();
-			addStatementBuffer = statements;
-			entityCache.Clear();
-			literalCache.Clear();
 		}
 		
 		public override void Remove(Statement template) {
@@ -959,7 +967,7 @@ namespace SemWeb.Stores {
 
 			cmd.Append(';');
 			
-			if (Debug || false) {
+			if (Debug) {
 				string cmd2 = cmd.ToString();
 				//if (cmd2.Length > 80) cmd2 = cmd2.Substring(0, 80);
 				Console.Error.WriteLine(cmd2);
