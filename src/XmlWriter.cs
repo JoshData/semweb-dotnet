@@ -286,12 +286,14 @@ namespace SemWeb {
 			Start(); // make sure the document node was written
 
 			// For any node that was referenced by exactly one predicate,
-			// move the node into that predicate.
+			// move the node into that predicate, provided the subject
+			// isn't itself!
 			foreach (DictionaryEntry e in nodeReferences) {
 				if (e.Value == null) continue; // referenced by more than one predicate
 				XmlElement node = (XmlElement)e.Key;
 				XmlElement predicate = (XmlElement)e.Value;
 				if (node.ParentNode != node.OwnerDocument.DocumentElement) continue; // already referenced somewhere
+				if (predicate.ParentNode == node) continue; // can't insert node as child of itself
 				node.ParentNode.RemoveChild(node);
 				predicate.AppendChild(node);
 				predicate.RemoveAttribute("resource", NS.RDF); // it's on the lower node

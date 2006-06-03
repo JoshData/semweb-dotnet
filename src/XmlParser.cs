@@ -289,7 +289,6 @@ namespace SemWeb {
 					OnError("The attributes rdf:parseType and rdf:datatype are not valid on a predicate with a rdf:nodeID or rdf:resource attribute");
 					
 				// Object is an entity given by nodeID or resource.
-				// The 
 				if (nodeID != null)
 					objct = GetBlankNode(nodeID);
 				else if (resource != null)
