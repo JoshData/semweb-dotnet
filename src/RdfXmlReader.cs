@@ -29,13 +29,13 @@ namespace SemWeb {
 			rdfStatement = "http://www.w3.org/1999/02/22-rdf-syntax-ns#Statement";
 		
 		public RdfXmlReader(XmlDocument document) {
-			xml = new XmlNodeReader(document);
+			xml = new XmlBaseAwareReader(new XmlNodeReader(document));
 		}
 		
 		public RdfXmlReader(XmlReader document) {
 			XmlValidatingReader reader = new XmlValidatingReader(document);
 			reader.ValidationType = ValidationType.None;
-			xml = reader;
+			xml = new XmlBaseAwareReader(reader);
 		}
 		
 		public RdfXmlReader(TextReader document) : this(new XmlTextReader(document)) {
@@ -150,7 +150,7 @@ namespace SemWeb {
 				entity = GetNamedNode(Unrelativize("#" + ID));
 				
 				if (seenIDs.ContainsKey(entity.Uri))
-					OnWarning("Two descriptions cannot use the same rdf:ID: <" + entity.Uri + ">");
+					OnWarning("Two descriptions should not use the same rdf:ID: <" + entity.Uri + ">");
 				seenIDs[entity.Uri] = seenIDs;
 			} else if (nodeID != null)
 				entity = GetBlankNode(nodeID);
@@ -488,6 +488,105 @@ namespace SemWeb {
 			}
 			base.OnWarning(message);
 		}
+		
+		private class XmlBaseAwareReader : XmlReader {
+			XmlReader _reader;
+			Stack _bases = new Stack();
+		    Uri _baseUri;
+		    bool temp = false;
+		    XmlResolver resolver = new XmlUrlResolver();
+
+		    public XmlBaseAwareReader(XmlReader reader) {
+		    	_reader = reader;
+	        	if (_reader.BaseURI != "")
+	        		_baseUri = new Uri(_reader.BaseURI);
+		    }
+
+		    public override string BaseURI {
+		        get { return _baseUri == null ? "" : _baseUri.AbsoluteUri; }
+		    }
+
+		    public override bool Read()
+		    {        
+		        if (!_reader.Read()) return false;
+		        
+		        if (temp) { // last element was an empty element
+		        	_baseUri = (Uri)_bases.Pop();
+		        	temp = false;
+		        }
+
+				if (_reader.NodeType == XmlNodeType.EndElement)
+					_baseUri = (Uri)_bases.Pop();
+		        
+		        if (_reader.NodeType == XmlNodeType.Element) {
+		            string baseAttr = _reader.GetAttribute("xml:base");
+		            if (_reader.IsEmptyElement && baseAttr == null) {
+		            	// do nothing : there is no EndElement, so no pop
+		            } else {
+		            	_bases.Push(_baseUri); // even if no change, there will be a pop
+			            if (baseAttr != null)
+	            			_baseUri = resolver.ResolveUri(_baseUri, baseAttr);
+		            		
+		            	// if this is an empty element, there is no EndElement,
+		            	// so we must do a pop before processing the next node.
+		            	temp = _reader.IsEmptyElement;
+			    	}
+		    	}
+		        return true;            
+		    }
+
+			public override void Close () { _reader.Close(); }
+			public override string GetAttribute (int i) { return _reader.GetAttribute(i); }
+			public override string GetAttribute (string name) { return _reader.GetAttribute(name); }
+			public override string GetAttribute (string localName, string namespaceName) { return _reader.GetAttribute(localName, namespaceName); }
+			public override bool IsStartElement () { return _reader.IsStartElement(); }
+			public override bool IsStartElement (string name) { return _reader.IsStartElement(name); }
+			public override bool IsStartElement (string localName, string namespaceName) { return _reader.IsStartElement(localName, namespaceName); }
+			public override string LookupNamespace (string prefix) { return _reader.LookupNamespace(prefix); }
+			public override void MoveToAttribute (int i) { _reader.MoveToAttribute(i); }
+			public override bool MoveToAttribute (string name) { return _reader.MoveToAttribute(name); }
+			public override bool MoveToAttribute (string localName, string namespaceName) { return _reader.MoveToAttribute(localName, namespaceName); }
+			public override XmlNodeType MoveToContent () { return _reader.MoveToContent(); }
+			public override bool MoveToElement () { return _reader.MoveToElement(); }
+			public override bool MoveToFirstAttribute () { return _reader.MoveToFirstAttribute(); }
+			public override bool MoveToNextAttribute () { return _reader.MoveToNextAttribute(); }
+			public override bool ReadAttributeValue () { return _reader.ReadAttributeValue(); }
+			public override string ReadElementString () { return _reader.ReadElementString(); }
+			public override string ReadElementString (string name) { return _reader.ReadElementString(name); }
+			public override string ReadElementString (string localName, string namespaceName) { return _reader.ReadElementString(localName, namespaceName); }
+			public override void ReadEndElement () { _reader.ReadEndElement(); }
+			public override string ReadInnerXml () { return _reader.ReadInnerXml(); }
+			public override string ReadOuterXml () { return _reader.ReadOuterXml(); }
+			public override void ReadStartElement () { _reader.ReadStartElement(); }
+			public override void ReadStartElement (string name) { _reader.ReadStartElement(name); }
+			public override void ReadStartElement (string localName, string namespaceName) { _reader.ReadStartElement(localName, namespaceName); }
+			public override string ReadString () { return _reader.ReadString(); }
+			public override void ResolveEntity () { _reader.ResolveEntity(); }
+			public override void Skip () { _reader.Skip(); }
+			
+			public override int AttributeCount { get { return _reader.AttributeCount; } }
+			public override bool CanResolveEntity { get { return _reader.CanResolveEntity; } }
+			public override int Depth { get { return _reader.Depth; } }
+			public override bool EOF { get { return _reader.EOF; } }
+			public override bool HasAttributes { get { return _reader.HasAttributes; } }
+			public override bool HasValue { get { return _reader.HasValue; } }
+			public override bool IsDefault { get { return _reader.IsDefault; } }
+			public override bool IsEmptyElement { get { return _reader.IsEmptyElement; } }
+			public override string this [int i] { get { return _reader[i]; } }
+			public override string this [string name] { get { return _reader[name]; } }
+			public override string this [string localName, string namespaceName] { get { return _reader[localName, namespaceName]; } }
+			public override string LocalName { get { return _reader.LocalName; } }
+			public override string Name { get { return _reader.Name; } }
+			public override string NamespaceURI { get { return _reader.NamespaceURI; } }
+			public override XmlNameTable NameTable { get { return _reader.NameTable; } }
+			public override XmlNodeType NodeType { get { return _reader.NodeType; } }
+			public override string Prefix { get { return _reader.Prefix; } }
+			public override char QuoteChar { get { return _reader.QuoteChar; } }
+			public override ReadState ReadState { get { return _reader.ReadState; } }
+			public override string Value { get { return _reader.Value; } }
+			public override string XmlLang { get { return _reader.XmlLang; } }
+			public override XmlSpace XmlSpace { get { return _reader.XmlSpace; } }
+		}		
 	}
 }
 

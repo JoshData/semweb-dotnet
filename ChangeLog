@@ -12,7 +12,9 @@
 	    Beware: This makes old databases unreadable.
 	  - Also, a bug fix related to literals being added to the literals
 	    table multiple times.
-	* RdfXmlReader: Detect two cases of invalid RDF.
+	* RdfXmlReader: Detect two cases of invalid RDF.  Properly
+	  recognize xml:base on MS .NET, since that apparently isn't
+	  taken care of by XmlReader.BaseURI.
 	* RdfXmlWriter: Better API for writing directly to a XmlDocument.
 	  Also, a minor bug fix.
 	* RdfWriters: No need to pass your own NamespaceManager.
