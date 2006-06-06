@@ -97,7 +97,7 @@ namespace SemWeb.Stores {
 			NameValueCollection verdata = ParseVersionInfo(verdatastr);
 			
 			if (verdatastr != null && verdata["ver"] == null)
-				throw new InvalidOperationException("The SQLStore has undergone changes making it impossible to read old databases.");
+				throw new InvalidOperationException("The SQLStore adapter in this version of SemWeb cannot read databases created in previous versions.");
 			
 			verdata["ver"] = dbformat.ToString();
 			
