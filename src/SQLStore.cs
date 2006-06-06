@@ -216,7 +216,7 @@ namespace SemWeb.Stores {
 				b.Append("SELECT id FROM ");
 				b.Append(table);
 				b.Append("_literals WHERE hash =");
-				b.Append(",\"");
+				b.Append("\"");
 				b.Append(GetLiteralHash(literal));
 				b.Append("\"");
 				b.Append(" LIMIT 1;");

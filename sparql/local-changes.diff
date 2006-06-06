@@ -250,7 +250,7 @@ diff -urN sparql-0.7/src/main/name/levering/ryan/sparql/common/RdfSource.java sp
 +
 diff -urN sparql-0.7/src/main/name/levering/ryan/sparql/logic/AdvancedGroupConstraintLogic.java sparql-0.7j/src/main/name/levering/ryan/sparql/logic/AdvancedGroupConstraintLogic.java
 --- sparql-0.7/src/main/name/levering/ryan/sparql/logic/AdvancedGroupConstraintLogic.java	1969-12-31 19:00:00.000000000 -0500
-+++ sparql-0.7j/src/main/name/levering/ryan/sparql/logic/AdvancedGroupConstraintLogic.java	2006-05-15 17:40:30.000000000 -0400
++++ sparql-0.7j/src/main/name/levering/ryan/sparql/logic/AdvancedGroupConstraintLogic.java	2006-06-06 08:27:49.000000000 -0400
 @@ -0,0 +1,482 @@
 +/*
 + * SPARQL Engine
@@ -553,8 +553,8 @@ diff -urN sparql-0.7/src/main/name/levering/ryan/sparql/logic/AdvancedGroupConst
 +		if (node instanceof ASTOrNode) {
 +			Map a = new HashMap();
 +			Map b = new HashMap();
-+			extractVariableFunctions(((ASTAndNode)node).getLeftExpression(), a);
-+			extractVariableFunctions(((ASTAndNode)node).getRightExpression(), b);
++			extractVariableFunctions(((ASTOrNode)node).getLeftExpression(), a);
++			extractVariableFunctions(((ASTOrNode)node).getRightExpression(), b);
 +			for (Iterator i = a.keySet().iterator(); i.hasNext(); ) {
 +				Variable v = (Variable)i.next();
 +				if (b.containsKey(v)) {
