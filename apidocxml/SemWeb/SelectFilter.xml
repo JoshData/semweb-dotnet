@@ -125,7 +125,7 @@
       </ReturnValue>
       <Docs>
         <summary>A SelectFilter than selects for all statements.</summary>
-        <remarks>This is equivalent to <see cref="F:SemWeb.Statement.All"/>.</remarks>
+        <remarks>This is equivalent to <see cref="F:SemWeb.Statement.All" />.</remarks>
       </Docs>
     </Member>
     <Member MemberName="FromGraph">

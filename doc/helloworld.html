@@ -108,17 +108,15 @@ mono helloworld.exe
 	&lt;/rdf:Description&gt;
 &lt;/rdf:RDF&gt;</pre>
 
-<p>We didn't provide the writer with any namespace prefixes, so it made one up.  To provide a prefix for a namespace, use a <tt>NamespaceManager</tt> and pass that to the writer:</p>
+<p>We didn't provide the writer with any namespace prefixes, so it made one up.  To provide a prefix for a namespace, use the <tt>Namespaces</tt> property of the writer:</p>
 
 <pre class="code">
-NamespaceManager nsmgr = new NamespaceManager();
-nsmgr.AddNamespace("http://example.org/", "ex");
-		
-using (RdfWriter writer = new RdfXmlWriter(Console.Out, nsmgr))
+using (RdfWriter writer = new RdfXmlWriter(Console.Out, nsmgr)) {
+	writer.Namespaces.AddNamespace("http://example.org/", "ex");
 	...
 </pre>
 
-<p>Here's the final output:</p>
+<p>You need to set the namespaces before any statements are streamed to the writer.  Here's the final output:</p>
 
 <pre class="code" file="../examples/helloworld.output.rdf">&lt;?xml version="1.0"?&gt;
 &lt;rdf:RDF xmlns:ex="http://example.org/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"&gt;
@@ -171,11 +169,10 @@ public class Example {
 		store.Add(new Statement(desire, description, (Literal)"to be human"));
 		store.Add(new Statement(desire, RDF+"type", (Entity)"http://example.org/Desire"));
 		
-		NamespaceManager nsmgr = new NamespaceManager();
-		nsmgr.AddNamespace("http://example.org/", "ex");
-		
-		using (RdfWriter writer = new RdfXmlWriter(Console.Out, nsmgr))
+		using (RdfWriter writer = new RdfXmlWriter(Console.Out)) {
+			writer.Namespaces.AddNamespace("http://example.org/", "ex");
 			writer.Write(store);
+		}
 	}
 }
 </pre>

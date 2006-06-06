@@ -65,9 +65,9 @@
       <para>The namespaces used in the output data must be registered with the NamespaceManager in the <see cref="P:SemWeb.RdfWriter.Namespaces" /> property before the first call to Add.  Failure to do so may prevent the document from being written to the stream, as not all URIs can be automatically converted into an XML qualified name.</para>
       <example>
         <para>The following example writes out RDF statements in RDF/XML format to a file:</para>
-        <code lang="C#">NamespaceManager namespaces = new NamespaceManager();
-namespaces.AddNamespace("http://xmlns.com/foaf/0.1/", "foaf");
-using (RdfXmlWriter output = new RdfXmlWriter("filename.rdf", namespaces)) {
+        <code lang="C#">
+using (RdfXmlWriter output = new RdfXmlWriter("filename.rdf")) {
+    output.Namespaces.AddNamespace("http://xmlns.com/foaf/0.1/", "foaf");
     output.BaseUri = "http://www.example.org/";
     output.Write(datasource);
 }  </code>

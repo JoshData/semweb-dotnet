@@ -25,10 +25,9 @@ public class Example {
 		store.Add(new Statement(desire, description, (Literal)"to be human"));
 		store.Add(new Statement(desire, RDF+"type", (Entity)"http://example.org/Desire"));
 		
-		NamespaceManager nsmgr = new NamespaceManager();
-		nsmgr.AddNamespace("http://example.org/", "ex");
-		
-		using (RdfWriter writer = new RdfXmlWriter(Console.Out, nsmgr))
+		using (RdfWriter writer = new RdfXmlWriter(Console.Out)) {
+			writer.Namespaces.AddNamespace("http://example.org/", "ex");
 			writer.Write(store);
+		}
 	}
 }

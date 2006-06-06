@@ -1,9 +1,9 @@
-2006-06-03 Version 0.74
+2006-06-06 Version 0.74
 
 	* SQLStore:
 	  - Improvements to the Import() methodology, now letting
-	    the store scale to billions of triples, and a dynamic adjustment
-	    of the statement-buffer size increases performance a bit.
+	    the store scale much better, and a dynamic adjustment
+	    of the statement-buffer size increases performance a lot.
 	  - The literals table is now unique-indexed with a new hash column
 	    containing a SHA1 hash of the literal value, language, and
 	    datatype.  This also puts an upper limit on the amount of
@@ -24,11 +24,10 @@
 2006-05-11 Version 0.73
 
 	* RdfXmlWriter: Provide a way to access the generated
-	  XmlDocument directly.
+	  XmlDocument directly, ensure it uses empty elements where possible.
 	* Fixes and optimization for OPTIONAL groups in Sparql.
 	* Sparql CONSTRUCT scopes bnodes properly; DESCRIBE works;
 	  CONSTRUCT still has bugs.
-	* Ensure XML output uses empty elements where possible.
 
 2006-04-18 Version 0.72
 

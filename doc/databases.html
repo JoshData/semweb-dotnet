@@ -63,7 +63,7 @@ Store store = (Store)Store.CreateForInput("sqlite:rdf:Uri=file:foaf.sqlite;versi
 
 <p>Now you can select statements from it just as before.  It will be a little slower than the memory-backed store, but you haven't loaded the entire store into memory.</p>
 
-<p>You can also add statements into the store, just as with the memory store.  One limitation of the SQL stores is that you can't add blank nodes to the store unless it's through a call to <tt>Import</tt>.  This limitation should be addressed in the future.</p>
+<p>You can also add statements into the store, just as with the memory store.</p>
 
 <p>Be sure to close the database at the end.</p>
 
