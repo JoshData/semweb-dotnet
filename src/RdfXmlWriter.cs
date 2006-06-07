@@ -259,11 +259,16 @@ namespace SemWeb {
 				}
 			} else {
 				Literal literal = (Literal)statement.Object;
-				prednode.InnerText = literal.Value;
-				if (literal.Language != null)
-					prednode.SetAttribute("xml:lang", literal.Language);
-				if (literal.DataType != null)
-					SetAttribute(prednode, NS.RDF, ns.GetPrefix(NS.RDF), "datatype", literal.DataType);
+				if (literal.DataType != null && literal.DataType == "http://www.w3.org/1999/02/22-rdf-syntax-ns#XMLLiteral") {
+					prednode.InnerXml = literal.Value;
+					SetAttribute(prednode, NS.RDF, ns.GetPrefix(NS.RDF), "parseType", "Literal");
+				} else {
+					prednode.InnerText = literal.Value;
+					if (literal.Language != null)
+						prednode.SetAttribute("xml:lang", literal.Language);
+					if (literal.DataType != null)
+						SetAttribute(prednode, NS.RDF, ns.GetPrefix(NS.RDF), "datatype", literal.DataType);
+				}
 			}
 		}
 		
@@ -301,24 +306,34 @@ namespace SemWeb {
 				node.RemoveAttribute("nodeID", NS.RDF); // not needed anymore
 			}
 			
-			// Predicates that have rdf:Description nodes with only literal attributes
-			// can be condensed.
+			// Predicates that have rdf:Description nodes 1) with only literal
+			// properties (with no language/datatype/parsetype) can be
+			// condensed by putting the literals onto the predicate as
+			// attributes, 2) with no literal attributes but resource
+			// objects can be condensed by using parseType=Resource.
 			foreach (XmlElement pred in predicateNodes) {
+				// Is this a property with a resource as object?
 				if (!(pred.FirstChild is XmlElement)) continue; // literal value
+				if (pred.Attributes.Count > 0) continue; // parseType=Literal already
 				
+				// Make sure this resource is not typed
 				XmlElement obj = (XmlElement)pred.FirstChild;
 				if (obj.NamespaceURI + obj.LocalName != NS.RDF + "Description") continue; // untyped
 				
+				// And make sure it has no attributes already but an rdf:about
 				if (obj.Attributes.Count > 1) continue; // at most a rdf:about attribute
 				if (obj.Attributes.Count == 1 && obj.Attributes[0].NamespaceURI+obj.Attributes[0].LocalName != NS.RDF+"about") continue;
 				
-				// Only literal value predicates
-				bool allLits = true;
-				foreach (XmlElement opred in obj.ChildNodes)
+				// See if all its predicates are literal with no attributes.
+				bool allSimpleLits = true;
+				foreach (XmlElement opred in obj.ChildNodes) {
 					if (opred.FirstChild is XmlElement)
-						allLits = false;
+						allSimpleLits = false;
+					if (opred.Attributes.Count > 0)
+						allSimpleLits = false;
+				}
 						
-				if (allLits) {
+				if (allSimpleLits) {
 					// Condense by moving all of obj's elements to attributes of the predicate,
 					// and turning a rdf:about into a rdf:resource, and then remove obj completely.
 					if (obj.Attributes.Count == 1)
@@ -328,6 +343,13 @@ namespace SemWeb {
 					pred.RemoveChild(obj);
 					
 					if (pred.ChildNodes.Count == 0) pred.IsEmpty = true;
+
+				} else if (obj.Attributes.Count == 0) { // no rdf:about
+					// Condense this node using parseType=Resource
+					pred.RemoveChild(obj);
+					foreach (XmlElement opred in obj.ChildNodes)
+						pred.AppendChild(opred.Clone());
+					SetAttribute(pred, NS.RDF, ns.GetPrefix(NS.RDF), "parseType", "Resource");
 				}
 			}
 
