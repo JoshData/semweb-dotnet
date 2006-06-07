@@ -144,7 +144,7 @@ namespace SemWeb {
 		
 		private void SetAttribute(XmlElement element, string nsuri, string prefix, string localname, string val) {
 			XmlAttribute attr = doc.CreateAttribute(prefix, localname, nsuri);
-			attr.InnerXml = val;
+			attr.Value = val;
 			element.SetAttributeNode(attr);
 		}
 		
