@@ -1,3 +1,11 @@
+2006-06-18 Version 0.741
+
+	* RdfXmlWriter: Condense output with parseType=Literal
+	  and parseType=Resource where possible.  Fixed a bug
+	  with attributes and characters needing escaping, and
+	  incorrect condensing with literal attributes.
+	* Sparql: UNIONs of UNIONs would thrown an exception.
+
 2006-06-06 Version 0.74
 
 	* SQLStore:

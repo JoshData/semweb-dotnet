@@ -1546,7 +1546,7 @@ diff -urN sparql-0.7/src/main/name/levering/ryan/sparql/logic/DefaultTripleConst
          List variables = new ArrayList();
 diff -urN sparql-0.7/src/main/name/levering/ryan/sparql/logic/DefaultUnionConstraintLogic.java sparql-0.7j/src/main/name/levering/ryan/sparql/logic/DefaultUnionConstraintLogic.java
 --- sparql-0.7/src/main/name/levering/ryan/sparql/logic/DefaultUnionConstraintLogic.java	2005-11-28 16:39:28.000000000 -0500
-+++ sparql-0.7j/src/main/name/levering/ryan/sparql/logic/DefaultUnionConstraintLogic.java	2006-05-11 06:13:29.000000000 -0400
++++ sparql-0.7j/src/main/name/levering/ryan/sparql/logic/DefaultUnionConstraintLogic.java	2006-06-18 14:47:32.000000000 -0400
 @@ -7,6 +7,7 @@
  
  import java.util.Collection;
@@ -1563,7 +1563,8 @@ diff -urN sparql-0.7/src/main/name/levering/ryan/sparql/logic/DefaultUnionConstr
 +            Collection defaultDatasets, Collection namedDatasets, Map knownValues) {
          RdfBindingSet current = new RdfBindingSetImpl();
          for (Iterator groups = data.getConstraints().iterator(); groups.hasNext();) {
-             GroupConstraint group = (GroupConstraint) groups.next();
+-            GroupConstraint group = (GroupConstraint) groups.next();
++            ConstraintLogic group = (ConstraintLogic) groups.next();
              current = logic.union(current, group.constrain(current, source,
 -                    defaultDatasets, namedDatasets));
 +                    defaultDatasets, namedDatasets, knownValues));
