@@ -158,14 +158,15 @@ namespace SemWeb {
 				// Check if we have to add new type information to the existing node.
 				if (ret.NamespaceURI + ret.LocalName == NS.RDF + "Description") {
 					// Replace the untyped node with a typed node, copying in
-					// all of the children of the old node.
+					// all of the attributes and children of the old node.
 					string prefix, localname;
 					Normalize(type, out prefix, out localname);
 					XmlElement newnode = doc.CreateElement(prefix + ":" + localname, ns.GetNamespace(prefix));
 					
-					foreach (XmlNode childnode in ret) {
+					foreach (XmlNode childnode in ret)
 						newnode.AppendChild(childnode.Clone());
-					}
+					foreach (XmlAttribute childattr in ret.Attributes)
+						newnode.Attributes.Append((XmlAttribute)childattr.Clone());
 					
 					ret.ParentNode.ReplaceChild(newnode, ret);
 					nodeMap[entity] = newnode;

@@ -1,3 +1,5 @@
+	* RdfXmlWriter: Another bug fix, this time with typed nodes.
+
 2006-06-18 Version 0.741
 
 	* RdfXmlWriter: Condense output with parseType=Literal
