@@ -307,8 +307,10 @@ namespace SemWeb {
 				}
 			
 			} else if (parseType != null && parseType == "Literal") {
-				if (datatype == null)
-					datatype = "http://www.w3.org/1999/02/22-rdf-syntax-ns#XMLLiteral";
+				if (datatype != null)
+					OnError("The attribute rdf:datatype is not valid on a predicate whose parseType is Literal.");
+
+				datatype = "http://www.w3.org/1999/02/22-rdf-syntax-ns#XMLLiteral";
 				
 				if (ParsePropertyAttributes(new BNode()))
 					OnError("Property attributes are not valid when parseType is Literal");

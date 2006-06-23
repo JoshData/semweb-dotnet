@@ -1,4 +1,5 @@
 	* RdfXmlWriter: Another bug fix, this time with typed nodes.
+	  Also detects invalid parseType=Literal + datatype.
 
 2006-06-18 Version 0.741
 
