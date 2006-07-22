@@ -1,9 +1,9 @@
 SemWeb: A Semantic Web Library for C#/.NET
 ==========================================
 
-By Joshua Tauberer <tauberer@for.net>
+By Joshua Tauberer <jt@occams.info>
 
-http://taubz.for.net/code/semweb
+http://razor.occams.info/code/semweb
 
 BUILD INSTRUCTIONS
 ------------------

@@ -6,11 +6,11 @@ using System.Runtime.CompilerServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
 [assembly: AssemblyProduct("")]
-[assembly: AssemblyCopyright("Copyright (c) 2006 Joshua Tauberer <tauberer@for.net>")]
+[assembly: AssemblyCopyright("Copyright (c) 2006 Joshua Tauberer <jt@occams.info>")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]		
 
-[assembly: AssemblyVersion("0.7.1.0")]
+[assembly: AssemblyVersion("0.7.4.1")]
 [assembly: AssemblyDelaySign(false)]
 [assembly: AssemblyKeyFile("")]
 [assembly: AssemblyKeyName("")]
