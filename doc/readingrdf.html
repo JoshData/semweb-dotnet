@@ -59,6 +59,26 @@ class StatementPrinter : StatementSink {
 
 <p>This class implements a sink that simply prints out each statement to the console as each statement is received.  It returns <tt>true</tt> to indicate to the source to continue.  Returning <tt>false</tt> would end the streaming.</p>
 
+<p>The <tt>Statement</tt> type is a <i>struct</i> that contains three fields:
+<tt>Subject</tt>, <tt>Predicate</tt>, and <tt>Object</tt> (actually it contains
+a <tt>Meta</tt> field too).  Since RDF statements only have entities as
+subjects and predicates, the first two fields are typed as <tt>Entity</tt>,
+while the last field is typed as <tt>Resource</tt>.  If you want to
+access the URIs and literal values within the statement, you might write
+something like this:</p>
+
+<pre class="code">
+Console.WriteLine("Subject: " + assertion.Subject.Uri);
+Console.WriteLine("Predicate: " + assertion.Predicate.Uri);
+if (assertion.Object is Entity)
+	Console.WriteLine("Object: " + ((Entity)assertion.Object).Uri + " (Entity)");
+else
+	Console.WriteLine("Object: " + ((Literal)assertion.Object).Value +  "(Literal)");
+</pre>
+
+<p>Of course, beware that BNodes are entities without URIs, and the <tt>Uri</tt>
+property may return <tt>null</tt>.</p>
+
 <p>To stream the statements from the web directly to the custom sink, use:</p>
 
 <pre class="code">
