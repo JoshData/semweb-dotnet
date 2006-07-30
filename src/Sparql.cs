@@ -8,6 +8,7 @@ using SemWeb.Stores;
 using name.levering.ryan.sparql.parser;
 using name.levering.ryan.sparql.parser.model;
 using name.levering.ryan.sparql.model;
+using name.levering.ryan.sparql.model.data;
 using name.levering.ryan.sparql.common;
 using name.levering.ryan.sparql.logic.expression;
 using name.levering.ryan.sparql.logic.function;
@@ -26,7 +27,7 @@ namespace SemWeb.Query {
 		name.levering.ryan.sparql.model.Query query;
 		ArrayList extFunctions = new ArrayList();
 		
-		public bool AllowPersistBNodes = true;
+		public bool AllowPersistBNodes = false;
 		
 		public enum QueryType {
 			Ask,
@@ -123,7 +124,24 @@ namespace SemWeb.Query {
 			WriteGraph(graph, sourcewrapper, sink);
 		}
 		
+		public NamespaceManager GetQueryPrefixes() {
+			NamespaceManager ns = new NamespaceManager();
+			if (query is QueryData) {
+				java.util.Map prefixes = ((QueryData)query).getPrefixExpansions();
+				for (java.util.Iterator i = prefixes.keySet().iterator(); i.hasNext(); ) {
+					string prefix = (string)i.next();
+					string uri = prefixes.get(prefix).ToString(); // surrounded in < >
+					uri = uri.Substring(1, uri.Length-2); // not sure how to get this directly
+					ns.AddNamespace(uri, prefix);
+				}
+			}
+			return ns;
+		}
+		
 		void WriteGraph(RdfGraph graph, RdfSourceWrapper sourcewrapper, StatementSink sink) {
+			if (sink is RdfWriter)
+				((RdfWriter)sink).Namespaces.AddFrom(GetQueryPrefixes());
+		
 			java.util.Iterator iter = graph.iterator();
 			while (iter.hasNext()) {
 				GraphStatement stmt = (GraphStatement)iter.next();
@@ -298,8 +316,6 @@ namespace SemWeb.Query {
 			}
 			
 			private StatementIterator GetIterator(Entity[] subjects, Entity[] predicates, Resource[] objects, Entity[] metas, java.util.List litFilters, bool defaultGraph) {
-				DateTime start = DateTime.Now;
-
 				if (subjects == null && predicates == null && objects == null)
 					throw new QueryExecutionException("Query would select all statements in the store.");
 				
@@ -313,12 +329,6 @@ namespace SemWeb.Query {
 				if (objects != null && objects.Length == 0) return new StatementIterator(null);
 				if (metas != null && metas.Length == 0) return new StatementIterator(null);
 				
-				MemoryStore results = new MemoryStore();
-				StatementSink sink = results;
-				
-				if (!source.Distinct)
-					sink = new SemWeb.Util.DistinctStatementsSink(results, defaultGraph && metas == null);
-
 				SelectFilter filter = new SelectFilter(subjects, predicates, objects, metas);
 				if (litFilters != null) {
 					filter.LiteralFilters = new LiteralFilter[litFilters.size()];
@@ -326,11 +336,28 @@ namespace SemWeb.Query {
 						filter.LiteralFilters[i] = (LiteralFilter)litFilters.get(i);
 				}
 
-				source.Select(filter, sink);
+				#if !DOTNET2
+				DateTime start = DateTime.Now;
+
+				MemoryStore results = new MemoryStore();
+				StatementSink sink = results;
+				
+				if (!source.Distinct)
+					sink = new SemWeb.Util.DistinctStatementsSink(results, defaultGraph && metas == null);
+
+				source.Select(filter).StreamTo(sink);
 				
 				Log("SELECT: " + filter + " => " + results.StatementCount + " statements [" + (DateTime.Now-start) + "s]");
 				
 				return new StatementIterator(results.ToArray());
+
+				#else
+
+				Log("SELECT: " + filter);
+
+				return new StatementIterator(source.Select(filter));
+
+				#endif
 			}
 			
 		    /**
@@ -536,6 +563,7 @@ namespace SemWeb.Query {
 			}
 		}
 		
+		#if !DOTNET2
 		class StatementIterator : java.util.Iterator {
 			Statement[] statements;
 			int curindex = -1;
@@ -555,8 +583,43 @@ namespace SemWeb.Query {
 			}
 			
 			public void remove() {
+				new InvalidOperationException();
 			}
 		}
+		#else
+		class StatementIterator : java.util.Iterator {
+			System.Collections.Generic.IEnumerator<Statement> enumerator;
+			bool movedNext = false, cHasNext = false;
+			
+			public StatementIterator(StatementSource source) {
+				if (source != null)
+					enumerator = source.GetEnumerator();
+			}
+			
+			public bool hasNext() {
+				if (enumerator == null) return false;
+				if (!movedNext) {
+					movedNext = true;
+					try {
+						cHasNext = enumerator.MoveNext();
+					} catch (Exception e) {
+						Console.Error.WriteLine(e);
+					}
+					if (!cHasNext) enumerator.Dispose();
+				}
+				return cHasNext;
+			}
+			
+			public object next() {
+				movedNext = false;
+				return new GraphStatementWrapper(enumerator.Current);
+			}
+			
+			public void remove() {
+				throw new InvalidOperationException();
+			}
+		}
+		#endif
 		
 		class GraphStatementWrapper : GraphStatement {
 			public readonly Statement s;

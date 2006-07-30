@@ -1,5 +1,8 @@
 using System;
 using System.Collections;
+#if DOTNET2
+using System.Collections.Generic;
+#endif
 
 using SemWeb;
 using SemWeb.Stores;
@@ -94,15 +97,24 @@ namespace SemWeb.Inference {
 					new SelectFilter(
 					null,
 					new Entity[] { subClassOf, subPropertyOf, domain, range },
-					null, null), Schema);
+					null, null)).StreamTo(Schema);
 			} else {
-				source.Select(Schema);
+				source.StreamTo(Schema);
 			}
 		}
 		
 		public bool Distinct { get { return false; } }
 		
-		public void Select(StatementSink sink) { data.Select(sink); }
+		public void StreamTo(StatementSink sink) { data.StreamTo(sink); }
+
+		#if DOTNET2
+		IEnumerator IEnumerable.GetEnumerator() {
+			return data.GetEnumerator();
+		}
+		IEnumerator<Statement> IEnumerable<Statement>.GetEnumerator() {
+			return data.GetEnumerator();
+		}
+		#endif
 		
 		public bool Contains(Statement template) {
 			return Store.DefaultContains(this, template);
@@ -110,16 +122,43 @@ namespace SemWeb.Inference {
 		
 		public void Select(Statement template, StatementSink sink) {
 			if (template.Predicate == null) {
-				data.Select(template, sink);
+				data.Select(template).StreamTo(sink);
 				return;
 			}
 			
 			Select(new SelectFilter(template), sink);
 		}
 		
+		#if !DOTNET2
+		public StatementSource Select(Statement template) {
+			MemoryStore ret = new MemoryStore();
+			Select(template, ret);
+			return ret;
+		}
+		public StatementSource Select(SelectFilter filter) {
+			MemoryStore ret = new MemoryStore();
+			Select(filter, ret);
+			return ret;
+		}
+		#else
+		public StatementSource Select(Statement template) {
+			if (template.Predicate == null)
+				return data.Select(template);
+			return Select(new SelectFilter(template));
+		}
+		public StatementSource Select(SelectFilter filter) {
+			if (filter.Predicates == null || filter.LiteralFilters != null)
+				return data.Select(filter);
+
+			MemoryStore buffer = new MemoryStore();
+			Select(filter, buffer);
+			return buffer;
+		}
+		#endif
+		
 		public void Select(SelectFilter filter, StatementSink sink) {
 			if (filter.Predicates == null || filter.LiteralFilters != null) {
-				data.Select(filter, sink);
+				data.Select(filter).StreamTo(sink);
 				return;
 			}
 			
@@ -137,7 +176,7 @@ namespace SemWeb.Inference {
 						// or what things have those types?
 						
 						// Expand objects by the subclass closure of the objects
-						data.Select(new SelectFilter(subjects, new Entity[] { p }, GetClosure(objects, subclasses), metas), sink);
+						data.Select(new SelectFilter(subjects, new Entity[] { p }, GetClosure(objects, subclasses), metas)).StreamTo(sink);
 						
 						// Process domains and ranges.
 						ResSet dom = new ResSet(), ran = new ResSet();
@@ -162,23 +201,23 @@ namespace SemWeb.Inference {
 						// If it's in the domain of any of these properties,
 						// we know its type.
 						if (subjects != null) {
-							if (dom.Count > 0) data.Select(new SelectFilter(subjects, dom.ToEntityArray(), null, metas), new ExpandDomRan(0, domPropToType, sink));
-							if (ran.Count > 0) data.Select(new SelectFilter(null, ran.ToEntityArray(), subjects, metas), new ExpandDomRan(1, ranPropToType, sink));
+							if (dom.Count > 0) data.Select(new SelectFilter(subjects, dom.ToEntityArray(), null, metas)).StreamTo(new ExpandDomRan(0, domPropToType, sink));
+							if (ran.Count > 0) data.Select(new SelectFilter(null, ran.ToEntityArray(), subjects, metas)).StreamTo(new ExpandDomRan(1, ranPropToType, sink));
 						}
 						
 					} else if (subjects != null) {
 						// What types do these subjects have?
 						
 						// Expand the resulting types by the closure of their superclasses
-						data.Select(new SelectFilter(subjects, new Entity[] { p }, objects, metas), new Expand(superclasses, sink));
+						data.Select(new SelectFilter(subjects, new Entity[] { p }, objects, metas)).StreamTo(new Expand(superclasses, sink));
 						
 						// Use domains and ranges to get type info
-						data.Select(new SelectFilter(subjects, null, null, metas), new Expand3(0, domains, superclasses, sink));
-						data.Select(new SelectFilter(null, null, subjects, metas), new Expand3(1, ranges, superclasses, sink));
+						data.Select(new SelectFilter(subjects, null, null, metas)).StreamTo(new Expand3(0, domains, superclasses, sink));
+						data.Select(new SelectFilter(null, null, subjects, metas)).StreamTo(new Expand3(1, ranges, superclasses, sink));
 
 					} else {
 						// What has type what?  We won't answer that question.
-						data.Select(filter, sink);
+						data.Select(filter).StreamTo(sink);
 					}
 
 				} else if ((p == subClassOf || p == subPropertyOf)
@@ -189,7 +228,7 @@ namespace SemWeb.Inference {
 					
 					if (subjects != null && objects != null) {
 						// Expand objects by the subs closure of the objects.
-						data.Select(new SelectFilter(subjects, new Entity[] { p }, GetClosure(objects, subs), metas), sink);
+						data.Select(new SelectFilter(subjects, new Entity[] { p }, GetClosure(objects, subs), metas)).StreamTo(sink);
 					} else if (subjects != null) {
 						// get all of the supers of all of the subjects
 						foreach (Entity s in subjects)
@@ -204,7 +243,7 @@ namespace SemWeb.Inference {
 						}
 					} else {
 						// What is a subclass/property of what?  We won't answer that.
-						data.Select(filter, sink);
+						data.Select(filter).StreamTo(sink);
 					}
 				} else {
 					remainingPredicates.Add(p);
@@ -226,13 +265,11 @@ namespace SemWeb.Inference {
 					}
 				}
 				
-				//data.Select(subjects, qprops.ToEntityArray(), objects, metas, new LiteralDTMap(ranges, new PredMap(propfrom, sink)));
-				
 				SelectFilter sf = new SelectFilter(subjects, qprops.ToEntityArray(), objects, metas);
 				sf.LiteralFilters = filter.LiteralFilters;
 				sf.Limit = filter.Limit;
 				
-				data.Select(sf, new PredMap(propfrom, sink));
+				data.Select(sf).StreamTo(new PredMap(propfrom, sink));
 			}
 		}
 		

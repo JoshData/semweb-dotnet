@@ -4,6 +4,9 @@
 
 using System;
 using System.Collections;
+#if DOTNET2
+using System.Collections.Generic;
+#endif
 
 using SemWeb;
 using SemWeb.Util;
@@ -25,9 +28,20 @@ namespace SemWeb.Inference {
 		
 		public bool Distinct { get { return false; } } // not sure...
 		
-		public void Select(StatementSink sink) {
+		public void StreamTo(StatementSink sink) {
 			Select(Statement.All, sink);
 		}
+
+		#if DOTNET2
+		IEnumerator IEnumerable.GetEnumerator() {
+			return ((IEnumerable<Statement>)this).GetEnumerator();
+		}
+		IEnumerator<Statement> IEnumerable<Statement>.GetEnumerator() {
+			MemoryStore ret = new MemoryStore();
+			StreamTo(ret);
+			return ((StatementSource)ret).GetEnumerator();
+		}
+		#endif
 
 		public bool Contains(Statement template) {
 			return Store.DefaultContains(this, template);
@@ -35,6 +49,12 @@ namespace SemWeb.Inference {
 		
 		public void Select(Statement template, StatementSink sink) {
 			Select(new SelectFilter(template), sink);
+		}
+		
+		public StatementSource Select(Statement template) {
+			MemoryStore ret = new MemoryStore();
+			Select(template, ret);
+			return ret;
 		}
 		
 		public void Select(SelectFilter filter, StatementSink sink) {
@@ -57,6 +77,12 @@ namespace SemWeb.Inference {
 			}
 		}
 		
+		public StatementSource Select(SelectFilter filter) {
+			MemoryStore ret = new MemoryStore();
+			Select(filter, ret);
+			return ret;
+		}
+
 		public void Query(Statement[] graph, SemWeb.Query.QueryResultSink sink) {
 			ArrayList evidence = prove(rules, world, SelectFilter.FromGraph(graph), -1);
 			if (evidence == null)
@@ -323,7 +349,7 @@ namespace SemWeb.Inference {
 						MemoryStore w = new MemoryStore();
 					
 						//Console.WriteLine("Q: " + evaluate_filter(t, c.env));
-						world.Select(evaluate_filter(t, c.env), w);
+						world.Select(evaluate_filter(t, c.env)).StreamTo(w);
 						foreach (Statement s in w) {
 							//Console.WriteLine("  " + s);
 							Sequent seq = new Sequent(s);
@@ -445,8 +471,8 @@ namespace SemWeb.Inference {
 			foreach (Statement p in rules_store) {
 				if (p.Meta == Statement.DefaultMeta) {
 					if (p.Predicate == entLOGIMPLIES && p.Object is Entity) {
-						Statement[] body = rules_store.Select(new Statement(null, null, null,  (Entity)p.Subject)).ToArray();
-						Statement[] head = rules_store.Select(new Statement(null, null, null,  (Entity)p.Object)).ToArray();
+						Statement[] body = new MemoryStore(rules_store.Select(new Statement(null, null, null,  (Entity)p.Subject))).ToArray();
+						Statement[] head = new MemoryStore(rules_store.Select(new Statement(null, null, null,  (Entity)p.Object))).ToArray();
 						
 						// Set the meta of these statements to DefaultMeta
 						for (int i = 0; i < body.Length; i++)

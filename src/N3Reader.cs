@@ -48,7 +48,7 @@ namespace SemWeb {
 			public Location Location { get { return new Location(source.Line, source.Col); } }
 		}
 		
-		public override void Select(StatementSink store) {
+		public override void StreamTo(StatementSink store) {
 			ParseContext context = new ParseContext();
 			context.source = new MyReader(sourcestream);
 			context.store = store;

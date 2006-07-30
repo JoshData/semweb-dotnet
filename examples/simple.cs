@@ -8,7 +8,7 @@ public class Simple {
 	public static void Main() {
 		MemoryStore store = new MemoryStore();
 		
-		store.Import(new RdfXmlReader(Console.In));
+		store.Import(new RdfXmlReader(Console.In, "http://www.example.org/myfile.rdf"));
 		
 		// The 'using' is important because it is necessary
 		// to Close or Dispose the writer once writing is

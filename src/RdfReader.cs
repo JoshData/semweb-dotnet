@@ -1,5 +1,8 @@
 using System;
 using System.Collections;
+#if DOTNET2
+using System.Collections.Generic;
+#endif
 using System.IO;
 using System.Web;
  
@@ -56,8 +59,19 @@ namespace SemWeb {
 			variables[variable] = variable;
 		}
 
-		public abstract void Select(StatementSink sink);
+		public abstract void StreamTo(StatementSink sink);
 		
+		#if DOTNET2
+		IEnumerator IEnumerable.GetEnumerator() {
+			return ((IEnumerable<Statement>)this).GetEnumerator();
+		}
+		IEnumerator<Statement> IEnumerable<Statement>.GetEnumerator() {
+			MemoryStore buffer = new MemoryStore();
+			StreamTo(buffer);
+			return ((IEnumerable<Statement>)buffer).GetEnumerator();
+		}
+		#endif
+
 		public virtual void Dispose() {
 		}
 		
@@ -139,9 +153,9 @@ namespace SemWeb {
 		
 		public ArrayList Parsers { get { return parsers; } }
 		
-		public override void Select(StatementSink storage) {
+		public override void StreamTo(StatementSink storage) {
 			foreach (RdfReader p in Parsers)
-				p.Select(storage);
+				p.StreamTo(storage);
 		}
 	}
 }

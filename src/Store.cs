@@ -1,20 +1,29 @@
 using System;
 using System.Collections;
+#if DOTNET2
+using System.Collections.Generic;
+#endif
 using System.Data;
 
 using SemWeb.Util;
 
 namespace SemWeb {
 	
-	public interface StatementSource {
+	public interface StatementSource
+#if DOTNET2
+	: IEnumerable<Statement>
+#endif
+	{
 		bool Distinct { get; }
-		void Select(StatementSink sink);
+		void StreamTo(StatementSink sink);
 	}
 	
 	public interface SelectableSource : StatementSource {
 		bool Contains(Statement template);
-		void Select(Statement template, StatementSink sink);
-		void Select(SelectFilter filter, StatementSink sink);
+		//void Select(Statement template, StatementSink sink);
+		//void Select(SelectFilter filter, StatementSink sink);
+		StatementSource Select(Statement template);
+		StatementSource Select(SelectFilter filter);
 	}
 
 	public interface QueryableSource : SelectableSource {
@@ -25,7 +34,7 @@ namespace SemWeb {
 	public interface StatementSink {
 		bool Add(Statement statement);
 	}
-
+	
 	public interface ModifiableSource : StatementSink {
 		void Clear();
 		void Import(StatementSource source);
@@ -191,7 +200,7 @@ namespace SemWeb {
 		public Entity[] GetEntitiesOfType(Entity type) {
 			ArrayList entities = new ArrayList();
 			
-			IEnumerable result = Select(new Statement(null, rdfType, type));
+			MemoryStore result = new MemoryStore(Select(new Statement(null, rdfType, type)));
 			foreach (Statement s in result) {
 				entities.Add(s.Subject);
 			}
@@ -209,9 +218,9 @@ namespace SemWeb {
 		public abstract void Remove(Statement statement);
 
 		public virtual void Import(StatementSource source) {
-			source.Select(this);
+			source.StreamTo(this);
 		}
-		
+
 		public void RemoveAll(Statement[] templates) {
 			foreach (Statement t in templates)
 				Remove(t);
@@ -226,12 +235,12 @@ namespace SemWeb {
 		public virtual bool Contains(Statement template) {
 			return DefaultContains(this, template);
 		}
-
+		
 		public static bool DefaultContains(SelectableSource source, Statement template) {
 			StatementExistsSink sink = new StatementExistsSink();
 			SelectFilter filter = new SelectFilter(template);
 			filter.Limit = 1;
-			source.Select(filter, sink);
+			source.Select(filter).StreamTo(sink);
 			return sink.Exists;
 		}
 		
@@ -243,23 +252,32 @@ namespace SemWeb {
 			foreach (Entity predicate in filter.Predicates == null ? new Entity[] { null } : filter.Predicates)
 			foreach (Resource objct in filter.Objects == null ? new Resource[] { null } : filter.Objects)
 			foreach (Entity meta in filter.Metas == null ? new Entity[] { null } : filter.Metas)
-				source.Select(new Statement(subject, predicate, objct, meta), sink);
+				source.Select(new Statement(subject, predicate, objct, meta)).StreamTo(sink);
 		}		
 		
-		public void Select(StatementSink result) {
+		public void StreamTo(StatementSink result) {
 			Select(Statement.All, result);
 		}
 		
-		public abstract void Select(Statement template, StatementSink result);
+		#if DOTNET2
+		IEnumerator IEnumerable.GetEnumerator() {
+			return Select(Statement.All).GetEnumerator();
+		}
+		IEnumerator<Statement> IEnumerable<Statement>.GetEnumerator() {
+			return Select(Statement.All).GetEnumerator();
+		}
+		#endif
+
+		public abstract StatementSource Select(Statement template);
+
+		public abstract StatementSource Select(SelectFilter filter);
 		
-		public abstract void Select(SelectFilter filter, StatementSink result);
-		
-		public SelectResult Select(Statement template) {
-			return new SelectResult.Single(this, template);
+		public void Select(Statement template, StatementSink result) {
+			Select(template).StreamTo(result);
 		}
 		
-		public SelectResult Select(SelectFilter filter) {
-			return new SelectResult.Multi(this, filter);
+		public void Select(SelectFilter filter, StatementSink result) {
+			Select(filter).StreamTo(result);
 		}
 		
 		public Resource[] SelectObjects(Entity subject, Entity predicate) {
@@ -313,7 +331,7 @@ namespace SemWeb {
 		}
 				public void Write(System.IO.TextWriter writer) {
 			using (RdfWriter w = new N3Writer(writer)) {
-				Select(w);
+				w.Write(this);
 			}
 		}
 		
@@ -326,48 +344,6 @@ namespace SemWeb {
 		}
 		
 	}
-
-	public abstract class SelectResult : StatementSource, IEnumerable {
-		internal Store source;
-		MemoryStore ms;
-		internal SelectResult(Store source) { this.source = source; }
-		public bool Distinct { get { return source.Distinct; } }
-		public abstract void Select(StatementSink sink);
-		public IEnumerator GetEnumerator() {
-			return Buffer().Statements.GetEnumerator();
-		}
-		public long StatementCount { get { return Buffer().StatementCount; } }
-		public MemoryStore Load() { return Buffer(); }
-		public Statement[] ToArray() { return Load().ToArray(); }
-		private MemoryStore Buffer() {
-			if (ms != null) return ms;
-			ms = new MemoryStore();
-			ms.allowIndexing = false;
-			Select(ms);
-			return ms;
-		}
-		
-		internal class Single : SelectResult {
-			Statement template;
-			public Single(Store source, Statement template) : base(source) {
-				this.template = template;
-			}
-			public override void Select(StatementSink sink) {
-				source.Select(template, sink);
-			}
-		}
-		
-		internal class Multi : SelectResult {
-			SelectFilter filter;
-			public Multi(Store source, SelectFilter filter)
-				: base(source) {
-				this.filter = filter;
-			}
-			public override void Select(StatementSink sink) {
-				source.Select(filter, sink);
-			}
-		}
-	}
 }
 
 namespace SemWeb.Stores {
@@ -376,6 +352,67 @@ namespace SemWeb.Stores {
 		string GetStoreGuid();
 		string GetNodeId(BNode node);
 		BNode GetNodeFromId(string persistentId);
+	}
+	
+	public abstract class StatementIterator : StatementSource {
+		public abstract bool Distinct { get; }
+		public abstract bool MoveNext();
+		public abstract Statement Current { get; }
+		public virtual void Dispose() { }
+		
+		public void StreamTo(StatementSink sink) {
+			try {
+				while (MoveNext())
+					if (!sink.Add(Current)) return;
+			} finally {
+				Dispose();
+			}
+		}
+	
+		#if DOTNET2
+		IEnumerator IEnumerable.GetEnumerator() {
+			return GetEnumerator();
+		}
+		public System.Collections.Generic.IEnumerator<Statement> GetEnumerator() {
+			return new StatementIteratorEnumerator(this);
+		}
+		private class StatementIteratorEnumerator : IEnumerator<Statement> {
+			StatementIterator e;
+			public StatementIteratorEnumerator(StatementIterator e) { this.e = e; }
+			public void Reset() { throw new NotSupportedException(); }
+			public bool MoveNext() { return e.MoveNext(); }
+			object IEnumerator.Current { get { return e.Current; } }
+			public Statement Current { get { return e.Current; } }
+			public void Dispose() { e.Dispose(); }
+		}
+		/*public System.Collections.Generic.IEnumerator<Statement> GetEnumerator() {
+			try {
+				Console.WriteLine("Calling MoveNext on " + this);
+				Console.WriteLine(MoveNext());
+				while (MoveNext())
+					yield return Current;
+			} finally {
+				Dispose();
+			}
+		}*/
+		#else
+		public IEnumerator GetEnumerator() {
+			return new StatementIteratorEnumerator(this);
+		}
+		private class StatementIteratorEnumerator : IEnumerator {
+			StatementIterator e;
+			public StatementIteratorEnumerator(StatementIterator e) { this.e = e; }
+			public void Reset() { throw new NotSupportedException(); }
+			public bool MoveNext() { return e.MoveNext(); }
+			public object Current { get { return e.Current; } }
+		}
+		#endif
+	}
+
+	internal class EmptyStatementIterator : StatementIterator {
+		public override bool Distinct { get { return true; } }
+		public override bool MoveNext() { return false; }
+		public override Statement Current { get { return Statement.All; } }
 	}
 
 	public class MultiStore : Store {
@@ -497,24 +534,78 @@ namespace SemWeb.Stores {
 			
 		public override void Remove(Statement statement) { throw new InvalidOperationException("Remove is not a valid operation on a MultiStore."); }
 		
-		public override void Select(Statement template, StatementSink result) {
-			SelectableSource[] sources = GetSources(template.Meta);
-			if (sources == null) return;
-			template.Meta = null;
-			foreach (SelectableSource s in sources)
-				s.Select(template, result);
+		public override StatementSource Select(Statement template) {
+			return Select(new SelectFilter(template));
 		}
 		
-		public override void Select(SelectFilter filter, StatementSink result) {
-			Entity[] scanMetas = filter.Metas;
-			filter.Metas = null;
-			if (scanMetas == null || namedgraphs.Count == 0) scanMetas = new Entity[] { null };
-			foreach (Entity meta in scanMetas) {
-				SelectableSource[] sources = GetSources(meta);
-				if (sources == null) continue;
-				foreach (SelectableSource s in sources)
-					s.Select(filter, result);
+		public override StatementSource Select(SelectFilter filter) {
+			return new MultiStoreStatementIterator(filter, this);
+		}
+		
+		private class MultiStoreStatementIterator : StatementSource {
+			SelectFilter filter;
+			MultiStore store;
+			Entity[] scanMetas;
+			
+			public MultiStoreStatementIterator(SelectFilter filter, MultiStore store) {
+				this.filter = filter;
+				this.store = store;
+
+				scanMetas = filter.Metas;
+				filter.Metas = null;
+				if (scanMetas == null || store.namedgraphs.Count == 0) scanMetas = new Entity[] { null };
 			}
+		
+			public bool Distinct { get { return false; } }
+			
+			public void StreamTo(StatementSink sink) {
+				foreach (Entity meta in scanMetas) {
+					SelectableSource[] sources = store.GetSources(meta);
+					if (sources == null) continue;
+					foreach (SelectableSource s in sources)
+						s.Select(filter).StreamTo(sink);
+				}
+			}
+		
+			#if DOTNET2
+			int metaIndex = -1;
+			int sourceIndex = -1;
+			SelectableSource[] currentSources;
+			System.Collections.Generic.IEnumerator<Statement> currentIterator;
+			
+			public System.Collections.Generic.IEnumerator<Statement> GetEnumerator() {
+				while (true) {
+					if (currentSources == null) {
+						if (metaIndex == scanMetas.Length-1)
+							break;
+						currentSources = store.GetSources(scanMetas[++metaIndex]);
+						sourceIndex = -1;
+						if (currentSources.Length == 0)
+							continue;
+					}
+					
+					if (currentIterator == null) {
+						if (sourceIndex == currentSources.Length - 1) {
+							currentSources = null;
+							continue;
+						}
+						currentIterator = currentSources[++sourceIndex].Select(filter).GetEnumerator();
+					}
+					
+					if (currentIterator.MoveNext())
+						yield return currentIterator.Current;
+					
+					currentIterator = null;
+				}
+			}
+			IEnumerator IEnumerable.GetEnumerator() {
+				return GetEnumerator();
+			}
+			#else
+			public IEnumerator GetEnumerator() {
+				throw new NotSupportedException();
+			}
+			#endif
 		}
 
 		public override void Replace(Entity a, Entity b) { throw new InvalidOperationException("Replace is not a valid operation on a MultiStore."); }
@@ -523,6 +614,7 @@ namespace SemWeb.Stores {
 		
 	}
 	
+	#if FALSE
 	public abstract class SimpleSourceWrapper : SelectableSource {
 	
 		public virtual bool Distinct { get { return true; } }
@@ -616,6 +708,7 @@ namespace SemWeb.Stores {
 			source.Select(filter, sink);
 		}
 	}
+	#endif
 	
 	public class CachedSource : SelectableSource {
 		SelectableSource source;
@@ -628,9 +721,18 @@ namespace SemWeb.Stores {
 	
 		public bool Distinct { get { return source.Distinct; } }
 		
-		public void Select(StatementSink sink) {
+		public void StreamTo(StatementSink sink) {
 			Select(Statement.All, sink);
 		}
+		
+		#if DOTNET2
+		IEnumerator IEnumerable.GetEnumerator() {
+			return source.GetEnumerator();
+		}
+		IEnumerator<Statement> IEnumerable<Statement>.GetEnumerator() {
+			return source.GetEnumerator();
+		}
+		#endif
 
 		public bool Contains(Statement template) {
 			if (!containsresults.ContainsKey(template))
@@ -639,21 +741,29 @@ namespace SemWeb.Stores {
 		}
 		
 		public void Select(Statement template, StatementSink sink) {
-			if (!selectresults.ContainsKey(template)) {
-				MemoryStore s = new MemoryStore();
-				source.Select(template, s);
-				selectresults[template] = s;
-			}
-			((MemoryStore)selectresults[template]).Select(sink);
+			Select(template).StreamTo(sink);
 		}
 	
+		public StatementSource Select(Statement template) {
+			if (!selectresults.ContainsKey(template)) {
+				MemoryStore s = new MemoryStore();
+				source.Select(template).StreamTo(s);
+				selectresults[template] = s;
+			}
+			return (MemoryStore)selectresults[template];
+		}
+
 		public void Select(SelectFilter filter, StatementSink sink) {
+			Select(filter).StreamTo(sink);
+		}
+		
+		public StatementSource Select(SelectFilter filter) {
 			if (!selfilterresults.ContainsKey(filter)) {
 				MemoryStore s = new MemoryStore();
-				source.Select(filter, s);
+				source.Select(filter).StreamTo(s);
 				selfilterresults[filter] = s;
 			}
-			((MemoryStore)selfilterresults[filter]).Select(sink);
+			return (MemoryStore)selfilterresults[filter];
 		}
 
 	}

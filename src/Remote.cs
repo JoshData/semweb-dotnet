@@ -1,10 +1,13 @@
 using System;
 using System.Collections;
+#if DOTNET2
+using System.Collections.Generic;
+#endif
 using System.IO;
 using System.Text;
 using System.Web;
 using System.Xml;
- 
+
 namespace SemWeb.Remote {
 
 	public class SparqlHttpSource : SelectableSource {
@@ -21,14 +24,31 @@ namespace SemWeb.Remote {
 			return Select(template, null, true);
 		}
 		
-		public void Select(StatementSink sink) {
+		public void StreamTo(StatementSink sink) {
 			Select(Statement.All, sink);
 		}
 		
+		#if DOTNET2
+		IEnumerator IEnumerable.GetEnumerator() {
+			return ((IEnumerable<Statement>)this).GetEnumerator();
+		}
+		IEnumerator<Statement> IEnumerable<Statement>.GetEnumerator() {
+			MemoryStore ret = new MemoryStore();
+			StreamTo(ret);
+			return ((StatementSource)ret).GetEnumerator();
+		}
+		#endif
+
 		public void Select(Statement template, StatementSink sink) {
 			Select(template, sink, false);
 		}
 		
+		public StatementSource Select(Statement template) {
+			MemoryStore ret = new MemoryStore();
+			Select(template, ret);
+			return ret;
+		}
+
 		bool Select(Statement template, StatementSink sink, bool ask) {
 			return Select(
 				template.Subject == null ? null : new Entity[] { template.Subject },
@@ -46,6 +66,12 @@ namespace SemWeb.Remote {
 			Select(filter.Subjects, filter.Predicates, filter.Objects, filter.Metas, filter.LiteralFilters, filter.Limit, sink, false);
 		}
 		
+		public StatementSource Select(SelectFilter filter) {
+			MemoryStore ret = new MemoryStore();
+			Select(filter, ret);
+			return ret;
+		}
+
 		bool Select(Entity[] subjects, Entity[] predicates, Resource[] objects, Entity[] metas, LiteralFilter[] litFilters, int limit, StatementSink sink, bool ask) {
 			// TODO: Change meta into named graphs.  Anything but a null or DefaultMeta
 			// meta returns no statements immediately.

@@ -241,14 +241,14 @@ namespace SemWeb.Query {
 			}
 
 			// Search the query for 'distinct' predicates between variables.
-			foreach (Statement s in queryModel.Select(new Statement(null, qDistinctFrom, null))) {
+			foreach (Statement s in new MemoryStore(queryModel.Select(new Statement(null, qDistinctFrom, null)))) {
 				if (!(s.Object is BNode)) continue;
 				MakeDistinct((BNode)s.Subject, (BNode)s.Object);
 			}
 			
 			// Add all statements except the query predicates and value filters into a
 			// new store with just the statements relevant to the search.
-			foreach (Statement s in queryModel.Select(Statement.All)) {
+			foreach (Statement s in new MemoryStore(queryModel.Select(Statement.All))) {
 				if (IsQueryPredicate(s.Predicate)) continue;
 				
 				/*if (s.Predicate.Uri != null && extraValueFilters != null && extraValueFilters.Contains(s.Predicate.Uri)) {
@@ -277,7 +277,7 @@ namespace SemWeb.Query {
 			if (r == null || !(r is Literal)) return -1;
 			try {
 				return int.Parse(((Literal)r).Value);
-			} catch (Exception e) {
+			} catch {
 				return -1;
 			}
 		}		
@@ -453,7 +453,7 @@ namespace SemWeb.Query {
 						(Entity[])qs.Predicate.GetValues(bindings.Union, true),
 						qs.Object.GetValues(bindings.Union, false),
 						QueryMeta == null ? null : new Entity[] { QueryMeta }
-						),
+						)).StreamTo(
 					new ClearMetaDupCheck(matches));
 				
 				Debug("\t" + matches.StatementCount + " Matches");
@@ -481,7 +481,7 @@ namespace SemWeb.Query {
 					while (enumer2.MoveNext(out s, out p, out o)) {
 						// Get the matching statements from the union query
 						Statement bs = new Statement(s, p, o);
-						MemoryStore innermatches = matches.Select(bs).Load();
+						MemoryStore innermatches = new MemoryStore(matches.Select(bs));
 						
 						// If no matches, the binding didn't match the filter.
 						if (innermatches.StatementCount == 0) {
@@ -566,7 +566,7 @@ namespace SemWeb.Query {
 					
 					ResSet values = new ResSet();
 					MemoryStore ms = new MemoryStore();
-					targetModel.Select(s, ms);
+					targetModel.Select(s).StreamTo(ms);
 					for (int si = 0; si < ms.StatementCount; si++) {
 						Statement match = ms[si];
 						if (!MatchesFilters(match, qs, targetModel)) continue;
@@ -620,7 +620,7 @@ namespace SemWeb.Query {
 						
 					ArrayList newbindings = new ArrayList();
 					MemoryStore ms = new MemoryStore();
-					targetModel.Select(s, ms);
+					targetModel.Select(s).StreamTo(ms);
 					for (int si = 0; si < ms.StatementCount; si++) {
 						Statement match = ms[si];
 						if (!MatchesFilters(match, qs, targetModel)) continue;

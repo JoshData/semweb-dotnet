@@ -32,6 +32,11 @@ namespace SemWeb {
 			btoa[prefix] = uri;
 		}
 		
+		public void AddFrom(NamespaceManager nsmgr) {
+			foreach (string uri in nsmgr.GetNamespaces())
+				AddNamespace(uri, nsmgr.GetPrefix(uri));
+		}
+
 		public virtual string GetNamespace(string prefix) {
 			string ret = (string)btoa[prefix];
 			if (ret != null) return ret;

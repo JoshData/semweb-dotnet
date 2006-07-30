@@ -32,10 +32,14 @@ namespace SemWeb {
 			xml = new XmlBaseAwareReader(new XmlNodeReader(document));
 		}
 		
-		public RdfXmlReader(XmlReader document) {
+		public RdfXmlReader(XmlReader document) : this(document, null) {
+		}
+		
+		public RdfXmlReader(XmlReader document, string baseUri) {
 			XmlValidatingReader reader = new XmlValidatingReader(document);
 			reader.ValidationType = ValidationType.None;
 			xml = new XmlBaseAwareReader(reader);
+			BaseUri = baseUri;
 		}
 		
 		public RdfXmlReader(TextReader document) : this(new XmlTextReader(document)) {
@@ -44,10 +48,16 @@ namespace SemWeb {
 		public RdfXmlReader(Stream document) : this(new StreamReader(document)) {
 		}
 
-		public RdfXmlReader(string file) : this(GetReader(file)) {
+		public RdfXmlReader(string file) : this(GetReader(file), "file://" + file.Replace("\\", "/")) {
 		}
 		
-		public override void Select(StatementSink storage) {
+		public RdfXmlReader(TextReader document, string baseUri) : this(new XmlTextReader(document), baseUri) {
+		}
+
+		public RdfXmlReader(Stream document, string baseUri) : this(new StreamReader(document), baseUri) {
+		}
+
+		public override void StreamTo(StatementSink storage) {
 			// Read past the processing instructions to
 			// the document element.  If it is rdf:RDF,
 			// then process the description nodes within it.
