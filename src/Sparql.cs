@@ -336,7 +336,6 @@ namespace SemWeb.Query {
 						filter.LiteralFilters[i] = (LiteralFilter)litFilters.get(i);
 				}
 
-				#if !DOTNET2
 				DateTime start = DateTime.Now;
 
 				MemoryStore results = new MemoryStore();
@@ -345,19 +344,11 @@ namespace SemWeb.Query {
 				if (!source.Distinct)
 					sink = new SemWeb.Util.DistinctStatementsSink(results, defaultGraph && metas == null);
 
-				source.Select(filter).StreamTo(sink);
+				source.Select(filter, sink);
 				
 				Log("SELECT: " + filter + " => " + results.StatementCount + " statements [" + (DateTime.Now-start) + "s]");
 				
 				return new StatementIterator(results.ToArray());
-
-				#else
-
-				Log("SELECT: " + filter);
-
-				return new StatementIterator(source.Select(filter));
-
-				#endif
 			}
 			
 		    /**
@@ -563,7 +554,6 @@ namespace SemWeb.Query {
 			}
 		}
 		
-		#if !DOTNET2
 		class StatementIterator : java.util.Iterator {
 			Statement[] statements;
 			int curindex = -1;
@@ -586,40 +576,6 @@ namespace SemWeb.Query {
 				new InvalidOperationException();
 			}
 		}
-		#else
-		class StatementIterator : java.util.Iterator {
-			System.Collections.Generic.IEnumerator<Statement> enumerator;
-			bool movedNext = false, cHasNext = false;
-			
-			public StatementIterator(StatementSource source) {
-				if (source != null)
-					enumerator = source.GetEnumerator();
-			}
-			
-			public bool hasNext() {
-				if (enumerator == null) return false;
-				if (!movedNext) {
-					movedNext = true;
-					try {
-						cHasNext = enumerator.MoveNext();
-					} catch (Exception e) {
-						Console.Error.WriteLine(e);
-					}
-					if (!cHasNext) enumerator.Dispose();
-				}
-				return cHasNext;
-			}
-			
-			public object next() {
-				movedNext = false;
-				return new GraphStatementWrapper(enumerator.Current);
-			}
-			
-			public void remove() {
-				throw new InvalidOperationException();
-			}
-		}
-		#endif
 		
 		class GraphStatementWrapper : GraphStatement {
 			public readonly Statement s;
