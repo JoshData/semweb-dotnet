@@ -8,10 +8,10 @@ public class LoadFromWEb {
 		MemoryStore store = new MemoryStore();
 		//store.Import(RdfReader.LoadFromUri(new Uri("http://www.mozilla.org/news.rdf")));
 		using (RdfWriter writer = new N3Writer(Console.Out))
-			store.StreamTo(writer);
+			store.Select(writer);
 
 		RdfReader file = RdfReader.LoadFromUri(new Uri("http://www.mozilla.org/news.rdf"));
-		file.StreamTo(new StatementPrinter());
+		file.Select(new StatementPrinter());
 	}
 	
 	class StatementPrinter : StatementSink {

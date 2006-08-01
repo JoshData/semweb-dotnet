@@ -1,15 +1,3 @@
-Generics:
-	* Select(StatementSink) renamed to StreamTo(StatementSink)
-	* new constructor: MemoryStore(bool checkForDuplicates)
-	* new method: NamespaceManager.AddFrom(NamespaceManager)
-	* The SelectableSource interface is redone: Rather than supporting
-	  streaming directly, Select returns a new StatementSource which
-	  can then StreamTo a StatementSink (or be iterated on).
-	* New method: SemWeb.Query.Sparql.GetQueryPrefixes().
-	* RdfXmlReader has new constructors to pass a BaseURI
-In .NET 2.0:
-	* StatementSources now inherit from IEnumerable<Statement>.
-
 	* RdfXmlWriter: Another bug fix, this time with typed nodes.
 	  Also detects invalid parseType=Literal + datatype.
 

@@ -13,7 +13,8 @@ MAIN_SOURCES = \
 	src/RdfWriter.cs src/RdfXmlWriter.cs src/N3Writer.cs \
 	src/RSquary.cs src/LiteralFilters.cs src/Query.cs \
 	src/Inference.cs src/RDFS.cs \
-	src/Algos.cs src/Remote.cs
+	src/Algos.cs src/Remote.cs \
+	src/XPathSemWebNavigator.cs
 
 bin/SemWeb.dll: $(MAIN_SOURCES) Makefile
 	mcs -debug $(MAIN_SOURCES) -out:bin/SemWeb.dll -t:library \

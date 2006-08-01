@@ -5,8 +5,6 @@ using SemWeb;
 using SemWeb.Query;
 using SemWeb.Util;
 
-#if FALSE
-
 namespace SemWeb.Algos {
 
 	class SubtractionSource : SelectableSource {
@@ -776,5 +774,3 @@ namespace SemWeb.Algos {
 	}
 		
 }
-
-#endif

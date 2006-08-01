@@ -492,7 +492,7 @@ namespace SemWeb.Util.Bind {
 			}
 			
 			if (v != null) {
-				foreach (Statement s in new MemoryStore(model.Select(search))) {
+				foreach (Statement s in model.Select(search)) {
 					model.Replace(s, replace);
 					return;
 				}

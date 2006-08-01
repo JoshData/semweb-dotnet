@@ -108,10 +108,11 @@ namespace SemWeb.Util {
 	
 	public class DistinctStatementsSink : StatementSink {
 		StatementSink sink;
-		StatementMap hash = new StatementMap();
+		StatementMap hash;
 		bool resetMeta;
 		public DistinctStatementsSink(StatementSink sink, bool resetMeta) {
 			this.sink = sink;
+			hash = new StatementMap();
 			this.resetMeta = resetMeta;
 		}
 		public bool Add(Statement s) {
@@ -122,10 +123,7 @@ namespace SemWeb.Util {
 		}
 	}
 	
-	#if DOTNET2
-	public class StatementList : System.Collections.Generic.List<SemWeb.Statement> {
-	}
-	#else
+
 	public class StatementList : ICollection {
 		private const int DefaultInitialCapacity = 0x10;
 		private int _size;
@@ -259,12 +257,8 @@ namespace SemWeb.Util {
 			public object Current { get { return list[index]; } }
 		}
 	}
-	#endif
 
-	#if DOTNET2
-	public class StatementMap : System.Collections.Generic.Dictionary<Statement,object> {
-	}
-	#else
+
 	// This is based on Mono's Hashtable implementation:
 	// Copyright (C) 2004-2005 Novell, Inc (http://www.novell.com)
 	public class StatementMap {
@@ -743,7 +737,6 @@ namespace SemWeb.Util {
 			}
 		}
 	}
-	#endif
 
 	internal class MultiMap {
 		Hashtable items = new Hashtable();

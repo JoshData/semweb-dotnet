@@ -4,7 +4,7 @@ using System.IO;
 using System.Reflection;
 
 using SemWeb;
-using SemWeb.Algos;
+//using SemWeb.Algos;
 
 [assembly: AssemblyTitle("RDFStorage - Move RDF Data Between Storage Types")]
 [assembly: AssemblyCopyright("Copyright (c) 2005 Joshua Tauberer <tauberer@for.net>\nreleased under the GPL.")]
@@ -35,14 +35,14 @@ public class RDFStorage {
 		[Mono.GetOptions.Option("Quiet mode: Don't emit status information.")]
 		public bool quiet = false;
 
-		[Mono.GetOptions.Option("Make the output lean.")]
+		/*[Mono.GetOptions.Option("Make the output lean.")]
 		public bool makelean = false;
 
 		[Mono.GetOptions.Option("Make lean in comparison to another data source.")]
 		public string leanagainst = null;
 		
 		[Mono.GetOptions.Option("Write out lean-removed statements.")]
-		public bool leanprogress = false;
+		public bool leanprogress = false;*/
 	}
 	
 	public static void Main(string[] args) {
@@ -56,8 +56,8 @@ public class RDFStorage {
 			return;
 		}
 		
-		if (opts.@out == "xml:-" || opts.@out == "n3:-")
-			opts.quiet = true;
+		/*if (opts.@out == "xml:-" || opts.@out == "n3:-")
+			opts.quiet = true;*/
 		
 		StatementSink storage = Store.CreateForOutput(opts.@out);
 		if (storage is RdfWriter && opts.outbaseuri != null)
@@ -87,9 +87,9 @@ public class RDFStorage {
 		if (storage is Store) {
 			((Store)storage).Import(multiparser);
 		} else {
-			if (!opts.makelean) {
-				multiparser.Select(storage);
-			} else {
+			//if (!opts.makelean) {
+				multiparser.StreamTo(storage);
+			/*} else {
 				MemoryStore st = new MemoryStore(multiparser);
 				StatementSink removed = null;
 				if (opts.leanprogress)
@@ -105,7 +105,7 @@ public class RDFStorage {
 					Lean.MakeLean(st, null, removed);
 				}
 				st.Select(storage);
-			}
+			}*/
 		}
 		
 		if (storage is IDisposable) ((IDisposable)storage).Dispose();
@@ -130,7 +130,7 @@ public class RDFStorage {
 			this.quiet = quiet;
 		}
 		
-		public override void Select(StatementSink storage) {
+		public override void StreamTo(StatementSink storage) {
 			DateTime allstart = DateTime.Now;
 			long stct = 0;
 					
@@ -147,13 +147,13 @@ public class RDFStorage {
 						RdfReader parser = RdfReader.Create(format, infile);
 						parser.BaseUri = baseuri;
 						if (meta != null) parser.Meta = meta;
-						parser.Select(filter);
+						parser.StreamTo(filter);
 						foreach (string warning in parser.Warnings)
 							Console.Error.WriteLine(warning);
 						parser.Dispose();
 					} else {
 						StatementSource src = Store.CreateForInput(infile);
-						src.Select(filter);
+						src.StreamTo(filter);
 					}
 					
 					stct += filter.StatementCount;

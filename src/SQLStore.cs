@@ -1,19 +1,12 @@
 using System;
 using System.Collections;
 using System.Collections.Specialized;
-#if DOTNET2
-using System.Collections.Generic;
-#endif
 using System.Data;
 using System.IO;
 using System.Security.Cryptography;
 using System.Text;
 
 using SemWeb.Util;
-
-#if DOTNET2
-using StatementList = System.Collections.Generic.List<SemWeb.Statement>;
-#endif
 
 namespace SemWeb.Stores {
 	// TODO: It's not safe to have two concurrent accesses to the same database
@@ -49,6 +42,8 @@ namespace SemWeb.Stores {
 		char quote;
 		
 		object syncroot = new object();
+		
+		Hashtable metaEntities;
 		
 		SHA1 sha = SHA1.Create();
 		
@@ -194,6 +189,8 @@ namespace SemWeb.Stores {
 		
 			Init();
 			if (addStatementBuffer != null) addStatementBuffer.Clear();
+			
+			metaEntities = null;
 
 			//RunCommand("DELETE FROM " + table + "_statements;");
 			//RunCommand("DELETE FROM " + table + "_literals;");
@@ -428,6 +425,8 @@ namespace SemWeb.Stores {
 		public override void Add(Statement statement) {
 			if (statement.AnyNull) throw new ArgumentNullException();
 			
+			metaEntities = null;
+
 			if (addStatementBuffer != null) {
 				addStatementBuffer.Add(statement);
 				
@@ -658,6 +657,7 @@ namespace SemWeb.Stores {
 			RunCommand(cmd.ToString());
 			
 			statementsRemoved = true;
+			metaEntities = null;
 		}
 		
 		public override Entity[] GetEntities() {
@@ -756,7 +756,7 @@ namespace SemWeb.Stores {
 			return true;
 		}
 		
-		private static int AsInt(object r) {
+		private int AsInt(object r) {
 			if (r is int) return (int)r;
 			if (r is uint) return (int)(uint)r;
 			if (r is long) return (int)(long)r;
@@ -764,7 +764,7 @@ namespace SemWeb.Stores {
 			throw new ArgumentException(r.ToString());
 		}
 		
-		private static string AsString(object r) {
+		private string AsString(object r) {
 			if (r == null)
 				return null;
 			else if (r is System.DBNull)
@@ -828,257 +828,49 @@ namespace SemWeb.Stores {
 			}
 		}
 
-		public override StatementSource Select(Statement template) {
-			return new SQLStoreIterator(template, this);
-		}
-
-		public override StatementSource Select(SelectFilter filter) {
-			return new SQLStoreIterator(filter, this);
+		public override void Select(SelectFilter filter, StatementSink result) {
+			if (result == null) throw new ArgumentNullException();
+			foreach (Entity[] s in SplitArray(filter.Subjects))
+			foreach (Entity[] p in SplitArray(filter.Predicates))
+			foreach (Resource[] o in SplitArray(filter.Objects))
+			foreach (Entity[] m in SplitArray(filter.Metas))
+			{
+				Select(
+					ToMultiRes(s),
+					ToMultiRes(p),
+					ToMultiRes(o),
+					ToMultiRes(m),
+					filter.LiteralFilters,
+					result,
+					filter.Limit); // hmm, repeated
+			}
 		}
 		
-		private class SQLStoreIterator : StatementIterator {
-			SQLStore store;
-			ArrayList queries = new ArrayList();
-			
-			// initialized in StartQuery
-			Query curQuery;
-			SelectColumnFilter columns;
-			Hashtable entMap;
-			IDataReader reader;
-			Statement current;
-			
-			struct Query {
-				public Resource templateSubject, templatePredicate, templateObject, templateMeta;
-				public LiteralFilter[] litFilters;
-				public long limit;
-			}
-			
-			public SQLStoreIterator(SelectFilter filter, SQLStore store) {
-				this.store = store;
-				
-				// There's a maximum number of entities we can query
-				// on at once, so compile out the possible
-				// queries we have to make.
-		
-				foreach (Entity[] s in SplitArray(filter.Subjects))
-				foreach (Entity[] p in SplitArray(filter.Predicates))
-				foreach (Resource[] o in SplitArray(filter.Objects))
-				foreach (Entity[] m in SplitArray(filter.Metas))
-				{
-					Query q = new Query();
-					q.templateSubject = ToMultiRes(s);
-					q.templatePredicate = ToMultiRes(p);
-					q.templateObject = ToMultiRes(o);
-					q.templateMeta = ToMultiRes(m);
-					q.litFilters = filter.LiteralFilters;
-					q.limit = filter.Limit; // hmm, repeated
-					queries.Add(q);
-				}
-				queries.Reverse(); // so we can pop, from the beginning
-			}
-
-			public SQLStoreIterator(Statement template, SQLStore store) {
-				this.store = store;
-				Query q = new Query();
-				q.templateSubject = template.Subject;
-				q.templatePredicate = template.Predicate;
-				q.templateObject = template.Object;
-				q.templateMeta = template.Meta;
-				q.litFilters = null;
-				q.limit = -1;
-				queries.Add(q);
-			}
-
-			public override bool Distinct { get { return store.Distinct; } }
-			
-			public override bool MoveNext() {
-				while (true) {
-					if (reader == null) {
-						if (queries.Count == 0)
-							return false;
-
-						lock (store.syncroot) {
-							curQuery = (Query)queries[queries.Count-1];
-							queries.RemoveAt(queries.Count-1);
-							
-							if (!StartQuery(curQuery))
-								continue;
-						}
-					} else {
-						if (ContinueQuery(curQuery)) {
-							return true;
-						} else {
-							reader.Dispose();
-							reader = null;
-						}
-					}
-				}
-			}
-			
-			public override Statement Current { get { return current; } }
-			
-			public override void Dispose() {
-				if (reader != null)
-					reader.Dispose();
-			}
-
-			Resource[][] SplitArray(Resource[] e) {
-				int lim = 1000;
-				if (e == null || e.Length <= lim) {
-					if (e is Entity[])
-						return new Entity[][] { (Entity[])e };
-					else
-						return new Resource[][] { e };
-				}
-				int overflow = e.Length % lim;
-				int n = (e.Length / lim) + ((overflow != 0) ? 1 : 0);
-				Resource[][] ret;
-				if (e is Entity[]) ret = new Entity[n][]; else ret = new Resource[n][];
-				for (int i = 0; i < n; i++) {
-					int c = lim;
-					if (i == n-1 && overflow != 0) c = overflow;
-					if (e is Entity[]) ret[i] = new Entity[c]; else ret[i] = new Resource[c];
-					Array.Copy(e, i*lim, ret[i], 0, c);
-				}
-				return ret;
-			}
-			
-			Resource ToMultiRes(Resource[] r) {
-				if (r == null || r.Length == 0) return null;
-				if (r.Length == 1) return r[0];
-				return new MultiRes(r);
-			}
-			
-			bool StartQuery(Query q) {
-				store.Init();
-				store.RunAddBuffer();
-				
-				// Don't select on columns that we already know from the template.
-				// But grab the URIs and literal values for MultiRes selection.
-				columns = new SelectColumnFilter();
-				columns.SubjectId = (q.templateSubject == null) || q.templateSubject is MultiRes;
-				columns.PredicateId = (q.templatePredicate == null) || q.templatePredicate is MultiRes;
-				columns.ObjectId = (q.templateObject == null) || q.templateObject is MultiRes;
-				columns.MetaId = (q.templateMeta == null) || q.templateMeta is MultiRes;
-				columns.SubjectUri = q.templateSubject == null;
-				columns.PredicateUri = q.templatePredicate == null;
-				columns.ObjectData = q.templateObject == null || (q.templateObject is MultiRes && ((MultiRes)q.templateObject).ContainsLiterals());
-				columns.MetaUri = q.templateMeta == null;
-				
-				// Have to select something
-				if (!columns.SubjectId && !columns.PredicateId && !columns.ObjectId && !columns.MetaId)
-					columns.SubjectId = true;
-					
-				// SQLite has a problem with LEFT JOIN: When a condition is made on the
-				// first table in the ON clause (q.objecttype=0/1), when it fails,
-				// it excludes the row from the first table, whereas it should only
-				// exclude the results of the join.
-							
-				System.Text.StringBuilder cmd = new System.Text.StringBuilder("SELECT ");
-				if (!store.SupportsNoDuplicates)
-					cmd.Append("DISTINCT ");
-				SelectFilterColumns(columns, cmd);
-				cmd.Append(" FROM ");
-				cmd.Append(store.table);
-				cmd.Append("_statements AS q");
-				store.SelectFilterTables(columns, cmd);
-				cmd.Append(' ');
-				
-				bool wroteWhere;
-				if (!store.WhereClause(q.templateSubject, q.templatePredicate, q.templateObject, q.templateMeta, cmd, out wroteWhere)) return false;
-				
-				// Transform literal filters into SQL.
-				if (q.litFilters != null) {
-					foreach (LiteralFilter f in q.litFilters) {
-						string s = store.FilterToSQL(f, "lit.value");
-						if (s != null) {
-							if (!wroteWhere) { cmd.Append(" WHERE "); wroteWhere = true; }
-							else { cmd.Append(" AND "); }
-							cmd.Append(' ');
-							cmd.Append(s);
-						}
-					}
-				}
-				
-				if (q.limit >= 1) {
-					cmd.Append(" LIMIT ");
-					cmd.Append(q.limit);
-				}
-
-				cmd.Append(';');
-				
-				if (Debug) {
-					string cmd2 = cmd.ToString();
-					//if (cmd2.Length > 80) cmd2 = cmd2.Substring(0, 80);
-					Console.Error.WriteLine(cmd2);
-				}
-				
-				entMap = new Hashtable();
-				
-				// Be sure if a MultiRes is involved we hash the
-				// ids of the entities so we can return them
-				// without creating new ones.
-				store.CacheMultiObjects(entMap, q.templateSubject);
-				store.CacheMultiObjects(entMap, q.templatePredicate);
-				store.CacheMultiObjects(entMap, q.templateObject);
-				store.CacheMultiObjects(entMap, q.templateMeta);
-				
-				reader = store.RunReader(cmd.ToString());
-				return true;
-			}
-			
-			bool ContinueQuery(Query q) {
-				while (true) {
-					if (!reader.Read()) return false;
-				
-					int col = 0;
-					int sid = -1, pid = -1, ot = -1, oid = -1, mid = -1;
-					string suri = null, puri = null, ouri = null, muri = null;
-					string lv = null, ll = null, ld = null;
-					
-					if (columns.SubjectId) { sid = reader.GetInt32(col++); }
-					if (columns.PredicateId) { pid = reader.GetInt32(col++); }
-					if (columns.ObjectId) { oid = reader.GetInt32(col++); }
-					if (columns.MetaId) { mid = reader.GetInt32(col++); }
-					
-					if (columns.SubjectUri) { suri = AsString(reader[col++]); }
-					if (columns.PredicateUri) { puri = AsString(reader[col++]); }
-					if (columns.ObjectData) { ot = reader.GetInt32(col++); ouri = AsString(reader[col++]); lv = AsString(reader[col++]); ll = AsString(reader[col++]); ld = AsString(reader[col++]);}
-					if (columns.MetaUri) { muri = AsString(reader[col++]); }
-					
-					Entity subject = GetSelectedEntity(sid, suri, q.templateSubject, columns.SubjectId, columns.SubjectUri, entMap);
-					Entity predicate = GetSelectedEntity(pid, puri, q.templatePredicate, columns.PredicateId, columns.PredicateUri, entMap);
-					Resource objec = GetSelectedResource(oid, ot, ouri, lv, ll, ld, q.templateObject, columns.ObjectId, columns.ObjectData, entMap);
-					Entity meta = GetSelectedEntity(mid, muri, q.templateMeta, columns.MetaId, columns.MetaUri, entMap);
-
-					if (q.litFilters != null && !LiteralFilter.MatchesFilters(objec, q.litFilters, store))
-						continue;
-						
-					current = new Statement(subject, predicate, objec, meta);
-					return true;
-				}
-			}
-
-			Entity GetSelectedEntity(int id, string uri, Resource given, bool idSelected, bool uriSelected, Hashtable entMap) {
-				if (!idSelected) return (Entity)given;
-				if (!uriSelected) {
-					Entity ent = (Entity)entMap[id];
-					if (ent != null)
-						return ent; // had a URI so was precached, or was otherwise precached
-					else // didn't have a URI
-						return store.MakeEntity(id, null, entMap);
-				}
-				return store.MakeEntity(id, uri, entMap);
-			}
-			
-			Resource GetSelectedResource(int id, int type, string uri, string lv, string ll, string ld, Resource given, bool idSelected, bool uriSelected, Hashtable entMap) {
-				if (!idSelected) return (Resource)given;
-				if (!uriSelected) return (Resource)entMap[id];
-				if (type == 0)
-					return store.MakeEntity(id, uri, entMap);
+		Resource[][] SplitArray(Resource[] e) {
+			int lim = 1000;
+			if (e == null || e.Length <= lim) {
+				if (e is Entity[])
+					return new Entity[][] { (Entity[])e };
 				else
-					return new Literal(lv, ll, ld);
+					return new Resource[][] { e };
 			}
+			int overflow = e.Length % lim;
+			int n = (e.Length / lim) + ((overflow != 0) ? 1 : 0);
+			Resource[][] ret;
+			if (e is Entity[]) ret = new Entity[n][]; else ret = new Resource[n][];
+			for (int i = 0; i < n; i++) {
+				int c = lim;
+				if (i == n-1 && overflow != 0) c = overflow;
+				if (e is Entity[]) ret[i] = new Entity[c]; else ret[i] = new Resource[c];
+				Array.Copy(e, i*lim, ret[i], 0, c);
+			}
+			return ret;
+		}
+		
+		Resource ToMultiRes(Resource[] r) {
+			if (r == null || r.Length == 0) return null;
+			if (r.Length == 1) return r[0];
+			return new MultiRes(r);
 		}
 		
 		private class MultiRes : Resource {
@@ -1099,6 +891,151 @@ namespace SemWeb.Stores {
 				entMap[GetResourceId(r, false)] = r;
 		}
 		
+		public override void Select(Statement template, StatementSink result) {
+			if (result == null) throw new ArgumentNullException();
+			Select(template.Subject, template.Predicate, template.Object, template.Meta, null, result, 0);
+		}
+
+		private void Select(Resource templateSubject, Resource templatePredicate, Resource templateObject, Resource templateMeta, LiteralFilter[] litFilters, StatementSink result, int limit) {
+			if (result == null) throw new ArgumentNullException();
+	
+			lock (syncroot) {
+			
+			Init();
+			RunAddBuffer();
+			
+			// Don't select on columns that we already know from the template.
+			// But grab the URIs and literal values for MultiRes selection.
+			SelectColumnFilter columns = new SelectColumnFilter();
+			columns.SubjectId = (templateSubject == null) || templateSubject is MultiRes;
+			columns.PredicateId = (templatePredicate == null) || templatePredicate is MultiRes;
+			columns.ObjectId = (templateObject == null) || templateObject is MultiRes;
+			columns.MetaId = (templateMeta == null) || templateMeta is MultiRes;
+			columns.SubjectUri = templateSubject == null;
+			columns.PredicateUri = templatePredicate == null;
+			columns.ObjectData = templateObject == null || (templateObject is MultiRes && ((MultiRes)templateObject).ContainsLiterals());
+			columns.MetaUri = templateMeta == null;
+			
+			// Meta URIs tend to be repeated a lot, so we don't
+			// want to ever select them from the database.
+			// This preloads them, although it makes the first
+			// select quite slow.
+			if (templateMeta == null && SupportsSubquery) {
+				LoadMetaEntities();
+				columns.MetaUri = false;
+			}
+			
+			// Have to select something
+			if (!columns.SubjectId && !columns.PredicateId && !columns.ObjectId && !columns.MetaId)
+				columns.SubjectId = true;
+				
+			// SQLite has a problem with LEFT JOIN: When a condition is made on the
+			// first table in the ON clause (q.objecttype=0/1), when it fails,
+			// it excludes the row from the first table, whereas it should only
+			// exclude the results of the join.
+						
+			System.Text.StringBuilder cmd = new System.Text.StringBuilder("SELECT ");
+			if (!SupportsNoDuplicates)
+				cmd.Append("DISTINCT ");
+			SelectFilterColumns(columns, cmd);
+			cmd.Append(" FROM ");
+			cmd.Append(table);
+			cmd.Append("_statements AS q");
+			SelectFilterTables(columns, cmd);
+			cmd.Append(' ');
+			
+			bool wroteWhere;
+			if (!WhereClause(templateSubject, templatePredicate, templateObject, templateMeta, cmd, out wroteWhere)) return;
+			
+			// Transform literal filters into SQL.
+			if (litFilters != null) {
+				foreach (LiteralFilter f in litFilters) {
+					string s = FilterToSQL(f, "lit.value");
+					if (s != null) {
+						if (!wroteWhere) { cmd.Append(" WHERE "); wroteWhere = true; }
+						else { cmd.Append(" AND "); }
+						cmd.Append(' ');
+						cmd.Append(s);
+					}
+				}
+			}
+			
+			if (limit >= 1) {
+				cmd.Append(" LIMIT ");
+				cmd.Append(limit);
+			}
+
+			cmd.Append(';');
+			
+			if (Debug) {
+				string cmd2 = cmd.ToString();
+				//if (cmd2.Length > 80) cmd2 = cmd2.Substring(0, 80);
+				Console.Error.WriteLine(cmd2);
+			}
+			
+			Hashtable entMap = new Hashtable();
+			
+			// Be sure if a MultiRes is involved we hash the
+			// ids of the entities so we can return them
+			// without creating new ones.
+			CacheMultiObjects(entMap, templateSubject);
+			CacheMultiObjects(entMap, templatePredicate);
+			CacheMultiObjects(entMap, templateObject);
+			CacheMultiObjects(entMap, templateMeta);
+			
+			using (IDataReader reader = RunReader(cmd.ToString())) {
+				while (reader.Read()) {
+					int col = 0;
+					int sid = -1, pid = -1, ot = -1, oid = -1, mid = -1;
+					string suri = null, puri = null, ouri = null, muri = null;
+					string lv = null, ll = null, ld = null;
+					
+					if (columns.SubjectId) { sid = reader.GetInt32(col++); }
+					if (columns.PredicateId) { pid = reader.GetInt32(col++); }
+					if (columns.ObjectId) { oid = reader.GetInt32(col++); }
+					if (columns.MetaId) { mid = reader.GetInt32(col++); }
+					
+					if (columns.SubjectUri) { suri = AsString(reader[col++]); }
+					if (columns.PredicateUri) { puri = AsString(reader[col++]); }
+					if (columns.ObjectData) { ot = reader.GetInt32(col++); ouri = AsString(reader[col++]); lv = AsString(reader[col++]); ll = AsString(reader[col++]); ld = AsString(reader[col++]);}
+					if (columns.MetaUri) { muri = AsString(reader[col++]); }
+					
+					Entity subject = GetSelectedEntity(sid, suri, templateSubject, columns.SubjectId, columns.SubjectUri, entMap);
+					Entity predicate = GetSelectedEntity(pid, puri, templatePredicate, columns.PredicateId, columns.PredicateUri, entMap);
+					Resource objec = GetSelectedResource(oid, ot, ouri, lv, ll, ld, templateObject, columns.ObjectId, columns.ObjectData, entMap);
+					Entity meta = GetSelectedEntity(mid, muri, templateMeta, columns.MetaId, columns.MetaUri, templateMeta != null ? entMap : metaEntities);
+
+					if (litFilters != null && !LiteralFilter.MatchesFilters(objec, litFilters, this))
+						continue;
+						
+					bool ret = result.Add(new Statement(subject, predicate, objec, meta));
+					if (!ret) break;
+				}
+			}
+			
+			} // lock
+		}
+
+		Entity GetSelectedEntity(int id, string uri, Resource given, bool idSelected, bool uriSelected, Hashtable entMap) {
+			if (!idSelected) return (Entity)given;
+			if (!uriSelected) {
+				Entity ent = (Entity)entMap[id];
+				if (ent != null)
+					return ent; // had a URI so was precached, or was otherwise precached
+				else // didn't have a URI
+					return MakeEntity(id, null, entMap);
+			}
+			return MakeEntity(id, uri, entMap);
+		}
+		
+		Resource GetSelectedResource(int id, int type, string uri, string lv, string ll, string ld, Resource given, bool idSelected, bool uriSelected, Hashtable entMap) {
+			if (!idSelected) return (Resource)given;
+			if (!uriSelected) return (Resource)entMap[id];
+			if (type == 0)
+				return MakeEntity(id, uri, entMap);
+			else
+				return new Literal(lv, ll, ld);
+		}
 
 		private string FilterToSQL(LiteralFilter filter, string col) {
 			if (filter is SemWeb.Filters.StringCompareFilter) {
@@ -1130,6 +1067,19 @@ namespace SemWeb.Stores {
 			case LiteralFilter.CompType.GE: return " >= ";
 			default: throw new ArgumentException(op.ToString());
 			}			
+		}
+		
+		private void LoadMetaEntities() {
+			if (metaEntities != null) return;
+			metaEntities = new Hashtable();
+			// this misses meta entities that are anonymous, but that's ok
+			using (IDataReader reader = RunReader("select id, value from " + table + "_entities where id in (select distinct meta from " + table + "_statements)")) {
+				while (reader.Read()) {
+					int id = reader.GetInt32(0);
+					string uri = reader.GetString(1);
+					metaEntities[id] = MakeEntity(id, uri, null);
+				}
+			}
 		}
 		
 		private string Escape(string str, bool quotes) {
@@ -1218,6 +1168,8 @@ namespace SemWeb.Stores {
 				cmd.Append(';');
 				RunCommand(cmd.ToString());
 			}
+
+			metaEntities = null;
 		}
 		
 		public override void Replace(Statement find, Statement replacement) {
@@ -1254,6 +1206,7 @@ namespace SemWeb.Stores {
 				return;
 			
 			RunCommand(cmd.ToString());
+			metaEntities = null;
 		}
 		
 		protected abstract void RunCommand(string sql);

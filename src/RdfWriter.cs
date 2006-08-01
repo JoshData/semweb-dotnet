@@ -45,7 +45,7 @@ namespace SemWeb {
 		}
 		
 		public virtual void Write(StatementSource source) {
-			source.StreamTo(this);
+			source.Select(this);
 		}
 		
 		void IDisposable.Dispose() {

@@ -1,23 +1,12 @@
 using System;
 using System.Collections;
 
-#if DOTNET2
-using System.Collections.Generic;
-#endif
-
 using SemWeb;
 using SemWeb.Stores;
 using SemWeb.Util;
 
 namespace SemWeb {
-	public class MemoryStore : Store, SupportsPersistableBNodes
-#if !DOTNET2
-, IEnumerable
-#else
-, IEnumerable<Statement>
-#endif
-	{
-	
+	public class MemoryStore : Store, SupportsPersistableBNodes, IEnumerable {
 		StatementList statements;
 		
 		Hashtable statementsAboutSubject = new Hashtable();
@@ -25,39 +14,31 @@ namespace SemWeb {
 		
 		bool isIndexed = false;
 		internal bool allowIndexing = true;
-		bool checkForDuplicates = false;
+		internal bool checkForDuplicates = false;
 		bool distinct = true;
 		
 		string guid = null;
 		Hashtable pbnodeToId = null;
 		Hashtable pbnodeFromId = null;
 		
-		long stamp = 0;
-		
-		public MemoryStore(bool checkForDuplicates) {
+		public MemoryStore() {
 			statements = new StatementList();
-			this.checkForDuplicates = checkForDuplicates;
 		}
 		
-		public MemoryStore() : this(false) {
-		}
-
 		public MemoryStore(StatementSource source) : this() {
 			Import(source);
 		}
 		
-		public MemoryStore(Statement[] statements) : this() {
-			#if !DOTNET2
-				this.statements = new StatementList(statements);
-			#else
-				this.statements.AddRange(statements);
-			#endif
+		public MemoryStore(Statement[] statements) {
+			this.statements = new StatementList(statements);
 		}
 
 		public Statement[] ToArray() {
-			return statements.ToArray();
+			return (Statement[])statements.ToArray(typeof(Statement));
 		}
 
+		public IList Statements { get { return statements.ToArray(); } }
+		
 		public override bool Distinct { get { return distinct; } }
 		
 		public override int StatementCount { get { return statements.Count; } }
@@ -68,19 +49,8 @@ namespace SemWeb {
 			}
 		}
 		
-		// This isn't strictly necessary since Store implements these
-		// via a call to Select(), but it can't hurt to just go
-		// directly to the underlying array.
-		#if !DOTNET2
 		IEnumerator IEnumerable.GetEnumerator() {
-		#else
-		IEnumerator<Statement> IEnumerable<Statement>.GetEnumerator() {
-		#endif
 			return statements.GetEnumerator();
-		}
-		
-		private void AvdanceStamp() {
-			stamp = unchecked(stamp+1);
 		}
 		
 		public override void Clear() {
@@ -88,7 +58,6 @@ namespace SemWeb {
 			statementsAboutSubject.Clear();
 			statementsAboutObject.Clear();
 			distinct = true;
-			AvdanceStamp();
 		}
 		
 		private StatementList GetIndexArray(Hashtable from, Resource entity) {
@@ -109,14 +78,12 @@ namespace SemWeb {
 				GetIndexArray(statementsAboutObject, statement.Object).Add(statement);
 			}
 			if (!checkForDuplicates) distinct = false;
-			AvdanceStamp();
 		}
 		
 		public override void Import(StatementSource source) {
 			bool newDistinct = checkForDuplicates || ((StatementCount==0) && source.Distinct);
 			base.Import(source); // distinct set to false if !checkForDuplicates
 			distinct = newDistinct;
-			AvdanceStamp();
 		}
 		
 		public override void Remove(Statement statement) {
@@ -138,37 +105,31 @@ namespace SemWeb {
 					GetIndexArray(statementsAboutObject, statement.Object).Remove(statement);
 				}
 			}
-			AvdanceStamp();
 		}
 		
 		public override Entity[] GetEntities() {
-			ResSet h = new ResSet();
-			for (int i = 0; i < statements.Count; i++) {
-				Statement s = (Statement)statements[i];
-				h.Add(s.Subject);
-				h.Add(s.Predicate);
-				if (s.Object is Entity) h.Add(s.Object);
-				if (s.Meta != Statement.DefaultMeta) h.Add(s.Meta);
+			Hashtable h = new Hashtable();
+			foreach (Statement s in Statements) {
+				if (s.Subject != null) h[s.Subject] = h;
+				if (s.Predicate != null) h[s.Predicate] = h;
+				if (s.Object != null && s.Object is Entity) h[s.Object] = h;
+				if (s.Meta != null && s.Meta != Statement.DefaultMeta) h[s.Meta] = h;
 			}
-			return h.ToEntityArray();
+			return (Entity[])new ArrayList(h.Keys).ToArray(typeof(Entity));
 		}
 		
 		public override Entity[] GetPredicates() {
-			ResSet h = new ResSet();
-			for (int i = 0; i < statements.Count; i++) {
-				Statement s = (Statement)statements[i];
-				h.Add(s.Predicate);
-			}
-			return h.ToEntityArray();
+			Hashtable h = new Hashtable();
+			foreach (Statement s in Statements)
+				h[s.Predicate] = h;
+			return (Entity[])new ArrayList(h.Keys).ToArray(typeof(Entity));
 		}
 
 		public override Entity[] GetMetas() {
-			ResSet h = new ResSet();
-			for (int i = 0; i < statements.Count; i++) {
-				Statement s = (Statement)statements[i];
-				h.Add(s.Meta);
-			}
-			return h.ToEntityArray();
+			Hashtable h = new Hashtable();
+			foreach (Statement s in Statements)
+				h[s.Meta] = h;
+			return (Entity[])new ArrayList(h.Keys).ToArray(typeof(Entity));
 		}
 
 		private void ShorterList(ref StatementList list1, StatementList list2) {
@@ -176,11 +137,8 @@ namespace SemWeb {
 				list1 = list2;
 		}
 		
-		public override StatementSource Select(Statement template) {
+		public override void Select(Statement template, StatementSink result) {
 			StatementList source = statements;
-			
-			if (template == Statement.All)
-				return new MemoryStoreIterator1(template, source, this);
 			
 			// The first time select is called, turn indexing on for the store.
 			// TODO: Perform this index in a background thread if there are a lot
@@ -197,91 +155,31 @@ namespace SemWeb {
 			if (template.Subject != null) ShorterList(ref source, GetIndexArray(statementsAboutSubject, template.Subject));
 			else if (template.Object != null) ShorterList(ref source, GetIndexArray(statementsAboutObject, template.Object));
 			
-			if (source == null) return new EmptyStatementIterator();
+			if (source == null) return;
 			
-			return new MemoryStoreIterator1(template, source, this);
-		}
-		
-		private class MemoryStoreIterator1 : StatementIterator {
-			Statement template;
-			StatementList source;
-			MemoryStore store;
-			long stamp;
-			int index;
-			Statement current;
-			public MemoryStoreIterator1(Statement template, StatementList source, MemoryStore store) {
-				this.template = template;
-				this.source = source;
-				this.store = store;
-				stamp = store.stamp;
-				index = -1;
+			for (int i = 0; i < source.Count; i++) {
+				Statement statement = source[i];
+				if (!template.Matches(statement))
+					continue;
+				if (!result.Add(statement)) return;
 			}
-			
-			void HasStoreChanged() {
-				if (stamp != store.stamp)
-					throw new InvalidOperationException("The contents of the MemoryStore has changed since Select was called.");
-			}
-			
-			public override bool Distinct { get { return store.Distinct; } }
-			public override bool MoveNext() {
-				HasStoreChanged();
-				while (index < source.Count-1) {
-					++index;
-					current = source[index];
-					if (template.Matches(current))
-						return true;
-				}
-				return false;
-			}
-			public override Statement Current { get { return current; } }
 		}
 
-		public override StatementSource Select(SelectFilter filter) {
-			// TODO: Use the index if possible.
-			return new MemoryStoreIterator2(filter, this);
-		}
-
-		private class MemoryStoreIterator2 : StatementIterator {
-			SelectFilter filter;
-			ResSet s, p, o, m;
-			MemoryStore store;
-			long stamp;
-			int index;
-			Statement current;
-			public MemoryStoreIterator2(SelectFilter filter, MemoryStore store) {
-				this.filter = filter;
-				this.store = store;
-				stamp = store.stamp;
-				index = -1;
-
-				s = filter.Subjects == null ? null : new ResSet(filter.Subjects);
-				p = filter.Predicates == null ? null : new ResSet(filter.Predicates);
-				o = filter.Objects == null ? null : new ResSet(filter.Objects);
+		public override void Select(SelectFilter filter, StatementSink result) {
+			ResSet
+				s = filter.Subjects == null ? null : new ResSet(filter.Subjects),
+				p = filter.Predicates == null ? null : new ResSet(filter.Predicates),
+				o = filter.Objects == null ? null : new ResSet(filter.Objects),
 				m = filter.Metas == null ? null : new ResSet(filter.Metas);
+				
+			foreach (Statement st in statements) {
+				if (s != null && !s.Contains(st.Subject)) continue;
+				if (p != null && !p.Contains(st.Predicate)) continue;
+				if (o != null && !o.Contains(st.Object)) continue;
+				if (m != null && !m.Contains(st.Meta)) continue;
+				if (filter.LiteralFilters != null && !LiteralFilter.MatchesFilters(st.Object, filter.LiteralFilters, this)) continue;
+				if (!result.Add(st)) return;
 			}
-			
-			void HasStoreChanged() {
-				if (stamp != store.stamp)
-					throw new InvalidOperationException("The contents of the MemoryStore has changed since Select was called.");
-			}
-			
-			public override bool Distinct { get { return store.Distinct; } }
-			public override bool MoveNext() {
-				HasStoreChanged();
-				while (index < store.StatementCount-1) {
-					++index;
-					current = store[index];
-
-					if (s != null && !s.Contains(current.Subject)) continue;
-					if (p != null && !p.Contains(current.Predicate)) continue;
-					if (o != null && !o.Contains(current.Object)) continue;
-					if (m != null && !m.Contains(current.Meta)) continue;
-					if (filter.LiteralFilters != null && !LiteralFilter.MatchesFilters(current.Object, filter.LiteralFilters, store)) continue;
-					return true;
-				}
-				return false;
-			}
-			public override Statement Current { get { return current; } }
 		}
 
 		public override void Replace(Entity a, Entity b) {
@@ -295,7 +193,6 @@ namespace SemWeb {
 			}
 			RemoveAll(removals.ToArray());
 			Import(additions);
-			AvdanceStamp();
 		}
 		
 		public override void Replace(Statement find, Statement replacement) {
@@ -303,7 +200,7 @@ namespace SemWeb {
 			if (replacement.AnyNull) throw new ArgumentNullException("replacement");
 			if (find == replacement) return;
 			
-			foreach (Statement match in new MemoryStore(Select(find))) {
+			foreach (Statement match in Select(find)) {
 				Remove(match);
 				Add(replacement);
 				break; // should match just one statement anyway
