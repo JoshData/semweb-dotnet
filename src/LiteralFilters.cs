@@ -125,7 +125,7 @@ namespace SemWeb.Filters {
 				Decimal i = Decimal.Parse(v);
 				int c = i.CompareTo(Number);
 				return CompareFilter(c, Type);
-			} catch (Exception e) {
+			} catch (Exception) {
 				return false;
 			}
 		}
