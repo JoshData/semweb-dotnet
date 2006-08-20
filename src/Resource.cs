@@ -335,6 +335,81 @@ namespace SemWeb {
 		public static Literal Create(bool value) {
 			return new Literal(value ? "true" : "false", null, XMLSCHEMANS + "boolean");
 		}
+		
+		public static Literal FromValue(float value) {
+			return new Literal(value.ToString(), null, XMLSCHEMANS + "float");
+		}
+		public static Literal FromValue(double value) {
+			return new Literal(value.ToString(), null, XMLSCHEMANS + "double");
+		}
+		public static Literal FromValue(byte value) {
+			if (value <= 127)
+				return new Literal(value.ToString(), null, XMLSCHEMANS + "byte");
+			else
+				return new Literal(value.ToString(), null, XMLSCHEMANS + "unsignedByte");
+		}
+		public static Literal FromValue(short value) {
+			return new Literal(value.ToString(), null, XMLSCHEMANS + "short");
+		}
+		public static Literal FromValue(int value) {
+			return new Literal(value.ToString(), null, XMLSCHEMANS + "int");
+		}
+		public static Literal FromValue(long value) {
+			return new Literal(value.ToString(), null, XMLSCHEMANS + "long");
+		}
+		public static Literal FromValue(sbyte value) {
+			return new Literal(value.ToString(), null, XMLSCHEMANS + "byte");
+		}
+		public static Literal FromValue(ushort value) {
+			return new Literal(value.ToString(), null, XMLSCHEMANS + "unsignedShort");
+		}
+		public static Literal FromValue(uint value) {
+			return new Literal(value.ToString(), null, XMLSCHEMANS + "unsignedInt");
+		}
+		public static Literal FromValue(ulong value) {
+			return new Literal(value.ToString(), null, XMLSCHEMANS + "unsignedLong");
+		}
+		public static Literal FromValue(bool value) {
+			return new Literal(value ? "true" : "false", null, XMLSCHEMANS + "boolean");
+		}
+		public static Literal FromValue(string value) {
+			return new Literal(value, null, XMLSCHEMANS + "string");
+		}
+		public static Literal FromValue(Uri value) {
+			return new Literal(value.ToString(), null, XMLSCHEMANS + "anyURI");
+		}
+		public static Literal FromValue(DateTime value) {
+			return FromValue(value, true, false);
+		}
+		public static Literal FromValue(DateTime value, bool withTime, bool isLocalTime) {
+			if (withTime && isLocalTime)
+				return new Literal(value.ToString("yyyy-MM-ddTHH\\:mm\\:ss.FFFFFFF0zzz"), null, XMLSCHEMANS + "dateTime");
+			else if (withTime)
+				return new Literal(value.ToString("yyyy-MM-ddTHH\\:mm\\:ss.FFFFFFF0"), null, XMLSCHEMANS + "dateTime");
+			else
+				return new Literal(value.ToString("yyyy-MM-dd"), null, XMLSCHEMANS + "date");
+		}
+		public static Literal FromValue(TimeSpan value) {
+			return FromValue(value, false, false);
+		}
+		public static Literal FromValue(TimeSpan value, bool asTime, bool isLocalTime) {
+			if (!asTime) {
+				string ret = (value.Ticks >= 0 ? "P" : "-P");
+				if (value.Days != 0) {
+					ret += value.Days + "D";
+					if (value.Hours != 0 || value.Minutes != 0 || value.Seconds != 0 || value.Milliseconds != 0)
+						ret += "T";
+				}
+				if (value.Hours != 0) ret += value.Hours + "H";
+				if (value.Minutes != 0) ret += value.Minutes + "M";
+				if (value.Seconds != 0 || value.Milliseconds != 0) ret += (value.Seconds + value.Milliseconds/1000) + "S";
+				return new Literal(ret, null, XMLSCHEMANS + "duration");
+			} else if (isLocalTime) {
+				return new Literal((DateTime.Today + value).ToString("HH\\:mm\\:ss.FFFFFFF0zzz"), null, XMLSCHEMANS + "time");
+			} else {
+				return new Literal((DateTime.Today + value).ToString("HH\\:mm\\:ss.FFFFFFF0"), null, XMLSCHEMANS + "time");
+			}
+		}
 	}
 
 	/*
