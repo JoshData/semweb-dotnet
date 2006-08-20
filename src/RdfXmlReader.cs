@@ -44,7 +44,17 @@ namespace SemWeb {
 		public RdfXmlReader(Stream document) : this(new StreamReader(document)) {
 		}
 
-		public RdfXmlReader(string file) : this(GetReader(file)) {
+		public RdfXmlReader(TextReader document, string baseUri) : this(document) {
+			BaseUri = baseUri;
+		}
+
+		public RdfXmlReader(Stream document, string baseUri) : this(new StreamReader(document), baseUri) {
+		}
+
+		public RdfXmlReader(string file, string baseUri) : this(GetReader(file), baseUri) {
+		}
+
+		public RdfXmlReader(string file) : this(GetReader(file), "file:///" + file) {
 		}
 		
 		public override void Select(StatementSink storage) {

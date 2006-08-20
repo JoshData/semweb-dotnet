@@ -1,5 +1,6 @@
 	* RdfXmlWriter: Another bug fix, this time with typed nodes.
 	  Also detects invalid parseType=Literal + datatype.
+	* RdfXmlReader: New constructors for taking a BaseURI argument.
 	* Literal: New static method FromValue which turns doubles,
 	  ints, DateTimes, etc. into XMLSchema-typed Literal objects.
 
