@@ -3,6 +3,7 @@
 	* RdfXmlReader: New constructors for taking a BaseURI argument.
 	* Literal: New static method FromValue which turns doubles,
 	  ints, DateTimes, etc. into XMLSchema-typed Literal objects.
+	* SPARQL uses the 0.8 version of Ryan Levering's library.
 
 2006-06-18 Version 0.741
 

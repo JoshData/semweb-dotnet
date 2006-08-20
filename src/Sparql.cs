@@ -95,7 +95,8 @@ namespace SemWeb.Query {
 			if (!(query is AskQuery))
 				throw new InvalidOperationException("Only ASK queries are supported by this method (" + query.GetType() + ").");
 			AskQuery q = (AskQuery)query;
-			return q.execute(new RdfSourceWrapper(source, QueryMeta, this));
+			RdfSourceWrapper sourcewrapper =  BindLogic(source);
+			return q.execute(sourcewrapper);
 		}
 		
 		public void Ask(SelectableSource source, TextWriter output) {
@@ -119,21 +120,19 @@ namespace SemWeb.Query {
 			if (!(query is ConstructQuery))
 				throw new InvalidOperationException("Only CONSTRUCT queries are supported by this method (" + query.GetType() + ").");
 			ConstructQuery q = (ConstructQuery)query;
-			RdfSourceWrapper sourcewrapper = new RdfSourceWrapper(source, QueryMeta, this);
+			RdfSourceWrapper sourcewrapper = BindLogic(source);
 			RdfGraph graph = q.execute(sourcewrapper);
 			WriteGraph(graph, sourcewrapper, sink);
 		}
 		
 		public NamespaceManager GetQueryPrefixes() {
 			NamespaceManager ns = new NamespaceManager();
-			if (query is QueryData) {
-				java.util.Map prefixes = ((QueryData)query).getPrefixExpansions();
-				for (java.util.Iterator i = prefixes.keySet().iterator(); i.hasNext(); ) {
-					string prefix = (string)i.next();
-					string uri = prefixes.get(prefix).ToString(); // surrounded in < >
-					uri = uri.Substring(1, uri.Length-2); // not sure how to get this directly
-					ns.AddNamespace(uri, prefix);
-				}
+			java.util.Map prefixes = ((QueryData)query).getPrefixExpansions();
+			for (java.util.Iterator i = prefixes.keySet().iterator(); i.hasNext(); ) {
+				string prefix = (string)i.next();
+				string uri = prefixes.get(prefix).ToString(); // surrounded in < >
+				uri = uri.Substring(1, uri.Length-2); // not sure how to get this directly
+				ns.AddNamespace(uri, prefix);
 			}
 			return ns;
 		}
@@ -170,7 +169,7 @@ namespace SemWeb.Query {
 			if (!(query is DescribeQuery))
 				throw new InvalidOperationException("Only DESCRIBE queries are supported by this method (" + query.GetType() + ").");
 			DescribeQuery q = (DescribeQuery)query;
-			RdfSourceWrapper sourcewrapper = new RdfSourceWrapper(source, QueryMeta, this);
+			RdfSourceWrapper sourcewrapper = BindLogic(source);
 			RdfGraph graph = q.execute(sourcewrapper);
 			WriteGraph(graph, sourcewrapper, sink);
 		}
@@ -194,23 +193,25 @@ namespace SemWeb.Query {
 			return query.ToString();
 		}
 		
+		private RdfSourceWrapper BindLogic(SelectableSource source) {
+			RdfSourceWrapper sourcewrapper = new RdfSourceWrapper(source, QueryMeta, this);
+			MyLogicFactory logic = new MyLogicFactory();
+			foreach (RdfFunction f in extFunctions)
+				logic.registerExternalFunction(
+					new URIWrapper(f.Uri),
+					new ExtFuncWrapper(sourcewrapper, f));
+			query.setLogic(logic);
+			return sourcewrapper;
+		}
+		
 		public override void Run(SelectableSource source, QueryResultSink resultsink) {
 			if (!(query is SelectQuery))
 				throw new InvalidOperationException("Only SELECT queries are supported by this method (" + query.GetType() + ").");
 
 			// Perform the query
 			SelectQuery squery = (SelectQuery)query;
-			
-			RdfSourceWrapper sourcewrapper = new RdfSourceWrapper(source, QueryMeta, this);
+			RdfSourceWrapper sourcewrapper = BindLogic(source);
 
-			MyLogicFactory logic = new MyLogicFactory();
-			foreach (RdfFunction f in extFunctions)
-				logic.registerExternalFunction(
-					new URIWrapper(f.Uri),
-					new ExtFuncWrapper(sourcewrapper, f));
-
-			squery.bindLogic(logic);
-			
 			RdfBindingSet results;
 			try {
 				results = squery.execute(sourcewrapper);
@@ -270,13 +271,10 @@ namespace SemWeb.Query {
 			resultsink.Finished();
 		}
 		
-		class MyLogicFactory : name.levering.ryan.sparql.logic.DefaultFactory {
+		class MyLogicFactory : name.levering.ryan.sparql.logic.StreamedLogic {
 		    public override name.levering.ryan.sparql.model.logic.ConstraintLogic getGroupConstraintLogic(name.levering.ryan.sparql.model.data.GroupConstraintData data) {
-        		return new RdfGroupLogic(data, getSetIntersectLogic());
+        		return new RdfGroupLogic(data, new name.levering.ryan.sparql.logic.streamed.IndexedSetIntersectLogic());
     		}
-		    public override name.levering.ryan.sparql.model.logic.ConstraintLogic getTripleConstraintLogic(name.levering.ryan.sparql.model.data.TripleConstraintData data) {
-		        return new name.levering.ryan.sparql.logic.AdvancedStreamedTripleConstraintLogic(data);
-		    }
 		}
 	
 		class RdfSourceWrapper : AdvancedRdfSource,
@@ -295,7 +293,7 @@ namespace SemWeb.Query {
 				this.sparql = sparql;
 			}
 			
-			void Log(string message) {
+			public void Log(string message) {
 				log.Append(message);
 				log.Append('\n');
 			}
@@ -306,7 +304,7 @@ namespace SemWeb.Query {
 				return ret;
 			}
 		
-			private StatementIterator GetIterator(Statement statement, bool defaultGraph) {
+			private java.util.Iterator GetIterator(Statement statement, bool defaultGraph) {
 				return GetIterator(statement.Subject == null ? null : new Entity[] { statement.Subject },
 					statement.Predicate == null ? null : new Entity[] { statement.Predicate },
 					statement.Object == null ? null : new Resource[] { statement.Object },
@@ -315,7 +313,7 @@ namespace SemWeb.Query {
 					defaultGraph);
 			}
 			
-			private StatementIterator GetIterator(Entity[] subjects, Entity[] predicates, Resource[] objects, Entity[] metas, java.util.List litFilters, bool defaultGraph) {
+			private java.util.Iterator GetIterator(Entity[] subjects, Entity[] predicates, Resource[] objects, Entity[] metas, object[] litFilters, bool defaultGraph) {
 				if (subjects == null && predicates == null && objects == null)
 					throw new QueryExecutionException("Query would select all statements in the store.");
 				
@@ -324,31 +322,19 @@ namespace SemWeb.Query {
 				if (objects != null) Depersist(objects);
 				if (metas != null) Depersist(metas);
 				
-				if (subjects != null && subjects.Length == 0) return new StatementIterator(null);
-				if (predicates != null && predicates.Length == 0) return new StatementIterator(null);
-				if (objects != null && objects.Length == 0) return new StatementIterator(null);
-				if (metas != null && metas.Length == 0) return new StatementIterator(null);
+				if (subjects != null && subjects.Length == 0) return new EmptyIterator();
+				if (predicates != null && predicates.Length == 0) return new EmptyIterator();
+				if (objects != null && objects.Length == 0) return new EmptyIterator();
+				if (metas != null && metas.Length == 0) return new EmptyIterator();
 				
 				SelectFilter filter = new SelectFilter(subjects, predicates, objects, metas);
 				if (litFilters != null) {
-					filter.LiteralFilters = new LiteralFilter[litFilters.size()];
-					for (int i = 0; i < litFilters.size(); i++)
-						filter.LiteralFilters[i] = (LiteralFilter)litFilters.get(i);
+					filter.LiteralFilters = new LiteralFilter[litFilters.Length];
+					for (int i = 0; i < litFilters.Length; i++)
+						filter.LiteralFilters[i] = (LiteralFilter)litFilters[i];
 				}
 
-				DateTime start = DateTime.Now;
-
-				MemoryStore results = new MemoryStore();
-				StatementSink sink = results;
-				
-				if (!source.Distinct)
-					sink = new SemWeb.Util.DistinctStatementsSink(results, defaultGraph && metas == null);
-
-				source.Select(filter, sink);
-				
-				Log("SELECT: " + filter + " => " + results.StatementCount + " statements [" + (DateTime.Now-start) + "s]");
-				
-				return new StatementIterator(results.ToArray());
+				return new StatementIterator(source, filter, this, defaultGraph && metas == null);
 			}
 			
 		    /**
@@ -361,7 +347,7 @@ namespace SemWeb.Query {
 				return GetIterator( new Statement(ToEntity(subject), ToEntity(predicate), ToResource(@object), QueryMeta), true );
 			}
 
-     		public java.util.Iterator getDefaultStatements (org.openrdf.model.Value[] subject, org.openrdf.model.Value[] predicate, org.openrdf.model.Value[] @object, java.util.List litFilters) {
+     		public java.util.Iterator getDefaultStatements (org.openrdf.model.Value[] subject, org.openrdf.model.Value[] predicate, org.openrdf.model.Value[] @object, object[] litFilters) {
 				return GetIterator( ToEntities(subject), ToEntities(predicate), ToResources(@object), QueryMeta == null ? null : new Entity[] { QueryMeta }, litFilters, true );
      		}
 			
@@ -380,7 +366,7 @@ namespace SemWeb.Query {
 				return GetIterator(  new Statement(ToEntity(subject), ToEntity(predicate), ToResource(@object), null), false );
 			}
 	
-     		public java.util.Iterator getStatements (org.openrdf.model.Value[] subject, org.openrdf.model.Value[] predicate, org.openrdf.model.Value[] @object, java.util.List litFilters) {
+     		public java.util.Iterator getStatements (org.openrdf.model.Value[] subject, org.openrdf.model.Value[] predicate, org.openrdf.model.Value[] @object, object[] litFilters) {
 				return GetIterator(  ToEntities(subject), ToEntities(predicate), ToResources(@object), null, litFilters, false );
      		}
      		
@@ -394,7 +380,7 @@ namespace SemWeb.Query {
 				return GetIterator( new Statement(ToEntity(subject), ToEntity(predicate), ToResource(@object), ToEntity(graph)), false );
 			}
 			
-     		public java.util.Iterator getStatements (org.openrdf.model.Value[] subject, org.openrdf.model.Value[] predicate, org.openrdf.model.Value[] @object, org.openrdf.model.URI[] graph, java.util.List litFilters) {
+     		public java.util.Iterator getStatements (org.openrdf.model.Value[] subject, org.openrdf.model.Value[] predicate, org.openrdf.model.Value[] @object, org.openrdf.model.URI[] graph, object[] litFilters) {
 				return GetIterator( ToEntities(subject), ToEntities(predicate), ToResources(@object), ToEntities(graph), litFilters, false );
      		}
      		
@@ -466,6 +452,17 @@ namespace SemWeb.Query {
 					ret[i] = ToResource(ents[i]);
 				return ret;
 			}
+			public Resource[] ToResources(name.levering.ryan.sparql.model.logic.ExpressionLogic[] ents, name.levering.ryan.sparql.common.RdfBindingRow binding) {
+				if (ents == null) return null;
+				Resource[] ret = new Resource[ents.Length];
+				for (int i = 0; i < ents.Length; i++) {
+					if (ents[i] is SparqlVariable)
+						ret[i] = ToResource(binding.getValue((SparqlVariable)ents[i]));
+					else
+						ret[i] = ToResource((org.openrdf.model.Value)ents[i]);
+				}
+				return ret;
+			}
 	
 			public org.openrdf.model.BNode createBNode() {
 				return new BNodeWrapper(new BNode());
@@ -482,6 +479,27 @@ namespace SemWeb.Query {
 			public org.openrdf.model.Literal createLiteral(string value) {
 				return new LiteralWrapper(new Literal(value));
 			}
+			public org.openrdf.model.Literal createLiteral(float value) {
+				return new LiteralWrapper(Literal.FromValue(value));
+			}
+			public org.openrdf.model.Literal createLiteral(double value) {
+				return new LiteralWrapper(Literal.FromValue(value));
+			}
+			public org.openrdf.model.Literal createLiteral(byte value) {
+				return new LiteralWrapper(Literal.FromValue(value));
+			}
+			public org.openrdf.model.Literal createLiteral(short value) {
+				return new LiteralWrapper(Literal.FromValue(value));
+			}
+			public org.openrdf.model.Literal createLiteral(int value) {
+				return new LiteralWrapper(Literal.FromValue(value));
+			}
+			public org.openrdf.model.Literal createLiteral(long value) {
+				return new LiteralWrapper(Literal.FromValue(value));
+			}
+			public org.openrdf.model.Literal createLiteral(bool value) {
+				return new LiteralWrapper(Literal.FromValue(value));
+			}
 			public org.openrdf.model.URI createURI(string ns, string ln) {
 				return createURI(ns + ln);
 			}
@@ -491,19 +509,38 @@ namespace SemWeb.Query {
 			public org.openrdf.model.Statement createStatement (org.openrdf.model.Resource subject, org.openrdf.model.URI @predicate, org.openrdf.model.Value @object) {
 				return new Stmt(subject, predicate, @object); 
 			}
+			public org.openrdf.model.Statement createStatement (org.openrdf.model.Resource subject, org.openrdf.model.URI @predicate, org.openrdf.model.Value @object, org.openrdf.model.Resource graph) {
+				return new Stmt(subject, predicate, @object, graph); 
+			}
 			
 			class Stmt : org.openrdf.model.Statement {
 				org.openrdf.model.Resource subject;
 				org.openrdf.model.URI predicate;
 				org.openrdf.model.Value @object;
+				org.openrdf.model.Resource graph;
 				public Stmt(org.openrdf.model.Resource subject, org.openrdf.model.URI @predicate, org.openrdf.model.Value @object) {
 					this.subject = subject;
 					this.predicate = predicate;
 					this.@object = @object;
 				}
+				public Stmt(org.openrdf.model.Resource subject, org.openrdf.model.URI @predicate, org.openrdf.model.Value @object, org.openrdf.model.Resource graph) {
+					this.subject = subject;
+					this.predicate = predicate;
+					this.@object = @object;
+					this.graph = graph;
+				}
 				public org.openrdf.model.Resource getSubject() { return subject; }
 				public org.openrdf.model.URI getPredicate() { return predicate; }
 				public org.openrdf.model.Value getObject() { return @object; }
+				public org.openrdf.model.Resource getContext() { return graph; }
+				public bool equals(object other) {
+					org.openrdf.model.Statement s = (org.openrdf.model.Statement)other;
+					return getSubject().Equals(s.getSubject())
+						&& getPredicate().Equals(s.getPredicate())
+						&& getObject().Equals(s.getObject())
+						&& getContext().Equals(s.getContext());
+				}
+				public int hashCode() { return getSubject().GetHashCode(); }
 			}
 			
 			public void Depersist(Resource[] r) {
@@ -554,16 +591,53 @@ namespace SemWeb.Query {
 			}
 		}
 		
+		class EmptyIterator : java.util.Iterator {
+			public bool hasNext() {
+				return false;
+			}
+			
+			public object next() {
+				throw new InvalidOperationException();
+			}
+			
+			public void remove() {
+				throw new InvalidOperationException();
+			}
+		}
+
 		class StatementIterator : java.util.Iterator {
+			SelectableSource source;
+			SelectFilter filter;
+			RdfSourceWrapper wrapper;
+			bool wantMetas;
+		
 			Statement[] statements;
 			int curindex = -1;
 			
-			public StatementIterator(Statement[] statements) {
-				this.statements = statements;
+			public StatementIterator(SelectableSource source, SelectFilter filter, RdfSourceWrapper wrapper, bool wantMetas) {
+				this.source = source;
+				this.filter = filter;
+				this.wrapper = wrapper;
+				this.wantMetas = wantMetas;
 			}
 			
 			public bool hasNext() {
-				if (statements == null) return false;
+				if (statements == null) {
+					DateTime start = DateTime.Now;
+
+					MemoryStore results = new MemoryStore();
+					StatementSink sink = results;
+				
+					if (!source.Distinct)
+						sink = new SemWeb.Util.DistinctStatementsSink(results, !wantMetas);
+
+					source.Select(filter, sink);
+				
+					wrapper.Log("SELECT: " + filter + " => " + results.StatementCount + " statements [" + (DateTime.Now-start) + "s]");
+					
+					statements = results.ToArray();
+				}
+				
 				return curindex + 1 < statements.Length;
 			}
 			
@@ -573,7 +647,7 @@ namespace SemWeb.Query {
 			}
 			
 			public void remove() {
-				new InvalidOperationException();
+				throw new InvalidOperationException();
 			}
 		}
 		
@@ -652,7 +726,7 @@ namespace SemWeb.Query {
 			}
 		}
 		
-		class ExtFuncWrapper : name.levering.ryan.sparql.logic.function.ExternalFunction {
+		class ExtFuncWrapper : name.levering.ryan.sparql.logic.function.ExternalFunctionFactory, name.levering.ryan.sparql.logic.function.ExternalFunction {
 			RdfSourceWrapper source;
 			RdfFunction func;
 			
@@ -660,10 +734,14 @@ namespace SemWeb.Query {
 				source = s;
 				func = f;
 			}
+			
+			public name.levering.ryan.sparql.logic.function.ExternalFunction create(name.levering.ryan.sparql.model.logic.LogicFactory logicfactory, name.levering.ryan.sparql.common.impl.SPARQLValueFactory valuefactory) {
+				return this;
+			}
 
-			public org.openrdf.model.Value evaluate(org.openrdf.model.Value[] args) {
+			public org.openrdf.model.Value evaluate(name.levering.ryan.sparql.model.logic.ExpressionLogic[] arguments, name.levering.ryan.sparql.common.RdfBindingRow binding) {
 				try {
-					Resource ret = func.Evaluate(source.ToResources(args));
+					Resource ret = func.Evaluate(source.ToResources(arguments, binding));
 					return RdfSourceWrapper.Wrap(ret);
 				} catch (Exception e) {
 					throw new name.levering.ryan.sparql.logic.function.ExternalFunctionException(e); 
