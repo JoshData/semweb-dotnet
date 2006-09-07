@@ -579,8 +579,10 @@ namespace SemWeb.Stores {
 					}
 				}
 				
-				StringBuilder entityInsertions = new StringBuilder();
-				StringBuilder literalInsertions = new StringBuilder();
+				StringBuilder entityInsertions = new StringBuilder(INSERT_INTO_ENTITIES_VALUES);
+				StringBuilder literalInsertions = new StringBuilder(INSERT_INTO_LITERALS_VALUES);
+				int entityInsertionsInitialLength = entityInsertions.Length;
+				int literalInsertionsInitialLength = literalInsertions.Length;
 				
 				cmd = new StringBuilder();
 				if (insertCombined)
@@ -614,19 +616,15 @@ namespace SemWeb.Stores {
 						cmd.Append("),");
 				}
 				
-				if (literalInsertions.Length > 0) {
-					if (insertCombined) {
-						literalInsertions.Insert(0, INSERT_INTO_LITERALS_VALUES);
+				if (literalInsertions.Length > literalInsertionsInitialLength) {
+					if (insertCombined)
 						literalInsertions.Append(';');
-					}
 					RunCommand(literalInsertions.ToString());
 				}
 				
-				if (entityInsertions.Length > 0) {
-					if (insertCombined) {
-						entityInsertions.Insert(0, INSERT_INTO_ENTITIES_VALUES);
+				if (entityInsertions.Length > entityInsertionsInitialLength) {
+					if (insertCombined)
 						entityInsertions.Append(';');
-					}
 					RunCommand(entityInsertions.ToString());
 				}
 				
