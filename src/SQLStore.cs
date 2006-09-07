@@ -36,9 +36,6 @@ namespace SemWeb.Stores {
 		// Buffer statements to process together.
 		StatementList addStatementBuffer = null;
 		
-		string 	INSERT_INTO_LITERALS_VALUES,
-				INSERT_INTO_STATEMENTS_VALUES,
-				INSERT_INTO_ENTITIES_VALUES;
 		char quote;
 		
 		object syncroot = new object();
@@ -66,22 +63,22 @@ namespace SemWeb.Stores {
 		protected SQLStore(string table) {
 			this.table = table;
 			
-			INSERT_INTO_LITERALS_VALUES = "INSERT INTO " + table + "_literals VALUES ";
-			INSERT_INTO_ENTITIES_VALUES = "INSERT INTO " + table + "_entities VALUES ";
-			INSERT_INTO_STATEMENTS_VALUES = "INSERT " + (SupportsInsertIgnore ? "IGNORE " : "") + "INTO " + table + "_statements VALUES ";
-			
 			quote = GetQuoteChar();
 		}
 		
 		protected string TableName { get { return table; } }
-		
-		protected abstract bool SupportsNoDuplicates { get; }
-		protected abstract bool SupportsInsertIgnore { get; }
+
+		protected abstract bool HasUniqueStatementsConstraint { get; } // may not return true unless INSERT (IGNORE COMMAND) is supported
+		protected abstract string InsertIgnoreCommand { get; }
 		protected abstract bool SupportsInsertCombined { get; }
-		protected virtual bool SupportsFastJoin { get { return true; } }
 		protected abstract bool SupportsSubquery { get; }
 		
 		protected abstract void CreateNullTest(string column, System.Text.StringBuilder command);
+
+		private string INSERT_INTO_LITERALS_VALUES { get { return "INSERT INTO " + table + "_literals VALUES "; } }
+		private string INSERT_INTO_ENTITIES_VALUES { get { return "INSERT INTO " + table + "_entities VALUES "; } }
+		private string INSERT_INTO_STATEMENTS_VALUES { get { return "INSERT " + (HasUniqueStatementsConstraint ? InsertIgnoreCommand : "") + " INTO " + table + "_statements VALUES "; } }
+			
 		
 		private void Init() {
 			if (!firstUse) return;
@@ -935,7 +932,7 @@ namespace SemWeb.Stores {
 			// exclude the results of the join.
 						
 			System.Text.StringBuilder cmd = new System.Text.StringBuilder("SELECT ");
-			if (!SupportsNoDuplicates)
+			if (!HasUniqueStatementsConstraint)
 				cmd.Append("DISTINCT ");
 			SelectFilterColumns(columns, cmd);
 			cmd.Append(" FROM ");

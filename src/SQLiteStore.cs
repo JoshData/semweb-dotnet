@@ -9,7 +9,7 @@ namespace SemWeb.Stores {
 	
 	public class SqliteStore : SQLStore {
 		string connectionString;
-		IDbConnection dbcon;
+		SqliteConnection dbcon;
 		
 		bool debug = false;
 		
@@ -20,10 +20,9 @@ namespace SemWeb.Stores {
 			dbcon.Open();
 		}
 		
-		protected override bool SupportsNoDuplicates { get { return false; } }
-		protected override bool SupportsInsertIgnore { get { return false; } }
+		protected override bool HasUniqueStatementsConstraint { get { return dbcon.Version == 3; } }
+		protected override string InsertIgnoreCommand { get { return "OR IGNORE"; } }
 		protected override bool SupportsInsertCombined { get { return false; } }
-		protected override bool SupportsFastJoin { get { return false; } }
 		protected override bool SupportsSubquery { get { return false; } }
 		
 		protected override void CreateNullTest(string column, System.Text.StringBuilder command) {
@@ -88,20 +87,18 @@ namespace SemWeb.Stores {
 		}
 		
 		protected override void CreateIndexes() {
-			foreach (string cmd in GetCreateIndexCommands(TableName)) {
+			foreach (string cmd in GetCreateIndexCommands(TableName, dbcon.Version)) {
 				try {
 					RunCommand(cmd);
-				} catch (Exception e) {
-					if (debug) Console.Error.WriteLine(e);
+				} catch (Exception) {
+					// creating an index with the same name as an existing one, even with IF NOT EXISTS,
+					// causes the data adapter to throw an exception.
 				}
 			}
 		}
-		static string[] GetCreateIndexCommands(string table) {
-			return new string[] {
-				// If we do this, only for sqlite3, then we also
-				// have to do INSERT OR IGNORE.
-				// "CREATE UNIQUE INDEX IF NOT EXISTS subject_index ON " + table + "_statements(subject,predicate,object,meta);",
-				
+		static ArrayList GetCreateIndexCommands(string table, int ver) {
+			ArrayList ret = new ArrayList();
+			ret.AddRange(new string[] {
 				"CREATE INDEX IF NOT EXISTS subject_index ON " + table + "_statements(subject);",
 				"CREATE INDEX IF NOT EXISTS predicate_index ON " + table + "_statements(predicate);",
 				"CREATE INDEX IF NOT EXISTS object_index ON " + table + "_statements(object);",
@@ -109,7 +106,10 @@ namespace SemWeb.Stores {
 			
 				"CREATE UNIQUE INDEX IF NOT EXISTS literal_index ON " + table + "_literals(hash);",
 				"CREATE UNIQUE INDEX IF NOT EXISTS entity_index ON " + table + "_entities(value);"
-				};
+					});
+			if (ver == 3)
+				ret.Add("CREATE UNIQUE INDEX IF NOT EXISTS full_index ON " + table + "_statements(subject,predicate,object,meta);");
+			return ret;
 		}
 	}
 }

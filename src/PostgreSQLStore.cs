@@ -42,8 +42,8 @@ namespace SemWeb.Stores {
 			RefreshConnection();
 		}
 
-		protected override bool SupportsNoDuplicates { get { return false; } }
-		protected override bool SupportsInsertIgnore { get { return false; } }
+		protected override bool HasUniqueStatementsConstraint { get { return false; } }
+		protected override string InsertIgnoreCommand { get { return null; } }
 		protected override bool SupportsInsertCombined { get { return false; } }
 		protected override bool SupportsSubquery { get { return false; } }
 		
