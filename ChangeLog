@@ -1,9 +1,16 @@
+2006-09-19 Version 0.75
+
 	* RdfXmlWriter: Another bug fix, this time with typed nodes.
 	  Also detects invalid parseType=Literal + datatype.
+	  Don't auto-generate a prefix named "xmlns".
+	  Don't condense literal-property-only nodes when there are
+	  a lot of literals.
 	* RdfXmlReader: New constructors for taking a BaseURI argument.
 	* Literal: New static method FromValue which turns doubles,
 	  ints, DateTimes, etc. into XMLSchema-typed Literal objects.
 	* SPARQL uses the 0.8 version of Ryan Levering's library.
+	* Sqlite 3 storage now wont insert duplicate statements
+	  into the database (requires Mono 1.1.17's SqliteClient).
 
 2006-06-18 Version 0.741
 

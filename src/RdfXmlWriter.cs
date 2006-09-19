@@ -119,8 +119,8 @@ namespace SemWeb {
 					newprefix.Append(c);
 			prefix = newprefix.ToString();
 			
-			if (prefix.Length == 0) {
-				// There were no letters in the prefix!
+			if (prefix.Length == 0 || prefix == "xmlns") {
+				// There were no letters in the prefix or the prefix was "xmlns", which isn't valid!
 				prefix = "ns";
 			}
 			
@@ -334,7 +334,7 @@ namespace SemWeb {
 						allSimpleLits = false;
 				}
 						
-				if (allSimpleLits) {
+				if (allSimpleLits && obj.ChildNodes.Count <= 3) {
 					// Condense by moving all of obj's elements to attributes of the predicate,
 					// and turning a rdf:about into a rdf:resource, and then remove obj completely.
 					if (obj.Attributes.Count == 1)
