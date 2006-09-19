@@ -32,8 +32,8 @@ public class RDFStorage {
 		[Mono.GetOptions.Option("The base {URI} for the output stream (if supported).")]
 		public string outbaseuri = null;
 
-		[Mono.GetOptions.Option("Quiet mode: Don't emit status information.")]
-		public bool quiet = false;
+		[Mono.GetOptions.Option("Emit status information to STDERR when writing to STDOUT.")]
+		public bool stats = false;
 
 		/*[Mono.GetOptions.Option("Make the output lean.")]
 		public bool makelean = false;
@@ -56,8 +56,8 @@ public class RDFStorage {
 			return;
 		}
 		
-		/*if (opts.@out == "xml:-" || opts.@out == "n3:-")
-			opts.quiet = true;*/
+		if (!(opts.@out == "xml:-" || opts.@out == "n3:-"))
+			opts.stats = true;
 		
 		StatementSink storage = Store.CreateForOutput(opts.@out);
 		if (storage is RdfWriter && opts.outbaseuri != null)
@@ -82,13 +82,13 @@ public class RDFStorage {
 			}
 		}
 		
-		MultiRdfParser multiparser = new MultiRdfParser(opts.RemainingArguments, opts.@in, meta, opts.baseuri, opts.quiet);
+		MultiRdfParser multiparser = new MultiRdfParser(opts.RemainingArguments, opts.@in, meta, opts.baseuri, !opts.stats);
 		
 		if (storage is Store) {
 			((Store)storage).Import(multiparser);
 		} else {
 			//if (!opts.makelean) {
-				multiparser.StreamTo(storage);
+				multiparser.Select(storage);
 			/*} else {
 				MemoryStore st = new MemoryStore(multiparser);
 				StatementSink removed = null;
@@ -130,7 +130,7 @@ public class RDFStorage {
 			this.quiet = quiet;
 		}
 		
-		public override void StreamTo(StatementSink storage) {
+		public override void Select(StatementSink storage) {
 			DateTime allstart = DateTime.Now;
 			long stct = 0;
 					
@@ -147,13 +147,13 @@ public class RDFStorage {
 						RdfReader parser = RdfReader.Create(format, infile);
 						parser.BaseUri = baseuri;
 						if (meta != null) parser.Meta = meta;
-						parser.StreamTo(filter);
+						parser.Select(filter);
 						foreach (string warning in parser.Warnings)
 							Console.Error.WriteLine(warning);
 						parser.Dispose();
 					} else {
 						StatementSource src = Store.CreateForInput(infile);
-						src.StreamTo(filter);
+						src.Select(filter);
 					}
 					
 					stct += filter.StatementCount;

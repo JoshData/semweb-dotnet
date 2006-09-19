@@ -56,7 +56,8 @@ public class RDFQuery {
 			queryparser.BaseUri = baseuri;
 			query = new GraphMatch(queryparser);
 		} else if (opts.type == "sparql") {
-			query = new Sparql(Console.In);
+			string querystring = Console.In.ReadToEnd();
+			query = new Sparql(querystring);
 			
 			// My graph match is more efficient when it's
 			// applicable.
