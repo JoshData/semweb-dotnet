@@ -238,7 +238,6 @@ namespace SemWeb.Inference {
 			}
 			
 			ArrayList evidence = new ArrayList();
-			ArrayList proved = new ArrayList();
 			
 			int step = 0;
 			
