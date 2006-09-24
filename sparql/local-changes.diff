@@ -404,7 +404,7 @@ diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/common/Ad
 +
 diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/common/impl/RdfBindingSetImpl.java work-copy/src/main/name/levering/ryan/sparql/common/impl/RdfBindingSetImpl.java
 --- sparql-0.8/src/main/name/levering/ryan/sparql/common/impl/RdfBindingSetImpl.java	2006-07-16 19:04:04.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/common/impl/RdfBindingSetImpl.java	2006-08-21 22:52:29.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/common/impl/RdfBindingSetImpl.java	2006-09-24 17:11:28.000000000 -0400
 @@ -98,6 +98,8 @@
  		for (Iterator oldRows = oldSet.iterator(); oldRows.hasNext();) {
  			this.addRow((RdfBindingRow) oldRows.next());
@@ -414,7 +414,23 @@ diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/common/im
  	}
  
  	/**
-@@ -371,7 +373,7 @@
+@@ -141,11 +143,10 @@
+ 		if (row == null) {
+ 			throw new NullPointerException("RdfBindingRow 'row' cannot be null");
+ 		}
+-		List newValues = new ArrayList();
+-		for (int i = 0; i < this.variables.length; i++) {
+-			newValues.add(row.getValue(this.variables[i]));
+-		}
+-		this.values.add(newValues.toArray(new Value[0]));
++		Value[] newValues = new Value[this.variables.length];
++		for (int i = 0; i < this.variables.length; i++)
++			newValues[i] = row.getValue(this.variables[i]);
++		this.values.add(newValues);
+ 	}
+ 
+ 	/**
+@@ -371,7 +372,7 @@
  
  			int columnIndex = RdfBindingSetImpl.this.getIndex(variable);
  			if (columnIndex == -1) {
@@ -443,6 +459,54 @@ diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/extension
  		
  		return this.function.getBindingSet(this.data.getSubjectExpression(), this.data.getObjectExpression(), source);
  	}
+diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/extensions/functions/aggregate/IsMaxFunction.java work-copy/src/main/name/levering/ryan/sparql/extensions/functions/aggregate/IsMaxFunction.java
+--- sparql-0.8/src/main/name/levering/ryan/sparql/extensions/functions/aggregate/IsMaxFunction.java	2006-07-16 19:04:04.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/extensions/functions/aggregate/IsMaxFunction.java	2006-09-24 18:51:23.000000000 -0400
+@@ -128,7 +128,7 @@
+ 		return new ExternalFunctionFactory() {
+ 
+ 			public ExternalFunction create(LogicFactory logicFactory, SPARQLValueFactory valueFactory) {
+-				return new IsMaxFunction(logicFactory.getValueOrderingLogic());
++				return new IsMaxFunction(logicFactory.getValueOrderingLogic(valueFactory));
+ 			}
+ 
+ 		};
+diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/extensions/functions/aggregate/IsMinFunction.java work-copy/src/main/name/levering/ryan/sparql/extensions/functions/aggregate/IsMinFunction.java
+--- sparql-0.8/src/main/name/levering/ryan/sparql/extensions/functions/aggregate/IsMinFunction.java	2006-07-16 19:04:02.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/extensions/functions/aggregate/IsMinFunction.java	2006-09-24 18:51:31.000000000 -0400
+@@ -126,7 +126,7 @@
+ 		return new ExternalFunctionFactory() {
+ 
+ 			public ExternalFunction create(LogicFactory logicFactory, SPARQLValueFactory valueFactory) {
+-				return new IsMinFunction(logicFactory.getValueOrderingLogic());
++				return new IsMinFunction(logicFactory.getValueOrderingLogic(valueFactory));
+ 			}
+ 
+ 		};
+diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/extensions/functions/aggregate/MaxFunction.java work-copy/src/main/name/levering/ryan/sparql/extensions/functions/aggregate/MaxFunction.java
+--- sparql-0.8/src/main/name/levering/ryan/sparql/extensions/functions/aggregate/MaxFunction.java	2006-07-16 19:04:06.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/extensions/functions/aggregate/MaxFunction.java	2006-09-24 18:51:39.000000000 -0400
+@@ -121,7 +121,7 @@
+ 		return new ExternalFunctionFactory() {
+ 
+ 			public ExternalFunction create(LogicFactory logicFactory, SPARQLValueFactory valueFactory) {
+-				return new MaxFunction(logicFactory.getValueOrderingLogic());
++				return new MaxFunction(logicFactory.getValueOrderingLogic(valueFactory));
+ 			}
+ 
+ 		};
+diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/extensions/functions/aggregate/MinFunction.java work-copy/src/main/name/levering/ryan/sparql/extensions/functions/aggregate/MinFunction.java
+--- sparql-0.8/src/main/name/levering/ryan/sparql/extensions/functions/aggregate/MinFunction.java	2006-07-16 19:04:02.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/extensions/functions/aggregate/MinFunction.java	2006-09-24 18:51:45.000000000 -0400
+@@ -121,7 +121,7 @@
+ 		return new ExternalFunctionFactory() {
+ 
+ 			public ExternalFunction create(LogicFactory logicFactory, SPARQLValueFactory valueFactory) {
+-				return new MinFunction(logicFactory.getValueOrderingLogic());
++				return new MinFunction(logicFactory.getValueOrderingLogic(valueFactory));
+ 			}
+ 
+ 		};
 diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/extensions/with/DefaultWithConstraintLogic.java work-copy/src/main/name/levering/ryan/sparql/extensions/with/DefaultWithConstraintLogic.java
 --- sparql-0.8/src/main/name/levering/ryan/sparql/extensions/with/DefaultWithConstraintLogic.java	2006-07-16 19:04:04.000000000 -0400
 +++ work-copy/src/main/name/levering/ryan/sparql/extensions/with/DefaultWithConstraintLogic.java	2006-08-01 12:51:40.000000000 -0400
@@ -463,6 +527,20 @@ diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/extension
  		return this.extension.getBindingSet((ExpressionLogic[]) this.data.getArguments().toArray(
  				new ExpressionLogic[] {}), source);
  	}
+diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/logic/BaseLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/BaseLogic.java
+--- sparql-0.8/src/main/name/levering/ryan/sparql/logic/BaseLogic.java	2006-07-16 19:04:04.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/logic/BaseLogic.java	2006-09-24 18:40:51.000000000 -0400
+@@ -345,8 +345,8 @@
+ 	 * 
+ 	 * @return the logic that orders Value objects
+ 	 */
+-	public ValueOrderingLogic getValueOrderingLogic() {
+-		return new DefaultValueOrderingLogic();
++	public ValueOrderingLogic getValueOrderingLogic(SPARQLValueFactory valueFactory) {
++		return new DefaultValueOrderingLogic(getNumericPromotionLogic(valueFactory), getValueConversionLogic(valueFactory));
+ 	}
+ 
+ }
 diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/logic/BNodeRenamingConstructQueryLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/BNodeRenamingConstructQueryLogic.java
 --- sparql-0.8/src/main/name/levering/ryan/sparql/logic/BNodeRenamingConstructQueryLogic.java	2006-07-16 19:04:04.000000000 -0400
 +++ work-copy/src/main/name/levering/ryan/sparql/logic/BNodeRenamingConstructQueryLogic.java	2006-08-01 12:27:53.000000000 -0400
@@ -475,6 +553,31 @@ diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/logic/BNo
  
  		// Now apply ordering in reverse order to give priority to the first
  		// variable
+diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/logic/debug/DebugLogicWrapper.java work-copy/src/main/name/levering/ryan/sparql/logic/debug/DebugLogicWrapper.java
+--- sparql-0.8/src/main/name/levering/ryan/sparql/logic/debug/DebugLogicWrapper.java	2006-07-16 19:04:04.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/logic/debug/DebugLogicWrapper.java	2006-09-24 18:43:50.000000000 -0400
+@@ -172,8 +172,8 @@
+ 		return new OptionalConstraintDebug(this.baseFactory.getOptionalConstraintLogic(data, valueFactory), this.out);
+ 	}
+ 
+-	public OrderExpressionLogic getOrderExpressionLogic(OrderExpressionData data) {
+-		return this.baseFactory.getOrderExpressionLogic(data);
++	public OrderExpressionLogic getOrderExpressionLogic(OrderExpressionData data, SPARQLValueFactory valueFactory) {
++		return this.baseFactory.getOrderExpressionLogic(data, valueFactory);
+ 	}
+ 
+ 	public ExpressionLogic getOrLogic(BinaryExpressionData data, SPARQLValueFactory valueFactory) {
+@@ -235,8 +235,8 @@
+ 		return this.baseFactory.getValueConversionLogic(valueFactory);
+ 	}
+ 
+-	public ValueOrderingLogic getValueOrderingLogic() {
+-		return this.baseFactory.getValueOrderingLogic();
++	public ValueOrderingLogic getValueOrderingLogic(SPARQLValueFactory valueFactory) {
++		return this.baseFactory.getValueOrderingLogic(valueFactory);
+ 	}
+ 
+ }
 diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/logic/debug/FilterConstraintDebug.java work-copy/src/main/name/levering/ryan/sparql/logic/debug/FilterConstraintDebug.java
 --- sparql-0.8/src/main/name/levering/ryan/sparql/logic/debug/FilterConstraintDebug.java	2006-07-16 19:04:02.000000000 -0400
 +++ work-copy/src/main/name/levering/ryan/sparql/logic/debug/FilterConstraintDebug.java	2006-08-01 12:34:06.000000000 -0400
@@ -733,6 +836,81 @@ diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/logic/Def
  
          // Now project to the solution set
          if (queryExpressions != null) {
+diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/logic/DefaultValueOrderingLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/DefaultValueOrderingLogic.java
+--- sparql-0.8/src/main/name/levering/ryan/sparql/logic/DefaultValueOrderingLogic.java	2006-07-16 19:04:04.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/logic/DefaultValueOrderingLogic.java	2006-09-24 18:54:32.000000000 -0400
+@@ -1,5 +1,9 @@
+ package name.levering.ryan.sparql.logic;
+ 
++import name.levering.ryan.sparql.common.impl.DateTime;
++
++import name.levering.ryan.sparql.model.logic.NumericPromotionLogic;
++import name.levering.ryan.sparql.model.logic.ValueConversionLogic;
+ import name.levering.ryan.sparql.model.logic.ValueOrderingLogic;
+ 
+ import org.openrdf.model.BNode;
+@@ -22,6 +26,13 @@
+  * @version 1.0
+  */
+ public class DefaultValueOrderingLogic implements ValueOrderingLogic {
++	NumericPromotionLogic promoter;
++	ValueConversionLogic converter;
++	
++	public DefaultValueOrderingLogic(NumericPromotionLogic promoter, ValueConversionLogic converter) {
++		this.promoter = promoter;
++		this.converter = converter;
++	}
+ 
+ 	/**
+ 	 * Compares two value objects according to section 10.1.
+@@ -64,14 +75,41 @@
+ 			return -1;
+ 		}
+ 
+-		// First value is an untyped literal
+-		if (value1 instanceof Literal && ((Literal) value1).getDatatype() == null) {
+-			if (value2 == null || value2 instanceof BNode || value2 instanceof URI) {
++		// First value is a literal
++		if (value1 instanceof Literal) {
++			if (value2 == null || value2 instanceof BNode || value2 instanceof URI)
+ 				return 1;
++
++			if (value2 instanceof Literal) {
++				if (((Literal) value1).getDatatype() == null && ((Literal) value2).getDatatype() == null)
++					return ((Literal) value1).getLabel().compareTo(((Literal) value2).getLabel());
++					
++				if (((Literal) value1).getDatatype() == null)
++					return -1;
++				if (((Literal) value2).getDatatype() == null)
++					return 1;
++				
++				Literal[] promoted = promoter.promote(new Literal[] { (Literal) value1, (Literal) value2 } );
++				
++				Object v1 = converter.convertLiteral(promoted[0]);
++				Object v2 = converter.convertLiteral(promoted[1]);
++				
++				if (v1 instanceof Double)
++					return ((Double)v1).compareTo((Double)v2);
++				if (v1 instanceof Float)
++					return ((Float)v1).compareTo((Float)v2);
++				if (v1 instanceof Long)
++					return ((Long)v1).compareTo((Long)v2);
++				if (v1 instanceof Integer)
++					return ((Integer)v1).compareTo((Integer)v2);
++				if (v1 instanceof Boolean)
++					return ((Boolean)v1).compareTo((Boolean)v2);
++				if (v1 instanceof DateTime)
++					return ((DateTime)v1).compareTo((DateTime)v2);
++				if (v1 instanceof String)
++					return ((String)v1).compareTo((String)v2);
+ 			}
+-			if (value2 instanceof Literal && ((Literal) value2).getDatatype() == null) {
+-				return ((Literal) value1).getLabel().compareTo(((Literal) value2).getLabel());
+-			}
++			
+ 			return -1;
+ 		}
+ 
 diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/logic/expression/GreaterThanEqualsLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/expression/GreaterThanEqualsLogic.java
 --- sparql-0.8/src/main/name/levering/ryan/sparql/logic/expression/GreaterThanEqualsLogic.java	2006-07-16 19:04:02.000000000 -0400
 +++ work-copy/src/main/name/levering/ryan/sparql/logic/expression/GreaterThanEqualsLogic.java	2006-07-30 09:08:08.000000000 -0400
@@ -1530,8 +1708,8 @@ diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/logic/nai
  
 diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/logic/streamed/AdvancedGroupConstraintLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/streamed/AdvancedGroupConstraintLogic.java
 --- sparql-0.8/src/main/name/levering/ryan/sparql/logic/streamed/AdvancedGroupConstraintLogic.java	1969-12-31 19:00:00.000000000 -0500
-+++ work-copy/src/main/name/levering/ryan/sparql/logic/streamed/AdvancedGroupConstraintLogic.java	2006-08-21 22:49:00.000000000 -0400
-@@ -0,0 +1,530 @@
++++ work-copy/src/main/name/levering/ryan/sparql/logic/streamed/AdvancedGroupConstraintLogic.java	2006-09-24 18:08:21.000000000 -0400
+@@ -0,0 +1,549 @@
 +/*
 + * SPARQL Engine
 + * Copyright (C) 2005 Ryan Levering, All rights reserved.
@@ -1704,21 +1882,21 @@ diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/logic/str
 +		Set selectedVars = new HashSet();
 +		while (tripleConstraints.size() > 0) {
 +			TripleConstraint leastConstraint = null;
-+			int leastComplexity = -1;
++			float leastComplexity = -1;
 +			
 +			if (tripleConstraints.size() == 1) {
 +				leastConstraint = (TripleConstraint)tripleConstraints.get(0);
 +			} else {
 +				for (Iterator cons = tripleConstraints.iterator(); cons.hasNext();) {
 +					TripleConstraint c = (TripleConstraint) cons.next();
-+					int complexity = getComplexity(c, knownVars, cheapVars, knownFilters, source);
++					float complexity = getComplexity(c, knownVars, cheapVars, knownFilters, source);
 +					if (leastConstraint == null || complexity < leastComplexity) {
 +						leastComplexity = complexity;
 +						leastConstraint = c;
 +					}
 +				}
 +			}
-+			
++
 +			tripleConstraints.remove(leastConstraint);
 +			constraintOrder.add(leastConstraint);
 +			
@@ -1747,9 +1925,8 @@ diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/logic/str
 +			// triple.  Here, we only know what's been selected on in this group,
 +			// and not at a higher level.)
 +	        for (Iterator filters = filterQueue.iterator(); filters.hasNext();) {
-+	        	/*
 +	            FilterConstraintData c = (FilterConstraintData) filters.next();
-+	            boolean allvarsknown = true;
++	            /*boolean allvarsknown = true;
 +	            Set filterVars = getFilterVariables((SimpleNode)c);
 +	            for (Iterator vars = filterVars.iterator(); vars.hasNext(); ) {
 +	            	if (!selectedVars.contains(vars.next())) {
@@ -1962,33 +2139,53 @@ diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/logic/str
 +	
 +    /**
 +     * Returns the complexity of the triple constraint, given a set of
-+	 * variables that already have known values.  The return value is the
-+	 * number of variable slots in the triple constraint plus the number
-+	 * of variable slots whose variable is not in the variablesKnown set.
-+	 * (That is, a variable used twice is counted twice.)
++	 * variables that already have known values.  The return value is a
++	 * measure of the number of statements that we expect to match the
++	 * filter, on a nonsensical scale.
 +     * 
 +     * @param variablesKnown a set of variables whose values are known
 +     */
-+	private int getComplexity(TripleConstraint triple, Set variablesKnown, Set cheapVariables, Map knownFilters, RdfSource source) {
-+		// Properties in RDF tend to be many-to-few.  That is, lots of people
-+		// may have a particular foaf:name, and one person has very few foaf:names.
-+		// Thus, we give a penalty when a new variable occurs in subject position.
++	private float getComplexity(TripleConstraint triple, Set variablesKnown, Set cheapVariables, Map knownFilters, RdfSource source) {
 +		Object subject = triple.getSubjectExpression();
 +		Object predicate = triple.getPredicateExpression();
 +		Object object = triple.getObjectExpression();
-+		return
-+			getComplexity2(subject, variablesKnown, cheapVariables, knownFilters, 6, predicate instanceof URI && isFunctional((URI)predicate, source, false)) +
-+			getComplexity2(predicate, variablesKnown, cheapVariables, knownFilters, 2, false) +
-+			getComplexity2(object, variablesKnown, cheapVariables, knownFilters, 2, predicate instanceof URI && isFunctional((URI)predicate, source, true));
++		
++		boolean isFunctional = isFunctional((URI)predicate, source, false);
++		boolean isInverseFunctional = isFunctional((URI)predicate, source, true);
++		
++		// Properties in RDF tend to be many-to-few.  That is, lots of people
++		// may have a particular foaf:name, and one person has very few foaf:names.
++		// Thus, we give a penalty when a new variable occurs in subject position.
++		// Furthermore, we give an even bigger penality for variables in predicate position.
++		
++		float subjComplexity = getComplexity2(subject, variablesKnown, cheapVariables, knownFilters, 3);
++		float predComplexity = getComplexity2(predicate, variablesKnown, cheapVariables, knownFilters, 4);
++		float objComplexity = getComplexity2(object, variablesKnown, cheapVariables, knownFilters, 2);
++
++		// If this is a functional or inverse functional statement, then we reduce the
++		// complexity of the object because we know it is in a 1-to-1 relation with
++		// the subject (or the other way around).  (And, in these cases the predicate
++		// isn't a variable, so its complexity is zero anyway.)
++		
++		if (isFunctional && subjComplexity == 0) objComplexity = 0;
++		else if (isFunctional && subjComplexity <= 2) objComplexity /= 3;
++		else if (isFunctional) objComplexity /= 2;
++		
++		if (isInverseFunctional && objComplexity == 0) subjComplexity = 0;
++		else if (isInverseFunctional && objComplexity <= 2) subjComplexity /= 3;
++		else if (isInverseFunctional) subjComplexity /= 2;
++
++		float complexity = subjComplexity + predComplexity + objComplexity;
++		
++		return complexity;
 +	}
 +	
-+	private int getComplexity2(Object thing, Set variablesKnown, Set cheapVariables, Map knownFilters, int penalty, boolean functional) {
++	private int getComplexity2(Object thing, Set variablesKnown, Set cheapVariables, Map knownFilters, int penalty) {
 +		int ret = 0;
-+		if (thing instanceof Variable) {
-+			if (!cheapVariables.contains(thing)) ret++;
-+			if (!functional && !variablesKnown.contains(thing) && !knownFilters.containsKey(thing)) {
-+				ret += penalty;
-+			}
++		if (thing instanceof Variable && !cheapVariables.contains(thing)) {
++			ret++;
++			if (!knownFilters.containsKey(thing)) ret++;
++			if (!variablesKnown.contains(thing)) ret += penalty;
 +		}
 +		return ret;
 +	}
@@ -2064,7 +2261,7 @@ diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/logic/str
 +}
 diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/logic/streamed/IndexedSetIntersectLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/streamed/IndexedSetIntersectLogic.java
 --- sparql-0.8/src/main/name/levering/ryan/sparql/logic/streamed/IndexedSetIntersectLogic.java	2006-07-16 19:04:06.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/logic/streamed/IndexedSetIntersectLogic.java	2006-08-01 19:27:55.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/logic/streamed/IndexedSetIntersectLogic.java	2006-09-24 17:49:08.000000000 -0400
 @@ -64,7 +64,7 @@
          final List variables;
  
@@ -2580,6 +2777,20 @@ diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/logic/str
  			for (Iterator statementIt = statementIterators.iterator(); statementIt.hasNext();) {
  				set.addIterator((GraphStatement) statementIt.next());
  			}
+diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/logic/StreamedLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/StreamedLogic.java
+--- sparql-0.8/src/main/name/levering/ryan/sparql/logic/StreamedLogic.java	2006-07-16 19:04:02.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/logic/StreamedLogic.java	2006-09-24 18:39:42.000000000 -0400
+@@ -396,8 +396,8 @@
+ 	 *            direction
+ 	 * @return the logic handling the ordering of an expression
+ 	 */
+-	public OrderExpressionLogic getOrderExpressionLogic(OrderExpressionData data) {
+-		return new DefaultOrderExpressionLogic(data, getValueOrderingLogic());
++	public OrderExpressionLogic getOrderExpressionLogic(OrderExpressionData data, SPARQLValueFactory valueFactory) {
++		return new DefaultOrderExpressionLogic(data, getValueOrderingLogic(valueFactory));
+ 	}
+ 
+ 	/**
 diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/logic/StreamedStrictLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/StreamedStrictLogic.java
 --- sparql-0.8/src/main/name/levering/ryan/sparql/logic/StreamedStrictLogic.java	2006-07-16 19:04:02.000000000 -0400
 +++ work-copy/src/main/name/levering/ryan/sparql/logic/StreamedStrictLogic.java	1969-12-31 19:00:00.000000000 -0500
@@ -2899,6 +3110,27 @@ diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/model/log
 +			Map knownValues, Map knownFilters);
  
  }
+diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/model/logic/LogicFactory.java work-copy/src/main/name/levering/ryan/sparql/model/logic/LogicFactory.java
+--- sparql-0.8/src/main/name/levering/ryan/sparql/model/logic/LogicFactory.java	2006-07-16 19:04:04.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/model/logic/LogicFactory.java	2006-09-24 18:42:23.000000000 -0400
+@@ -61,7 +61,7 @@
+ 
+ 	public ConstraintLogic getOptionalConstraintLogic(OptionalConstraintData data, SPARQLValueFactory valueFactory);
+ 
+-	public OrderExpressionLogic getOrderExpressionLogic(OrderExpressionData data);
++	public OrderExpressionLogic getOrderExpressionLogic(OrderExpressionData data, SPARQLValueFactory valueFactory);
+ 
+ 	public ExpressionLogic getAdditionLogic(BinaryExpressionData data, SPARQLValueFactory valueFactory);
+ 
+@@ -117,7 +117,7 @@
+ 
+ 	public ValueConversionLogic getValueConversionLogic(SPARQLValueFactory valueFactory);
+ 
+-	public ValueOrderingLogic getValueOrderingLogic();
++	public ValueOrderingLogic getValueOrderingLogic(SPARQLValueFactory valueFactory);
+ 
+ 	public void registerExternalFunction(URI functionIRI, ExternalFunctionFactory functionFactory);
+ 
 diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/parser/JavaCharStream.java work-copy/src/main/name/levering/ryan/sparql/parser/JavaCharStream.java
 --- sparql-0.8/src/main/name/levering/ryan/sparql/parser/JavaCharStream.java	2006-07-16 19:04:04.000000000 -0400
 +++ work-copy/src/main/name/levering/ryan/sparql/parser/JavaCharStream.java	2006-08-02 07:50:24.000000000 -0400
@@ -4224,6 +4456,17 @@ diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/parser/mo
  
  package name.levering.ryan.sparql.parser.model;
  
+diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/parser/model/OrderExpressionNode.java work-copy/src/main/name/levering/ryan/sparql/parser/model/OrderExpressionNode.java
+--- sparql-0.8/src/main/name/levering/ryan/sparql/parser/model/OrderExpressionNode.java	2006-07-16 19:04:06.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/parser/model/OrderExpressionNode.java	2006-09-24 18:46:19.000000000 -0400
+@@ -31,6 +31,6 @@
+     }
+ 
+     public void applyLogic(LogicBinder binder) {
+-        this.logic = binder.getLogicFactory().getOrderExpressionLogic(this);
++        this.logic = binder.getLogicFactory().getOrderExpressionLogic(this, binder.getValueFactory());
+     }
+ }
 diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/parser/model/SPARQLParserTreeConstants.java work-copy/src/main/name/levering/ryan/sparql/parser/model/SPARQLParserTreeConstants.java
 --- sparql-0.8/src/main/name/levering/ryan/sparql/parser/model/SPARQLParserTreeConstants.java	2006-08-01 11:35:04.000000000 -0400
 +++ work-copy/src/main/name/levering/ryan/sparql/parser/model/SPARQLParserTreeConstants.java	2006-08-02 07:55:57.000000000 -0400
