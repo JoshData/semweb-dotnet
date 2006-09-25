@@ -12,7 +12,7 @@ namespace SemWeb.Stores {
 	// TODO: It's not safe to have two concurrent accesses to the same database
 	// because the creation of new entities will use the same IDs.
 	
-	public abstract class SQLStore : Store, SupportsPersistableBNodes {
+	public abstract class SQLStore : Store, QueryableSource, SupportsPersistableBNodes {
 		int dbformat = 1;
 	
 		string table;
@@ -1007,6 +1007,260 @@ namespace SemWeb.Stores {
 					if (!ret) break;
 				}
 			}
+			
+			} // lock
+		}
+		
+		public void Query(Statement[] graph, SemWeb.Query.QueryOptions options, SemWeb.Query.QueryResultSink sink) {
+			if (graph.Length == 0) throw new ArgumentException("graph array must have at least one element");
+			
+			// Order the variables mentioned in the graph.
+			SemWeb.Query.VariableBinding[] bindings;
+			ResSet distinguishedVars = null;
+			{
+				if (options.DistinguishedVariables != null)
+					distinguishedVars = new ResSet(options.DistinguishedVariables);
+				else
+					distinguishedVars = new ResSet();
+			
+				Hashtable seenvars = new Hashtable();
+				foreach (Statement filter in graph) {
+					for (int i = 0; i < 4; i++) {
+						Resource r = filter.GetComponent(i);
+						if (r == null)
+							throw new ArgumentException("The graph may not have any null components.  Use Variables instead.");
+
+						if (r is Variable) {
+							if (options.DistinguishedVariables != null) {
+								if (!distinguishedVars.Contains(r))
+									continue;
+							} else {
+								distinguishedVars.Add(r); // all variables are distinguished
+							}
+							
+							seenvars[r] = r;
+						}
+					}
+				}
+				
+				bindings = new SemWeb.Query.VariableBinding[seenvars.Count];
+				int ctr = 0;
+				foreach (Variable v in seenvars.Keys)
+					bindings[ctr++] = new SemWeb.Query.VariableBinding(v, null);
+			}
+			
+			// Set the initial bindings to the result sink
+
+			sink.Init(bindings, false, false);
+			
+			Hashtable varLitFilters = new Hashtable();
+			
+			// Helpers
+			
+			string[] colnames = { "subject", "predicate", "object", "meta" };
+			
+			// Lock the store and make sure we are initialized and any pending add's have been committed. 
+					
+			lock (syncroot) {
+			
+			Init();
+			RunAddBuffer();
+			
+			// Compile the SQL statement.
+
+			Hashtable varRef = new Hashtable();
+			Hashtable varRef2 = new Hashtable();
+			Hashtable varSelectedLiteral = new Hashtable();
+			
+			StringBuilder fromClause = new StringBuilder();
+			StringBuilder leftJoins = new StringBuilder();
+			StringBuilder whereClause = new StringBuilder();
+			
+			for (int f = 0; f < graph.Length; f++) {
+				// For each filter, we select FROM the statements table with an
+				// alias: q#, where # is the filter's index.
+				
+				if (f > 0) fromClause.Append(',');
+				fromClause.Append(table);
+				fromClause.Append("_statements AS g");
+				fromClause.Append(f);
+				
+				// For each component of the filter...
+				
+				for (int i = 0; i < 4; i++) {
+					string myRef = "g" + f + "." + colnames[i];
+					
+					Variable v = graph[f].GetComponent(i) as Variable;
+					if (v != null) {
+						// If the component is a variable, then if this is
+						// the first time we're seeing the variable, we don't
+						// add any restrictions to the WHERE clause, but we
+						// note the variable's "name" in the world of SQL
+						// so we can refer back to it later and we add the
+						// necessary FROM tables so we can get its URI and
+						// literal value if it is a reported variable.
+						// If this isn't the first time, then we add a WHERE restriction so
+						// that the proper columns here and in a previous
+						// filter are forced to have the same value.
+					
+						if (!varRef.ContainsKey(v)) {
+							varRef[v] = myRef;
+							
+							int vIndex = varRef.Count;
+							varRef2[v] = vIndex;
+							
+							if (distinguishedVars.Contains(v)) {
+								leftJoins.Append(" LEFT JOIN ");
+								leftJoins.Append(table);
+								leftJoins.Append("_entities AS vent");
+								leftJoins.Append(vIndex);
+								leftJoins.Append(" ON ");
+								leftJoins.Append(myRef);
+								leftJoins.Append("=");
+								leftJoins.Append("vent" + vIndex + ".id");
+								
+								varSelectedLiteral[v] = (i == 2);
+								
+								if (i == 2) { // literals cannot be in any other column
+									leftJoins.Append(" LEFT JOIN ");
+									leftJoins.Append(table);
+									leftJoins.Append("_literals AS vlit");
+									leftJoins.Append(vIndex);
+									leftJoins.Append(" ON ");
+									leftJoins.Append(myRef);
+									leftJoins.Append("=");
+									leftJoins.Append("vlit" + vIndex + ".id");
+								}
+							}
+							
+							if (options.VariableKnownValues != null) {
+								ICollection values = (ICollection)options.VariableKnownValues[v];
+								if (values != null) {
+									Resource r = ToMultiRes((Resource[])new ArrayList(values).ToArray(typeof(Resource)));
+									if (!WhereItem(myRef, r, whereClause, whereClause.Length != 0)) {
+										// We know at this point that the query cannot return any results.
+										sink.Finished();
+										return;
+									}
+								}
+							}
+							
+						} else {
+							if (whereClause.Length != 0) whereClause.Append(" AND ");
+							whereClause.Append('(');
+							whereClause.Append((string)varRef[v]);
+							whereClause.Append('=');
+							whereClause.Append(myRef);
+							whereClause.Append(')');
+						}
+					
+					} else {
+						// If this is not a variable, then it is a resource.
+					
+						if (!WhereItem(myRef, graph[f].GetComponent(i), whereClause, whereClause.Length != 0)) {
+							// We know at this point that the query cannot return any results.
+							sink.Finished();
+							return;
+						}
+
+					}
+				}
+			
+			} // graph filter 0...n
+			
+			// Add literal filters to the WHERE clause
+
+			foreach (SemWeb.Query.VariableBinding binding in bindings) {
+				Variable v = binding.Variable;
+				
+				if (options.VariableLiteralFilters == null) continue;
+				if (options.VariableLiteralFilters[v] == null) continue;
+				
+				foreach (LiteralFilter filter in (ICollection)options.VariableLiteralFilters[v]) {
+					string s = FilterToSQL(filter, "vlit" + (int)varRef2[v] + ".value");
+					if (s == null) continue;
+
+					if (whereClause.Length != 0) whereClause.Append(" AND ");
+					whereClause.Append(s);
+				}
+			}
+
+			// Put the parts of the SQL statement together
+
+			StringBuilder cmd = new StringBuilder();
+			cmd.Append("SELECT ");
+			
+			for (int i = 0; i < bindings.Length; i++) {
+				if (i > 0) cmd.Append(',');
+				cmd.Append((string)varRef[bindings[i].Variable]);
+				cmd.Append(", vent" + (int)varRef2[bindings[i].Variable] + ".value");
+				if ((bool)varSelectedLiteral[bindings[i].Variable]) {
+					cmd.Append(", vlit" + (int)varRef2[bindings[i].Variable] + ".value");
+					cmd.Append(", vlit" + (int)varRef2[bindings[i].Variable] + ".language");
+					cmd.Append(", vlit" + (int)varRef2[bindings[i].Variable] + ".datatype");
+				}
+			}
+			
+			cmd.Append(" FROM ");
+			cmd.Append(fromClause.ToString());
+			
+			cmd.Append(" ");
+			cmd.Append(leftJoins.ToString());
+
+			if (whereClause.Length > 0)
+				cmd.Append(" WHERE ");
+			cmd.Append(whereClause.ToString());
+			
+			if (options.Limit > 0) {
+				cmd.Append(" LIMIT ");
+				cmd.Append(options.Limit);
+			}
+			
+			cmd.Append(';');
+			
+			if (Debug) {
+				string cmd2 = cmd.ToString();
+				//if (cmd2.Length > 80) cmd2 = cmd2.Substring(0, 80);
+				Console.Error.WriteLine(cmd2);
+			}
+			
+			// Execute the query
+			
+			Hashtable entityCache = new Hashtable();
+			
+			using (IDataReader reader = RunReader(cmd.ToString())) {
+				while (reader.Read()) {
+					int col = 0;
+					for (int i = 0; i < bindings.Length; i++) {
+						int id = reader.GetInt32(col++);
+						string uri = AsString(reader[col++]);
+						
+						string litvalue = null, litlanguage = null, litdatatype = null;
+
+						if ((bool)varSelectedLiteral[bindings[i].Variable]) {
+							litvalue = AsString(reader[col++]);
+							litlanguage = AsString(reader[col++]);
+							litdatatype = AsString(reader[col++]);
+						}
+						
+						if (litvalue != null) {
+							Literal lit = new Literal(litvalue, litlanguage, litdatatype);
+							bindings[i].Target = lit;
+							
+							ArrayList litFilters = (ArrayList)varLitFilters[bindings[i].Variable];
+							if (litFilters != null && !LiteralFilter.MatchesFilters(lit, (LiteralFilter[])litFilters.ToArray(typeof(LiteralFilter)), this))
+								continue;
+							
+						} else {
+							bindings[i].Target = MakeEntity(id, uri, entityCache);
+						}
+					}
+					
+					if (!sink.Add(bindings)) return;
+				}
+			}
+			
+			sink.Finished();
 			
 			} // lock
 		}

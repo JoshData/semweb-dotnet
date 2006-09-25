@@ -18,8 +18,7 @@ namespace SemWeb {
 	}
 
 	public interface QueryableSource : SelectableSource {
-		void Query(Statement[] graph, SemWeb.Query.QueryResultSink sink);
-		void Query(SelectFilter[] graph, SemWeb.Query.QueryResultSink sink);
+		void Query(Statement[] graph, SemWeb.Query.QueryOptions options, SemWeb.Query.QueryResultSink sink);
 	}
 	
 	public interface StatementSink {

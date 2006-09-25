@@ -57,7 +57,7 @@ namespace SemWeb.Inference {
 			}
 		}
 		
-		public void Query(Statement[] graph, SemWeb.Query.QueryResultSink sink) {
+		public void Query(Statement[] graph, SemWeb.Query.QueryOptions options, SemWeb.Query.QueryResultSink sink) {
 			ArrayList evidence = prove(rules, world, SelectFilter.FromGraph(graph), -1);
 			if (evidence == null)
 				return; // not provable (in max number of steps, if that were given)
@@ -83,10 +83,6 @@ namespace SemWeb.Inference {
 			}
 			
 			sink.Finished();
-		}
-		
-		public void Query(SelectFilter[] graph, SemWeb.Query.QueryResultSink sink) {
-			throw new NotImplementedException();
 		}
 		
 		// Static methods that wrap the Euler engine

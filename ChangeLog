@@ -1,3 +1,16 @@
+	* N3Reader: Added a new special =:> syntax.  Now
+		?variable =:> { ...statements... }
+	  is interpreted as ?variable being assigned to
+	  the meta field of each statement in the formula.
+	* QueryableSource API is changed.
+	* SQLStore now implements QuueryableSource by
+	  converting a graph into a large SQL query.
+	* SPARQL: When querying over a QueryableSource, pass
+	  group constraints (i.e. { . . . }) directly to
+	  the QueryableSource.  Major speed improvement.
+	* SPARQL: Fixed several bugs I introduced recently
+	  when upgrading to the 0.8 library.
+
 2006-09-19 Version 0.75
 
 	* RdfXmlWriter: Another bug fix, this time with typed nodes.

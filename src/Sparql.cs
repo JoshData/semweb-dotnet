@@ -10,6 +10,7 @@ using name.levering.ryan.sparql.parser.model;
 using name.levering.ryan.sparql.model;
 using name.levering.ryan.sparql.model.data;
 using name.levering.ryan.sparql.common;
+using name.levering.ryan.sparql.common.impl;
 using name.levering.ryan.sparql.logic.expression;
 using name.levering.ryan.sparql.logic.function;
 
@@ -280,7 +281,7 @@ namespace SemWeb.Query {
 		class RdfSourceWrapper : AdvancedRdfSource,
 				org.openrdf.model.ValueFactory {
 				
-			SelectableSource source;
+			public readonly SelectableSource source;
 			Hashtable bnodes = new Hashtable();
 			Entity QueryMeta;
 			Sparql sparql;
@@ -623,7 +624,7 @@ namespace SemWeb.Query {
 			
 			public bool hasNext() {
 				if (statements == null) {
-					DateTime start = DateTime.Now;
+					System.DateTime start = System.DateTime.Now;
 
 					MemoryStore results = new MemoryStore();
 					StatementSink sink = results;
@@ -633,7 +634,7 @@ namespace SemWeb.Query {
 
 					source.Select(filter, sink);
 				
-					wrapper.Log("SELECT: " + filter + " => " + results.StatementCount + " statements [" + (DateTime.Now-start) + "s]");
+					wrapper.Log("SELECT: " + filter + " => " + results.StatementCount + " statements [" + (System.DateTime.Now-start) + "s]");
 					
 					statements = results.ToArray();
 				}
@@ -752,6 +753,116 @@ namespace SemWeb.Query {
 		class RdfGroupLogic : name.levering.ryan.sparql.logic.AdvancedGroupConstraintLogic {
 		    public RdfGroupLogic(name.levering.ryan.sparql.model.data.GroupConstraintData data, name.levering.ryan.sparql.model.logic.SetIntersectLogic logic)
 		    	: base(data, logic) {
+		    }
+		    
+		    protected override RdfBindingSet runTripleConstraints(java.util.List tripleConstraints, RdfSource source,
+		    	java.util.Collection defaultDatasets, java.util.Collection namedDatasets,
+		    	java.util.Map knownValues, java.util.Map knownFilters) {
+		    	
+		    	RdfSourceWrapper s = (RdfSourceWrapper)source;
+		    	
+		    	if (s.source is QueryableSource) {
+		    		QueryableSource qs = (QueryableSource)s.source;
+		    		QueryOptions opts = new QueryOptions();
+		    		
+		    		opts.DistinguishedVariables = new ArrayList();
+		    		
+		    		opts.VariableKnownValues = new Hashtable();
+		    		
+		    		Statement[] graph = new Statement[tripleConstraints.size()];
+		    		Hashtable varMap1 = new Hashtable();
+		    		Hashtable varMap2 = new Hashtable();
+		    		for (int i = 0; i < tripleConstraints.size(); i++) {
+		    			TripleConstraintData triple = tripleConstraints.get(i) as TripleConstraintData;
+		    			if (triple == null) return null;
+		    			
+		    			graph[i].Subject = (Entity)ToRes(triple.getSubjectExpression(), knownValues, true, varMap1, varMap2, s, opts);
+		    			graph[i].Predicate = (Entity)ToRes(triple.getPredicateExpression(), knownValues, true, varMap1, varMap2, s, opts);
+		    			graph[i].Object = ToRes(triple.getObjectExpression(), knownValues, false, varMap1, varMap2, s, opts);
+		    			graph[i].Meta = new Variable(); // TODO
+		    			if (graph[i].AnyNull) return new RdfBindingSetImpl();
+		    			
+		    			// Don't distinguish the meta variable for now.
+		    			if (graph[i].Subject is Variable) ((ArrayList)opts.DistinguishedVariables).Add(graph[i].Subject);
+		    			if (graph[i].Predicate is Variable) ((ArrayList)opts.DistinguishedVariables).Add(graph[i].Predicate);
+		    			if (graph[i].Object is Variable) ((ArrayList)opts.DistinguishedVariables).Add(graph[i].Object);
+		    		}
+		    		
+		    		opts.VariableLiteralFilters = new Hashtable();
+		    		foreach (DictionaryEntry kv in varMap1) {
+		    			if (knownFilters.containsKey(kv.Key)) {
+		    				ArrayList filters = new ArrayList();
+		    				for (java.util.Iterator iter = ((java.util.List)knownFilters.get(kv.Key)).iterator(); iter.hasNext(); )
+		    					filters.Add(iter.next());
+		    				opts.VariableLiteralFilters[kv.Value] = filters;
+		    			}
+		    		}
+		    		
+		    		QueryResultBuilder builder = new QueryResultBuilder();
+		    		builder.varMap = varMap2;
+		    		qs.Query(graph, opts, builder);
+		    		return builder.bindings;
+		    	}
+		    	
+		    	return null;
+		    }
+		    
+		    class QueryResultBuilder : QueryResultSink {
+		    	public Hashtable varMap;
+		    	public RdfBindingSetImpl bindings;
+		    	
+				public override void Init(VariableBinding[] variables, bool distinct, bool ordered) {
+					java.util.ArrayList vars = new java.util.ArrayList();
+					foreach (VariableBinding b in variables)
+						if (varMap[b.Variable] != null) // because of bad treatment of meta
+							vars.add((SparqlVariable)varMap[b.Variable]);
+					
+					bindings = new RdfBindingSetImpl(vars);
+					bindings.setDistinct(distinct);
+					bindings.setOrdered(ordered);
+				}
+				
+				public override bool Add(VariableBinding[] result) {
+					RdfBindingRowImpl row = new RdfBindingRowImpl(bindings);
+					for (int i = 0; i < result.Length; i++) {
+						if (varMap[result[i].Variable] == null) continue; // because of the bad treatment of meta
+						row.addBinding( (SparqlVariable)varMap[result[i].Variable], RdfSourceWrapper.Wrap(result[i].Target) );
+					}
+					bindings.addRow(row);
+					return true;
+				}
+
+				public override void AddComments(string comments) {
+				}
+		    }
+		    
+		    Resource ToRes(object expr, java.util.Map knownValues, bool entities, Hashtable varMap1, Hashtable varMap2, RdfSourceWrapper src, QueryOptions opts) {
+		    	if (expr is SparqlVariable) {
+		    		Variable v;
+		    		if (varMap1.ContainsKey(expr)) {
+		    			v = (Variable)varMap1[expr];
+		    		} else {
+		    			v = new Variable(expr.ToString());
+		    			varMap1[expr] = v;
+		    			varMap2[v] = expr;
+		    		}
+		    		
+		    		if (knownValues.containsKey(expr)) {
+			    		java.util.Set values = (java.util.Set)knownValues.get(expr);
+			    		ArrayList values2 = new ArrayList();
+			    		for (java.util.Iterator iter = values.iterator(); iter.hasNext(); ) {
+			    			Resource r = src.ToResource((org.openrdf.model.Value)iter.next());
+			    			if (r != null)
+			    				values2.Add(r);
+			    		}
+			    		
+			    		opts.VariableKnownValues[v] = values2;
+			    	}
+
+		    		return v;
+		    	}
+
+	    		return entities ? src.ToEntity((org.openrdf.model.Value)expr) : src.ToResource((org.openrdf.model.Value)expr);
 		    }
 		    
 			protected override void extractLiteralFilters(name.levering.ryan.sparql.model.logic.ExpressionLogic node, java.util.Map literalFilters) {

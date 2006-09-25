@@ -51,10 +51,16 @@ public class RDFQuery {
 		}
 
 		Query query;
+		
+		MemoryStore queryModel = null;
+		System.Collections.ICollection queryModelVars = null;
+		
 		if (opts.type == "rsquary") {
 			RdfReader queryparser = RdfReader.Create("n3", "-");
 			queryparser.BaseUri = baseuri;
-			query = new GraphMatch(queryparser);
+			queryModel = new MemoryStore(queryparser);
+			queryModelVars = queryparser.Variables;
+			query = new GraphMatch(queryModel);
 		} else if (opts.type == "sparql") {
 			string querystring = Console.In.ReadToEnd();
 			query = new Sparql(querystring);
@@ -83,6 +89,15 @@ public class RDFQuery {
 		if (query is Sparql && ((Sparql)query).Type != Sparql.QueryType.Select) {
 			Sparql sparql = (Sparql)query;
 			sparql.Run(model, Console.Out);
+		} else if (model is QueryableSource && queryModel != null) {
+			SemWeb.Query.QueryOptions qopts = new SemWeb.Query.QueryOptions();
+			qopts.DistinguishedVariables = queryModelVars;
+
+			foreach (Entity e in queryModel.GetEntities())
+				if (e is BNode && !(e is Variable))
+					queryModel.Replace(e, new Variable(((BNode)e).LocalName));
+			
+			((QueryableSource)model).Query(queryModel.ToArray(), qopts, qs);
 		} else {
 			query.Run(model, qs);
 		}

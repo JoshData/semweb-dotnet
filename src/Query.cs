@@ -9,6 +9,14 @@ using SemWeb.Util;
 
 namespace SemWeb.Query {
 
+	public struct QueryOptions {
+		public int Limit;
+		public ICollection DistinguishedVariables;
+		public IDictionary VariableKnownValues;
+		public IDictionary VariableLiteralFilters;
+	}
+	
+
 	public class QueryFormatException : ApplicationException {
 		public QueryFormatException(string message) : base(message) { }
 		public QueryFormatException(string message, Exception cause) : base(message, cause) { }

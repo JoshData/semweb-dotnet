@@ -159,6 +159,16 @@ namespace SemWeb {
 			Metas = metas;
 		}
 		
+		internal Resource[] GetComponent(int index) {
+			switch (index) {
+				case 0: return Subjects;
+				case 1: return Predicates;
+				case 2: return Objects;
+				case 3: return Metas;
+			}
+			throw new ArgumentException("index");
+		}
+		
 		public override string ToString() {
 			string ret =
 				ToString(Subjects) + " " +
