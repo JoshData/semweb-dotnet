@@ -1708,7 +1708,7 @@ diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/logic/nai
  
 diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/logic/streamed/AdvancedGroupConstraintLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/streamed/AdvancedGroupConstraintLogic.java
 --- sparql-0.8/src/main/name/levering/ryan/sparql/logic/streamed/AdvancedGroupConstraintLogic.java	1969-12-31 19:00:00.000000000 -0500
-+++ work-copy/src/main/name/levering/ryan/sparql/logic/streamed/AdvancedGroupConstraintLogic.java	2006-09-24 18:08:21.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/logic/streamed/AdvancedGroupConstraintLogic.java	2006-09-25 07:29:01.000000000 -0400
 @@ -0,0 +1,549 @@
 +/*
 + * SPARQL Engine
@@ -1887,9 +1887,12 @@ diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/logic/str
 +			if (tripleConstraints.size() == 1) {
 +				leastConstraint = (TripleConstraint)tripleConstraints.get(0);
 +			} else {
++				System.err.println(">>>");
++				
 +				for (Iterator cons = tripleConstraints.iterator(); cons.hasNext();) {
 +					TripleConstraint c = (TripleConstraint) cons.next();
 +					float complexity = getComplexity(c, knownVars, cheapVars, knownFilters, source);
++					System.err.println(">>> " + complexity + "\t" + c);
 +					if (leastConstraint == null || complexity < leastComplexity) {
 +						leastComplexity = complexity;
 +						leastConstraint = c;
@@ -2150,8 +2153,8 @@ diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/logic/str
 +		Object predicate = triple.getPredicateExpression();
 +		Object object = triple.getObjectExpression();
 +		
-+		boolean isFunctional = isFunctional((URI)predicate, source, false);
-+		boolean isInverseFunctional = isFunctional((URI)predicate, source, true);
++		boolean isFunctional = isFunctional((URI)predicate, source, true);
++		boolean isInverseFunctional = isFunctional((URI)predicate, source, false);
 +		
 +		// Properties in RDF tend to be many-to-few.  That is, lots of people
 +		// may have a particular foaf:name, and one person has very few foaf:names.
@@ -2165,19 +2168,16 @@ diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/logic/str
 +		// If this is a functional or inverse functional statement, then we reduce the
 +		// complexity of the object because we know it is in a 1-to-1 relation with
 +		// the subject (or the other way around).  (And, in these cases the predicate
-+		// isn't a variable, so its complexity is zero anyway.)
++		// isn't a variable, so its complexity is zero anyway.)  Note that these
++		// computations are based on the 1 + maximum possible complexity for the
++		// subject and object, so *modifications to the getComplexity2 function and
++		// the penalities should be reflected here.
 +		
-+		if (isFunctional && subjComplexity == 0) objComplexity = 0;
-+		else if (isFunctional && subjComplexity <= 2) objComplexity /= 3;
-+		else if (isFunctional) objComplexity /= 2;
++		if (isFunctional) objComplexity /= (6 - subjComplexity);
++		if (isInverseFunctional) subjComplexity /= (5 - objComplexity);
++		// If both functional and inverse functional, then does this make sense?
 +		
-+		if (isInverseFunctional && objComplexity == 0) subjComplexity = 0;
-+		else if (isInverseFunctional && objComplexity <= 2) subjComplexity /= 3;
-+		else if (isInverseFunctional) subjComplexity /= 2;
-+
-+		float complexity = subjComplexity + predComplexity + objComplexity;
-+		
-+		return complexity;
++		return subjComplexity + predComplexity + objComplexity;
 +	}
 +	
 +	private int getComplexity2(Object thing, Set variablesKnown, Set cheapVariables, Map knownFilters, int penalty) {
