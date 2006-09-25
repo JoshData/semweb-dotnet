@@ -22,6 +22,7 @@ namespace SemWeb {
 		//Entity entOWLSAMEAS = "http://www.w3.org/2002/07/owl#sameAs";
 		Entity entDAMLEQUIV = "http://www.daml.org/2000/12/daml+oil#equivalentTo";
 		Entity entLOGIMPLIES = "http://www.w3.org/2000/10/swap/log#implies";
+		Entity entGRAPHCONTAINS = "http://razor.occams.info/code/semweb/internaluris/graphContains";
 		
 		bool addFailuresAsWarnings = false;
 		
@@ -44,6 +45,7 @@ namespace SemWeb {
 			public Entity meta;
 			public bool UsingKeywords;
 			public Hashtable Keywords;
+			public Entity overrideMeta;
 			
 			public Location Location { get { return new Location(source.Line, source.Col); } }
 		}
@@ -152,6 +154,12 @@ namespace SemWeb {
 			if (predicate == null) OnError("Expecting a predicate", loc);
 			if (predicate is Literal) OnError("Predicates cannot be literals", loc);
 			
+			if (predicate == entGRAPHCONTAINS) {
+				context.overrideMeta = subject as Entity;
+			} else {
+				context.overrideMeta = null;
+			}
+			
 			char punctuation = ',';
 			while (punctuation == ',') {
 				ReadObject(subject, (Entity)predicate, context, reverse);
@@ -172,7 +180,9 @@ namespace SemWeb {
 			if (reverse2) OnError("is...of not allowed on objects", loc);
 			
 			loc = context.Location;
-			if (!reverse) {
+			if (predicate == entGRAPHCONTAINS) {
+				// don't add the statement, it was enough to associate the meta node
+			} else if (!reverse) {
 				if (subject is Literal) OnError("Subjects of statements cannot be literals", loc);			
 				Add(context.store, new Statement((Entity)subject, predicate, value, context.meta), loc);
 			} else {
@@ -380,6 +390,11 @@ namespace SemWeb {
 			} else if (firstchar == '=') {
 				if (source.Peek() == (int)'>')
 					b.Append((char)source.Read());
+				
+				if (source.Peek() == (int)':' && source.Peek2() == (int)'>') { // SPECIAL EXTENSION "=:>"
+					b.Append((char)source.Read());
+					b.Append((char)source.Read());
+				}
 			
 			} else if (firstchar == '[') {
 				// The start of an anonymous node.
@@ -513,7 +528,9 @@ namespace SemWeb {
 			if (str == "<=") {
 				reverse = true;
 				return entLOGIMPLIES;
-			}				
+			}
+			if (str == "=:>") // SPECIAL EXTENSION!
+				return entGRAPHCONTAINS;
 
 			if (str == "@has") // ignore this token
 				return ReadResource2(context, out reverse);
@@ -616,8 +633,12 @@ namespace SemWeb {
 				// ParseContext is a struct, so this gives us a clone.
 				ParseContext newcontext = context;
 				
-				// The formula is denoted by a blank node
-				newcontext.meta = new BNode();
+				// The formula is denoted by a blank node, unless we set
+				// the override meta flag above.
+				if (context.overrideMeta == null)
+					newcontext.meta = new BNode();
+				else
+					newcontext.meta = context.overrideMeta;
 				
 				// According to the spec, _:xxx anonymous nodes are
 				// local to the formula.  But ?$variables (which aren't
