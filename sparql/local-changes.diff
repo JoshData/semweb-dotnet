@@ -1708,8 +1708,8 @@ diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/logic/nai
  
 diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/logic/streamed/AdvancedGroupConstraintLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/streamed/AdvancedGroupConstraintLogic.java
 --- sparql-0.8/src/main/name/levering/ryan/sparql/logic/streamed/AdvancedGroupConstraintLogic.java	1969-12-31 19:00:00.000000000 -0500
-+++ work-copy/src/main/name/levering/ryan/sparql/logic/streamed/AdvancedGroupConstraintLogic.java	2006-09-25 07:29:01.000000000 -0400
-@@ -0,0 +1,549 @@
++++ work-copy/src/main/name/levering/ryan/sparql/logic/streamed/AdvancedGroupConstraintLogic.java	2006-09-25 10:36:19.000000000 -0400
+@@ -0,0 +1,560 @@
 +/*
 + * SPARQL Engine
 + * Copyright (C) 2005 Ryan Levering, All rights reserved.
@@ -1887,12 +1887,12 @@ diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/logic/str
 +			if (tripleConstraints.size() == 1) {
 +				leastConstraint = (TripleConstraint)tripleConstraints.get(0);
 +			} else {
-+				System.err.println(">>>");
++				//System.err.println(">>>");
 +				
 +				for (Iterator cons = tripleConstraints.iterator(); cons.hasNext();) {
 +					TripleConstraint c = (TripleConstraint) cons.next();
 +					float complexity = getComplexity(c, knownVars, cheapVars, knownFilters, source);
-+					System.err.println(">>> " + complexity + "\t" + c);
++					//System.err.println(">>> " + complexity + "\t" + c);
 +					if (leastConstraint == null || complexity < leastComplexity) {
 +						leastComplexity = complexity;
 +						leastConstraint = c;
@@ -1949,6 +1949,12 @@ diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/logic/str
 +
 +		// Run the constraints in the new order.
 +        RdfBindingSet current = null;
++		
++		// Allow a subclass to take over running the constraints.
++		current = runTripleConstraints(constraintOrder, source, defaultDatasets, namedDatasets, knownValues, knownFilters);
++		if (current != null)
++			constraintOrder.clear();
++		
 +		for (Iterator cons = constraintOrder.iterator(); cons.hasNext();) {
 +			ConstraintLogic c = (ConstraintLogic) cons.next();
 +			if (current == null) {
@@ -2024,6 +2030,11 @@ diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/logic/str
 +        return current;
 +    }
 +
++	protected RdfBindingSet runTripleConstraints(List tripleConstraints, RdfSource source,
++            Collection defaultDatasets, Collection namedDatasets, Map knownValues, Map knownFilters) {
++		return null;
++	}
++	
 +    /**
 +     * Creates a mapping from variables to a List of filters based on
 +	 * the expression.
