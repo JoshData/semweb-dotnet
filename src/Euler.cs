@@ -29,6 +29,10 @@ namespace SemWeb.Inference {
 			Select(Statement.All, sink);
 		}
 
+		public bool Contains(Resource resource) {
+			return world.Contains(resource);
+		}
+		
 		public bool Contains(Statement template) {
 			return Store.DefaultContains(this, template);
 		}

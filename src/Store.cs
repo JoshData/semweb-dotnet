@@ -12,6 +12,7 @@ namespace SemWeb {
 	}
 	
 	public interface SelectableSource : StatementSource {
+		bool Contains(Resource resource);
 		bool Contains(Statement template);
 		void Select(Statement template, StatementSink sink);
 		void Select(SelectFilter filter, StatementSink sink);
@@ -222,10 +223,17 @@ namespace SemWeb {
 		
 		public abstract Entity[] GetMetas();
 		
+		public virtual bool Contains(Resource resource) {
+			return (resource is Entity && Contains(new Statement((Entity)resource, null, null, null)))
+				|| (resource is Entity && Contains(new Statement(null, (Entity)resource, null, null)))
+				|| (                      Contains(new Statement(null, null, resource, null)))
+				|| (resource is Entity && Contains(new Statement(null, null, null, (Entity)resource)));
+		}
+
 		public virtual bool Contains(Statement template) {
 			return DefaultContains(this, template);
 		}
-
+		
 		public static bool DefaultContains(SelectableSource source, Statement template) {
 			StatementExistsSink sink = new StatementExistsSink();
 			SelectFilter filter = new SelectFilter(template);
@@ -484,6 +492,13 @@ namespace SemWeb.Stores {
 			else
 				return null;
 		}
+
+		public override bool Contains(Resource resource) {
+			foreach (SelectableSource s in allsources)
+				if (s.Contains(resource))
+					return true;
+			return false;
+		}
 		
 		public override bool Contains(Statement statement) {
 			SelectableSource[] sources = GetSources(statement.Meta);
@@ -530,6 +545,8 @@ namespace SemWeb.Stores {
 			// The default implementation does not return
 			// anything for this call.
 		}
+		
+		public abstract bool Contains(Resource resource);
 
 		public virtual bool Contains(Statement template) {
 			template.Object = null; // reduce to another case (else there would be recursion)
@@ -599,6 +616,11 @@ namespace SemWeb.Stores {
 		public void Select(StatementSink sink) {
 			Select(Statement.All, sink);
 		}
+		
+		public bool Contains(Resource resource) {
+			output.WriteLine("CONTAINS: " + resource);
+			return source.Contains(resource);
+		}
 
 		public bool Contains(Statement template) {
 			output.WriteLine("CONTAINS: " + template);
@@ -619,7 +641,8 @@ namespace SemWeb.Stores {
 	public class CachedSource : SelectableSource {
 		SelectableSource source;
 
-		StatementMap containsresults = new StatementMap();
+		Hashtable containsresource = new Hashtable();
+		StatementMap containsstmtresults = new StatementMap();
 		StatementMap selectresults = new StatementMap();
 		Hashtable selfilterresults = new Hashtable();
 	
@@ -631,10 +654,16 @@ namespace SemWeb.Stores {
 			Select(Statement.All, sink);
 		}
 
+		public bool Contains(Resource resource) {
+			if (!containsresource.ContainsKey(resource))
+				containsresource[resource] = source.Contains(resource);
+			return (bool)containsresource[resource];
+		}
+
 		public bool Contains(Statement template) {
-			if (!containsresults.ContainsKey(template))
-				containsresults[template] = source.Contains(template);
-			return (bool)containsresults[template];
+			if (!containsstmtresults.ContainsKey(template))
+				containsstmtresults[template] = source.Contains(template);
+			return (bool)containsstmtresults[template];
 		}
 		
 		public void Select(Statement template, StatementSink sink) {

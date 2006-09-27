@@ -17,6 +17,10 @@ namespace SemWeb.Remote {
 
 		public bool Distinct { get { return true; } }
 		
+		public bool Contains(Resource resource) {
+			throw new NotImplementedException();
+		}
+		
 		public bool Contains(Statement template) {
 			return Select(template, null, true);
 		}

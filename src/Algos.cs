@@ -14,6 +14,9 @@ namespace SemWeb.Algos {
 			this.b = b;
 		}
 		public bool Distinct { get { return a.Distinct; } }
+		public bool Contains(Resource resource) {
+			return a.Contains(resource) || b.Contains(resource);
+		}
 		public bool Contains(Statement template) {
 			return Store.DefaultContains(this, template);
 		}

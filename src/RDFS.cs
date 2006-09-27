@@ -104,6 +104,10 @@ namespace SemWeb.Inference {
 		
 		public void Select(StatementSink sink) { data.Select(sink); }
 		
+		public bool Contains(Resource resource) {
+			return data.Contains(resource);
+		}
+		
 		public bool Contains(Statement template) {
 			return Store.DefaultContains(this, template);
 		}

@@ -778,6 +778,14 @@ namespace SemWeb.Stores {
 			builder.Append(text);
 		}
 		
+		///////////////////////////
+		// QUERYING THE DATABASE //
+		///////////////////////////
+		
+		public override bool Contains(Resource resource) {
+			return GetResourceId(resource, false) != 0;
+		}
+		
 		internal struct SelectColumnFilter {
 			public bool SubjectId, PredicateId, ObjectId, MetaId;
 			public bool SubjectUri, PredicateUri, ObjectData, MetaUri;
@@ -1264,7 +1272,7 @@ namespace SemWeb.Stores {
 			
 			} // lock
 		}
-
+		
 		Entity GetSelectedEntity(int id, string uri, Resource given, bool idSelected, bool uriSelected, Hashtable entMap) {
 			if (!idSelected) return (Entity)given;
 			if (!uriSelected) {
