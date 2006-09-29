@@ -18,7 +18,7 @@ MAIN_SOURCES = \
 
 bin/SemWeb.dll: $(MAIN_SOURCES) Makefile
 	mcs -debug $(MAIN_SOURCES) -out:bin/SemWeb.dll -t:library \
-		-r:System.Data -r:System.Web -r:Mono.Posix
+		-r:System.Data -r:System.Web
 
 # Auxiliary Assemblies
 
