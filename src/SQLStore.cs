@@ -200,7 +200,7 @@ namespace SemWeb.Stores {
 			return Convert.ToBase64String(hash);
 		}
 		
-		private int GetLiteralId(Literal literal, bool create, StringBuilder buffer, bool insertCombined) {
+		private int GetLiteralId(Literal literal, bool create, StringBuilder buffer, bool insertCombined, ref bool firstInsert) {
 			// Returns the literal ID associated with the literal.  If a literal
 			// doesn't exist and create is true, a new literal is created,
 			// otherwise 0 is returned.
@@ -223,7 +223,7 @@ namespace SemWeb.Stores {
 			}
 				
 			if (create) {
-				int id = AddLiteral(literal, buffer, insertCombined);
+				int id = AddLiteral(literal, buffer, insertCombined, ref firstInsert);
 				if (isImporting)
 					literalCache[literal] = id;
 				return id;
@@ -232,7 +232,7 @@ namespace SemWeb.Stores {
 			return 0;
 		}
 		
-		private int AddLiteral(Literal literal, StringBuilder buffer, bool insertCombined) {
+		private int AddLiteral(Literal literal, StringBuilder buffer, bool insertCombined, ref bool firstInsert) {
 			int id = NextId();
 			
 			StringBuilder b;
@@ -245,8 +245,9 @@ namespace SemWeb.Stores {
 			if (!insertCombined) {
 				b.Append(INSERT_INTO_LITERALS_VALUES);
 			} else {
-				if (b.Length > 0)
+				if (!firstInsert)
 					b.Append(',');
+				firstInsert = false;
 			}
 			b.Append('(');
 			b.Append(id);
@@ -276,7 +277,7 @@ namespace SemWeb.Stores {
 			return id;
 		}
 
-		private int GetEntityId(string uri, bool create, StringBuilder entityInsertBuffer, bool insertCombined, bool checkIfExists) {
+		private int GetEntityId(string uri, bool create, StringBuilder entityInsertBuffer, bool insertCombined, bool checkIfExists, ref bool firstInsert) {
 			// Returns the resource ID associated with the URI.  If a resource
 			// doesn't exist and create is true, a new resource is created,
 			// otherwise 0 is returned.
@@ -314,8 +315,9 @@ namespace SemWeb.Stores {
 			if (!insertCombined) {
 				b.Append(INSERT_INTO_ENTITIES_VALUES);
 			} else {
-				if (b.Length > 0)
+				if (!firstInsert)
 					b.Append(',');
+				firstInsert = false;
 			}
 			b.Append('(');
 			b.Append(id);
@@ -337,15 +339,16 @@ namespace SemWeb.Stores {
 		}
 		
 		private int GetResourceId(Resource resource, bool create) {
-			return GetResourceIdBuffer(resource, create, null, null, false);
+			bool firstLiteralInsert = true, firstEntityInsert = true;
+			return GetResourceIdBuffer(resource, create, null, null, false, ref firstLiteralInsert, ref firstEntityInsert);
 		}
 		
-		private int GetResourceIdBuffer(Resource resource, bool create, StringBuilder literalInsertBuffer, StringBuilder entityInsertBuffer, bool insertCombined) {
+		private int GetResourceIdBuffer(Resource resource, bool create, StringBuilder literalInsertBuffer, StringBuilder entityInsertBuffer, bool insertCombined, ref bool firstLiteralInsert, ref bool firstEntityInsert) {
 			if (resource == null) return 0;
 			
 			if (resource is Literal) {
 				Literal lit = (Literal)resource;
-				return GetLiteralId(lit, create, literalInsertBuffer, insertCombined);
+				return GetLiteralId(lit, create, literalInsertBuffer, insertCombined, ref firstLiteralInsert);
 			}
 			
 			if (object.ReferenceEquals(resource, Statement.DefaultMeta))
@@ -357,7 +360,7 @@ namespace SemWeb.Stores {
 			int id;
 			
 			if (resource.Uri != null) {
-				id = GetEntityId(resource.Uri, create, entityInsertBuffer, insertCombined, true);
+				id = GetEntityId(resource.Uri, create, entityInsertBuffer, insertCombined, true, ref firstEntityInsert);
 			} else {
 				// This anonymous node didn't come from the database
 				// since it didn't have a resource key.  If !create,
@@ -378,7 +381,7 @@ namespace SemWeb.Stores {
 					// removed.
 					string guid = "semweb-bnode-guid://taubz.for.net,2006/"
 						+ Guid.NewGuid().ToString("N");
-					id = GetEntityId(guid, create, entityInsertBuffer, insertCombined, false);
+					id = GetEntityId(guid, create, entityInsertBuffer, insertCombined, false, ref firstEntityInsert);
 					anonEntityHeldIds.Add(id);
 				}
 			}
@@ -579,10 +582,13 @@ namespace SemWeb.Stores {
 					}
 				}
 				
-				StringBuilder entityInsertions = new StringBuilder(INSERT_INTO_ENTITIES_VALUES);
-				StringBuilder literalInsertions = new StringBuilder(INSERT_INTO_LITERALS_VALUES);
+				StringBuilder entityInsertions = new StringBuilder();
+				StringBuilder literalInsertions = new StringBuilder();
+				if (insertCombined) entityInsertions.Append(INSERT_INTO_ENTITIES_VALUES);
+				if (insertCombined) literalInsertions.Append(INSERT_INTO_LITERALS_VALUES);
 				int entityInsertionsInitialLength = entityInsertions.Length;
 				int literalInsertionsInitialLength = literalInsertions.Length;
+				bool firstLiteralInsert = true, firstEntityInsert = true; // only used if insertCombined is true
 				
 				cmd = new StringBuilder();
 				if (insertCombined)
@@ -591,11 +597,11 @@ namespace SemWeb.Stores {
 				for (int i = 0; i < statements.Count; i++) {
 					Statement statement = (Statement)statements[i];
 				
-					int subj = GetResourceIdBuffer(statement.Subject, true, literalInsertions, entityInsertions, insertCombined);
-					int pred = GetResourceIdBuffer(statement.Predicate, true,  literalInsertions, entityInsertions, insertCombined);
+					int subj = GetResourceIdBuffer(statement.Subject, true, literalInsertions, entityInsertions, insertCombined, ref firstLiteralInsert, ref firstEntityInsert);
+					int pred = GetResourceIdBuffer(statement.Predicate, true,  literalInsertions, entityInsertions, insertCombined, ref firstLiteralInsert, ref firstEntityInsert);
 					int objtype = ObjectType(statement.Object);
-					int obj = GetResourceIdBuffer(statement.Object, true, literalInsertions, entityInsertions, insertCombined);
-					int meta = GetResourceIdBuffer(statement.Meta, true, literalInsertions, entityInsertions, insertCombined);
+					int obj = GetResourceIdBuffer(statement.Object, true, literalInsertions, entityInsertions, insertCombined, ref firstLiteralInsert, ref firstEntityInsert);
+					int meta = GetResourceIdBuffer(statement.Meta, true, literalInsertions, entityInsertions, insertCombined, ref firstLiteralInsert, ref firstEntityInsert);
 					
 					if (!insertCombined)
 						cmd.Append(INSERT_INTO_STATEMENTS_VALUES);
@@ -619,15 +625,18 @@ namespace SemWeb.Stores {
 				if (literalInsertions.Length > literalInsertionsInitialLength) {
 					if (insertCombined)
 						literalInsertions.Append(';');
+					if (Debug) Console.Error.WriteLine(literalInsertions.ToString());
 					RunCommand(literalInsertions.ToString());
 				}
 				
 				if (entityInsertions.Length > entityInsertionsInitialLength) {
 					if (insertCombined)
 						entityInsertions.Append(';');
+					if (Debug) Console.Error.WriteLine(entityInsertions.ToString());
 					RunCommand(entityInsertions.ToString());
 				}
 				
+				if (Debug) Console.Error.WriteLine(cmd.ToString());
 				RunCommand(cmd.ToString());
 			
 			} finally {
@@ -1081,7 +1090,6 @@ namespace SemWeb.Stores {
 			Hashtable varSelectedLiteral = new Hashtable();
 			
 			StringBuilder fromClause = new StringBuilder();
-			StringBuilder leftJoins = new StringBuilder();
 			StringBuilder whereClause = new StringBuilder();
 			
 			for (int f = 0; f < graph.Length; f++) {
@@ -1118,26 +1126,26 @@ namespace SemWeb.Stores {
 							varRef2[v] = vIndex;
 							
 							if (distinguishedVars.Contains(v)) {
-								leftJoins.Append(" LEFT JOIN ");
-								leftJoins.Append(table);
-								leftJoins.Append("_entities AS vent");
-								leftJoins.Append(vIndex);
-								leftJoins.Append(" ON ");
-								leftJoins.Append(myRef);
-								leftJoins.Append("=");
-								leftJoins.Append("vent" + vIndex + ".id");
+								fromClause.Append(" LEFT JOIN ");
+								fromClause.Append(table);
+								fromClause.Append("_entities AS vent");
+								fromClause.Append(vIndex);
+								fromClause.Append(" ON ");
+								fromClause.Append(myRef);
+								fromClause.Append("=");
+								fromClause.Append("vent" + vIndex + ".id ");
 								
 								varSelectedLiteral[v] = (i == 2);
 								
 								if (i == 2) { // literals cannot be in any other column
-									leftJoins.Append(" LEFT JOIN ");
-									leftJoins.Append(table);
-									leftJoins.Append("_literals AS vlit");
-									leftJoins.Append(vIndex);
-									leftJoins.Append(" ON ");
-									leftJoins.Append(myRef);
-									leftJoins.Append("=");
-									leftJoins.Append("vlit" + vIndex + ".id");
+									fromClause.Append(" LEFT JOIN ");
+									fromClause.Append(table);
+									fromClause.Append("_literals AS vlit");
+									fromClause.Append(vIndex);
+									fromClause.Append(" ON ");
+									fromClause.Append(myRef);
+									fromClause.Append("=");
+									fromClause.Append("vlit" + vIndex + ".id ");
 								}
 							}
 							
@@ -1212,9 +1220,6 @@ namespace SemWeb.Stores {
 			cmd.Append(" FROM ");
 			cmd.Append(fromClause.ToString());
 			
-			cmd.Append(" ");
-			cmd.Append(leftJoins.ToString());
-
 			if (whereClause.Length > 0)
 				cmd.Append(" WHERE ");
 			cmd.Append(whereClause.ToString());
