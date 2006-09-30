@@ -213,9 +213,9 @@ namespace SemWeb.Stores {
 				b.Append("SELECT id FROM ");
 				b.Append(table);
 				b.Append("_literals WHERE hash =");
-				b.Append("\"");
+				b.Append(quote);
 				b.Append(GetLiteralHash(literal));
-				b.Append("\"");
+				b.Append(quote);
 				b.Append(" LIMIT 1;");
 				
 				object id = RunScalar(b.ToString());
@@ -263,9 +263,11 @@ namespace SemWeb.Stores {
 				EscapedAppend(b, literal.DataType);
 			else
 				b.Append("NULL");
-			b.Append(",\"");
+			b.Append(',');
+			b.Append(quote);
 			b.Append(GetLiteralHash(literal));
-			b.Append("\")");
+			b.Append(quote);
+			b.Append(')');
 			if (!insertCombined)
 				b.Append(';');
 			
@@ -564,9 +566,9 @@ namespace SemWeb.Stores {
 					
 					if (hasLiterals)
 						cmd.Append(" , ");
-					cmd.Append('"');
+					cmd.Append(quote);
 					cmd.Append(hash);
-					cmd.Append('"');
+					cmd.Append(quote);
 					hasLiterals = true;
 					litseen[hash] = lit;
 				}
@@ -932,10 +934,10 @@ namespace SemWeb.Stores {
 			// want to ever select them from the database.
 			// This preloads them, although it makes the first
 			// select quite slow.
-			if (templateMeta == null && SupportsSubquery) {
+			/*if (templateMeta == null && SupportsSubquery) {
 				LoadMetaEntities();
 				columns.MetaUri = false;
-			}
+			}*/
 			
 			// Have to select something
 			if (!columns.SubjectId && !columns.PredicateId && !columns.ObjectId && !columns.MetaId)
@@ -1334,6 +1336,8 @@ namespace SemWeb.Stores {
 		private void LoadMetaEntities() {
 			if (metaEntities != null) return;
 			metaEntities = new Hashtable();
+			
+			// MySQL "optimizes" the statement below in such a way that the subquery isn't executed first!
 			// this misses meta entities that are anonymous, but that's ok
 			using (IDataReader reader = RunReader("select id, value from " + table + "_entities where id in (select distinct meta from " + table + "_statements)")) {
 				while (reader.Read()) {

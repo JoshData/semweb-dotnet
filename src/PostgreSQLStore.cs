@@ -10,7 +10,7 @@ namespace SemWeb.Stores {
 		NpgsqlConnection connection;
 		string connectionString;
 		
-		bool Debug = false;
+		static bool Debug = System.Environment.GetEnvironmentVariable("SEMWEB_DEBUG_SQL") != null;
 		
 		string[] CreateTableCommands;
 		string[] CreateIndexCommands;
@@ -23,7 +23,7 @@ namespace SemWeb.Stores {
 				"(subject INTEGER NOT NULL, predicate INTEGER NOT NULL, objecttype INTEGER NOT NULL, object INTEGER NOT NULL, meta INTEGER NOT NULL);",
 				
 				"CREATE TABLE " + table + "_literals" +
-				"(id INTEGER NOT NULL, value TEXT NOT NULL, language TEXT, datatype TEXT, PRIMARY KEY(id));",
+				"(id INTEGER NOT NULL, value TEXT NOT NULL, language TEXT, datatype TEXT, hash bytea, PRIMARY KEY(id));",
 				
 				"CREATE TABLE " + table + "_entities" +
 				"(id INTEGER NOT NULL, value TEXT NOT NULL, PRIMARY KEY(id));"
