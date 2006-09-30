@@ -80,10 +80,15 @@ namespace SemWeb.Stores {
 
 		protected override void BeginTransaction() {
 			RunCommand("BEGIN");
+			RunCommand("DROP INDEX subject_index");
+			RunCommand("DROP INDEX predicate_index");
+			RunCommand("DROP INDEX object_index");
+			RunCommand("DROP INDEX meta_index");
 		}
 		
 		protected override void EndTransaction() {
 			RunCommand("END");
+			CreateIndexes();
 		}
 		
 		protected override void CreateIndexes() {
