@@ -130,10 +130,16 @@ namespace SemWeb {
 					} else {
 						return new N3Reader(spec);
 					}
+				
+				case "null":
+					if (!output) throw new ArgumentException("The null sink does not support reading.");
+					return new StatementCounterSink();
+					
 				/*case "file":
 					if (spec == "") throw new ArgumentException("Use: format:filename");
 					if (output) throw new ArgumentException("The FileStore does not support writing.");
 					return new SemWeb.Stores.FileStore(spec);*/
+
 				case "sqlite":
 				case "mysql":
 				case "postgresql":
@@ -318,6 +324,7 @@ namespace SemWeb {
 			Remove(find);
 			Add(replacement);
 		}
+		
 				public void Write(System.IO.TextWriter writer) {
 			using (RdfWriter w = new N3Writer(writer)) {
 				Select(w);
