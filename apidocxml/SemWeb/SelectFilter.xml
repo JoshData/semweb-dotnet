@@ -2,7 +2,7 @@
   <TypeSignature Language="C#" Value="public struct SelectFilter" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
-    <AssemblyVersion>0.7.1.0</AssemblyVersion>
+    <AssemblyVersion>0.7.4.1</AssemblyVersion>
   </AssemblyInfo>
   <Base>
     <BaseTypeName>System.ValueType</BaseTypeName>
@@ -102,8 +102,8 @@
         <ReturnType>SemWeb.LiteralFilter[]</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>This field is in development.</summary>
-        <remarks>To be added.</remarks>
+        <summary>An array of filters that the object value of statements must match.</summary>
+        <remarks>An array of filters that the object value of any matching statements must match.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Limit">

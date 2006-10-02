@@ -2,7 +2,7 @@
   <TypeSignature Language="C#" Value="public struct VariableBinding" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
-    <AssemblyVersion>0.7.1.0</AssemblyVersion>
+    <AssemblyVersion>0.7.4.1</AssemblyVersion>
   </AssemblyInfo>
   <Base>
     <BaseTypeName>System.ValueType</BaseTypeName>
@@ -71,10 +71,10 @@
         <Parameter Name="target" Type="SemWeb.Resource" />
       </Parameters>
       <Docs>
-        <param name="variable">To be added.</param>
-        <param name="target">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
+        <param name="variable">The variable in the query represented by this binding.</param>
+        <param name="target">The bound value of the variable, or <see langword="null" /> if the variable is unbound in this result.</param>
+        <summary>Constructs a new VariableBinding struct.</summary>
+        <remarks>None.</remarks>
       </Docs>
     </Member>
   </Members>

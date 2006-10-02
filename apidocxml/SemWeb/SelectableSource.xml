@@ -2,7 +2,7 @@
   <TypeSignature Language="C#" Value="public interface SelectableSource : SemWeb.StatementSource" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
-    <AssemblyVersion>0.7.1.0</AssemblyVersion>
+    <AssemblyVersion>0.7.4.1</AssemblyVersion>
   </AssemblyInfo>
   <Interfaces>
     <Interface>
@@ -89,6 +89,22 @@ using (StatementSink sink = new N3Writer(Console.Out)) {
 }</code>
           </example>
         </remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Contains">
+      <MemberSignature Language="C#" Value="public bool Contains (SemWeb.Resource resource);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Boolean</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="resource" Type="SemWeb.Resource" />
+      </Parameters>
+      <Docs>
+        <param name="resource">A Resource (an entity, bnode, or literal value).</param>
+        <summary>Tests whether a resource is mentioned in the data source.</summary>
+        <returns>A boolean value indicating whether the resource is mentioned in the store.</returns>
+        <remarks>None.</remarks>
       </Docs>
     </Member>
   </Members>

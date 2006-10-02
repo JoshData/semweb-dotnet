@@ -2,7 +2,7 @@
   <TypeSignature Language="C#" Value="public class RdfXmlReader : SemWeb.RdfReader" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
-    <AssemblyVersion>0.7.1.0</AssemblyVersion>
+    <AssemblyVersion>0.7.4.1</AssemblyVersion>
   </AssemblyInfo>
   <Base>
     <BaseTypeName>SemWeb.RdfReader</BaseTypeName>
@@ -69,6 +69,48 @@
         <remarks>None.</remarks>
       </Docs>
     </Member>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public RdfXmlReader (System.IO.TextReader document, string baseUri);" />
+      <MemberType>Constructor</MemberType>
+      <Parameters>
+        <Parameter Name="document" Type="System.IO.TextReader" />
+        <Parameter Name="baseUri" Type="System.String" />
+      </Parameters>
+      <Docs>
+        <param name="document">A TextReader containing the RDF/XML document.</param>
+        <param name="baseUri">The URI of the document itself, to be taken as the Base URI for relative URIs encoutered in the document.</param>
+        <summary>Creates a parser from a TextReader with the given base URI.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public RdfXmlReader (System.IO.Stream document, string baseUri);" />
+      <MemberType>Constructor</MemberType>
+      <Parameters>
+        <Parameter Name="document" Type="System.IO.Stream" />
+        <Parameter Name="baseUri" Type="System.String" />
+      </Parameters>
+      <Docs>
+        <param name="document">The stream containing the RDF/XML file.</param>
+        <param name="baseUri">The URI of the document itself, to be taken as the Base URI for relative URIs encoutered in the document.</param>
+        <summary>Creates a parser from a stream with the given base URI.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public RdfXmlReader (string file, string baseUri);" />
+      <MemberType>Constructor</MemberType>
+      <Parameters>
+        <Parameter Name="file" Type="System.String" />
+        <Parameter Name="baseUri" Type="System.String" />
+      </Parameters>
+      <Docs>
+        <param name="file">The path of the file containing RDF/XML, or "-" to read from Console.In.</param>
+        <param name="baseUri">The URI of the document itself, to be taken as the Base URI for relative URIs encoutered in the document.</param>
+        <summary>Creates a parser from a file with the given base URI.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
   </Members>
   <Docs>
     <summary>Reads RDF statements from an RDF/XML file.</summary>
@@ -80,6 +122,7 @@
     store.Import(data);
 }  </code>
       </example>
-    </remarks>
+   
+<para>It is strongly recommended that you use one of the constructors that takes a Base URI argument, or else set the Base URI of the reader before reading statements from it, so that relative URIs found in the document can be interpreted.  If a BaseURI has not been set and a relative URI is encountered, parsing the document will fail.</para></remarks>
   </Docs>
 </Type>

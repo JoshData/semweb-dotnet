@@ -2,7 +2,7 @@
   <TypeSignature Language="C#" Value="public interface QueryableSource : SemWeb.SelectableSource" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
-    <AssemblyVersion>0.7.1.0</AssemblyVersion>
+    <AssemblyVersion>0.7.4.1</AssemblyVersion>
   </AssemblyInfo>
   <Interfaces>
     <Interface>
@@ -11,37 +11,23 @@
   </Interfaces>
   <Members>
     <Member MemberName="Query">
-      <MemberSignature Language="C#" Value="public void Query (SemWeb.Statement[] graph, SemWeb.Query.QueryResultSink sink);" />
+      <MemberSignature Language="C#" Value="public void Query (SemWeb.Statement[] graph, SemWeb.Query.QueryOptions options, SemWeb.Query.QueryResultSink sink);" />
       <MemberType>Method</MemberType>
       <ReturnValue>
         <ReturnType>System.Void</ReturnType>
       </ReturnValue>
       <Parameters>
         <Parameter Name="graph" Type="SemWeb.Statement[]" />
+        <Parameter Name="options" Type="SemWeb.Query.QueryOptions" />
         <Parameter Name="sink" Type="SemWeb.Query.QueryResultSink" />
       </Parameters>
       <Docs>
-        <param name="graph">To be added.</param>
-        <param name="sink">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
-      </Docs>
-    </Member>
-    <Member MemberName="Query">
-      <MemberSignature Language="C#" Value="public void Query (SemWeb.SelectFilter[] graph, SemWeb.Query.QueryResultSink sink);" />
-      <MemberType>Method</MemberType>
-      <ReturnValue>
-        <ReturnType>System.Void</ReturnType>
-      </ReturnValue>
-      <Parameters>
-        <Parameter Name="graph" Type="SemWeb.SelectFilter[]" />
-        <Parameter Name="sink" Type="SemWeb.Query.QueryResultSink" />
-      </Parameters>
-      <Docs>
-        <param name="graph">To be added.</param>
-        <param name="sink">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
+        <param name="graph">An array of Statements forming a simple graph.</param>
+        <param name="options">Query options.</param>
+        <param name="sink">A sink to which the results of the query will be sent.</param>
+        <summary>Queries the data source with a simple graph pattern containing variables.</summary>
+        <remarks><para>The graph consists of an array of <see cref="T:SemWeb.Statement" />s.  None of the fields of the statements may be <see langword="null" />, as in the Select calls.  Rather, wildcards are given as instances of the <see cref="T:SemWeb.Variable" /> class.  The query's results are all ways the variables can be "bound" (ie. assigned) to resources in the data source such that the graph, with the variables replaced by their values, is found or supported by the data source.</para>
+<para>Bear in mind that two instances of the Variable class are never considered equal even if their names are equal.  Reuse the same Variable instance object to refer to a variable more than once in the graph.</para></remarks>
       </Docs>
     </Member>
   </Members>

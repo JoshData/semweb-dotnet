@@ -47,6 +47,7 @@
       <Type Name="QueryExecutionException" />
       <Type Name="SparqlProtocol" />
       <Type Name="RdfFunction" />
+      <Type Name="QueryOptions" />
     </Namespace>
     <Namespace Name="SemWeb.Stores">
       <Type Name="MultiStore" />
@@ -86,14 +87,13 @@
     </Namespace>
     <Namespace Name="SemWeb.Inference">
       <Type Name="RDFS" />
-      <Type Name="Euler" />
       <Type Name="Rule" />
       <Type Name="ProofStep" />
       <Type Name="Proof" />
     </Namespace>
   </Types>
   <Assemblies>
-    <Assembly Name="SemWeb" Version="0.7.1.0">
+    <Assembly Name="SemWeb" Version="0.7.4.1">
       <Attributes>
         <Attribute>
           <AttributeName>System.Reflection.AssemblyKeyName(KeyName="")</AttributeName>
@@ -102,7 +102,7 @@
           <AttributeName>System.Reflection.AssemblyTrademark(Trademark="")</AttributeName>
         </Attribute>
         <Attribute>
-          <AttributeName>System.Reflection.AssemblyCopyright(Copyright="Copyright (c) 2006 Joshua Tauberer &lt;tauberer@for.net&gt;")</AttributeName>
+          <AttributeName>System.Reflection.AssemblyCopyright(Copyright="Copyright (c) 2006 Joshua Tauberer &lt;jt@occams.info&gt;")</AttributeName>
         </Attribute>
         <Attribute>
           <AttributeName>System.Reflection.AssemblyProduct(Product="")</AttributeName>

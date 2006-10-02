@@ -43,10 +43,10 @@
         <Parameter Name="source" Type="SemWeb.SelectableSource" />
       </Parameters>
       <Docs>
-        <param name="source">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
+        <param name="source">The data source to query.</param>
+        <summary>Executes an ASK query on the given data source and returns the result of the query as a boolean.</summary>
+        <returns>A boolean value giving the result of the ASK query.</returns>
+        <remarks>None.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Ask">
@@ -60,10 +60,10 @@
         <Parameter Name="output" Type="System.IO.TextWriter" />
       </Parameters>
       <Docs>
-        <param name="source">To be added.</param>
-        <param name="output">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
+        <param name="source">The data source to query.</param>
+        <param name="output">The <see cref="T:System.IO.TextWriter" /> to output the results to in the SPARQL Results XML output format.</param>
+        <summary>Executes an ASK query on the given data source and outputs the result of the query in the SPARQL results format to a TextWriter.</summary>
+        <remarks>This method can also be called through <see cref="M:SemWeb.Query.Query.Run(SemWeb.SelectableSource,System.IO.TextWriter)" />.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Construct">
@@ -77,10 +77,10 @@
         <Parameter Name="sink" Type="SemWeb.StatementSink" />
       </Parameters>
       <Docs>
-        <param name="source">To be added.</param>
-        <param name="sink">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
+        <param name="source">The data source to query.</param>
+        <param name="sink">The <see cref="T:SemWeb.StatementSink" /> to send the constructed statements to.</param>
+        <summary>Executes a CONSTRUCT query on the given data source and sends the constructed statements to a StatementSink.</summary>
+        <remarks>None.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Construct">
@@ -94,10 +94,10 @@
         <Parameter Name="output" Type="System.IO.TextWriter" />
       </Parameters>
       <Docs>
-        <param name="source">To be added.</param>
-        <param name="output">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
+        <param name="source">The data source to query.</param>
+        <param name="output">The <see cref="T:System.IO.TextWriter" /> to output the results to in the SPARQL Results XML output format.</param>
+        <summary>Executes a CONSTRUCT query on the given data source and outputs the result of the query in the SPARQL results format to a TextWriter.</summary>
+        <remarks>This method can also be called through <see cref="M:SemWeb.Query.Query.Run(SemWeb.SelectableSource,System.IO.TextWriter)" />.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Describe">
@@ -111,10 +111,10 @@
         <Parameter Name="sink" Type="SemWeb.StatementSink" />
       </Parameters>
       <Docs>
-        <param name="source">To be added.</param>
-        <param name="sink">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
+        <param name="source">The data source to query.</param>
+        <param name="sink">The <see cref="T:SemWeb.StatementSink" /> to send the constructed statements to.</param>
+        <summary>Executes a DESCRIBE query on the given data source and sends the constructed statements to a StatementSink.</summary>
+        <remarks>None.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Describe">
@@ -128,10 +128,10 @@
         <Parameter Name="output" Type="System.IO.TextWriter" />
       </Parameters>
       <Docs>
-        <param name="source">To be added.</param>
-        <param name="output">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
+        <param name="source">The data source to query.</param>
+        <param name="output">The <see cref="T:System.IO.TextWriter" /> to output the results to in the SPARQL Results XML output format.</param>
+        <summary>Executes a DESCRIBE query on the given data source and outputs the result of the query in the SPARQL results format to a TextWriter.</summary>
+        <remarks>This method can also be called through <see cref="M:SemWeb.Query.Query.Run(SemWeb.SelectableSource,System.IO.TextWriter)" />.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Select">
@@ -145,10 +145,10 @@
         <Parameter Name="output" Type="System.IO.TextWriter" />
       </Parameters>
       <Docs>
-        <param name="source">To be added.</param>
-        <param name="output">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
+        <param name="source">The data source to query.</param>
+        <param name="output">The <see cref="T:System.IO.TextWriter" /> to output the results to in the SPARQL Results XML output format.</param>
+        <summary>Executes a SELECT query on the given data source and outputs the result of the query in the SPARQL results format to a TextWriter.</summary>
+        <remarks>This method can also be called through <see cref="M:SemWeb.Query.Query.Run(SemWeb.SelectableSource,System.IO.TextWriter)" />.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Select">
@@ -162,10 +162,10 @@
         <Parameter Name="sink" Type="SemWeb.Query.QueryResultSink" />
       </Parameters>
       <Docs>
-        <param name="source">To be added.</param>
-        <param name="sink">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
+        <param name="source">The data source to query.</param>
+        <param name="sink">The <see cref="T:SemWeb.Query.QueryResultSink" /> to send the resulting variable bindings to.</param>
+        <summary>Executes a SELECT query on the given data source and sends the resulting variable bindings to a QueryResultSink.</summary>
+        <remarks>None.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Type">
@@ -201,9 +201,22 @@
         <Parameter Name="function" Type="SemWeb.Query.RdfFunction" />
       </Parameters>
       <Docs>
-        <param name="function">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
+        <param name="function">An object implementing an external function.</param>
+        <summary>Registers an external function that can be used in FILTER clauses.</summary>
+        <remarks>None.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="GetQueryPrefixes">
+      <MemberSignature Language="C#" Value="public SemWeb.NamespaceManager GetQueryPrefixes ();" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>SemWeb.NamespaceManager</ReturnType>
+      </ReturnValue>
+      <Parameters />
+      <Docs>
+        <summary>Gets a NamespaceManager containing all of the PREFIX definitions used in the query.</summary>
+        <returns>A NamespaceManager.</returns>
+        <remarks>None.</remarks>
       </Docs>
     </Member>
   </Members>

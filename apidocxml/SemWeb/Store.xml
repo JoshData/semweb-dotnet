@@ -2,7 +2,7 @@
   <TypeSignature Language="C#" Value="public abstract class Store : SemWeb.ModifiableSource, SemWeb.SelectableSource, System.IDisposable" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
-    <AssemblyVersion>0.7.1.0</AssemblyVersion>
+    <AssemblyVersion>0.7.4.1</AssemblyVersion>
   </AssemblyInfo>
   <Base>
     <BaseTypeName>System.Object</BaseTypeName>
@@ -581,6 +581,22 @@ For Sqlite, MySQL, and PostgreSQL-based stores, use the spec string described in
         <param name="sink">To be added.</param>
         <summary>To be added.</summary>
         <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Contains">
+      <MemberSignature Language="C#" Value="public virtual bool Contains (SemWeb.Resource resource);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Boolean</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="resource" Type="SemWeb.Resource" />
+      </Parameters>
+      <Docs>
+        <param name="resource">A Resource (entity, literal, or bnode).</param>
+        <summary>Tests whether the store contains any statements that mention the given resource.</summary>
+        <returns>A boolean value indicating whether the store contains any statements mentioning the resource.</returns>
+        <remarks>None.</remarks>
       </Docs>
     </Member>
   </Members>

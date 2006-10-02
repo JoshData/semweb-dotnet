@@ -2,7 +2,7 @@
   <TypeSignature Language="C#" Value="public sealed class Literal : SemWeb.Resource" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
-    <AssemblyVersion>0.7.1.0</AssemblyVersion>
+    <AssemblyVersion>0.7.4.1</AssemblyVersion>
   </AssemblyInfo>
   <Base>
     <BaseTypeName>SemWeb.Resource</BaseTypeName>
@@ -193,6 +193,286 @@
         <summary>Creates an xsd:boolean literal representing the boolean value.</summary>
         <returns>Either "true"^^xsd:boolean or "false"^^xsd:boolean.</returns>
         <remarks>This method is a convenience function for creating typed literals.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="FromValue">
+      <MemberSignature Language="C#" Value="public static SemWeb.Literal FromValue (float value);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>SemWeb.Literal</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="value" Type="System.Single" />
+      </Parameters>
+      <Docs>
+        <param name="value">A value.</param>
+        <summary>Returns an XSD-typed floating-point literal from the given value.</summary>
+        <returns>A new Literal object with the indicated XSD datatype and a value in the lexical space of that datatype according to the parameters given.</returns>
+        <remarks>None.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="FromValue">
+      <MemberSignature Language="C#" Value="public static SemWeb.Literal FromValue (double value);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>SemWeb.Literal</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="value" Type="System.Double" />
+      </Parameters>
+      <Docs>
+        <param name="value">A value.</param>
+        <summary>Returns an XSD-typed double-precision literal from the given value.</summary>
+        <returns>A new Literal object with the indicated XSD datatype and a value in the lexical space of that datatype according to the parameters given.</returns>
+        <remarks>None.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="FromValue">
+      <MemberSignature Language="C#" Value="public static SemWeb.Literal FromValue (byte value);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>SemWeb.Literal</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="value" Type="System.Byte" />
+      </Parameters>
+      <Docs>
+        <param name="value">A value.</param>
+        <summary>Returns an XSD-typed (unsigned) byte literal from the given value.</summary>
+        <returns>A new Literal object with the indicated XSD datatype and a value in the lexical space of that datatype according to the parameters given.</returns>
+        <remarks>None.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="FromValue">
+      <MemberSignature Language="C#" Value="public static SemWeb.Literal FromValue (short value);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>SemWeb.Literal</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="value" Type="System.Int16" />
+      </Parameters>
+      <Docs>
+        <param name="value">A value.</param>
+        <summary>Returns an XSD-typed short literal from the given value.</summary>
+        <returns>A new Literal object with the indicated XSD datatype and a value in the lexical space of that datatype according to the parameters given.</returns>
+        <remarks>None.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="FromValue">
+      <MemberSignature Language="C#" Value="public static SemWeb.Literal FromValue (int value);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>SemWeb.Literal</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="value" Type="System.Int32" />
+      </Parameters>
+      <Docs>
+        <param name="value">A value.</param>
+        <summary>Returns an XSD-typed int literal from the given value.</summary>
+        <returns>A new Literal object with the indicated XSD datatype and a value in the lexical space of that datatype according to the parameters given.</returns>
+        <remarks>None.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="FromValue">
+      <MemberSignature Language="C#" Value="public static SemWeb.Literal FromValue (long value);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>SemWeb.Literal</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="value" Type="System.Int64" />
+      </Parameters>
+      <Docs>
+        <param name="value">A value.</param>
+        <summary>Returns an XSD-typed long literal from the given value.</summary>
+        <returns>A new Literal object with the indicated XSD datatype and a value in the lexical space of that datatype according to the parameters given.</returns>
+        <remarks>None.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="FromValue">
+      <MemberSignature Language="C#" Value="public static SemWeb.Literal FromValue (sbyte value);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>SemWeb.Literal</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="value" Type="System.SByte" />
+      </Parameters>
+      <Docs>
+        <param name="value">A value.</param>
+        <summary>Returns an XSD-typed (signed) byte literal from the given value.</summary>
+        <returns>A new Literal object with the indicated XSD datatype and a value in the lexical space of that datatype according to the parameters given.</returns>
+        <remarks>None.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="FromValue">
+      <MemberSignature Language="C#" Value="public static SemWeb.Literal FromValue (ushort value);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>SemWeb.Literal</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="value" Type="System.UInt16" />
+      </Parameters>
+      <Docs>
+        <param name="value">A value.</param>
+        <summary>Returns an XSD-typed unsigned short literal from the given value.</summary>
+        <returns>A new Literal object with the indicated XSD datatype and a value in the lexical space of that datatype according to the parameters given.</returns>
+        <remarks>None.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="FromValue">
+      <MemberSignature Language="C#" Value="public static SemWeb.Literal FromValue (uint value);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>SemWeb.Literal</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="value" Type="System.UInt32" />
+      </Parameters>
+      <Docs>
+        <param name="value">A value.</param>
+        <summary>Returns an XSD-typed unsigned int literal from the given value.</summary>
+        <returns>A new Literal object with the indicated XSD datatype and a value in the lexical space of that datatype according to the parameters given.</returns>
+        <remarks>None.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="FromValue">
+      <MemberSignature Language="C#" Value="public static SemWeb.Literal FromValue (ulong value);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>SemWeb.Literal</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="value" Type="System.UInt64" />
+      </Parameters>
+      <Docs>
+        <param name="value">A value.</param>
+        <summary>Returns an XSD-typed boolean literal from the given value.</summary>
+        <returns>A new Literal object with the indicated XSD datatype and a value in the lexical space of that datatype according to the parameters given.</returns>
+        <remarks>None.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="FromValue">
+      <MemberSignature Language="C#" Value="public static SemWeb.Literal FromValue (bool value);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>SemWeb.Literal</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="value" Type="System.Boolean" />
+      </Parameters>
+      <Docs>
+        <param name="value">A value.</param>
+        <summary>Returns an XSD-typed boolean literal from the given value.</summary>
+        <returns>A new Literal object with the indicated XSD datatype and a value in the lexical space of that datatype according to the parameters given.</returns>
+        <remarks>None.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="FromValue">
+      <MemberSignature Language="C#" Value="public static SemWeb.Literal FromValue (string value);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>SemWeb.Literal</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="value" Type="System.String" />
+      </Parameters>
+      <Docs>
+        <param name="value">A value.</param>
+        <summary>Returns an XSD-typed string literal from the given value.</summary>
+        <returns>A new Literal object with the indicated XSD datatype and a value in the lexical space of that datatype according to the parameters given.</returns>
+        <remarks>None.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="FromValue">
+      <MemberSignature Language="C#" Value="public static SemWeb.Literal FromValue (Uri value);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>SemWeb.Literal</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="value" Type="System.Uri" />
+      </Parameters>
+      <Docs>
+        <param name="value">A value.</param>
+        <summary>Returns an XSD-typed URI (anyURI) literal from the given value.</summary>
+        <returns>A new Literal object with the indicated XSD datatype and a value in the lexical space of that datatype according to the parameters given.</returns>
+        <remarks>None.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="FromValue">
+      <MemberSignature Language="C#" Value="public static SemWeb.Literal FromValue (DateTime value);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>SemWeb.Literal</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="value" Type="System.DateTime" />
+      </Parameters>
+      <Docs>
+        <param name="value">A value whose time is in UTC.</param>
+        <summary>Returns an XSD-typed dateTime literal from the given value representing a date and UTC time.</summary>
+        <returns>A new Literal object with the indicated XSD datatype and a value in the lexical space of that datatype according to the parameters given.</returns>
+        <remarks>None.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="FromValue">
+      <MemberSignature Language="C#" Value="public static SemWeb.Literal FromValue (DateTime value, bool withTime, bool isLocalTime);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>SemWeb.Literal</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="value" Type="System.DateTime" />
+        <Parameter Name="withTime" Type="System.Boolean" />
+        <Parameter Name="isLocalTime" Type="System.Boolean" />
+      </Parameters>
+      <Docs>
+        <param name="value">A date value, optionally with a time component.</param>
+        <param name="withTime">A boolean indicating whether <paramref name="value" /> has a time component, or else only has a date component.</param>
+        <param name="isLocalTime">A boolean value indicating whether the time component of <paramref name="value" /> is a local time, or else is a UTC time.</param>
+        <summary>Returns an XSD-typed date or dateTime literal from the given value.</summary>
+        <returns>A new Literal object with the indicated XSD datatype and a value in the lexical space of that datatype according to the parameters given.</returns>
+        <remarks>None.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="FromValue">
+      <MemberSignature Language="C#" Value="public static SemWeb.Literal FromValue (TimeSpan value);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>SemWeb.Literal</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="value" Type="System.TimeSpan" />
+      </Parameters>
+      <Docs>
+        <param name="value">A value.</param>
+        <summary>Returns an XSD-typed duration literal from the given value.</summary>
+        <returns>A new Literal object with the indicated XSD datatype and a value in the lexical space of that datatype according to the parameters given.</returns>
+        <remarks>None.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="FromValue">
+      <MemberSignature Language="C#" Value="public static SemWeb.Literal FromValue (TimeSpan value, bool asTime, bool isLocalTime);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>SemWeb.Literal</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="value" Type="System.TimeSpan" />
+        <Parameter Name="asTime" Type="System.Boolean" />
+        <Parameter Name="isLocalTime" Type="System.Boolean" />
+      </Parameters>
+      <Docs>
+        <param name="value">A value.</param>
+        <param name="asTime">A boolean value indicating whether <paramref name="value" /> should be interpreted as a time, or else as a duration.</param>
+        <param name="isLocalTime">If <paramref name="asTime" /> is true, then <paramref name="isLocalTime" /> is a boolean value indicating whether <paramref name="value" /> is a local time, or else is a UTC time.</param>
+        <summary>Returns an XSD-typed duration or time literal from the given value.</summary>
+        <returns>A new Literal object with the indicated XSD datatype and a value in the lexical space of that datatype according to the parameters given.</returns>
+        <remarks>None.</remarks>
       </Docs>
     </Member>
   </Members>

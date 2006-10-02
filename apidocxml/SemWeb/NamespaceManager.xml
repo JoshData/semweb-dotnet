@@ -2,7 +2,7 @@
   <TypeSignature Language="C#" Value="public class NamespaceManager" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
-    <AssemblyVersion>0.7.1.0</AssemblyVersion>
+    <AssemblyVersion>0.7.4.1</AssemblyVersion>
   </AssemblyInfo>
   <Base>
     <BaseTypeName>System.Object</BaseTypeName>
@@ -154,6 +154,21 @@
       <Docs>
         <summary>Gets all of the prefixes known to the namespace manager.</summary>
         <returns>A collection of all prefixes known to this namespace manager.</returns>
+        <remarks>None.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="AddFrom">
+      <MemberSignature Language="C#" Value="public void AddFrom (SemWeb.NamespaceManager nsmgr);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="nsmgr" Type="SemWeb.NamespaceManager" />
+      </Parameters>
+      <Docs>
+        <param name="nsmgr">The NamespaceManager to copy the declarations from.</param>
+        <summary>Adds all of the namespace declarations from another NamespaceManager.</summary>
         <remarks>None.</remarks>
       </Docs>
     </Member>
