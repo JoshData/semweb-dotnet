@@ -99,5 +99,20 @@ public class Sqlite {
 }
 </pre>
 
+<h3>Other Database Notes</h3>
+
+<p>Besides Sqlite, MySQL and PostgreSQL are also supported.  To use those databases,
+just replace the &ldquo;spec&rdquo; string ("sqlite:rdf:...") with something like:</p>
+
+<pre>"mysql:rdf:Database=rdf; . . ."</pre>
+
+<p>Everything after the second colon is a MySQL connection string to make the connection.
+You'll have to consult the ByteFX or MySQL/Connector.Net documentation for more information
+about the connection string.</p>
+
+<p>As a last note, for MySQL and Postgres, you should run ANALYZE commands on the <i>prefix</i>_statements,
+_entities, and _literals table after loading large amounts of data (>1 million statements) so that
+queries against the database perform as best as they can.</p>
+
 </body>
 </html>
