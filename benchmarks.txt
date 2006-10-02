@@ -1,0 +1,20 @@
+SemWeb Benchmarks
+=================
+
+2006-09-29 v0.751
+System: 1.8 GHz AMD single processor, 1GB RAM; Mono runtime on Fedora Core 5
+Benchmark: LUBM 1.7 w/ 50 universities: 6,890,640 statements in 1000 files totalling 540M
+Loading:
+	null: 			5min; 23,321 stmt/sec (just loading the data)
+	N3 file: 		10min; 10,975 stmt/sec (loading and dumping to N3 file on disk)
+	mysql-5.0.22: 	39min; 2,921 stmt/sec; 762MB db; 115 bytes/stmt
+	sqlite-3.3.3: 	72min; 1,597 stmt/sec; 1.1GB db; 162 bytes/stmt
+	postgresql-8.1:	94min; 1226 stmt/sec; 1.6GB db; 238 bytes/stmt
+Querying:
+	Time includes program start-up.
+	No reasoning is used, and so only 3 queries from the test set can be run:
+	This is pretty rough.  It might be unfairly low if things were cached between tests.
+		sqlite	mysql	postgres
+	1	5s		1.0s
+	3	9s		0.8s
+	14	1m13s	57s		21s

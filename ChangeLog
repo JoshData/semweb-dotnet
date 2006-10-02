@@ -1,3 +1,15 @@
+2006-10-02 Version 0.751
+
+	FIXES:
+	* SQLStore: Adding/importing statements works again.
+	  I botched this recently.
+	* SPARQL: Fixed several bugs I introduced recently	
+	  when upgrading to the 0.8 library.
+	* PostgreSQL Store: Working again.
+	* MySQLStore: A flag got reverted that allows
+	  queries to avoid the DISTINCT keyword.
+	FEATURES:
+	* Added: SelectableSource::Contains(Resource).
 	* N3Reader: Added a new special =:> syntax.  Now
 		?variable =:> { ...statements... }
 	  is interpreted as ?variable being assigned to
@@ -8,8 +20,8 @@
 	* SPARQL: When querying over a QueryableSource, pass
 	  group constraints (i.e. { . . . }) directly to
 	  the QueryableSource.  Major speed improvement.
-	* SPARQL: Fixed several bugs I introduced recently
-	  when upgrading to the 0.8 library.
+	MISC
+	* The SPARQL Protocol handler is moved into its own file.
 
 2006-09-19 Version 0.75
 

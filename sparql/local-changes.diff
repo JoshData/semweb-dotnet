@@ -1708,8 +1708,8 @@ diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/logic/nai
  
 diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/logic/streamed/AdvancedGroupConstraintLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/streamed/AdvancedGroupConstraintLogic.java
 --- sparql-0.8/src/main/name/levering/ryan/sparql/logic/streamed/AdvancedGroupConstraintLogic.java	1969-12-31 19:00:00.000000000 -0500
-+++ work-copy/src/main/name/levering/ryan/sparql/logic/streamed/AdvancedGroupConstraintLogic.java	2006-09-25 10:36:19.000000000 -0400
-@@ -0,0 +1,560 @@
++++ work-copy/src/main/name/levering/ryan/sparql/logic/streamed/AdvancedGroupConstraintLogic.java	2006-09-26 09:40:55.000000000 -0400
+@@ -0,0 +1,568 @@
 +/*
 + * SPARQL Engine
 + * Copyright (C) 2005 Ryan Levering, All rights reserved.
@@ -1952,8 +1952,11 @@ diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/logic/str
 +		
 +		// Allow a subclass to take over running the constraints.
 +		current = runTripleConstraints(constraintOrder, source, defaultDatasets, namedDatasets, knownValues, knownFilters);
-+		if (current != null)
++		if (current != null) {
 +			constraintOrder.clear();
++			if (optionalQueue.size() > 0)
++				current = updateKnownVariables(current, knownValues);
++		}
 +		
 +		for (Iterator cons = constraintOrder.iterator(); cons.hasNext();) {
 +			ConstraintLogic c = (ConstraintLogic) cons.next();
@@ -1969,44 +1972,8 @@ diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/logic/str
 +						defaultDatasets, namedDatasets, knownValues, knownFilters));
 +			}
 +
-+			if (cons.hasNext() || optionalQueue.size() > 0) {
-+				// If there are more things happening later, update our knownValue
-+				// mapping based on what has currently been queried.  We have to
-+				// loop through all of the bindings found so far, so we'll put
-+				// those bindings into a new set to cache them.
-+				
-+				current = new RdfBindingSetImpl(current);
-+				List variables = current.getVariables();
-+				
-+				Set hadNewValues = new HashSet();
-+				for (Iterator biter = current.iterator(); biter.hasNext(); ) {
-+					RdfBindingRow row = (RdfBindingRow)biter.next();
-+					List rowvalues = row.getValues();
-+					
-+					for (int i = 0; i < variables.size(); i++) {
-+						Variable var = (Variable) variables.get(i);
-+						Value val = (Value) rowvalues.get(i);
-+						
-+						if (val == null) continue;
-+						
-+						Set values = (Set)knownValues.get(var);
-+						
-+						// If knownValues has no mapping for this variable yet,
-+						// or if knownValues had a mapping, we want to clear
-+						// the mapping and start fresh with the values actually
-+						// found.
-+						if (values == null || !hadNewValues.contains(var)) { 
-+							values = new HashSet();
-+							knownValues.put(var, values);
-+							hadNewValues.add(var);
-+						}
-+							
-+						values.add(val);
-+					}
-+				}
-+				
-+				extractVariableFunctions(knownValues);
-+			}
++			if (cons.hasNext() || optionalQueue.size() > 0)
++				current = updateKnownVariables(current, knownValues);
 +        }
 +        
 +        // At this point, we're operating on the set, so let's make it an empty one
@@ -2033,6 +2000,47 @@ diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/logic/str
 +	protected RdfBindingSet runTripleConstraints(List tripleConstraints, RdfSource source,
 +            Collection defaultDatasets, Collection namedDatasets, Map knownValues, Map knownFilters) {
 +		return null;
++	}
++	
++	private RdfBindingSet updateKnownVariables(RdfBindingSet current, Map knownValues) {
++		// If there are more things happening later, update our knownValue
++		// mapping based on what has currently been queried.  We have to
++		// loop through all of the bindings found so far, so we'll put
++		// those bindings into a new set to cache them.
++		
++		current = new RdfBindingSetImpl(current);
++		List variables = current.getVariables();
++		
++		Set hadNewValues = new HashSet();
++		for (Iterator biter = current.iterator(); biter.hasNext(); ) {
++			RdfBindingRow row = (RdfBindingRow)biter.next();
++			List rowvalues = row.getValues();
++			
++			for (int i = 0; i < variables.size(); i++) {
++				Variable var = (Variable) variables.get(i);
++				Value val = (Value) rowvalues.get(i);
++				
++				if (val == null) continue;
++				
++				Set values = (Set)knownValues.get(var);
++				
++				// If knownValues has no mapping for this variable yet,
++				// or if knownValues had a mapping, we want to clear
++				// the mapping and start fresh with the values actually
++				// found.
++				if (values == null || !hadNewValues.contains(var)) { 
++					values = new HashSet();
++					knownValues.put(var, values);
++					hadNewValues.add(var);
++				}
++					
++				values.add(val);
++			}
++		}
++		
++		extractVariableFunctions(knownValues);	
++		
++		return current;
 +	}
 +	
 +    /**
