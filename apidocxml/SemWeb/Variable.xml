@@ -1,0 +1,44 @@
+<Type Name="Variable" FullName="SemWeb.Variable">
+  <TypeSignature Language="C#" Value="public class Variable : SemWeb.BNode" />
+  <AssemblyInfo>
+    <AssemblyName>SemWeb</AssemblyName>
+    <AssemblyVersion>0.7.4.1</AssemblyVersion>
+  </AssemblyInfo>
+  <Base>
+    <BaseTypeName>SemWeb.BNode</BaseTypeName>
+  </Base>
+  <Interfaces />
+  <Members>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public Variable ();" />
+      <MemberType>Constructor</MemberType>
+      <Parameters />
+      <Docs>
+        <summary>Creates a new unnamed variable.</summary>
+        <remarks>None.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public Variable (string variableName);" />
+      <MemberType>Constructor</MemberType>
+      <Parameters>
+        <Parameter Name="variableName" Type="System.String" />
+      </Parameters>
+      <Docs>
+        <param name="variableName">The name of the variable.</param>
+        <summary>Creates a new named variable.</summary>
+        <remarks>The name of the variable can be accessed through the <see cref="P:SemWeb.BNode.LocalName" /> property.</remarks>
+      </Docs>
+    </Member>
+  </Members>
+  <Docs>
+    <summary>A variable resource in a query or inference rule.</summary>
+    <remarks>
+      <para>This class is used to represent variables in queries or inferencing.
+	It is a subclass of <see cref="T:SemWeb.BNode" />.</para>
+      <para>Note that two variables are equal by the equality operator == or Equals() only
+	if the two variables are the same object.  Different variables with the same
+	name are not considered references to the same variable.</para>
+    </remarks>
+  </Docs>
+</Type>
