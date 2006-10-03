@@ -122,7 +122,7 @@
     store.Import(data);
 }  </code>
       </example>
-   
-<para>It is strongly recommended that you use one of the constructors that takes a Base URI argument, or else set the Base URI of the reader before reading statements from it, so that relative URIs found in the document can be interpreted.  If a BaseURI has not been set and a relative URI is encountered, parsing the document will fail.</para></remarks>
+      <para>It is strongly recommended that you use one of the constructors that takes a Base URI argument, or else set the Base URI of the reader before reading statements from it, so that relative URIs found in the document can be interpreted.  If a BaseURI has not been set and a relative URI is encountered, parsing the document will fail.</para>
+    </remarks>
   </Docs>
 </Type>
