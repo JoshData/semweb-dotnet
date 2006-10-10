@@ -73,7 +73,7 @@ foreach (Statement s in memoryStore)
       </Docs>
     </Member>
     <Member MemberName="Item">
-      <MemberSignature Language="C#" Value="public SemWeb.Statement Item[int index] { get; };" />
+      <MemberSignature Language="C#" Value="public SemWeb.Statement this[int index] { get; };" />
       <MemberType>Property</MemberType>
       <ReturnValue>
         <ReturnType>SemWeb.Statement</ReturnType>
@@ -144,7 +144,7 @@ foreach (Resource res in store.SelectObjects(othersite, dctitle)) {
   </Docs>
   <Attributes>
     <Attribute>
-      <AttributeName>System.Reflection.DefaultMember(MemberName="Item")</AttributeName>
+      <AttributeName>System.Reflection.DefaultMember("Item")</AttributeName>
     </Attribute>
   </Attributes>
 </Type>

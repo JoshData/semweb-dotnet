@@ -10,7 +10,7 @@
   <Interfaces />
   <Members>
     <Member MemberName=".ctor">
-      <MemberSignature Language="C#" Value="public DateTimeCompareFilter (DateTime datetime, SemWeb.LiteralFilter+CompType type);" />
+      <MemberSignature Language="C#" Value="public DateTimeCompareFilter (DateTime datetime, SemWeb.LiteralFilter.CompType type);" />
       <MemberType>Constructor</MemberType>
       <Parameters>
         <Parameter Name="datetime" Type="System.DateTime" />
@@ -35,7 +35,7 @@
       </Docs>
     </Member>
     <Member MemberName="Type">
-      <MemberSignature Language="C#" Value="public readonly SemWeb.LiteralFilter+CompType Type;" />
+      <MemberSignature Language="C#" Value="public readonly SemWeb.LiteralFilter.CompType Type;" />
       <MemberType>Field</MemberType>
       <ReturnValue>
         <ReturnType>SemWeb.LiteralFilter+CompType</ReturnType>

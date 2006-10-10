@@ -1,5 +1,5 @@
 <Type Name="QueryExecutionException" FullName="SemWeb.Query.QueryExecutionException">
-  <TypeSignature Language="C#" Value="public class QueryExecutionException : System.ApplicationException" />
+  <TypeSignature Language="C#" Value="public class QueryExecutionException : ApplicationException" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
     <AssemblyVersion>0.7.4.1</AssemblyVersion>

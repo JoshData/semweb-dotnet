@@ -169,7 +169,7 @@
       </Docs>
     </Member>
     <Member MemberName="Type">
-      <MemberSignature Language="C#" Value="public SemWeb.Query.Sparql+QueryType Type { get; };" />
+      <MemberSignature Language="C#" Value="public SemWeb.Query.Sparql.QueryType Type { get; };" />
       <MemberType>Property</MemberType>
       <ReturnValue>
         <ReturnType>SemWeb.Query.Sparql+QueryType</ReturnType>

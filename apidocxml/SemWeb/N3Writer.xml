@@ -34,7 +34,7 @@
       </Docs>
     </Member>
     <Member MemberName="Format">
-      <MemberSignature Language="C#" Value="public SemWeb.N3Writer+Formats Format { set; get; };" />
+      <MemberSignature Language="C#" Value="public SemWeb.N3Writer.Formats Format { set; get; };" />
       <MemberType>Property</MemberType>
       <ReturnValue>
         <ReturnType>SemWeb.N3Writer+Formats</ReturnType>

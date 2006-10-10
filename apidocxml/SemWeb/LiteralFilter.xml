@@ -57,7 +57,7 @@
       </Docs>
     </Member>
     <Member MemberName="Create">
-      <MemberSignature Language="C#" Value="public static SemWeb.LiteralFilter Create (SemWeb.LiteralFilter+CompType type, object value);" />
+      <MemberSignature Language="C#" Value="public static SemWeb.LiteralFilter Create (SemWeb.LiteralFilter.CompType type, object value);" />
       <MemberType>Method</MemberType>
       <ReturnValue>
         <ReturnType>SemWeb.LiteralFilter</ReturnType>

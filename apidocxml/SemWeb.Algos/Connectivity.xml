@@ -10,7 +10,7 @@
   <Interfaces />
   <Members>
     <Member MemberName="Build">
-      <MemberSignature Language="C#" Value="public static void Build (SemWeb.StatementSource graph, out Boolean[,] connectivity, System.Collections.Hashtable indexes);" />
+      <MemberSignature Language="C#" Value="public static void Build (SemWeb.StatementSource graph, out bool[,] connectivity, System.Collections.Hashtable indexes);" />
       <MemberType>Method</MemberType>
       <ReturnValue>
         <ReturnType>System.Void</ReturnType>

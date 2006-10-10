@@ -1,5 +1,5 @@
 <Type Name="N3Writer+Formats" FullName="SemWeb.N3Writer+Formats">
-  <TypeSignature Language="C#" Value="public enum Formats" />
+  <TypeSignature Language="C#" Value="public enum N3Writer.Formats" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
     <AssemblyVersion>0.7.4.1</AssemblyVersion>

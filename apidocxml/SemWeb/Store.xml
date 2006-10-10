@@ -1,5 +1,5 @@
 <Type Name="Store" FullName="SemWeb.Store">
-  <TypeSignature Language="C#" Value="public abstract class Store : SemWeb.ModifiableSource, SemWeb.SelectableSource, System.IDisposable" />
+  <TypeSignature Language="C#" Value="public abstract class Store : IDisposable, SemWeb.ModifiableSource, SemWeb.SelectableSource" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
     <AssemblyVersion>0.7.4.1</AssemblyVersion>

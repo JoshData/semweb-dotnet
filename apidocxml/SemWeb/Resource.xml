@@ -1,5 +1,5 @@
 <Type Name="Resource" FullName="SemWeb.Resource">
-  <TypeSignature Language="C#" Value="public abstract class Resource : System.IComparable" />
+  <TypeSignature Language="C#" Value="public abstract class Resource : IComparable" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
     <AssemblyVersion>0.7.4.1</AssemblyVersion>

@@ -1,5 +1,5 @@
 <Type Name="RdfReader" FullName="SemWeb.RdfReader">
-  <TypeSignature Language="C#" Value="public abstract class RdfReader : SemWeb.StatementSource, System.IDisposable" />
+  <TypeSignature Language="C#" Value="public abstract class RdfReader : IDisposable, SemWeb.StatementSource" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
     <AssemblyVersion>0.7.4.1</AssemblyVersion>

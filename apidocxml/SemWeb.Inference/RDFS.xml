@@ -1,5 +1,5 @@
 <Type Name="RDFS" FullName="SemWeb.Inference.RDFS">
-  <TypeSignature Language="C#" Value="public class RDFS : SemWeb.SelectableSource, SemWeb.Stores.SupportsPersistableBNodes, System.IDisposable" />
+  <TypeSignature Language="C#" Value="public class RDFS : IDisposable, SemWeb.SelectableSource, SemWeb.Stores.SupportsPersistableBNodes" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
     <AssemblyVersion>0.7.4.1</AssemblyVersion>

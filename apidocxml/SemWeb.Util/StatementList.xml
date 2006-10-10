@@ -14,7 +14,7 @@
   </Interfaces>
   <Attributes>
     <Attribute>
-      <AttributeName>System.Reflection.DefaultMember(MemberName="Item")</AttributeName>
+      <AttributeName>System.Reflection.DefaultMember("Item")</AttributeName>
     </Attribute>
   </Attributes>
   <Members>
@@ -177,7 +177,7 @@
       </Docs>
     </Member>
     <Member MemberName="Item">
-      <MemberSignature Language="C#" Value="public SemWeb.Statement Item[int index] { set; get; };" />
+      <MemberSignature Language="C#" Value="public SemWeb.Statement this[int index] { set; get; };" />
       <MemberType>Property</MemberType>
       <ReturnValue>
         <ReturnType>SemWeb.Statement</ReturnType>

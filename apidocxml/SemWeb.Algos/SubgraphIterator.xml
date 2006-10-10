@@ -10,7 +10,7 @@
   <Interfaces />
   <Members>
     <Member MemberName=".ctor">
-      <MemberSignature Language="C#" Value="public SubgraphIterator (Boolean[,] connectivity);" />
+      <MemberSignature Language="C#" Value="public SubgraphIterator (bool[,] connectivity);" />
       <MemberType>Constructor</MemberType>
       <Parameters>
         <Parameter Name="connectivity" Type="System.Boolean[,]" />

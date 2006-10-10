@@ -1,5 +1,5 @@
 <Type Name="MSG+Graph" FullName="SemWeb.Algos.MSG+Graph">
-  <TypeSignature Language="C#" Value="public class Graph : SemWeb.StatementSource" />
+  <TypeSignature Language="C#" Value="public class MSG.Graph : SemWeb.StatementSource" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
     <AssemblyVersion>0.7.4.1</AssemblyVersion>
@@ -58,7 +58,7 @@
       </Docs>
     </Member>
     <Member MemberName="LoadGraphs">
-      <MemberSignature Language="C#" Value="public static void LoadGraphs (SemWeb.Algos.MSG+Graph[] graphs);" />
+      <MemberSignature Language="C#" Value="public static void LoadGraphs (SemWeb.Algos.MSG.Graph[] graphs);" />
       <MemberType>Method</MemberType>
       <ReturnValue>
         <ReturnType>System.Void</ReturnType>

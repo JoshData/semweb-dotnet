@@ -1,5 +1,5 @@
 <Type Name="Statement" FullName="SemWeb.Statement">
-  <TypeSignature Language="C#" Value="public struct Statement" />
+  <TypeSignature Language="C#" Value="public struct Statement : IComparable" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
     <AssemblyVersion>0.7.4.1</AssemblyVersion>

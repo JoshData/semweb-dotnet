@@ -1,5 +1,5 @@
 <Type Name="ParserException" FullName="SemWeb.ParserException">
-  <TypeSignature Language="C#" Value="public class ParserException : System.ApplicationException" />
+  <TypeSignature Language="C#" Value="public class ParserException : ApplicationException" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
     <AssemblyVersion>0.7.4.1</AssemblyVersion>

@@ -1,5 +1,5 @@
 <Type Name="SelectFilter" FullName="SemWeb.SelectFilter">
-  <TypeSignature Language="C#" Value="public struct SelectFilter" />
+  <TypeSignature Language="C#" Value="public struct SelectFilter : System.Collections.IEnumerable" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
     <AssemblyVersion>0.7.4.1</AssemblyVersion>

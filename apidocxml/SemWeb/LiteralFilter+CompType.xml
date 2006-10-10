@@ -1,5 +1,5 @@
 <Type Name="LiteralFilter+CompType" FullName="SemWeb.LiteralFilter+CompType">
-  <TypeSignature Language="C#" Value="public enum CompType" />
+  <TypeSignature Language="C#" Value="public enum LiteralFilter.CompType" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
     <AssemblyVersion>0.7.4.1</AssemblyVersion>

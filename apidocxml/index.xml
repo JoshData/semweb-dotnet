@@ -96,28 +96,28 @@
     <Assembly Name="SemWeb" Version="0.7.4.1">
       <Attributes>
         <Attribute>
-          <AttributeName>System.Reflection.AssemblyKeyName(KeyName="")</AttributeName>
+          <AttributeName>System.Reflection.AssemblyKeyName("")</AttributeName>
         </Attribute>
         <Attribute>
-          <AttributeName>System.Reflection.AssemblyTrademark(Trademark="")</AttributeName>
+          <AttributeName>System.Reflection.AssemblyTrademark("")</AttributeName>
         </Attribute>
         <Attribute>
-          <AttributeName>System.Reflection.AssemblyCopyright(Copyright="Copyright (c) 2006 Joshua Tauberer &lt;jt@occams.info&gt;")</AttributeName>
+          <AttributeName>System.Reflection.AssemblyCopyright("Copyright (c) 2006 Joshua Tauberer &lt;jt@occams.info&gt;")</AttributeName>
         </Attribute>
         <Attribute>
-          <AttributeName>System.Reflection.AssemblyProduct(Product="")</AttributeName>
+          <AttributeName>System.Reflection.AssemblyProduct("")</AttributeName>
         </Attribute>
         <Attribute>
-          <AttributeName>System.Reflection.AssemblyCompany(Company="")</AttributeName>
+          <AttributeName>System.Reflection.AssemblyCompany("")</AttributeName>
         </Attribute>
         <Attribute>
-          <AttributeName>System.Reflection.AssemblyConfiguration(Configuration="")</AttributeName>
+          <AttributeName>System.Reflection.AssemblyConfiguration("")</AttributeName>
         </Attribute>
         <Attribute>
-          <AttributeName>System.Reflection.AssemblyDescription(Description="A library for applications using RDF and the semantic web.")</AttributeName>
+          <AttributeName>System.Reflection.AssemblyDescription("A library for applications using RDF and the semantic web.")</AttributeName>
         </Attribute>
         <Attribute>
-          <AttributeName>System.Reflection.AssemblyTitle(Title="SemWeb")</AttributeName>
+          <AttributeName>System.Reflection.AssemblyTitle("SemWeb")</AttributeName>
         </Attribute>
       </Attributes>
     </Assembly>

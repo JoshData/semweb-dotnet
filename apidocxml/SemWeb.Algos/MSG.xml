@@ -47,7 +47,7 @@
       </Docs>
     </Member>
     <Member MemberName="FindMSGs">
-      <MemberSignature Language="C#" Value="public static SemWeb.Algos.MSG+Graph[] FindMSGs (SemWeb.SelectableSource source, bool loadIntoMemory);" />
+      <MemberSignature Language="C#" Value="public static SemWeb.Algos.MSG.Graph[] FindMSGs (SemWeb.SelectableSource source, bool loadIntoMemory);" />
       <MemberType>Method</MemberType>
       <ReturnValue>
         <ReturnType>SemWeb.Algos.MSG+Graph[]</ReturnType>

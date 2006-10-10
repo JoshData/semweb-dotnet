@@ -1,5 +1,5 @@
 <Type Name="Sparql+QueryType" FullName="SemWeb.Query.Sparql+QueryType">
-  <TypeSignature Language="C#" Value="public enum QueryType" />
+  <TypeSignature Language="C#" Value="public enum Sparql.QueryType" />
   <AssemblyInfo>
     <AssemblyName>SemWeb.Sparql</AssemblyName>
     <AssemblyVersion>0.0.0.0</AssemblyVersion>

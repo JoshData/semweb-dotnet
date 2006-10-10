@@ -1,5 +1,5 @@
 <Type Name="RdfWriter" FullName="SemWeb.RdfWriter">
-  <TypeSignature Language="C#" Value="public abstract class RdfWriter : SemWeb.StatementSink, System.IDisposable" />
+  <TypeSignature Language="C#" Value="public abstract class RdfWriter : IDisposable, SemWeb.StatementSink" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
     <AssemblyVersion>0.7.4.1</AssemblyVersion>
