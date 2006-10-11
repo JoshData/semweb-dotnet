@@ -122,8 +122,7 @@ namespace SemWeb {
 
 #if !DOTNET2
 		int IComparable.CompareTo(object other) {
-			Statement s = (Statement)obj;
-			return CompareTo(s);
+			return CompareTo((Statement)other);
 		}
 #endif
 
