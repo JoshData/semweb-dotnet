@@ -341,14 +341,25 @@ namespace SemWeb {
 		
 	}
 
-	public abstract class SelectResult : StatementSource, IEnumerable {
+	public abstract class SelectResult : StatementSource, 
+#if DOTNET2
+	System.Collections.Generic.IEnumerable<Statement>
+#else
+	IEnumerable
+#endif
+	{
 		internal Store source;
 		MemoryStore ms;
 		internal SelectResult(Store source) { this.source = source; }
 		public bool Distinct { get { return source.Distinct; } }
 		public abstract void Select(StatementSink sink);
-		public IEnumerator GetEnumerator() {
-			return Buffer().Statements.GetEnumerator();
+#if DOTNET2
+		System.Collections.Generic.IEnumerator<Statement> System.Collections.Generic.IEnumerable<Statement>.GetEnumerator() {
+			return ((System.Collections.Generic.IEnumerable<Statement>)Buffer()).GetEnumerator();
+		}
+#endif
+		IEnumerator IEnumerable.GetEnumerator() {
+			return ((IEnumerable)Buffer()).GetEnumerator();
 		}
 		public long StatementCount { get { return Buffer().StatementCount; } }
 		public MemoryStore Load() { return Buffer(); }

@@ -4,8 +4,15 @@ using System.Collections;
 using SemWeb.Util;
 
 namespace SemWeb {
-	public struct Statement : IComparable {
-		public Entity Subject;
+	public class Statement :
+#if DOTNET2
+	IEquatable<Statement>, IComparable<Statement>
+#else
+	IComparable
+#endif
+	{
+	
+	public Entity Subject;
 		public Entity Predicate;
 		public Resource Object;
 		public Entity Meta;
@@ -78,10 +85,17 @@ namespace SemWeb {
 				);
 		}
 
+
 		public override bool Equals(object other) {
 			return (Statement)other == this;
 		}
 		
+#if DOTNET2
+		bool IEquatable<Statement>.Equals(Statement other) {
+			return other == this;
+		}
+#endif
+
 		public override int GetHashCode() {
 			int ret = 0;
 			if (Subject != null) ret = unchecked(ret + Subject.GetHashCode());
@@ -106,8 +120,14 @@ namespace SemWeb {
 			return !(a == b);
 		}
 
-		int IComparable.CompareTo(object obj) {
+#if !DOTNET2
+		int IComparable.CompareTo(object other) {
 			Statement s = (Statement)obj;
+			return CompareTo(s);
+		}
+#endif
+
+		public int CompareTo(Statement s) {
 			int x;
 			x = cmp(Subject, s.Subject); if (x != 0) return x;
 			x = cmp(Predicate, s.Predicate); if (x != 0) return x;

@@ -6,7 +6,21 @@ using SemWeb.Stores;
 using SemWeb.Util;
 
 namespace SemWeb {
-	public class MemoryStore : Store, SupportsPersistableBNodes, IEnumerable {
+	public class MemoryStore : Store, SupportsPersistableBNodes,
+#if DOTNET2
+	System.Collections.Generic.IEnumerable<Statement>
+#else
+	IEnumerable
+#endif
+	
+	{
+		#if DOTNET2
+		private class StatementList : System.Collections.Generic.List<Statement> {
+			public StatementList() : base() { }
+			public StatementList(Statement[] statements) : base(statements) { }
+		}
+		#endif
+
 		StatementList statements;
 		
 		Hashtable statementsAboutSubject = new Hashtable();
@@ -34,11 +48,13 @@ namespace SemWeb {
 		}
 
 		public Statement[] ToArray() {
+#if DOTNET2
+			return statements.ToArray();
+#else
 			return (Statement[])statements.ToArray(typeof(Statement));
+#endif
 		}
 
-		public IList Statements { get { return statements.ToArray(); } }
-		
 		public override bool Distinct { get { return distinct; } }
 		
 		public override int StatementCount { get { return statements.Count; } }
@@ -49,6 +65,11 @@ namespace SemWeb {
 			}
 		}
 		
+#if DOTNET2
+		System.Collections.Generic.IEnumerator<Statement> System.Collections.Generic.IEnumerable<Statement>.GetEnumerator() {
+			return statements.GetEnumerator();
+		}
+#endif
 		IEnumerator IEnumerable.GetEnumerator() {
 			return statements.GetEnumerator();
 		}
@@ -109,7 +130,7 @@ namespace SemWeb {
 		
 		public override Entity[] GetEntities() {
 			Hashtable h = new Hashtable();
-			foreach (Statement s in Statements) {
+			foreach (Statement s in statements) {
 				if (s.Subject != null) h[s.Subject] = h;
 				if (s.Predicate != null) h[s.Predicate] = h;
 				if (s.Object != null && s.Object is Entity) h[s.Object] = h;
@@ -120,14 +141,14 @@ namespace SemWeb {
 		
 		public override Entity[] GetPredicates() {
 			Hashtable h = new Hashtable();
-			foreach (Statement s in Statements)
+			foreach (Statement s in statements)
 				h[s.Predicate] = h;
 			return (Entity[])new ArrayList(h.Keys).ToArray(typeof(Entity));
 		}
 
 		public override Entity[] GetMetas() {
 			Hashtable h = new Hashtable();
-			foreach (Statement s in Statements)
+			foreach (Statement s in statements)
 				h[s.Meta] = h;
 			return (Entity[])new ArrayList(h.Keys).ToArray(typeof(Entity));
 		}

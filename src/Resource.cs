@@ -3,7 +3,13 @@ using System.Collections;
 
 namespace SemWeb {
 	
-	public abstract class Resource : IComparable {
+	public abstract class Resource :
+#if DOTNET2
+	IComparable<Resource>
+#else
+	IComparable
+#endif
+	{
 		internal object ekKey, ekValue;
 		internal ArrayList extraKeys;
 		
@@ -18,7 +24,7 @@ namespace SemWeb {
 		internal Resource() {
 		}
 		
-		// These get rid of the warning about overring ==, !=.
+		// These gets rid of the warning about overring ==, !=.
 		// Since Entity and Literal override these, we're ok.
 		public override bool Equals(object other) {
 			return base.Equals(other);
@@ -26,7 +32,7 @@ namespace SemWeb {
 		public override int GetHashCode() {
 			return base.GetHashCode();
 		}
-		
+
 		public static bool operator ==(Resource a, Resource b) {
 			if ((object)a == null && (object)b == null) return true;
 			if ((object)a == null || (object)b == null) return false;
@@ -64,7 +70,11 @@ namespace SemWeb {
 			extraKeys.Add(k);
 		}
 
-		int IComparable.CompareTo(object other) {
+#if DOTNET2
+		public int CompareTo(Resource other) {
+#else
+		public int CompareTo(object other) {
+#endif
 			// We'll make an ordering over resources.
 			// First named entities, then bnodes, then literals.
 			// Named entities are sorted by URI.
