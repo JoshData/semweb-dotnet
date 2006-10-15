@@ -18,7 +18,7 @@ namespace SemWeb.Stores {
 		bool locked = false;
 		int locker = 0;
 		
-		bool Debug = false;
+		static bool Debug = System.Environment.GetEnvironmentVariable("SEMWEB_DEBUG_MYSQL") != null;
 		
 		public MySQLStore(string connectionString, string table)
 			: base(table) {
@@ -92,7 +92,7 @@ namespace SemWeb.Stores {
 		
 		private void Yield() {
 			if (!locked) return;
-			if (locker++ == 100) {
+			if (locker++ == 200) {
 				locker = 0;
 				RunCommand("UNLOCK TABLES;");
 				BeginTransaction();

@@ -24,8 +24,6 @@ namespace SemWeb {
 		Entity entLOGIMPLIES = "http://www.w3.org/2000/10/swap/log#implies";
 		Entity entGRAPHCONTAINS = "http://razor.occams.info/code/semweb/internaluris/graphContains";
 		
-		bool addFailuresAsWarnings = false;
-		
 		public N3Reader(TextReader source) {
 			this.sourcestream = source;
 		}
@@ -674,25 +672,18 @@ namespace SemWeb {
 		}
 		
 		private void Add(StatementSink store, Statement statement, Location position) {
-			try {
-				store.Add(statement);
-			} catch (Exception e) {
-				if (!addFailuresAsWarnings)
-					OnError("Add failed on statement { " + statement + " }: " + e.Message, position, e);
-				else
-					OnWarning("Add failed on statement { " + statement + " }: " + e.Message, position, e);
-			}
+			store.Add(statement);
 		}
 		
 		private void OnError(string message, Location position) {
 			throw new ParserException(message + ", line " + position.Line + " col " + position.Col);
 		}
-		private void OnError(string message, Location position, Exception cause) {
+		/*private void OnError(string message, Location position, Exception cause) {
 			throw new ParserException(message + ", line " + position.Line + " col " + position.Col, cause);
 		}
 		private void OnWarning(string message, Location position, Exception cause) {
 			OnWarning(message + ", line " + position.Line + " col " + position.Col);
-		}
+		}*/
 		
 	
 	}

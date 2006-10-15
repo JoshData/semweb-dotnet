@@ -325,7 +325,8 @@ namespace SemWeb {
 			Add(replacement);
 		}
 		
-				public void Write(System.IO.TextWriter writer) {
+		
+		public void Write(System.IO.TextWriter writer) {
 			using (RdfWriter w = new N3Writer(writer)) {
 				Select(w);
 			}
@@ -702,5 +703,84 @@ namespace SemWeb.Stores {
 			((MemoryStore)selfilterresults[filter]).Select(sink);
 		}
 
+	}
+	
+	internal class DecoupledStatementSource : StatementSource {
+		StatementSource source;
+		int minbuffersize = 2000;
+		int maxbuffersize = 10000;
+		
+		bool bufferWanted = false;
+		System.Threading.AutoResetEvent bufferMayAcquire = new System.Threading.AutoResetEvent(false);
+		System.Threading.AutoResetEvent bufferReleased = new System.Threading.AutoResetEvent(false);
+
+		System.Threading.Thread sourceThread;
+		
+		StatementList buffer = new StatementList();
+		bool sourceFinished = false;
+		
+		public DecoupledStatementSource(StatementSource source) {
+			this.source = source;
+		}
+		
+		public bool Distinct { get { return source.Distinct; } }
+
+		public void Select(StatementSink sink) {
+			bufferWanted = false;
+			
+			sourceThread = new System.Threading.Thread(Go);
+			sourceThread.Start();
+			
+			while (true) {
+				bufferWanted = true;
+				if (!sourceFinished) bufferMayAcquire.WaitOne(); // wait until we can have the buffer
+				bufferWanted = false;
+				
+				Statement[] statements = buffer.ToArray();
+				buffer.Clear();
+				
+				bufferReleased.Set(); // notify that we don't need the buffer anymore
+
+				if (sourceFinished && statements.Length == 0) break;
+				
+				foreach (Statement s in statements)
+					sink.Add(s);
+			}
+		}
+		
+		private void Go() {
+			source.Select(new MySink(this));
+			sourceFinished = true;
+			bufferMayAcquire.Set(); // for the last batch
+		}
+		
+		private void SourceAdd(Statement s) {
+			if ((bufferWanted && buffer.Count > minbuffersize) || buffer.Count >= maxbuffersize) {
+				bufferMayAcquire.Set();
+				bufferReleased.WaitOne();
+			}
+			buffer.Add(s);
+		}
+		private void SourceAdd(Statement[] s) {
+			if ((bufferWanted && buffer.Count > minbuffersize) || buffer.Count >= maxbuffersize) {
+				bufferMayAcquire.Set();
+				bufferReleased.WaitOne();
+			}
+			foreach (Statement ss in s)
+				buffer.Add(ss);
+		}
+		
+		private class MySink : StatementSink {
+			DecoupledStatementSource x;
+			public MySink(DecoupledStatementSource x) { this.x = x; }
+			public bool Add(Statement s) {
+				x.SourceAdd(s);
+				return true;
+			}
+			public bool Add(Statement[] s) {
+				x.SourceAdd(s);
+				return true;
+			}
+		}
 	}
 }

@@ -30,9 +30,10 @@ namespace SemWeb.Stores {
 		bool statementsRemoved = false;
 
 		static bool Debug = System.Environment.GetEnvironmentVariable("SEMWEB_DEBUG_SQL") != null;
+		static bool DebugLogSpeed = System.Environment.GetEnvironmentVariable("SEMWEB_DEBUG_SQL_LOG_SPEED") != null;
 		
 		StringBuilder cmdBuffer = new StringBuilder();
-		
+		 
 		// Buffer statements to process together.
 		StatementList addStatementBuffer = null;
 		
@@ -431,29 +432,7 @@ namespace SemWeb.Stores {
 
 			if (addStatementBuffer != null) {
 				addStatementBuffer.Add(statement);
-				
-				// This complicated code here adjusts the size of the add
-				// buffer dynamically to maximize performance.
-				int thresh = importAddBufferSize;
-				if (importAddBufferRotation == 1) thresh += 100; // experiment with changing
-				if (importAddBufferRotation == 2) thresh -= 100; // the buffer size
-				
-				if (addStatementBuffer.Count >= thresh) {
-					DateTime start = DateTime.Now;
-					RunAddBuffer();
-					TimeSpan duration = DateTime.Now - start;
-					
-					// If there was an improvement in speed, per statement, on an 
-					// experimental change in buffer size, keep the change.
-					if (importAddBufferRotation != 0
-						&& duration.TotalSeconds/thresh < importAddBufferTime.TotalSeconds/importAddBufferSize
-						&& thresh >= 200 && thresh <= 4000)
-						importAddBufferSize = thresh;
-
-					importAddBufferTime = duration;
-					importAddBufferRotation++;
-					if (importAddBufferRotation == 3) importAddBufferRotation = 0;
-				}
+				RunAddBufferDynamic();
 				return;
 			}
 			
@@ -498,6 +477,33 @@ namespace SemWeb.Stores {
 				addBuffer.Append(')');
 				RunCommand(addBuffer.ToString());
 				anonEntityHeldIds.Clear();
+			}
+		}
+		
+		private void RunAddBufferDynamic() {
+			// This complicated code here adjusts the size of the add
+			// buffer dynamically to maximize performance.
+			int thresh = importAddBufferSize;
+			if (importAddBufferRotation == 1) thresh += 100; // experiment with changing
+			if (importAddBufferRotation == 2) thresh -= 100; // the buffer size
+			
+			if (addStatementBuffer.Count >= thresh) {
+				DateTime start = DateTime.Now;
+				RunAddBuffer();
+				TimeSpan duration = DateTime.Now - start;
+				
+				if (DebugLogSpeed)
+					Console.Error.WriteLine(thresh + "\t" + thresh/duration.TotalSeconds);
+				
+				// If there was an improvement in speed, per statement, on an 
+				// experimental change in buffer size, keep the change.
+				if (importAddBufferRotation != 0
+					&& duration.TotalSeconds/thresh < importAddBufferTime.TotalSeconds/importAddBufferSize
+					&& thresh >= 200 && thresh <= 4000)
+					importAddBufferSize = thresh;
+				importAddBufferTime = duration;
+				importAddBufferRotation++;
+				if (importAddBufferRotation == 3) importAddBufferRotation = 0;
 			}
 		}
 		
@@ -1333,7 +1339,7 @@ namespace SemWeb.Stores {
 			}			
 		}
 		
-		private void LoadMetaEntities() {
+		/*private void LoadMetaEntities() {
 			if (metaEntities != null) return;
 			metaEntities = new Hashtable();
 			
@@ -1346,7 +1352,7 @@ namespace SemWeb.Stores {
 					metaEntities[id] = MakeEntity(id, uri, null);
 				}
 			}
-		}
+		}*/
 		
 		private string Escape(string str, bool quotes) {
 			if (str == null) return "NULL";

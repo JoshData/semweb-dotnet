@@ -759,6 +759,8 @@ namespace SemWeb.Query {
 		    	java.util.Collection defaultDatasets, java.util.Collection namedDatasets,
 		    	java.util.Map knownValues, java.util.Map knownFilters) {
 		    	
+		    	if (tripleConstraints.size() <= 1) return null; // no need to optimize
+		    	
 		    	RdfSourceWrapper s = (RdfSourceWrapper)source;
 		    	
 		    	if (s.source is QueryableSource) {
@@ -776,8 +778,9 @@ namespace SemWeb.Query {
 		    			TripleConstraintData triple = tripleConstraints.get(i) as TripleConstraintData;
 		    			if (triple == null) return null;
 		    			
-		    			graph[i].Subject = (Entity)ToRes(triple.getSubjectExpression(), knownValues, true, varMap1, varMap2, s, opts);
-		    			graph[i].Predicate = (Entity)ToRes(triple.getPredicateExpression(), knownValues, true, varMap1, varMap2, s, opts);
+						graph[i] = new Statement(null, null, null, null); // I don't understand why this should be necessary for a struct, but I get a null reference exception otherwise (yet, that didn't happen initially)
+		    			graph[i].Subject = ToRes(triple.getSubjectExpression(), knownValues, true, varMap1, varMap2, s, opts) as Entity;
+		    			graph[i].Predicate = ToRes(triple.getPredicateExpression(), knownValues, true, varMap1, varMap2, s, opts) as Entity;
 		    			graph[i].Object = ToRes(triple.getObjectExpression(), knownValues, false, varMap1, varMap2, s, opts);
 		    			graph[i].Meta = new Variable(); // TODO
 		    			if (graph[i].AnyNull) return new RdfBindingSetImpl();
@@ -790,7 +793,7 @@ namespace SemWeb.Query {
 		    		
 		    		opts.VariableLiteralFilters = new Hashtable();
 		    		foreach (DictionaryEntry kv in varMap1) {
-		    			if (knownFilters.containsKey(kv.Key)) {
+		    			if (knownFilters != null && knownFilters.containsKey(kv.Key)) {
 		    				ArrayList filters = new ArrayList();
 		    				for (java.util.Iterator iter = ((java.util.List)knownFilters.get(kv.Key)).iterator(); iter.hasNext(); )
 		    					filters.Add(iter.next());
@@ -847,7 +850,7 @@ namespace SemWeb.Query {
 		    			varMap2[v] = expr;
 		    		}
 		    		
-		    		if (knownValues.containsKey(expr)) {
+		    		if (knownValues != null && knownValues.get(expr) != null) {
 			    		java.util.Set values = (java.util.Set)knownValues.get(expr);
 			    		ArrayList values2 = new ArrayList();
 			    		for (java.util.Iterator iter = values.iterator(); iter.hasNext(); ) {
@@ -858,10 +861,10 @@ namespace SemWeb.Query {
 			    		
 			    		opts.VariableKnownValues[v] = values2;
 			    	}
-
+			    	
 		    		return v;
 		    	}
-
+		    	
 	    		return entities ? src.ToEntity((org.openrdf.model.Value)expr) : src.ToResource((org.openrdf.model.Value)expr);
 		    }
 		    
