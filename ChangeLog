@@ -4,6 +4,8 @@
 	* Removed: MemoryStore.Statements property.
 	  Use ToArray() instead, or just foreach over
 	  the MemoryStore directly.
+	* SPARQL: Bug in my added optimizations caused
+	  problems if a predicate in the query is a variable.
 
 2006-10-02 Version 0.751
 
