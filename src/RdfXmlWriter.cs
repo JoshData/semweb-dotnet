@@ -13,7 +13,8 @@ namespace SemWeb {
 		
 		XmlDocument doc;
 		bool initialized = false;
-		
+		bool closeStream = false;
+				
 		Hashtable nodeMap = new Hashtable();
 		
 		long anonCounter = 0;
@@ -26,7 +27,7 @@ namespace SemWeb {
 		
 		public RdfXmlWriter(XmlDocument dest) { doc = dest; }
 		
-		public RdfXmlWriter(string file) : this(GetWriter(file)) { }
+		public RdfXmlWriter(string file) : this(GetWriter(file)) { closeStream = true; }
 
 		public RdfXmlWriter(TextWriter writer) : this(NewWriter(writer)) { }
 		
@@ -358,7 +359,10 @@ namespace SemWeb {
 			
 			if (writer != null) {
 				doc.WriteTo(writer);
-				writer.Close();
+				if (closeStream)
+					writer.Close();
+				else
+					writer.Flush();
 			}
 		}
 		

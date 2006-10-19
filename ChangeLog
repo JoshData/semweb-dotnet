@@ -1,3 +1,10 @@
+	* RdfXmlWriter no longer closes the underlying
+	  stream when it finishes writing, which makes it
+	  do the same as N3Writer.
+	* Removed: MemoryStore.Statements property.
+	  Use ToArray() instead, or just foreach over
+	  the MemoryStore directly.
+
 2006-10-02 Version 0.751
 
 	FIXES:

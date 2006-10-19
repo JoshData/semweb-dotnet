@@ -11,6 +11,7 @@ namespace SemWeb {
 		NamespaceManager ns = new NamespaceManager();
 		bool hasWritten = false;
 		bool closed = false;
+		bool closeStream = false;
 		
 		string lastSubject = null, lastPredicate = null;
 		
@@ -25,7 +26,7 @@ namespace SemWeb {
 			Notation3
 		}
 		
-		public N3Writer(string file) : this(GetWriter(file)) { }
+		public N3Writer(string file) : this(GetWriter(file)) { closeStream = true; }
 
 		public N3Writer(TextWriter writer) {
 			this.writer = writer;
@@ -48,7 +49,10 @@ namespace SemWeb {
 				writer.WriteLine(".");
 			closed = true;
 			hasWritten = false;
-			writer.Flush();
+			if (closeStream)
+				writer.Close();
+			else
+				writer.Flush();
 		}
 
 		
