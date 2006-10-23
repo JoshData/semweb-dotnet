@@ -1,0 +1,58 @@
+<html>
+	<head>
+		<title>SemWeb: Docs: Selecting Many Things at Once</title>
+		<link rel="stylesheet" type="text/css" href="stylesheet.css"/>
+	</head>
+	
+	<body>
+
+<h1>SemWeb: Selecting Many Things at Once</h1>
+
+<p>For anything but the MemoryStore, there is considerable overhead in each request for information from an underlying database.  With the MySQL store, for instance, a call to <tt>Select</tt> makes a SQL SELECT query on the database.  There is overhead in constructing, transmitting across processes, and parsing the query, and then the response.  This makes repeated calls to <tt>Select</tt> (the method) much slower than they should be if they could be combined into a single SQL SELECT.</p>
+
+<P>SemWeb has an advanced API call, an overload of <tt>Select</tt>, taking a <tt>SelectFilter</tt> argument, which allows the caller to query for statements matching a more complex filter than the simple form of <tt>Select</tt>.  In the simple form, the subject, predicate, object, and meta can be either 1) specified or 2) a wildcard.  In the more complex API, there is a third option, which is specifying a range of possible values.  Schematically, these three calls to select:</P>
+
+<pre class="code">
+Select(X, null, null)
+Select(Y, null, null)
+Select(Z, null, null)
+</pre>
+
+<p>can be replaced with a single call like this:</p>
+
+<pre class="code">
+Select( { X, Y, Z}, null, null);
+</pre>
+
+<p>Further, these permutations can be condensed into a single call:</p>
+
+<pre class="code">
+Select(X, A, null)
+Select(Y, A, null)
+Select(Z, A, null)
+Select(X, B, null)
+Select(Y, B, null)
+Select(Z, B, null)
+Select(X, C, null)
+Select(Y, C, null)
+Select(Z, C, null)
+
+Select( { X, Y, Z}, { A, B, C}, null);
+</pre>
+
+<p>The statements returned from the complex <tt>Select</tt> are those that match any of the provided resources.</p>
+
+<p>The actual syntax uses arrays of entities or, for objects, resources.  As an example, one use case of this is to fetch the <tt>foaf:name</tt> of many entities in one call.</p>
+
+<pre class="code">
+SelectFilter filter = new SelectFilter(); // for now all wildcards
+filter.Subjects = new Entity[] { X, Y, Z };
+filter.Predicates = new Entity[] { foaf_name };
+// filter.Objects, filter.Metas are left as wildcards
+store.Select(filter, sink);
+</pre>
+
+<p>The sink receives all statements whose subject is X, Y, or Z, and whose predicate is foaf_name.</p>
+
+</body>
+</html>

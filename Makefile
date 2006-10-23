@@ -1,4 +1,4 @@
-VERSION=0.751
+VERSION=0.76
 
 all: bin/SemWeb.dll bin/SemWeb.PostgreSQLStore.dll bin/SemWeb.MySQLStore.dll bin/SemWeb.SqliteStore.dll bin/SemWeb.Sparql.dll bin/rdfstorage.exe bin/rdfquery.exe
 
@@ -22,8 +22,8 @@ bin/SemWeb.dll: $(MAIN_SOURCES) Makefile
 
 # Auxiliary Assemblies
 
-bin/SemWeb.Sparql.dll: src/Sparql.cs
-	mcs -debug src/Sparql.cs -out:bin/SemWeb.Sparql.dll \
+bin/SemWeb.Sparql.dll: src/Sparql.cs src/SparqlProtocol.cs
+	mcs -debug src/Sparql.cs src/SparqlProtocol.cs -out:bin/SemWeb.Sparql.dll \
 		-t:library -r:bin/SemWeb.dll -r:bin/sparql-core.dll -r:bin/IKVM.GNU.Classpath.dll \
 		-r:System.Web
 
@@ -54,7 +54,7 @@ bin/rdfquery.exe: tools/rdfquery.cs bin/SemWeb.dll
 apidocxml: Makefile
 	monodocer \
 		-assembly:bin/SemWeb.dll -assembly:bin/SemWeb.Sparql.dll \
-		-path:apidocxml --delete
+		-path:apidocxml --delete --pretty
 	#mono /usr/lib/monodoc/monodocs2slashdoc.exe doc > SemWeb.docs.xml
 	mkdir -p apidocs
 	monodocs2html -source:apidocxml -dest:apidocs -template:docstemplate.xsl

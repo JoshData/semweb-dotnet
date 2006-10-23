@@ -1,3 +1,5 @@
+2006-10-23 Version 0.76
+
 	* SQLStore: Indexes are only created the first time
 	  the tables are created, so you can modify the indexes
 	  manually and not have the usual ones recreated again
