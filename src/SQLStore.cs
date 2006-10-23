@@ -86,12 +86,14 @@ namespace SemWeb.Stores {
 			firstUse = false;
 			
 			CreateTable();
-			CreateIndexes();
-			CreateVersion();
+			if (CreateVersion()) // tests if this is a new table
+				CreateIndexes();
 		}
 		
-		private void CreateVersion() {	
+		private bool CreateVersion() {	
 			string verdatastr = RunScalarString("SELECT value FROM " + table + "_literals WHERE id = 0");
+			bool isNew = (verdatastr == null);
+			
 			NameValueCollection verdata = ParseVersionInfo(verdatastr);
 			
 			if (verdatastr != null && verdata["ver"] == null)
@@ -111,6 +113,8 @@ namespace SemWeb.Stores {
 				RunCommand("INSERT INTO " + table + "_literals (id, value) VALUES (0, " + Escape(newverdata, true) + ")");
 			else if (verdatastr != newverdata)
 				RunCommand("UPDATE " + table + "_literals SET value = " + newverdata + " WHERE id = 0");
+				
+			return isNew;
 		}
 		
 		NameValueCollection ParseVersionInfo(string verdata) {
@@ -1404,6 +1408,8 @@ namespace SemWeb.Stores {
 			RunAddBuffer();
 			
 			cachedNextId = -1;
+			NextId(); // get this before starting transaction because it relies on indexes which may be disabled
+			
 			addStatementBuffer = new StatementList();
 			
 			BeginTransaction();

@@ -1,3 +1,7 @@
+	* SQLStore: Indexes are only created the first time
+	  the tables are created, so you can modify the indexes
+	  manually and not have the usual ones recreated again
+	  automatically.
 	* MySQLStore now uses ALTER TABLE DISABLE KEYS
 	  rather than LOCK TABLES during Store.Import.
 	* RdfXmlWriter no longer closes the underlying
