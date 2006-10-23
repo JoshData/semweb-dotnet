@@ -4,7 +4,7 @@ using System.Collections;
 using SemWeb.Util;
 
 namespace SemWeb {
-	public class Statement :
+	public struct Statement :
 #if DOTNET2
 	IEquatable<Statement>, IComparable<Statement>
 #else
@@ -12,7 +12,7 @@ namespace SemWeb {
 #endif
 	{
 	
-	public Entity Subject;
+		public Entity Subject;
 		public Entity Predicate;
 		public Resource Object;
 		public Entity Meta;
