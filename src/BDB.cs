@@ -3,7 +3,6 @@ using System.IO;
 using System.Runtime.Serialization.Formatters;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Runtime.InteropServices;
-using Mono.Unix;
 
 namespace BDB {
 	
@@ -52,12 +51,12 @@ namespace BDB {
 			
 			uint dbflags = DB_DIRECT_DB;
 			if (allowDuplicates)
-				dbflags |= DB_DUPSORT; 
+				dbflags |= DB_DUP; // DB_DUPSORT; 
 			
 			funcs.set_flags(dbp, dbflags);
 			
 			int type = (int)format;
-			uint flags = DB_DIRTY_READ;
+			uint flags = DB_DIRTY_READ; // | DB_AUTO_COMMIT;
 			int chmod_mode = 0;
 			
 			if (create)
@@ -302,7 +301,9 @@ namespace BDB {
 				funcs1 = (envstruct1)Marshal.PtrToStructure((IntPtr)((int)envptr+276), typeof(envstruct1));
 				funcs2 = (envstruct2)Marshal.PtrToStructure((IntPtr)((int)envptr+712), typeof(envstruct2));
 				
-				ret = funcs1.open(envptr, home, DB_CREATE | DB_INIT_MPOOL | DB_INIT_TXN | DB_PRIVATE, 0);
+				funcs1.set_flags(envptr, DB_LOG_INMEMORY, 1);
+				
+				ret = funcs1.open(envptr, home, DB_CREATE | DB_INIT_MPOOL | DB_PRIVATE , 0); // | DB_INIT_LOCK | DB_INIT_LOG | DB_INIT_TXN
 				if (ret != 0)
 					funcs1.close(envptr, 0);
 				CheckError(ret);
@@ -362,7 +363,7 @@ namespace BDB {
 			}
 			
 	        static IntPtr BytesToAlloc (Array marshal, int length, int stride) {
-	            IntPtr mem = UnixMarshal.AllocHeap (length*stride);
+	            IntPtr mem = Marshal.AllocHGlobal (length*stride);
 	            if (mem == IntPtr.Zero)
 	                throw new OutOfMemoryException ();
 	            bool copied = false;
@@ -379,7 +380,7 @@ namespace BDB {
 	            }
 	            finally {
 	                if (!copied)
-	                    UnixMarshal.FreeHeap (mem);
+	                    Marshal.FreeHGlobal (mem);
 	            }
 	            return mem;
 	        }
@@ -450,7 +451,7 @@ namespace BDB {
 			
 			public void Free() {
 				if (Ptr != IntPtr.Zero)
-					UnixMarshal.FreeHeap(Ptr);
+					Marshal.FreeHGlobal(Ptr);
 			}
 		}
 		
@@ -459,6 +460,7 @@ namespace BDB {
 		const int DB_DUP = 0x0000002;
 		const int DB_DUPSORT = 0x0000004;
 		const int DB_THREAD = 0x0000040;
+		const int DB_AUTO_COMMIT = 0x01000000;
 		const int DB_NOTFOUND = (-30989);/* Key/data pair not found (EOF). */
 		const int DB_KEYEMPTY = (-30997);/* Key/data deleted or never created. */
 		const int DB_KEYEXIST = (-30996);/* The key/data pair already exists. */
@@ -470,6 +472,7 @@ namespace BDB {
 		const int DB_INIT_TXN = 0x0020000;	/* Initialize transactions. */
 		const int DB_JOINENV = 0x0040000;	/* Initialize all subsystems present. */
 		const int DB_LOCKDOWN = 0x0080000;	/* Lock memory into physical core. */
+		const int DB_LOG_INMEMORY = 0x00020000; /* Store logs in buffers in memory. */
 		const int DB_PRIVATE = 0x0100000;	/* DB_ENV is process local. */
 		const int DB_TXN_NOSYNC = 0x0000100;/* Do not sync log on commit. */
 		const int DB_TXN_NOT_DURABLE = 0x0000200;	/* Do not log changes. */
@@ -569,6 +572,24 @@ namespace BDB {
 			public env_open_delegate open;
 			IntPtr remove;
 			IntPtr stat_print;
+			IntPtr fileid_reset;
+			IntPtr is_bigendian;
+			IntPtr lsn_reset;
+			IntPtr prdbt;
+			IntPtr set_alloc;
+			IntPtr set_app_dispatch;
+			IntPtr get_data_dirs;
+			IntPtr set_data_dirs;
+			IntPtr get_encrypt_flags;
+			IntPtr set_encrypt;
+			IntPtr set_errcall;
+			IntPtr get_errfile;
+			IntPtr set_errfile;
+			IntPtr get_errpfx;
+			IntPtr set_errpfx;
+			IntPtr set_feedback;
+			IntPtr get_flags;
+			public env_set_flags_delegate set_flags;
 		}
 		
 		struct envstruct2 {
@@ -602,6 +623,7 @@ namespace BDB {
     	delegate int env_close_delegate(IntPtr envp, uint flags);
     	delegate int env_open_delegate(IntPtr envp, string home, uint flags, int mode);
     	delegate int env_tnx_begin_delegate(IntPtr envp, IntPtr parenttxn, out IntPtr txnp, uint flags);
+    	delegate int env_set_flags_delegate(IntPtr envp, uint flag, int value);
     	delegate int txn_commit_delegate(IntPtr tid, uint flags);
 	}
 	
