@@ -1,3 +1,5 @@
+	* MySQLStore now uses ALTER TABLE DISABLE KEYS
+	  rather than LOCK TABLES during Store.Import.
 	* RdfXmlWriter no longer closes the underlying
 	  stream when it finishes writing, which makes it
 	  do the same as N3Writer.

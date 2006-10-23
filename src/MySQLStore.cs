@@ -15,9 +15,6 @@ namespace SemWeb.Stores {
 		MySqlConnection connection;
 		string connectionString;
 		
-		bool locked = false;
-		int locker = 0;
-		
 		static bool Debug = System.Environment.GetEnvironmentVariable("SEMWEB_DEBUG_MYSQL") != null;
 		
 		public MySQLStore(string connectionString, string table)
@@ -49,14 +46,12 @@ namespace SemWeb.Stores {
 		}
 		
 		protected override void RunCommand(string sql) {
-			Yield();
 			if (Debug) Console.Error.WriteLine(sql);
 			using (MySqlCommand cmd = new MySqlCommand(sql, connection))
 				cmd.ExecuteNonQuery();
 		}
 		
 		protected override object RunScalar(string sql) {
-			Yield();
 			using (MySqlCommand cmd = new MySqlCommand(sql, connection)) {
 			object ret = null;
 			using (IDataReader reader = cmd.ExecuteReader()) {
@@ -70,7 +65,6 @@ namespace SemWeb.Stores {
 		}
 
 		protected override IDataReader RunReader(string sql) {
-			Yield();
 			if (Debug) Console.Error.WriteLine(sql);
 			using (MySqlCommand cmd = new MySqlCommand(sql, connection)) {
 				return cmd.ExecuteReader();
@@ -79,24 +73,15 @@ namespace SemWeb.Stores {
 
 		protected override void BeginTransaction() {
 			//RunCommand("BEGIN");
-			RunCommand("LOCK TABLES " + TableName + "_statements WRITE, " + TableName + "_literals WRITE, " + TableName + "_entities WRITE");
-			locked = true;
-			locker = 0;
+			//RunCommand("LOCK TABLES " + TableName + "_statements WRITE, " + TableName + "_literals WRITE, " + TableName + "_entities WRITE");
+			RunCommand("ALTER TABLE " + TableName + "_statements DISABLE KEYS");
 		}
 		
 		protected override void EndTransaction() {
 			//RunCommand("COMMIT");
-			RunCommand("UNLOCK TABLES");
-			locked = false;
+			//RunCommand("UNLOCK TABLES");
+			RunCommand("ALTER TABLE " + TableName + "_statements ENABLE KEYS");
 		}
 		
-		private void Yield() {
-			if (!locked) return;
-			if (locker++ == 200) {
-				locker = 0;
-				RunCommand("UNLOCK TABLES;");
-				BeginTransaction();
-			}
-		}
 	}
 }
