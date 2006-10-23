@@ -80,7 +80,7 @@
         <param name="document">A TextReader containing the RDF/XML document.</param>
         <param name="baseUri">The URI of the document itself, to be taken as the Base URI for relative URIs encoutered in the document.</param>
         <summary>Creates a parser from a TextReader with the given base URI.</summary>
-        <remarks>To be added.</remarks>
+        <remarks>None.</remarks>
       </Docs>
     </Member>
     <Member MemberName=".ctor">
@@ -94,7 +94,7 @@
         <param name="document">The stream containing the RDF/XML file.</param>
         <param name="baseUri">The URI of the document itself, to be taken as the Base URI for relative URIs encoutered in the document.</param>
         <summary>Creates a parser from a stream with the given base URI.</summary>
-        <remarks>To be added.</remarks>
+        <remarks>None.</remarks>
       </Docs>
     </Member>
     <Member MemberName=".ctor">
@@ -108,7 +108,7 @@
         <param name="file">The path of the file containing RDF/XML, or "-" to read from Console.In.</param>
         <param name="baseUri">The URI of the document itself, to be taken as the Base URI for relative URIs encoutered in the document.</param>
         <summary>Creates a parser from a file with the given base URI.</summary>
-        <remarks>To be added.</remarks>
+        <remarks>None.</remarks>
       </Docs>
     </Member>
   </Members>

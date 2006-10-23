@@ -250,10 +250,10 @@
         <Parameter Name="s" Type="SemWeb.Statement" />
       </Parameters>
       <Docs>
-        <param name="s">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
+        <param name="s">Another statement.</param>
+        <summary>Compares two statements.</summary>
+        <returns>0 if the two statements are equal, -1 if this statement should be ordered before <paramref name="s" />, otherwise 1 if <paramref name="s" /> should be ordered before this statement.</returns>
+        <remarks>Statements are ordered first by subject, then by predicate, then object, then meta.  For each of those fields, this statement comes first if its field is null or if the resource in the field would be ordered first compared to the corresponding resource in <paramref name="s" />, according to the ordering defined in the Resource class.</remarks>
       </Docs>
     </Member>
   </Members>

@@ -191,9 +191,9 @@
       </ReturnValue>
       <Parameters />
       <Docs>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
+        <summary>Implemented by inheritors to provide the character used to surround strings in a SQL query.</summary>
+        <returns>The string quotation character, usually an apostrophe or double-quote.</returns>
+        <remarks>The default implementation returns a double-quote.</remarks>
       </Docs>
     </Member>
     <Member MemberName="GetStoreGuid">

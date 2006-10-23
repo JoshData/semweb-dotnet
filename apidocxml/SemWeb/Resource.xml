@@ -77,10 +77,10 @@
         <Parameter Name="other" Type="System.Object" />
       </Parameters>
       <Docs>
-        <param name="other">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
+        <param name="other">The other resource.</param>
+        <summary>Compares two resources.</summary>
+        <returns>0 if the resources are equal, -1 if this resource should be ordered before <paramref name="other" />, or 1 if <paramref name="other" /> should be ordered first.</returns>
+        <remarks>The ordering used by this method is as follows: Entities sorted by URI, then BNodes sorted by HashCode, and finally Literals sorted by their Value.</remarks>
       </Docs>
     </Member>
   </Members>

@@ -576,11 +576,11 @@ For Sqlite, MySQL, and PostgreSQL-based stores, use the spec string described in
         <Parameter Name="sink" Type="SemWeb.StatementSink" />
       </Parameters>
       <Docs>
-        <param name="source">To be added.</param>
-        <param name="filter">To be added.</param>
-        <param name="sink">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
+        <param name="source">The source to query.</param>
+        <param name="filter">The select filter to query with.</param>
+        <param name="sink">The result sink to send matching statements to.</param>
+        <summary>This method provides a default implementation of the Select method that takes a SelectFilter argument.</summary>
+        <remarks>This method is intended to be used by subclasses of Store that do not want to provide their own implementation of Select with a SelectFilter.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Contains">
