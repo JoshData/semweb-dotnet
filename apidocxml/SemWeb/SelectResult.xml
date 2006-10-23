@@ -31,19 +31,6 @@
         <remarks>If the statements have not yet been loaded into memory, this call will stream the result of the Select call to the sink without loading all of the statements into memory at once.</remarks>
       </Docs>
     </Member>
-    <Member MemberName="GetEnumerator">
-      <MemberSignature Language="C#" Value="public System.Collections.IEnumerator GetEnumerator ();" />
-      <MemberType>Method</MemberType>
-      <ReturnValue>
-        <ReturnType>System.Collections.IEnumerator</ReturnType>
-      </ReturnValue>
-      <Parameters />
-      <Docs>
-        <summary>Returns an enumerator that iterates over the statements.</summary>
-        <returns>An enumerator that iterates over the matching statements.</returns>
-        <remarks>This method is implemented to allow SelectResult objects to be used in <see langword="foreach" /> loops.  Upon calling this method, all of the matching statements are loaded into memory as if through a call to <see cref="M:SemWeb.SelectResult.Load()" />.</remarks>
-      </Docs>
-    </Member>
     <Member MemberName="Load">
       <MemberSignature Language="C#" Value="public SemWeb.MemoryStore Load ();" />
       <MemberType>Method</MemberType>

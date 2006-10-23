@@ -67,6 +67,22 @@
         <remarks>See the Resource equality operator.</remarks>
       </Docs>
     </Member>
+    <Member MemberName="CompareTo">
+      <MemberSignature Language="C#" Value="public int CompareTo (object other);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Int32</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="other" Type="System.Object" />
+      </Parameters>
+      <Docs>
+        <param name="other">To be added.</param>
+        <summary>To be added.</summary>
+        <returns>To be added.</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
   </Members>
   <Docs>
     <summary>The base class of <see cref="T:SemWeb.Entity" />, <see cref="T:SemWeb.BNode" />, <see cref="T:SemWeb.Literal" />, and <see cref="T:SemWeb.Variable" />, the nodes in an RDF graph.</summary>

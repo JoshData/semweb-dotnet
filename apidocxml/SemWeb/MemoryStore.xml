@@ -16,28 +16,6 @@
     </Interface>
   </Interfaces>
   <Members>
-    <Member MemberName="Statements">
-      <MemberSignature Language="C#" Value="public System.Collections.IList Statements { get; };" />
-      <MemberType>Property</MemberType>
-      <ReturnValue>
-        <ReturnType>System.Collections.IList</ReturnType>
-      </ReturnValue>
-      <Docs>
-        <summary>A list of statements in the MemoryStore.</summary>
-        <value>A list of the <see cref="T:SemWeb.Statement" />s in the store.</value>
-        <remarks>
-          <example>
-The contents of this property can also be accessed by looping over the MemoryStore object itself, since it implements IEnumerable:
-<code lang="C#">
-foreach (Statement s in memoryStore.Statements)
-  Console.WriteLine(s);
-// equivalent to:
-foreach (Statement s in memoryStore)
-  Console.WriteLine(s);
-</code></example>
-        </remarks>
-      </Docs>
-    </Member>
     <Member MemberName=".ctor">
       <MemberSignature Language="C#" Value="public MemoryStore ();" />
       <MemberType>Constructor</MemberType>
