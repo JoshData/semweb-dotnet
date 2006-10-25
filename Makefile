@@ -28,11 +28,11 @@ bin/SemWeb.Sparql.dll: src/Sparql.cs src/SparqlProtocol.cs
 		-r:System.Web
 
 bin/SemWeb.PostgreSQLStore.dll: src/PostgreSQLStore.cs bin/SemWeb.dll
-	mcs -debug src/PostgreSQLStore.cs -out:bin/SemWeb.PostgreSQLStore.dll -t:library\
+	mcs -debug src/PostgreSQLStore.cs -out:bin/SemWeb.PostgreSQLStore.dll -t:library \
 	-r:bin/SemWeb.dll -r:System.Data -r:Npgsql
 
 bin/SemWeb.SqliteStore.dll: src/SQLiteStore.cs bin/SemWeb.dll
-	mcs -debug src/SQLiteStore.cs -out:bin/SemWeb.SqliteStore.dll -t:library\
+	mcs -debug src/SQLiteStore.cs -out:bin/SemWeb.SqliteStore.dll -t:library \
 	-r:bin/SemWeb.dll -r:System.Data -r:Mono.Data.SqliteClient
 	
 bin/SemWeb.MySQLStore.dll: src/MySQLStore.cs bin/SemWeb.dll
