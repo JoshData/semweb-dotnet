@@ -796,17 +796,19 @@ diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/logic/Def
          }
 diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/logic/DefaultDescribeQueryLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/DefaultDescribeQueryLogic.java
 --- sparql-0.8/src/main/name/levering/ryan/sparql/logic/DefaultDescribeQueryLogic.java	2006-07-16 19:04:04.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/logic/DefaultDescribeQueryLogic.java	2006-08-02 07:14:52.000000000 -0400
-@@ -93,7 +93,7 @@
++++ work-copy/src/main/name/levering/ryan/sparql/logic/DefaultDescribeQueryLogic.java	2006-11-03 07:07:13.000000000 -0500
+@@ -93,7 +93,9 @@
  		int offset = this.data.getOffset();
  
  		// First bind the result table
 -		RdfBindingSet results = constraint.constrain(new RdfBindingSetImpl(), source, defaultDatasets, namedDatasets);
-+		RdfBindingSet results = constraint.constrain(new RdfBindingSetImpl(), source, defaultDatasets, namedDatasets, null, null);
++		RdfBindingSet results = new RdfBindingSetImpl();
++		if (constraint != null)
++			results = constraint.constrain(new RdfBindingSetImpl(), source, defaultDatasets, namedDatasets, null, null);
  
  		// Now project to the solution set
  		List variables = new ArrayList();
-@@ -106,7 +106,7 @@
+@@ -106,7 +108,7 @@
  		results = this.logic.project(results, variables);
  
  		// Now apply ordering in reverse order
@@ -815,7 +817,7 @@ diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/logic/Def
  			OrderExpressionLogic orderer = (OrderExpressionLogic) orderExpressions.get(i);
  			orderer.order(results);
  		}
-@@ -182,7 +182,7 @@
+@@ -182,7 +184,7 @@
  					descriptions.addAll(describe(statement.getObject(), source, alreadyDescribed));
  				}
  			}
