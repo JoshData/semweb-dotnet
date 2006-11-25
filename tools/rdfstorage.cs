@@ -147,6 +147,10 @@ public class RDFStorage {
 						RdfReader parser = RdfReader.Create(format, infile);
 						parser.BaseUri = baseuri;
 						if (meta != null) parser.Meta = meta;
+						
+						if (storage is RdfWriter)
+							((RdfWriter)storage).Namespaces.AddFrom(parser.Namespaces);
+						
 						parser.Select(filter);
 						foreach (string warning in parser.Warnings)
 							Console.Error.WriteLine(warning);

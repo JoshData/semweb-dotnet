@@ -30,12 +30,14 @@ namespace SemWeb {
 		
 		public RdfXmlReader(XmlDocument document) {
 			xml = new XmlBaseAwareReader(new XmlNodeReader(document));
+			LoadNamespaces();
 		}
 		
 		public RdfXmlReader(XmlReader document) {
 			XmlValidatingReader reader = new XmlValidatingReader(document);
 			reader.ValidationType = ValidationType.None;
 			xml = new XmlBaseAwareReader(reader);
+			LoadNamespaces();
 		}
 		
 		public RdfXmlReader(TextReader document) : this(new XmlTextReader(document)) {
@@ -57,6 +59,24 @@ namespace SemWeb {
 		public RdfXmlReader(string file) : this(GetReader(file), "file:///" + file) {
 		}
 		
+		private void LoadNamespaces() {
+			// Move to the document element and load any namespace
+			// declarations on the node.
+
+			while (xml.Read()) {
+				if (xml.NodeType != XmlNodeType.Element) continue;
+
+				if (xml.MoveToFirstAttribute()) {
+					do {
+						if (xml.Prefix == "xmlns")
+							Namespaces.AddNamespace(xml.Value, xml.LocalName);
+					} while (xml.MoveToNextAttribute());
+					xml.MoveToElement();
+				}
+				break;
+			}
+		}
+
 		public override void Select(StatementSink storage) {
 			// Read past the processing instructions to
 			// the document element.  If it is rdf:RDF,
@@ -65,8 +85,12 @@ namespace SemWeb {
 			// description.
 			
 			this.storage = storage;
-									
-			while (xml.Read()) {
+
+			bool first = true; // on the first iteration don't
+											   // advance to the next node -- we already did that
+			while (first || xml.Read()) {
+				first = false;
+
 				if (xml.NodeType != XmlNodeType.Element) continue;
 				
 				if (xml.NamespaceURI == NS.RDF && xml.LocalName == "RDF" ) {
