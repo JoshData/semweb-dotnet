@@ -8,6 +8,7 @@ MAIN_SOURCES = \
 	src/AssemblyInfo.cs \
 	src/NamespaceManager.cs src/Util.cs src/UriMap.cs \
 	src/Resource.cs src/Statement.cs \
+	src/Interfaces.cs \
 	src/Store.cs src/MemoryStore.cs src/SQLStore.cs \
 	src/RdfReader.cs src/RdfXmlReader.cs src/N3Reader.cs \
 	src/RdfWriter.cs src/RdfXmlWriter.cs src/N3Writer.cs \
