@@ -411,6 +411,13 @@ namespace SemWeb.Stores {
 		
 		public MultiStore() { }
 		
+		public override void Close() {
+			foreach (StatementSource s in allsources) {
+				if (s is Store) ((Store)s).Close();
+				else if (s is IDisposable) ((IDisposable)s).Dispose();
+			}
+		}
+		
 		public override bool Distinct { get { return false; } }
 		
 		public void Add(SelectableSource store) {

@@ -1,4 +1,9 @@
 	* Sparql: DESCRIBE without WHERE clause threw exception.
+	* MultiStore: Close() should close any underlying
+	  stores.
+	* RdfXmlReader: Load namespace declarations from the
+	  document element early so that the namespaces can be
+	  read off before streaming the statements begins.
 
 2006-10-23 Version 0.76
 

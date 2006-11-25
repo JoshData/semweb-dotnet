@@ -35,6 +35,7 @@ namespace SemWeb.Stores {
 		}
 
 		public override void Close() {
+			base.Close();
 			connection.Close();
 		}
 		
