@@ -5,14 +5,23 @@ using SemWeb;
 using SemWeb.Stores;
 using SemWeb.Util;
 
+#if !DOTNET2
+using ResourceList = System.Collections.ICollection;
+using VarKnownValuesType = System.Collections.Hashtable;
+#else
+using ResourceList = System.Collections.Generic.ICollection<SemWeb.Resource>;
+using VarKnownValuesType = System.Collections.Generic.Dictionary<SemWeb.Variable,System.Collections.Generic.ICollection<SemWeb.Resource>>;
+#endif
+
 namespace SemWeb.Inference {
 
-	public class RDFS : SelectableSource, SupportsPersistableBNodes, IDisposable {
+	public class RDFS : QueryableSource, SupportsPersistableBNodes, IDisposable {
 		static readonly Entity type = NS.RDF + "type";
 		static readonly Entity subClassOf = NS.RDFS + "subClassOf";
 		static readonly Entity subPropertyOf = NS.RDFS + "subPropertyOf";
 		static readonly Entity domain = NS.RDFS + "domain";
 		static readonly Entity range = NS.RDFS + "range";
+		static readonly Entity rdfsresource = NS.RDFS + "Resource";
 	
 		// Each of these hashtables relates an entity
 		// to a ResSet of other entities, including itself.
@@ -63,14 +72,21 @@ namespace SemWeb.Inference {
 		}
 		
 		void Add(Statement schemastatement) {
-			if (schemastatement.Predicate == subClassOf && schemastatement.Object is Entity)
+			if (schemastatement.Predicate == subClassOf && schemastatement.Object is Entity) {
 				AddRelation(schemastatement.Subject, (Entity)schemastatement.Object, superclasses, subclasses, true);
+				AddRelation(schemastatement.Subject, rdfsresource, superclasses, subclasses, true);
+				AddRelation((Entity)schemastatement.Object, rdfsresource, superclasses, subclasses, true);
+			}
 			if (schemastatement.Predicate == subPropertyOf && schemastatement.Object is Entity)
 				AddRelation(schemastatement.Subject, (Entity)schemastatement.Object, superprops, subprops, true);
-			if (schemastatement.Predicate == domain && schemastatement.Object is Entity)
+			if (schemastatement.Predicate == domain && schemastatement.Object is Entity) {
 				AddRelation(schemastatement.Subject, (Entity)schemastatement.Object, domains, domainof, false);
-			if (schemastatement.Predicate == range && schemastatement.Object is Entity)
+				AddRelation((Entity)schemastatement.Object, rdfsresource, superclasses, subclasses, true);
+			}
+			if (schemastatement.Predicate == range && schemastatement.Object is Entity) {
 				AddRelation(schemastatement.Subject, (Entity)schemastatement.Object, ranges, rangeof, false);
+				AddRelation((Entity)schemastatement.Object, rdfsresource, superclasses, subclasses, true);
+			}
 		}
 		
 		void AddRelation(Entity a, Entity b, Hashtable supers, Hashtable subs, bool incself) {
@@ -363,6 +379,69 @@ namespace SemWeb.Inference {
 				} else {
 					return sink.Add(s);
 				}
+			}
+		}
+
+		public void Query(Statement[] graph, SemWeb.Query.QueryOptions options, SemWeb.Query.QueryResultSink sink) {
+			if (!(data is QueryableSource))
+				throw new NotSupportedException("Underlying source " + data + " is not a QueryableSource.");
+		
+			Statement[] graph2 = new Statement[graph.Length];
+			SemWeb.Query.QueryOptions options2 = new SemWeb.Query.QueryOptions();
+			
+			options2.DistinguishedVariables = options.DistinguishedVariables;
+			options2.Limit = options.Limit;
+			options2.VariableKnownValues = (options.VariableKnownValues == null ? new VarKnownValuesType() : new VarKnownValuesType(options.VariableKnownValues));
+			options2.VariableLiteralFilters = options.VariableLiteralFilters;
+			
+			for (int i = 0; i < graph.Length; i++) {
+				graph2[i] = graph[i];
+			
+				//ResSet subj = GetQueryRes(graph[i], 0, options);
+				ResSet pred = GetQueryRes(graph[i], 1, options);
+				ResSet obj = GetQueryRes(graph[i], 2, options);
+				
+				if (pred.Count > 0)
+					SetQueryRes(ref graph2[i], 1, options2, GetClosure(pred, subprops));
+				
+				if (pred.Count != 1) continue;
+				
+				if (pred.Contains(type)) {
+					if (obj.Count > 0)
+						SetQueryRes(ref graph2[i], 2, options2, GetClosure(obj, subclasses));
+				}
+			}
+		
+			((QueryableSource)data).Query(graph2, options2, sink);
+		}
+
+		ResSet GetQueryRes(Statement s, int i, SemWeb.Query.QueryOptions options) {
+			ResSet ret = new ResSet();
+			Resource r = s.GetComponent(i);
+			if (r == null) return ret;
+
+			if (!(r is Variable)) ret.Add(r);
+			
+			if (options.VariableKnownValues != null && r is Variable
+#if !DOTNET2
+				&& options.VariableKnownValues.Contains((Variable)r)) {
+#else
+				&& options.VariableKnownValues.ContainsKey((Variable)r)) {
+#endif
+				ret.AddRange((ResourceList)options.VariableKnownValues[(Variable)r]);
+			}
+			return ret;
+		}
+		
+		void SetQueryRes(ref Statement s, int i, SemWeb.Query.QueryOptions options, Entity[] values) {
+			if (values.Length == 0)
+				s.SetComponent(i, null);
+			else if (values.Length == 1)
+				s.SetComponent(i, values[0]);
+			else {
+				Variable v = new Variable();
+				s.SetComponent(i, v);
+				options.VariableKnownValues[v] = values;
 			}
 		}
 	}
