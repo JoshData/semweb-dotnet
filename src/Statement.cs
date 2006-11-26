@@ -150,6 +150,15 @@ namespace SemWeb {
 			}
 			throw new ArgumentException("index");
 		}
+		internal void SetComponent(int index, Resource r) {
+			switch (index) {
+				case 0: Subject = (Entity)r; break;
+				case 1: Predicate = (Entity)r; break;
+				case 2: Object = r; break;
+				case 3: Meta = (Entity)r; break;
+				default: throw new ArgumentException("index");
+			}
+		}
 	}
 	
 	public struct SelectFilter : IEnumerable {
@@ -188,6 +197,16 @@ namespace SemWeb {
 			throw new ArgumentException("index");
 		}
 		
+		internal void SetComponent(int index, Resource[] res) {
+			switch (index) {
+				case 0: Subjects = (Entity[])res; break;
+				case 1: Predicates = (Entity[])res; break;
+				case 2: Objects = res; break;
+				case 3: Metas = (Entity[])res; break;
+				default: throw new ArgumentException("index");
+			}
+		}
+
 		public override string ToString() {
 			string ret =
 				ToString(Subjects) + " " +
@@ -233,13 +252,13 @@ namespace SemWeb {
 				&& eq(a.Predicates, b.Predicates)
 				&& eq(a.Objects, b.Objects)
 				&& eq(a.Metas, b.Metas)
-				&& eq(a.LiteralFilters, b.LiteralFilters)
+				&& a.LiteralFilters == b.LiteralFilters
 				&& a.Limit == b.Limit;
 		}
 		public static bool operator !=(SelectFilter a, SelectFilter b) {
 			return !(a == b);
 		}
-		static bool eq(object[] a, object[] b) {
+		static bool eq(Resource[] a, Resource[] b) {
 			if (a == b) return true;
 			if (a == null || b == null) return false;
 			if (a.Length != b.Length) return false;
