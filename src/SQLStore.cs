@@ -12,7 +12,7 @@ namespace SemWeb.Stores {
 	// TODO: It's not safe to have two concurrent accesses to the same database
 	// because the creation of new entities will use the same IDs.
 	
-	public abstract class SQLStore : Store, QueryableSource, SupportsPersistableBNodes {
+	public abstract class SQLStore : Store, SupportsPersistableBNodes {
 		int dbformat = 1;
 	
 		string table;
@@ -1040,7 +1040,7 @@ namespace SemWeb.Stores {
 			} // lock
 		}
 		
-		public void Query(Statement[] graph, SemWeb.Query.QueryOptions options, SemWeb.Query.QueryResultSink sink) {
+		public override void Query(Statement[] graph, SemWeb.Query.QueryOptions options, SemWeb.Query.QueryResultSink sink) {
 			if (graph.Length == 0) throw new ArgumentException("graph array must have at least one element");
 			
 			// Order the variables mentioned in the graph.
