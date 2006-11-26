@@ -1,3 +1,5 @@
+	* Query.cs: GraphMatch class completely reimplemented.  The code
+	  is much, much shorter and cleaner now.
 	* Sparql: DESCRIBE without WHERE clause threw exception.
 	* MultiStore: Close() should close any underlying stores.
 	* RdfXmlReader: Load namespace declarations from the
