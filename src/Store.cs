@@ -1,12 +1,16 @@
 using System;
+#if !DOTNET2
 using System.Collections;
+#else
+using System.Collections.Generic;
+#endif
 using System.Data;
 
 using SemWeb.Util;
 
 namespace SemWeb {
 	
-	public abstract class Store : StatementSource, StatementSink,
+	public abstract class Store : QueryableSource, StatementSink,
 		SelectableSource, ModifiableSource,
 		IDisposable {
 		
@@ -17,6 +21,11 @@ namespace SemWeb {
 				StatementSource s = CreateForInput(spec.Substring(5));
 				if (!(s is SelectableSource)) s = new MemoryStore(s);
 				return new SemWeb.Inference.RDFS(s, (SelectableSource)s);
+			}
+			if (spec.StartsWith("debug+")) {
+				StatementSource s = CreateForInput(spec.Substring(6));
+				if (!(s is SelectableSource)) s = new MemoryStore(s);
+				return new SemWeb.Stores.DebuggedSource((SelectableSource)s, System.Console.Error);
 			}
 			return (StatementSource)Create(spec, false);
 		}		
@@ -83,7 +92,7 @@ namespace SemWeb {
 				case "null":
 					if (!output) throw new ArgumentException("The null sink does not support reading.");
 					return new StatementCounterSink();
-					
+				
 				/*case "file":
 					if (spec == "") throw new ArgumentException("Use: format:filename");
 					if (output) throw new ArgumentException("The FileStore does not support writing.");
@@ -143,17 +152,6 @@ namespace SemWeb {
 
 		public abstract void Clear();
 
-		public Entity[] GetEntitiesOfType(Entity type) {
-			ArrayList entities = new ArrayList();
-			
-			IEnumerable result = Select(new Statement(null, rdfType, type));
-			foreach (Statement s in result) {
-				entities.Add(s.Subject);
-			}
-			
-			return (Entity[])entities.ToArray(typeof(Entity));
-		}
-		
 		bool StatementSink.Add(Statement statement) {
 			Add(statement);
 			return true;
@@ -177,6 +175,10 @@ namespace SemWeb {
 		public abstract Entity[] GetPredicates();
 		
 		public abstract Entity[] GetMetas();
+		
+		public Entity[] GetEntitiesOfType(Entity type) {
+			return SelectSubjects(rdfType, type);
+		}
 		
 		public virtual bool Contains(Resource resource) {
 			return (resource is Entity && Contains(new Statement((Entity)resource, null, null, null)))
@@ -225,27 +227,27 @@ namespace SemWeb {
 		}
 		
 		public Resource[] SelectObjects(Entity subject, Entity predicate) {
-			Hashtable resources = new Hashtable();
+			ResSet resources = new ResSet();
 			ResourceCollector collector = new ResourceCollector();
 			collector.SPO = 2;
 			collector.Table = resources;
 			Select(new Statement(subject, predicate, null, null), collector);
-			return (Resource[])new ArrayList(resources.Keys).ToArray(typeof(Resource));
+			return resources.ToArray();
 		}
 		public Entity[] SelectSubjects(Entity predicate, Resource @object) {
-			Hashtable resources = new Hashtable();
+			ResSet resources = new ResSet();
 			ResourceCollector collector = new ResourceCollector();
 			collector.SPO = 0;
 			collector.Table = resources;
 			Select(new Statement(null, predicate, @object, null), collector);
-			return (Entity[])new ArrayList(resources.Keys).ToArray(typeof(Entity));
+			return resources.ToEntityArray();
 		}
 		class ResourceCollector : StatementSink {
-			public Hashtable Table;
+			public ResSet Table;
 			public int SPO;
 			public bool Add(Statement s) {
-				if (SPO == 0) Table[s.Subject] = Table;
-				if (SPO == 2) Table[s.Object] = Table;
+				if (SPO == 0) Table.Add(s.Subject);
+				if (SPO == 2) Table.Add(s.Object);
 				return true;
 			}
 		}
@@ -289,6 +291,33 @@ namespace SemWeb {
 			resource.SetResourceKey(this, value);
 		}
 		
+		public virtual void Query(Statement[] graph, SemWeb.Query.QueryOptions options, SemWeb.Query.QueryResultSink sink) {
+			SemWeb.Query.GraphMatch q = new SemWeb.Query.GraphMatch();
+			foreach (Statement s in graph)
+				q.AddGraphStatement(s);
+				
+			q.ReturnLimit = options.Limit;
+			
+			#if !DOTNET2
+			foreach (DictionaryEntry ent in options.VariableKnownValues)
+				q.SetVariableRange((Variable)ent.Key, (ICollection)ent.Value);
+			#else
+			foreach (KeyValuePair<Variable,ICollection<Resource>> ent in options.VariableKnownValues)
+				q.SetVariableRange(ent.Key, ent.Value);
+			#endif
+			
+			#if !DOTNET2
+			foreach (DictionaryEntry ent in options.VariableLiteralFilters)
+				foreach (LiteralFilter filter in (ICollection)ent.Value)
+					q.AddLiteralFilter((Variable)ent.Key, filter);
+			#else
+			foreach (KeyValuePair<Variable,ICollection<LiteralFilter>> ent in options.VariableLiteralFilters)
+				foreach (LiteralFilter filter in ent.Value)
+					q.AddLiteralFilter(ent.Key, filter);
+			#endif
+
+			q.Run(this, sink);
+		}
 	}
 
 	public abstract class SelectResult : StatementSource, 
@@ -308,8 +337,8 @@ namespace SemWeb {
 			return ((System.Collections.Generic.IEnumerable<Statement>)Buffer()).GetEnumerator();
 		}
 #endif
-		IEnumerator IEnumerable.GetEnumerator() {
-			return ((IEnumerable)Buffer()).GetEnumerator();
+		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() {
+			return ((System.Collections.IEnumerable)Buffer()).GetEnumerator();
 		}
 		public long StatementCount { get { return Buffer().StatementCount; } }
 		public MemoryStore Load() { return Buffer(); }
@@ -347,12 +376,16 @@ namespace SemWeb {
 
 namespace SemWeb.Stores {
 
+	#if DOTNET2
+	using System.Collections;
+	#endif
+
 	public interface SupportsPersistableBNodes {
 		string GetStoreGuid();
 		string GetNodeId(BNode node);
 		BNode GetNodeFromId(string persistentId);
 	}
-
+	
 	public class MultiStore : Store {
 		ArrayList stores = new ArrayList();
 		Hashtable namedgraphs = new Hashtable();
@@ -577,7 +610,7 @@ namespace SemWeb.Stores {
 		}
 	}
 	
-	public class DebuggedSource : SelectableSource {
+	public class DebuggedSource : QueryableSource {
 		SelectableSource source;
 		System.IO.TextWriter output;
 		
@@ -610,6 +643,31 @@ namespace SemWeb.Stores {
 		public void Select(SelectFilter filter, StatementSink sink) {
 			output.WriteLine("SELECT: " + filter);
 			source.Select(filter, sink);
+		}
+
+		public void Query(Statement[] graph, SemWeb.Query.QueryOptions options, SemWeb.Query.QueryResultSink sink) {
+			output.WriteLine("QUERY:");
+			foreach (Statement s in graph)
+				output.WriteLine("\t" + s);
+			if (options.VariableKnownValues != null) {
+				#if !DOTNET2
+				foreach (System.Collections.DictionaryEntry ent in options.VariableKnownValues)
+				#else
+				foreach (KeyValuePair<Variable,ICollection<Resource>> ent in options.VariableKnownValues)
+				#endif
+					output.WriteLine("\twhere " + ent.Key + " in " + ToString((ICollection)ent.Value));	
+			}
+			if (source is QueryableSource) 
+				((QueryableSource)source).Query(graph, options, sink);
+			else
+				throw new NotSupportedException("Underlying source " + source + " is not a QueryableSource.");
+		}
+		
+		string ToString(ICollection resources) {
+			ArrayList s = new ArrayList();
+			foreach (Resource r in resources)
+				s.Add(r.ToString());
+			return String.Join(",", (string[])s.ToArray(typeof(string)));
 		}
 	}
 	
