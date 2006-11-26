@@ -9,6 +9,162 @@ diff -urN --exclude=.svn sparql-0.8/1 work-copy/1
  
 -Total time: 12 seconds
 +Total time: 9 seconds
+diff -urN --exclude=.svn sparql-0.8/bugs.patch work-copy/bugs.patch
+--- sparql-0.8/bugs.patch	1969-12-31 19:00:00.000000000 -0500
++++ work-copy/bugs.patch	2006-11-05 10:43:33.000000000 -0500
+@@ -0,0 +1,152 @@
++The xsd:decimal cast function was parsing values as a Long, which isn't good
++because xsd:decimals can be non-integral.  I changed it to use Double, which
++should work, except for maybe some corner cases that I haven't looked into.
++
++Index: src/main/name/levering/ryan/sparql/logic/function/DecimalCastFunction.java
++===================================================================
++--- src/main/name/levering/ryan/sparql/logic/function/DecimalCastFunction.java	(revision 7)
+++++ src/main/name/levering/ryan/sparql/logic/function/DecimalCastFunction.java	(revision 8)
++@@ -144,11 +144,11 @@
++      */
++     public Value castLiteral(Literal literal) throws IllegalCastException {
++         try {
++-            Long.parseLong(literal.getLabel());
+++            Double.parseDouble(literal.getLabel());
++             return this.factory.createLiteral(literal.getLabel(),
++                     SPARQLConstants.DECIMAL_TYPE);
++         } catch (NumberFormatException e) {
++-            throw new IllegalCastException("Unable to cast string to integer");
+++            throw new IllegalCastException("Unable to cast string to double");
++         }
++     }
++     
++The following implement the string relational comparison operators:
++     
++Index: src/main/name/levering/ryan/sparql/logic/expression/LessThanLogic.java
++===================================================================
++--- src/main/name/levering/ryan/sparql/logic/expression/LessThanLogic.java	(revision 14)
+++++ src/main/name/levering/ryan/sparql/logic/expression/LessThanLogic.java	(revision 15)
++@@ -96,11 +96,10 @@
++      * 
++      * @param string1 the first String to compare
++      * @param string2 the second String to compare
++-     * @return never
++-     * @throws UnsupportedOperationException always
+++     * @return true if the first string is less than the second
++      */
++     public boolean evaluateString(String string1, String string2) {
++-        throw new UnsupportedOperationException("Fix this");
+++        return string1.compareTo(string2) < 0;
++     }
++     
++     /**
++Index: src/main/name/levering/ryan/sparql/logic/expression/LessThanEqualsLogic.java
++===================================================================
++--- src/main/name/levering/ryan/sparql/logic/expression/LessThanEqualsLogic.java	(revision 14)
+++++ src/main/name/levering/ryan/sparql/logic/expression/LessThanEqualsLogic.java	(revision 15)
++@@ -96,11 +96,10 @@
++      * 
++      * @param string1 the first String to compare
++      * @param string2 the second String to compare
++-     * @return never
++-     * @throws UnsupportedOperationException always
+++     * @return true if the first string is less than or equal to the second
++      */
++     public boolean evaluateString(String string1, String string2) {
++-        throw new UnsupportedOperationException("Strings cannot be compared using a <= operation");
+++        return string1.compareTo(string2) <= 0;
++     }
++ 
++     /**
++Index: src/main/name/levering/ryan/sparql/logic/expression/GreaterThanLogic.java
++===================================================================
++--- src/main/name/levering/ryan/sparql/logic/expression/GreaterThanLogic.java	(revision 14)
+++++ src/main/name/levering/ryan/sparql/logic/expression/GreaterThanLogic.java	(revision 15)
++@@ -96,11 +96,10 @@
++      * 
++      * @param string1 the first String to compare
++      * @param string2 the second String to compare
++-     * @return never
++-     * @throws UnsupportedOperationException always
+++     * @return true if the first string is greater than the second
++      */
++     public boolean evaluateString(String string1, String string2) {
++-        throw new UnsupportedOperationException("Strings cannot be compared using a > operation");
+++        return string1.compareTo(string2) > 0;
++     }
++ 
++     /**
++Index: src/main/name/levering/ryan/sparql/logic/expression/GreaterThanEqualsLogic.java
++===================================================================
++--- src/main/name/levering/ryan/sparql/logic/expression/GreaterThanEqualsLogic.java	(revision 14)
+++++ src/main/name/levering/ryan/sparql/logic/expression/GreaterThanEqualsLogic.java	(revision 15)
++@@ -96,11 +96,10 @@
++      * 
++      * @param string1 the first String to compare
++      * @param string2 the second String to compare
++-     * @return never
++-     * @throws UnsupportedOperationException always
+++     * @return true if the first string is greater than or equal to the second
++      */
++     public boolean evaluateString(String string1, String string2) {
++-        throw new UnsupportedOperationException("Strings cannot be compared using a >= operation");
+++        return string1.compareTo(string2) >= 0;
++     }
++
++In DefaultDescribeQueryLogic, an index out of range exception, some statements seemed to be skipped, and without a WHERE clause it would throw a null pointer exception.
++
++     /**
++Index: src/main/name/levering/ryan/sparql/logic/DefaultDescribeQueryLogic.java
++===================================================================
++--- src/main/name/levering/ryan/sparql/logic/DefaultDescribeQueryLogic.java	(revision 17)
+++++ src/main/name/levering/ryan/sparql/logic/DefaultDescribeQueryLogic.java	(revision 18)
++@@ -106,7 +106,7 @@
++ 		results = this.logic.project(results, variables);
++ 
++ 		// Now apply ordering in reverse order
++-		for (int i = orderExpressions.size(); i >= 0; i--) {
+++		for (int i = orderExpressions.size()-1; i >= 0; i--) {
++ 			OrderExpressionLogic orderer = (OrderExpressionLogic) orderExpressions.get(i);
++ 			orderer.order(results);
++ 		}
++@@ -182,7 +182,7 @@
++ 					descriptions.addAll(describe(statement.getObject(), source, alreadyDescribed));
++ 				}
++ 			}
++-			descriptions.add(statements.next());
+++			descriptions.add(statement);
++ 		}
++ 		return descriptions;
++ 	}
++
++Index: src/main/name/levering/ryan/sparql/logic/DefaultDescribeQueryLogic.java
++===================================================================
++--- src/main/name/levering/ryan/sparql/logic/DefaultDescribeQueryLogic.java	(revision 35)
+++++ src/main/name/levering/ryan/sparql/logic/DefaultDescribeQueryLogic.java	(revision 36)
++@@ -93,7 +93,9 @@
++ 		int offset = this.data.getOffset();
++ 
++ 		// First bind the result table
++-		RdfBindingSet results = constraint.constrain(new RdfBindingSetImpl(), source, defaultDatasets, namedDatasets, null, null);
+++		RdfBindingSet results = new RdfBindingSetImpl();
+++		if (constraint != null)
+++			results = constraint.constrain(new RdfBindingSetImpl(), source, defaultDatasets, namedDatasets, null, null);
++ 
++ 		// Now project to the solution set
++ 		List variables = new ArrayList();
++
++Lastly, just for niceness, I figured that creating an RdfBindingSetImpl from another binding set should copy its values for isDistinct and isOrdered.
++
++Index: src/main/name/levering/ryan/sparql/common/impl/RdfBindingSetImpl.java
++===================================================================
++--- src/main/name/levering/ryan/sparql/common/impl/RdfBindingSetImpl.java	(revision 19)
+++++ src/main/name/levering/ryan/sparql/common/impl/RdfBindingSetImpl.java	(revision 20)
++@@ -98,6 +98,8 @@
++ 		for (Iterator oldRows = oldSet.iterator(); oldRows.hasNext();) {
++ 			this.addRow((RdfBindingRow) oldRows.next());
++ 		}
+++		setDistinct(oldSet.isDistinct());
+++		setOrdered(oldSet.isOrdered());
++ 	}
++ 
++ 	/**
 diff -urN --exclude=.svn sparql-0.8/build.xml work-copy/build.xml
 --- sparql-0.8/build.xml	2006-07-16 19:04:04.000000000 -0400
 +++ work-copy/build.xml	2006-08-01 12:49:32.000000000 -0400
