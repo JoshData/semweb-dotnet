@@ -102,7 +102,7 @@
           <AttributeName>System.Reflection.AssemblyTrademark("")</AttributeName>
         </Attribute>
         <Attribute>
-          <AttributeName>System.Reflection.AssemblyCopyright("Copyright (c) 2006 Joshua Tauberer &lt;jt@occams.info&gt;")</AttributeName>
+          <AttributeName>System.Reflection.AssemblyCopyright("Copyright (c) 2006 Joshua Tauberer &lt;http://razor.occams.info&gt;")</AttributeName>
         </Attribute>
         <Attribute>
           <AttributeName>System.Reflection.AssemblyProduct("")</AttributeName>

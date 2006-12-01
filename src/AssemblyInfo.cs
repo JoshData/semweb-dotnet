@@ -6,7 +6,7 @@ using System.Runtime.CompilerServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
 [assembly: AssemblyProduct("")]
-[assembly: AssemblyCopyright("Copyright (c) 2006 Joshua Tauberer <jt@occams.info>")]
+[assembly: AssemblyCopyright("Copyright (c) 2006 Joshua Tauberer <http://razor.occams.info>")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]		
 
