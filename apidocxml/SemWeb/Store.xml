@@ -1,5 +1,5 @@
 <Type Name="Store" FullName="SemWeb.Store">
-  <TypeSignature Language="C#" Value="public abstract class Store : IDisposable, SemWeb.ModifiableSource, SemWeb.SelectableSource" />
+  <TypeSignature Language="C#" Value="public abstract class Store : IDisposable, SemWeb.ModifiableSource, SemWeb.QueryableSource" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
     <AssemblyVersion>0.7.4.1</AssemblyVersion>
@@ -12,7 +12,7 @@
       <InterfaceName>SemWeb.ModifiableSource</InterfaceName>
     </Interface>
     <Interface>
-      <InterfaceName>SemWeb.SelectableSource</InterfaceName>
+      <InterfaceName>SemWeb.QueryableSource</InterfaceName>
     </Interface>
     <Interface>
       <InterfaceName>System.IDisposable</InterfaceName>
@@ -597,6 +597,43 @@ For Sqlite, MySQL, and PostgreSQL-based stores, use the spec string described in
         <summary>Tests whether the store contains any statements that mention the given resource.</summary>
         <returns>A boolean value indicating whether the store contains any statements mentioning the resource.</returns>
         <remarks>None.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="MetaQuery">
+      <MemberSignature Language="C#" Value="public virtual SemWeb.Query.MetaQueryResult MetaQuery (SemWeb.Statement[] graph, SemWeb.Query.QueryOptions options);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>SemWeb.Query.MetaQueryResult</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="graph" Type="SemWeb.Statement[]" />
+        <Parameter Name="options" Type="SemWeb.Query.QueryOptions" />
+      </Parameters>
+      <Docs>
+        <param name="graph">The graph to be matched in a call to Query.</param>
+        <param name="options">The options to be passed to the call to Query.</param>
+        <summary>To be added.</summary>
+        <returns>A <see cref="T:SemWeb.Query.MetaQueryResult" /> indicating how the query will be executed.</returns>
+        <remarks>See <see cref="T:SemWeb.QueryableSource" /> for more information.  The default implementation of this method returns a <see cref="T:SemWeb.Query.MetaQueryResult" /> structure with the <see cref="F:SemWeb.Query.MetaQueryResult.QuerySupported" /> and <see cref="F:SemWeb.Query.MetaQueryResult.IsDefaultImplementation" /> flags set to true.  In addition, the <see cref="F:SemWeb.Query.MetaQueryResult.NoData" /> field is initialized by checking that the resources mentioned in the query are present in the store (with <see cref="M:SemWeb.Store.Contains(SemWeb.Resource)" />).</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Query">
+      <MemberSignature Language="C#" Value="public virtual void Query (SemWeb.Statement[] graph, SemWeb.Query.QueryOptions options, SemWeb.Query.QueryResultSink sink);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="graph" Type="SemWeb.Statement[]" />
+        <Parameter Name="options" Type="SemWeb.Query.QueryOptions" />
+        <Parameter Name="sink" Type="SemWeb.Query.QueryResultSink" />
+      </Parameters>
+      <Docs>
+        <param name="graph">The graph to match.</param>
+        <param name="options">Query options.</param>
+        <param name="sink">The output sink.</param>
+        <summary>Queries the store with a simple graph match query.</summary>
+        <remarks>See <see cref="T:SemWeb.QueryableSource" /> for more information.  The default implementation of this method uses the <see cref="T:SemWeb.Query.GraphMatch" /> class to answer the query.</remarks>
       </Docs>
     </Member>
   </Members>

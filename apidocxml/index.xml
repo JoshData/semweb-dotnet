@@ -48,6 +48,7 @@
       <Type Name="SparqlProtocol" />
       <Type Name="RdfFunction" />
       <Type Name="QueryOptions" />
+      <Type Name="MetaQueryResult" />
     </Namespace>
     <Namespace Name="SemWeb.Stores">
       <Type Name="MultiStore" />
