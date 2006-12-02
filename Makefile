@@ -1,4 +1,4 @@
-VERSION=0.76
+VERSION=0.80
 
 all: bin/SemWeb.dll bin/SemWeb.PostgreSQLStore.dll bin/SemWeb.MySQLStore.dll bin/SemWeb.SqliteStore.dll bin/SemWeb.Sparql.dll bin/rdfstorage.exe bin/rdfquery.exe
 
@@ -38,9 +38,9 @@ bin/SemWeb.SqliteStore.dll: src/SQLiteStore.cs bin/SemWeb.dll
 	
 bin/SemWeb.MySQLStore.dll: src/MySQLStore.cs bin/SemWeb.dll
 	mcs -debug src/MySQLStore.cs -out:bin/SemWeb.MySQLStore.dll -t:library\
-	 -r:bin/SemWeb.dll -r:System.Data -r:ByteFX.Data -d:BYTEFX
-	#mcs -debug src/MySQLStore.cs -out:bin/SemWeb.MySQLStore-Connector.dll -t:library\
-	# -r:bin/SemWeb.dll -r:System.Data -r:MySql.Data -d:CONNECTOR
+	 -r:bin/SemWeb.dll -r:System.Data -r:MySql.Data -d:CONNECTOR -lib:lib
+	#mcs -debug src/MySQLStore.cs -out:bin/SemWeb.MySQLStore-ByteFX.dll -t:library\
+	# -r:bin/SemWeb.dll -r:System.Data -r:ByteFX.Data -d:BYTEFX
 
 # Utility programs
 

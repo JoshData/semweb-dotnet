@@ -1,173 +1,6 @@
-diff -urN --exclude=.svn sparql-0.8/1 work-copy/1
---- sparql-0.8/1	2006-08-01 11:35:14.000000000 -0400
-+++ work-copy/1	2006-08-01 17:04:17.000000000 -0400
-@@ -1,5 +1,5 @@
- 
- BUILD FAILED
--/home/tauberer/dev/semweb/sparql/sparql-0.8/build.xml:130: Compile failed; see the compiler error output for details.
-+/home/tauberer/dev/semweb/sparql/work-copy/build.xml:132: Compile failed; see the compiler error output for details.
- 
--Total time: 12 seconds
-+Total time: 9 seconds
-diff -urN --exclude=.svn sparql-0.8/bugs.patch work-copy/bugs.patch
---- sparql-0.8/bugs.patch	1969-12-31 19:00:00.000000000 -0500
-+++ work-copy/bugs.patch	2006-11-05 10:43:33.000000000 -0500
-@@ -0,0 +1,152 @@
-+The xsd:decimal cast function was parsing values as a Long, which isn't good
-+because xsd:decimals can be non-integral.  I changed it to use Double, which
-+should work, except for maybe some corner cases that I haven't looked into.
-+
-+Index: src/main/name/levering/ryan/sparql/logic/function/DecimalCastFunction.java
-+===================================================================
-+--- src/main/name/levering/ryan/sparql/logic/function/DecimalCastFunction.java	(revision 7)
-++++ src/main/name/levering/ryan/sparql/logic/function/DecimalCastFunction.java	(revision 8)
-+@@ -144,11 +144,11 @@
-+      */
-+     public Value castLiteral(Literal literal) throws IllegalCastException {
-+         try {
-+-            Long.parseLong(literal.getLabel());
-++            Double.parseDouble(literal.getLabel());
-+             return this.factory.createLiteral(literal.getLabel(),
-+                     SPARQLConstants.DECIMAL_TYPE);
-+         } catch (NumberFormatException e) {
-+-            throw new IllegalCastException("Unable to cast string to integer");
-++            throw new IllegalCastException("Unable to cast string to double");
-+         }
-+     }
-+     
-+The following implement the string relational comparison operators:
-+     
-+Index: src/main/name/levering/ryan/sparql/logic/expression/LessThanLogic.java
-+===================================================================
-+--- src/main/name/levering/ryan/sparql/logic/expression/LessThanLogic.java	(revision 14)
-++++ src/main/name/levering/ryan/sparql/logic/expression/LessThanLogic.java	(revision 15)
-+@@ -96,11 +96,10 @@
-+      * 
-+      * @param string1 the first String to compare
-+      * @param string2 the second String to compare
-+-     * @return never
-+-     * @throws UnsupportedOperationException always
-++     * @return true if the first string is less than the second
-+      */
-+     public boolean evaluateString(String string1, String string2) {
-+-        throw new UnsupportedOperationException("Fix this");
-++        return string1.compareTo(string2) < 0;
-+     }
-+     
-+     /**
-+Index: src/main/name/levering/ryan/sparql/logic/expression/LessThanEqualsLogic.java
-+===================================================================
-+--- src/main/name/levering/ryan/sparql/logic/expression/LessThanEqualsLogic.java	(revision 14)
-++++ src/main/name/levering/ryan/sparql/logic/expression/LessThanEqualsLogic.java	(revision 15)
-+@@ -96,11 +96,10 @@
-+      * 
-+      * @param string1 the first String to compare
-+      * @param string2 the second String to compare
-+-     * @return never
-+-     * @throws UnsupportedOperationException always
-++     * @return true if the first string is less than or equal to the second
-+      */
-+     public boolean evaluateString(String string1, String string2) {
-+-        throw new UnsupportedOperationException("Strings cannot be compared using a <= operation");
-++        return string1.compareTo(string2) <= 0;
-+     }
-+ 
-+     /**
-+Index: src/main/name/levering/ryan/sparql/logic/expression/GreaterThanLogic.java
-+===================================================================
-+--- src/main/name/levering/ryan/sparql/logic/expression/GreaterThanLogic.java	(revision 14)
-++++ src/main/name/levering/ryan/sparql/logic/expression/GreaterThanLogic.java	(revision 15)
-+@@ -96,11 +96,10 @@
-+      * 
-+      * @param string1 the first String to compare
-+      * @param string2 the second String to compare
-+-     * @return never
-+-     * @throws UnsupportedOperationException always
-++     * @return true if the first string is greater than the second
-+      */
-+     public boolean evaluateString(String string1, String string2) {
-+-        throw new UnsupportedOperationException("Strings cannot be compared using a > operation");
-++        return string1.compareTo(string2) > 0;
-+     }
-+ 
-+     /**
-+Index: src/main/name/levering/ryan/sparql/logic/expression/GreaterThanEqualsLogic.java
-+===================================================================
-+--- src/main/name/levering/ryan/sparql/logic/expression/GreaterThanEqualsLogic.java	(revision 14)
-++++ src/main/name/levering/ryan/sparql/logic/expression/GreaterThanEqualsLogic.java	(revision 15)
-+@@ -96,11 +96,10 @@
-+      * 
-+      * @param string1 the first String to compare
-+      * @param string2 the second String to compare
-+-     * @return never
-+-     * @throws UnsupportedOperationException always
-++     * @return true if the first string is greater than or equal to the second
-+      */
-+     public boolean evaluateString(String string1, String string2) {
-+-        throw new UnsupportedOperationException("Strings cannot be compared using a >= operation");
-++        return string1.compareTo(string2) >= 0;
-+     }
-+
-+In DefaultDescribeQueryLogic, an index out of range exception, some statements seemed to be skipped, and without a WHERE clause it would throw a null pointer exception.
-+
-+     /**
-+Index: src/main/name/levering/ryan/sparql/logic/DefaultDescribeQueryLogic.java
-+===================================================================
-+--- src/main/name/levering/ryan/sparql/logic/DefaultDescribeQueryLogic.java	(revision 17)
-++++ src/main/name/levering/ryan/sparql/logic/DefaultDescribeQueryLogic.java	(revision 18)
-+@@ -106,7 +106,7 @@
-+ 		results = this.logic.project(results, variables);
-+ 
-+ 		// Now apply ordering in reverse order
-+-		for (int i = orderExpressions.size(); i >= 0; i--) {
-++		for (int i = orderExpressions.size()-1; i >= 0; i--) {
-+ 			OrderExpressionLogic orderer = (OrderExpressionLogic) orderExpressions.get(i);
-+ 			orderer.order(results);
-+ 		}
-+@@ -182,7 +182,7 @@
-+ 					descriptions.addAll(describe(statement.getObject(), source, alreadyDescribed));
-+ 				}
-+ 			}
-+-			descriptions.add(statements.next());
-++			descriptions.add(statement);
-+ 		}
-+ 		return descriptions;
-+ 	}
-+
-+Index: src/main/name/levering/ryan/sparql/logic/DefaultDescribeQueryLogic.java
-+===================================================================
-+--- src/main/name/levering/ryan/sparql/logic/DefaultDescribeQueryLogic.java	(revision 35)
-++++ src/main/name/levering/ryan/sparql/logic/DefaultDescribeQueryLogic.java	(revision 36)
-+@@ -93,7 +93,9 @@
-+ 		int offset = this.data.getOffset();
-+ 
-+ 		// First bind the result table
-+-		RdfBindingSet results = constraint.constrain(new RdfBindingSetImpl(), source, defaultDatasets, namedDatasets, null, null);
-++		RdfBindingSet results = new RdfBindingSetImpl();
-++		if (constraint != null)
-++			results = constraint.constrain(new RdfBindingSetImpl(), source, defaultDatasets, namedDatasets, null, null);
-+ 
-+ 		// Now project to the solution set
-+ 		List variables = new ArrayList();
-+
-+Lastly, just for niceness, I figured that creating an RdfBindingSetImpl from another binding set should copy its values for isDistinct and isOrdered.
-+
-+Index: src/main/name/levering/ryan/sparql/common/impl/RdfBindingSetImpl.java
-+===================================================================
-+--- src/main/name/levering/ryan/sparql/common/impl/RdfBindingSetImpl.java	(revision 19)
-++++ src/main/name/levering/ryan/sparql/common/impl/RdfBindingSetImpl.java	(revision 20)
-+@@ -98,6 +98,8 @@
-+ 		for (Iterator oldRows = oldSet.iterator(); oldRows.hasNext();) {
-+ 			this.addRow((RdfBindingRow) oldRows.next());
-+ 		}
-++		setDistinct(oldSet.isDistinct());
-++		setOrdered(oldSet.isOrdered());
-+ 	}
-+ 
-+ 	/**
-diff -urN --exclude=.svn sparql-0.8/build.xml work-copy/build.xml
---- sparql-0.8/build.xml	2006-07-16 19:04:04.000000000 -0400
-+++ work-copy/build.xml	2006-08-01 12:49:32.000000000 -0400
+diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/build.xml work-copy/build.xml
+--- upstream/build.xml	2006-08-20 20:01:02.000000000 -0400
++++ work-copy/build.xml	2006-12-02 11:01:18.000000000 -0500
 @@ -8,7 +8,7 @@
       Ryan Levering
       ====================================================================== -->
@@ -215,322 +48,12 @@ diff -urN --exclude=.svn sparql-0.8/build.xml work-copy/build.xml
 -</project>
 \ No newline at end of file
 +</project>
-Binary files sparql-0.8/lib/sparql-core.jar and work-copy/lib/sparql-core.jar differ
-Binary files sparql-0.8/lib/sparql-tests.jar and work-copy/lib/sparql-tests.jar differ
-diff -urN --exclude=.svn sparql-0.8/.settings/org.eclipse.jdt.core.prefs work-copy/.settings/org.eclipse.jdt.core.prefs
---- sparql-0.8/.settings/org.eclipse.jdt.core.prefs	2006-07-16 19:04:02.000000000 -0400
-+++ work-copy/.settings/org.eclipse.jdt.core.prefs	1969-12-31 19:00:00.000000000 -0500
-@@ -1,300 +0,0 @@
--#Wed Jul 05 09:48:54 EDT 2006
--eclipse.preferences.version=1
--org.eclipse.jdt.core.compiler.doc.comment.support=enabled
--org.eclipse.jdt.core.compiler.problem.annotationSuperInterface=warning
--org.eclipse.jdt.core.compiler.problem.autoboxing=ignore
--org.eclipse.jdt.core.compiler.problem.deprecation=warning
--org.eclipse.jdt.core.compiler.problem.deprecationInDeprecatedCode=disabled
--org.eclipse.jdt.core.compiler.problem.deprecationWhenOverridingDeprecatedMethod=disabled
--org.eclipse.jdt.core.compiler.problem.discouragedReference=warning
--org.eclipse.jdt.core.compiler.problem.emptyStatement=warning
--org.eclipse.jdt.core.compiler.problem.fieldHiding=warning
--org.eclipse.jdt.core.compiler.problem.finalParameterBound=warning
--org.eclipse.jdt.core.compiler.problem.finallyBlockNotCompletingNormally=warning
--org.eclipse.jdt.core.compiler.problem.forbiddenReference=error
--org.eclipse.jdt.core.compiler.problem.hiddenCatchBlock=warning
--org.eclipse.jdt.core.compiler.problem.incompatibleNonInheritedInterfaceMethod=warning
--org.eclipse.jdt.core.compiler.problem.incompleteEnumSwitch=warning
--org.eclipse.jdt.core.compiler.problem.indirectStaticAccess=warning
--org.eclipse.jdt.core.compiler.problem.invalidJavadoc=warning
--org.eclipse.jdt.core.compiler.problem.invalidJavadocTags=enabled
--org.eclipse.jdt.core.compiler.problem.invalidJavadocTagsDeprecatedRef=enabled
--org.eclipse.jdt.core.compiler.problem.invalidJavadocTagsNotVisibleRef=enabled
--org.eclipse.jdt.core.compiler.problem.invalidJavadocTagsVisibility=private
--org.eclipse.jdt.core.compiler.problem.localVariableHiding=warning
--org.eclipse.jdt.core.compiler.problem.methodWithConstructorName=warning
--org.eclipse.jdt.core.compiler.problem.missingDeprecatedAnnotation=ignore
--org.eclipse.jdt.core.compiler.problem.missingJavadocComments=warning
--org.eclipse.jdt.core.compiler.problem.missingJavadocCommentsOverriding=enabled
--org.eclipse.jdt.core.compiler.problem.missingJavadocCommentsVisibility=public
--org.eclipse.jdt.core.compiler.problem.missingJavadocTags=warning
--org.eclipse.jdt.core.compiler.problem.missingJavadocTagsOverriding=enabled
--org.eclipse.jdt.core.compiler.problem.missingJavadocTagsVisibility=private
--org.eclipse.jdt.core.compiler.problem.missingOverrideAnnotation=ignore
--org.eclipse.jdt.core.compiler.problem.missingSerialVersion=warning
--org.eclipse.jdt.core.compiler.problem.noEffectAssignment=warning
--org.eclipse.jdt.core.compiler.problem.noImplicitStringConversion=warning
--org.eclipse.jdt.core.compiler.problem.nonExternalizedStringLiteral=ignore
--org.eclipse.jdt.core.compiler.problem.overridingPackageDefaultMethod=warning
--org.eclipse.jdt.core.compiler.problem.possibleAccidentalBooleanAssignment=warning
--org.eclipse.jdt.core.compiler.problem.specialParameterHidingField=disabled
--org.eclipse.jdt.core.compiler.problem.staticAccessReceiver=warning
--org.eclipse.jdt.core.compiler.problem.suppressWarnings=enabled
--org.eclipse.jdt.core.compiler.problem.syntheticAccessEmulation=warning
--org.eclipse.jdt.core.compiler.problem.typeParameterHiding=warning
--org.eclipse.jdt.core.compiler.problem.uncheckedTypeOperation=warning
--org.eclipse.jdt.core.compiler.problem.undocumentedEmptyBlock=warning
--org.eclipse.jdt.core.compiler.problem.unhandledWarningToken=warning
--org.eclipse.jdt.core.compiler.problem.unnecessaryElse=ignore
--org.eclipse.jdt.core.compiler.problem.unnecessaryTypeCheck=warning
--org.eclipse.jdt.core.compiler.problem.unqualifiedFieldAccess=warning
--org.eclipse.jdt.core.compiler.problem.unusedDeclaredThrownException=warning
--org.eclipse.jdt.core.compiler.problem.unusedDeclaredThrownExceptionWhenOverriding=disabled
--org.eclipse.jdt.core.compiler.problem.unusedImport=warning
--org.eclipse.jdt.core.compiler.problem.unusedLocal=warning
--org.eclipse.jdt.core.compiler.problem.unusedParameter=ignore
--org.eclipse.jdt.core.compiler.problem.unusedParameterWhenImplementingAbstract=disabled
--org.eclipse.jdt.core.compiler.problem.unusedParameterWhenOverridingConcrete=disabled
--org.eclipse.jdt.core.compiler.problem.unusedPrivateMember=warning
--org.eclipse.jdt.core.compiler.problem.varargsArgumentNeedCast=warning
--org.eclipse.jdt.core.formatter.align_type_members_on_columns=false
--org.eclipse.jdt.core.formatter.alignment_for_arguments_in_allocation_expression=16
--org.eclipse.jdt.core.formatter.alignment_for_arguments_in_enum_constant=16
--org.eclipse.jdt.core.formatter.alignment_for_arguments_in_explicit_constructor_call=16
--org.eclipse.jdt.core.formatter.alignment_for_arguments_in_method_invocation=16
--org.eclipse.jdt.core.formatter.alignment_for_arguments_in_qualified_allocation_expression=16
--org.eclipse.jdt.core.formatter.alignment_for_binary_expression=16
--org.eclipse.jdt.core.formatter.alignment_for_compact_if=16
--org.eclipse.jdt.core.formatter.alignment_for_conditional_expression=80
--org.eclipse.jdt.core.formatter.alignment_for_enum_constants=0
--org.eclipse.jdt.core.formatter.alignment_for_expressions_in_array_initializer=16
--org.eclipse.jdt.core.formatter.alignment_for_multiple_fields=16
--org.eclipse.jdt.core.formatter.alignment_for_parameters_in_constructor_declaration=16
--org.eclipse.jdt.core.formatter.alignment_for_parameters_in_method_declaration=16
--org.eclipse.jdt.core.formatter.alignment_for_selector_in_method_invocation=16
--org.eclipse.jdt.core.formatter.alignment_for_superclass_in_type_declaration=16
--org.eclipse.jdt.core.formatter.alignment_for_superinterfaces_in_enum_declaration=16
--org.eclipse.jdt.core.formatter.alignment_for_superinterfaces_in_type_declaration=16
--org.eclipse.jdt.core.formatter.alignment_for_throws_clause_in_constructor_declaration=16
--org.eclipse.jdt.core.formatter.alignment_for_throws_clause_in_method_declaration=16
--org.eclipse.jdt.core.formatter.blank_lines_after_imports=1
--org.eclipse.jdt.core.formatter.blank_lines_after_package=1
--org.eclipse.jdt.core.formatter.blank_lines_before_field=1
--org.eclipse.jdt.core.formatter.blank_lines_before_first_class_body_declaration=0
--org.eclipse.jdt.core.formatter.blank_lines_before_imports=1
--org.eclipse.jdt.core.formatter.blank_lines_before_member_type=1
--org.eclipse.jdt.core.formatter.blank_lines_before_method=1
--org.eclipse.jdt.core.formatter.blank_lines_before_new_chunk=1
--org.eclipse.jdt.core.formatter.blank_lines_before_package=0
--org.eclipse.jdt.core.formatter.blank_lines_between_type_declarations=1
--org.eclipse.jdt.core.formatter.brace_position_for_annotation_type_declaration=end_of_line
--org.eclipse.jdt.core.formatter.brace_position_for_anonymous_type_declaration=end_of_line
--org.eclipse.jdt.core.formatter.brace_position_for_array_initializer=end_of_line
--org.eclipse.jdt.core.formatter.brace_position_for_block=end_of_line
--org.eclipse.jdt.core.formatter.brace_position_for_block_in_case=end_of_line
--org.eclipse.jdt.core.formatter.brace_position_for_constructor_declaration=end_of_line
--org.eclipse.jdt.core.formatter.brace_position_for_enum_constant=end_of_line
--org.eclipse.jdt.core.formatter.brace_position_for_enum_declaration=end_of_line
--org.eclipse.jdt.core.formatter.brace_position_for_method_declaration=end_of_line
--org.eclipse.jdt.core.formatter.brace_position_for_switch=end_of_line
--org.eclipse.jdt.core.formatter.brace_position_for_type_declaration=end_of_line
--org.eclipse.jdt.core.formatter.comment.clear_blank_lines=true
--org.eclipse.jdt.core.formatter.comment.format_comments=true
--org.eclipse.jdt.core.formatter.comment.format_header=false
--org.eclipse.jdt.core.formatter.comment.format_html=true
--org.eclipse.jdt.core.formatter.comment.format_source_code=true
--org.eclipse.jdt.core.formatter.comment.indent_parameter_description=true
--org.eclipse.jdt.core.formatter.comment.indent_root_tags=true
--org.eclipse.jdt.core.formatter.comment.insert_new_line_before_root_tags=insert
--org.eclipse.jdt.core.formatter.comment.insert_new_line_for_parameter=do not insert
--org.eclipse.jdt.core.formatter.comment.line_length=80
--org.eclipse.jdt.core.formatter.compact_else_if=true
--org.eclipse.jdt.core.formatter.continuation_indentation=2
--org.eclipse.jdt.core.formatter.continuation_indentation_for_array_initializer=2
--org.eclipse.jdt.core.formatter.format_guardian_clause_on_one_line=false
--org.eclipse.jdt.core.formatter.indent_body_declarations_compare_to_enum_constant_header=true
--org.eclipse.jdt.core.formatter.indent_body_declarations_compare_to_enum_declaration_header=true
--org.eclipse.jdt.core.formatter.indent_body_declarations_compare_to_type_header=true
--org.eclipse.jdt.core.formatter.indent_breaks_compare_to_cases=true
--org.eclipse.jdt.core.formatter.indent_statements_compare_to_block=true
--org.eclipse.jdt.core.formatter.indent_statements_compare_to_body=true
--org.eclipse.jdt.core.formatter.indent_switchstatements_compare_to_cases=true
--org.eclipse.jdt.core.formatter.indent_switchstatements_compare_to_switch=false
--org.eclipse.jdt.core.formatter.indentation.size=4
--org.eclipse.jdt.core.formatter.insert_new_line_after_annotation=insert
--org.eclipse.jdt.core.formatter.insert_new_line_after_opening_brace_in_array_initializer=do not insert
--org.eclipse.jdt.core.formatter.insert_new_line_at_end_of_file_if_missing=do not insert
--org.eclipse.jdt.core.formatter.insert_new_line_before_catch_in_try_statement=do not insert
--org.eclipse.jdt.core.formatter.insert_new_line_before_closing_brace_in_array_initializer=do not insert
--org.eclipse.jdt.core.formatter.insert_new_line_before_else_in_if_statement=do not insert
--org.eclipse.jdt.core.formatter.insert_new_line_before_finally_in_try_statement=do not insert
--org.eclipse.jdt.core.formatter.insert_new_line_before_while_in_do_statement=do not insert
--org.eclipse.jdt.core.formatter.insert_new_line_in_empty_anonymous_type_declaration=insert
--org.eclipse.jdt.core.formatter.insert_new_line_in_empty_block=insert
--org.eclipse.jdt.core.formatter.insert_new_line_in_empty_enum_constant=insert
--org.eclipse.jdt.core.formatter.insert_new_line_in_empty_enum_declaration=insert
--org.eclipse.jdt.core.formatter.insert_new_line_in_empty_method_body=insert
--org.eclipse.jdt.core.formatter.insert_new_line_in_empty_type_declaration=insert
--org.eclipse.jdt.core.formatter.insert_space_after_and_in_type_parameter=insert
--org.eclipse.jdt.core.formatter.insert_space_after_assignment_operator=insert
--org.eclipse.jdt.core.formatter.insert_space_after_at_in_annotation=do not insert
--org.eclipse.jdt.core.formatter.insert_space_after_at_in_annotation_type_declaration=do not insert
--org.eclipse.jdt.core.formatter.insert_space_after_binary_operator=insert
--org.eclipse.jdt.core.formatter.insert_space_after_closing_angle_bracket_in_type_arguments=insert
--org.eclipse.jdt.core.formatter.insert_space_after_closing_angle_bracket_in_type_parameters=insert
--org.eclipse.jdt.core.formatter.insert_space_after_closing_brace_in_block=insert
--org.eclipse.jdt.core.formatter.insert_space_after_closing_paren_in_cast=insert
--org.eclipse.jdt.core.formatter.insert_space_after_colon_in_assert=insert
--org.eclipse.jdt.core.formatter.insert_space_after_colon_in_case=insert
--org.eclipse.jdt.core.formatter.insert_space_after_colon_in_conditional=insert
--org.eclipse.jdt.core.formatter.insert_space_after_colon_in_for=insert
--org.eclipse.jdt.core.formatter.insert_space_after_colon_in_labeled_statement=insert
--org.eclipse.jdt.core.formatter.insert_space_after_comma_in_allocation_expression=insert
--org.eclipse.jdt.core.formatter.insert_space_after_comma_in_annotation=insert
--org.eclipse.jdt.core.formatter.insert_space_after_comma_in_array_initializer=insert
--org.eclipse.jdt.core.formatter.insert_space_after_comma_in_constructor_declaration_parameters=insert
--org.eclipse.jdt.core.formatter.insert_space_after_comma_in_constructor_declaration_throws=insert
--org.eclipse.jdt.core.formatter.insert_space_after_comma_in_enum_constant_arguments=insert
--org.eclipse.jdt.core.formatter.insert_space_after_comma_in_enum_declarations=insert
--org.eclipse.jdt.core.formatter.insert_space_after_comma_in_explicitconstructorcall_arguments=insert
--org.eclipse.jdt.core.formatter.insert_space_after_comma_in_for_increments=insert
--org.eclipse.jdt.core.formatter.insert_space_after_comma_in_for_inits=insert
--org.eclipse.jdt.core.formatter.insert_space_after_comma_in_method_declaration_parameters=insert
--org.eclipse.jdt.core.formatter.insert_space_after_comma_in_method_declaration_throws=insert
--org.eclipse.jdt.core.formatter.insert_space_after_comma_in_method_invocation_arguments=insert
--org.eclipse.jdt.core.formatter.insert_space_after_comma_in_multiple_field_declarations=insert
--org.eclipse.jdt.core.formatter.insert_space_after_comma_in_multiple_local_declarations=insert
--org.eclipse.jdt.core.formatter.insert_space_after_comma_in_parameterized_type_reference=insert
--org.eclipse.jdt.core.formatter.insert_space_after_comma_in_superinterfaces=insert
--org.eclipse.jdt.core.formatter.insert_space_after_comma_in_type_arguments=insert
--org.eclipse.jdt.core.formatter.insert_space_after_comma_in_type_parameters=insert
--org.eclipse.jdt.core.formatter.insert_space_after_ellipsis=insert
--org.eclipse.jdt.core.formatter.insert_space_after_opening_angle_bracket_in_parameterized_type_reference=do not insert
--org.eclipse.jdt.core.formatter.insert_space_after_opening_angle_bracket_in_type_arguments=do not insert
--org.eclipse.jdt.core.formatter.insert_space_after_opening_angle_bracket_in_type_parameters=do not insert
--org.eclipse.jdt.core.formatter.insert_space_after_opening_brace_in_array_initializer=insert
--org.eclipse.jdt.core.formatter.insert_space_after_opening_bracket_in_array_allocation_expression=do not insert
--org.eclipse.jdt.core.formatter.insert_space_after_opening_bracket_in_array_reference=do not insert
--org.eclipse.jdt.core.formatter.insert_space_after_opening_paren_in_annotation=do not insert
--org.eclipse.jdt.core.formatter.insert_space_after_opening_paren_in_cast=do not insert
--org.eclipse.jdt.core.formatter.insert_space_after_opening_paren_in_catch=do not insert
--org.eclipse.jdt.core.formatter.insert_space_after_opening_paren_in_constructor_declaration=do not insert
--org.eclipse.jdt.core.formatter.insert_space_after_opening_paren_in_enum_constant=do not insert
--org.eclipse.jdt.core.formatter.insert_space_after_opening_paren_in_for=do not insert
--org.eclipse.jdt.core.formatter.insert_space_after_opening_paren_in_if=do not insert
--org.eclipse.jdt.core.formatter.insert_space_after_opening_paren_in_method_declaration=do not insert
--org.eclipse.jdt.core.formatter.insert_space_after_opening_paren_in_method_invocation=do not insert
--org.eclipse.jdt.core.formatter.insert_space_after_opening_paren_in_parenthesized_expression=do not insert
--org.eclipse.jdt.core.formatter.insert_space_after_opening_paren_in_switch=do not insert
--org.eclipse.jdt.core.formatter.insert_space_after_opening_paren_in_synchronized=do not insert
--org.eclipse.jdt.core.formatter.insert_space_after_opening_paren_in_while=do not insert
--org.eclipse.jdt.core.formatter.insert_space_after_postfix_operator=do not insert
--org.eclipse.jdt.core.formatter.insert_space_after_prefix_operator=do not insert
--org.eclipse.jdt.core.formatter.insert_space_after_question_in_conditional=insert
--org.eclipse.jdt.core.formatter.insert_space_after_question_in_wildcard=do not insert
--org.eclipse.jdt.core.formatter.insert_space_after_semicolon_in_for=insert
--org.eclipse.jdt.core.formatter.insert_space_after_unary_operator=do not insert
--org.eclipse.jdt.core.formatter.insert_space_before_and_in_type_parameter=insert
--org.eclipse.jdt.core.formatter.insert_space_before_assignment_operator=insert
--org.eclipse.jdt.core.formatter.insert_space_before_at_in_annotation_type_declaration=insert
--org.eclipse.jdt.core.formatter.insert_space_before_binary_operator=insert
--org.eclipse.jdt.core.formatter.insert_space_before_closing_angle_bracket_in_parameterized_type_reference=do not insert
--org.eclipse.jdt.core.formatter.insert_space_before_closing_angle_bracket_in_type_arguments=do not insert
--org.eclipse.jdt.core.formatter.insert_space_before_closing_angle_bracket_in_type_parameters=do not insert
--org.eclipse.jdt.core.formatter.insert_space_before_closing_brace_in_array_initializer=insert
--org.eclipse.jdt.core.formatter.insert_space_before_closing_bracket_in_array_allocation_expression=do not insert
--org.eclipse.jdt.core.formatter.insert_space_before_closing_bracket_in_array_reference=do not insert
--org.eclipse.jdt.core.formatter.insert_space_before_closing_paren_in_annotation=do not insert
--org.eclipse.jdt.core.formatter.insert_space_before_closing_paren_in_cast=do not insert
--org.eclipse.jdt.core.formatter.insert_space_before_closing_paren_in_catch=do not insert
--org.eclipse.jdt.core.formatter.insert_space_before_closing_paren_in_constructor_declaration=do not insert
--org.eclipse.jdt.core.formatter.insert_space_before_closing_paren_in_enum_constant=do not insert
--org.eclipse.jdt.core.formatter.insert_space_before_closing_paren_in_for=do not insert
--org.eclipse.jdt.core.formatter.insert_space_before_closing_paren_in_if=do not insert
--org.eclipse.jdt.core.formatter.insert_space_before_closing_paren_in_method_declaration=do not insert
--org.eclipse.jdt.core.formatter.insert_space_before_closing_paren_in_method_invocation=do not insert
--org.eclipse.jdt.core.formatter.insert_space_before_closing_paren_in_parenthesized_expression=do not insert
--org.eclipse.jdt.core.formatter.insert_space_before_closing_paren_in_switch=do not insert
--org.eclipse.jdt.core.formatter.insert_space_before_closing_paren_in_synchronized=do not insert
--org.eclipse.jdt.core.formatter.insert_space_before_closing_paren_in_while=do not insert
--org.eclipse.jdt.core.formatter.insert_space_before_colon_in_assert=insert
--org.eclipse.jdt.core.formatter.insert_space_before_colon_in_case=do not insert
--org.eclipse.jdt.core.formatter.insert_space_before_colon_in_conditional=insert
--org.eclipse.jdt.core.formatter.insert_space_before_colon_in_default=do not insert
--org.eclipse.jdt.core.formatter.insert_space_before_colon_in_for=insert
--org.eclipse.jdt.core.formatter.insert_space_before_colon_in_labeled_statement=do not insert
--org.eclipse.jdt.core.formatter.insert_space_before_comma_in_allocation_expression=do not insert
--org.eclipse.jdt.core.formatter.insert_space_before_comma_in_annotation=do not insert
--org.eclipse.jdt.core.formatter.insert_space_before_comma_in_array_initializer=do not insert
--org.eclipse.jdt.core.formatter.insert_space_before_comma_in_constructor_declaration_parameters=do not insert
--org.eclipse.jdt.core.formatter.insert_space_before_comma_in_constructor_declaration_throws=do not insert
--org.eclipse.jdt.core.formatter.insert_space_before_comma_in_enum_constant_arguments=do not insert
--org.eclipse.jdt.core.formatter.insert_space_before_comma_in_enum_declarations=do not insert
--org.eclipse.jdt.core.formatter.insert_space_before_comma_in_explicitconstructorcall_arguments=do not insert
--org.eclipse.jdt.core.formatter.insert_space_before_comma_in_for_increments=do not insert
--org.eclipse.jdt.core.formatter.insert_space_before_comma_in_for_inits=do not insert
--org.eclipse.jdt.core.formatter.insert_space_before_comma_in_method_declaration_parameters=do not insert
--org.eclipse.jdt.core.formatter.insert_space_before_comma_in_method_declaration_throws=do not insert
--org.eclipse.jdt.core.formatter.insert_space_before_comma_in_method_invocation_arguments=do not insert
--org.eclipse.jdt.core.formatter.insert_space_before_comma_in_multiple_field_declarations=do not insert
--org.eclipse.jdt.core.formatter.insert_space_before_comma_in_multiple_local_declarations=do not insert
--org.eclipse.jdt.core.formatter.insert_space_before_comma_in_parameterized_type_reference=do not insert
--org.eclipse.jdt.core.formatter.insert_space_before_comma_in_superinterfaces=do not insert
--org.eclipse.jdt.core.formatter.insert_space_before_comma_in_type_arguments=do not insert
--org.eclipse.jdt.core.formatter.insert_space_before_comma_in_type_parameters=do not insert
--org.eclipse.jdt.core.formatter.insert_space_before_ellipsis=do not insert
--org.eclipse.jdt.core.formatter.insert_space_before_opening_angle_bracket_in_parameterized_type_reference=do not insert
--org.eclipse.jdt.core.formatter.insert_space_before_opening_angle_bracket_in_type_arguments=do not insert
--org.eclipse.jdt.core.formatter.insert_space_before_opening_angle_bracket_in_type_parameters=do not insert
--org.eclipse.jdt.core.formatter.insert_space_before_opening_brace_in_annotation_type_declaration=insert
--org.eclipse.jdt.core.formatter.insert_space_before_opening_brace_in_anonymous_type_declaration=insert
--org.eclipse.jdt.core.formatter.insert_space_before_opening_brace_in_array_initializer=insert
--org.eclipse.jdt.core.formatter.insert_space_before_opening_brace_in_block=insert
--org.eclipse.jdt.core.formatter.insert_space_before_opening_brace_in_constructor_declaration=insert
--org.eclipse.jdt.core.formatter.insert_space_before_opening_brace_in_enum_constant=insert
--org.eclipse.jdt.core.formatter.insert_space_before_opening_brace_in_enum_declaration=insert
--org.eclipse.jdt.core.formatter.insert_space_before_opening_brace_in_method_declaration=insert
--org.eclipse.jdt.core.formatter.insert_space_before_opening_brace_in_switch=insert
--org.eclipse.jdt.core.formatter.insert_space_before_opening_brace_in_type_declaration=insert
--org.eclipse.jdt.core.formatter.insert_space_before_opening_bracket_in_array_allocation_expression=do not insert
--org.eclipse.jdt.core.formatter.insert_space_before_opening_bracket_in_array_reference=do not insert
--org.eclipse.jdt.core.formatter.insert_space_before_opening_bracket_in_array_type_reference=do not insert
--org.eclipse.jdt.core.formatter.insert_space_before_opening_paren_in_annotation=do not insert
--org.eclipse.jdt.core.formatter.insert_space_before_opening_paren_in_annotation_type_member_declaration=do not insert
--org.eclipse.jdt.core.formatter.insert_space_before_opening_paren_in_catch=insert
--org.eclipse.jdt.core.formatter.insert_space_before_opening_paren_in_constructor_declaration=do not insert
--org.eclipse.jdt.core.formatter.insert_space_before_opening_paren_in_enum_constant=do not insert
--org.eclipse.jdt.core.formatter.insert_space_before_opening_paren_in_for=insert
--org.eclipse.jdt.core.formatter.insert_space_before_opening_paren_in_if=insert
--org.eclipse.jdt.core.formatter.insert_space_before_opening_paren_in_method_declaration=do not insert
--org.eclipse.jdt.core.formatter.insert_space_before_opening_paren_in_method_invocation=do not insert
--org.eclipse.jdt.core.formatter.insert_space_before_opening_paren_in_parenthesized_expression=do not insert
--org.eclipse.jdt.core.formatter.insert_space_before_opening_paren_in_switch=insert
--org.eclipse.jdt.core.formatter.insert_space_before_opening_paren_in_synchronized=insert
--org.eclipse.jdt.core.formatter.insert_space_before_opening_paren_in_while=insert
--org.eclipse.jdt.core.formatter.insert_space_before_postfix_operator=do not insert
--org.eclipse.jdt.core.formatter.insert_space_before_prefix_operator=do not insert
--org.eclipse.jdt.core.formatter.insert_space_before_question_in_conditional=insert
--org.eclipse.jdt.core.formatter.insert_space_before_question_in_wildcard=do not insert
--org.eclipse.jdt.core.formatter.insert_space_before_semicolon=do not insert
--org.eclipse.jdt.core.formatter.insert_space_before_semicolon_in_for=do not insert
--org.eclipse.jdt.core.formatter.insert_space_before_unary_operator=do not insert
--org.eclipse.jdt.core.formatter.insert_space_between_brackets_in_array_type_reference=do not insert
--org.eclipse.jdt.core.formatter.insert_space_between_empty_braces_in_array_initializer=do not insert
--org.eclipse.jdt.core.formatter.insert_space_between_empty_brackets_in_array_allocation_expression=do not insert
--org.eclipse.jdt.core.formatter.insert_space_between_empty_parens_in_annotation_type_member_declaration=do not insert
--org.eclipse.jdt.core.formatter.insert_space_between_empty_parens_in_constructor_declaration=do not insert
--org.eclipse.jdt.core.formatter.insert_space_between_empty_parens_in_enum_constant=do not insert
--org.eclipse.jdt.core.formatter.insert_space_between_empty_parens_in_method_declaration=do not insert
--org.eclipse.jdt.core.formatter.insert_space_between_empty_parens_in_method_invocation=do not insert
--org.eclipse.jdt.core.formatter.keep_else_statement_on_same_line=false
--org.eclipse.jdt.core.formatter.keep_empty_array_initializer_on_one_line=false
--org.eclipse.jdt.core.formatter.keep_imple_if_on_one_line=false
--org.eclipse.jdt.core.formatter.keep_then_statement_on_same_line=false
--org.eclipse.jdt.core.formatter.lineSplit=120
--org.eclipse.jdt.core.formatter.number_of_blank_lines_at_beginning_of_method_body=0
--org.eclipse.jdt.core.formatter.number_of_empty_lines_to_preserve=1
--org.eclipse.jdt.core.formatter.put_empty_statement_on_new_line=true
--org.eclipse.jdt.core.formatter.tabulation.char=tab
--org.eclipse.jdt.core.formatter.tabulation.size=4
--org.eclipse.jdt.core.formatter.use_tabs_only_for_leading_indentations=false
-diff -urN --exclude=.svn sparql-0.8/.settings/org.eclipse.jdt.ui.prefs work-copy/.settings/org.eclipse.jdt.ui.prefs
---- sparql-0.8/.settings/org.eclipse.jdt.ui.prefs	2006-07-16 19:04:06.000000000 -0400
-+++ work-copy/.settings/org.eclipse.jdt.ui.prefs	1969-12-31 19:00:00.000000000 -0500
-@@ -1,3 +0,0 @@
--#Tue Jul 04 22:15:55 EDT 2006
--eclipse.preferences.version=1
--formatter_settings_version=8
-diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/common/AdvancedRdfSource.java work-copy/src/main/name/levering/ryan/sparql/common/AdvancedRdfSource.java
---- sparql-0.8/src/main/name/levering/ryan/sparql/common/AdvancedRdfSource.java	1969-12-31 19:00:00.000000000 -0500
-+++ work-copy/src/main/name/levering/ryan/sparql/common/AdvancedRdfSource.java	2006-08-01 16:32:54.000000000 -0400
+Binary files upstream/lib/sparql-core.jar and work-copy/lib/sparql-core.jar differ
+Binary files upstream/lib/sparql-tests.jar and work-copy/lib/sparql-tests.jar differ
+Binary files upstream/sparql-0.8.zip and work-copy/sparql-0.8.zip differ
+diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/common/AdvancedRdfSource.java work-copy/src/main/name/levering/ryan/sparql/common/AdvancedRdfSource.java
+--- upstream/src/main/name/levering/ryan/sparql/common/AdvancedRdfSource.java	1969-12-31 19:00:00.000000000 -0500
++++ work-copy/src/main/name/levering/ryan/sparql/common/AdvancedRdfSource.java	2006-12-02 11:00:47.000000000 -0500
 @@ -0,0 +1,26 @@
 +/*
 + * SPARQL Engine
@@ -558,9 +81,9 @@ diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/common/Ad
 +    public Iterator getStatements(Value[] subj, Value[] pred, Value[] obj, Object[] litFilters);
 +}
 +
-diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/common/impl/RdfBindingSetImpl.java work-copy/src/main/name/levering/ryan/sparql/common/impl/RdfBindingSetImpl.java
---- sparql-0.8/src/main/name/levering/ryan/sparql/common/impl/RdfBindingSetImpl.java	2006-07-16 19:04:04.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/common/impl/RdfBindingSetImpl.java	2006-09-24 17:11:28.000000000 -0400
+diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/common/impl/RdfBindingSetImpl.java work-copy/src/main/name/levering/ryan/sparql/common/impl/RdfBindingSetImpl.java
+--- upstream/src/main/name/levering/ryan/sparql/common/impl/RdfBindingSetImpl.java	2006-08-20 20:00:59.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/common/impl/RdfBindingSetImpl.java	2006-12-02 11:00:47.000000000 -0500
 @@ -98,6 +98,8 @@
  		for (Iterator oldRows = oldSet.iterator(); oldRows.hasNext();) {
  			this.addRow((RdfBindingRow) oldRows.next());
@@ -595,9 +118,9 @@ diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/common/im
  			}
  			Value[] rowValues = ((Value[]) RdfBindingSetImpl.this.values.get(this.row));
  			return rowValues[columnIndex];
-diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/extensions/fpredicates/FunctionalPredicateLogic.java work-copy/src/main/name/levering/ryan/sparql/extensions/fpredicates/FunctionalPredicateLogic.java
---- sparql-0.8/src/main/name/levering/ryan/sparql/extensions/fpredicates/FunctionalPredicateLogic.java	2006-07-16 19:04:04.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/extensions/fpredicates/FunctionalPredicateLogic.java	2006-08-01 12:50:18.000000000 -0400
+diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/extensions/fpredicates/FunctionalPredicateLogic.java work-copy/src/main/name/levering/ryan/sparql/extensions/fpredicates/FunctionalPredicateLogic.java
+--- upstream/src/main/name/levering/ryan/sparql/extensions/fpredicates/FunctionalPredicateLogic.java	2006-08-20 20:00:59.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/extensions/fpredicates/FunctionalPredicateLogic.java	2006-12-02 11:00:47.000000000 -0500
 @@ -1,6 +1,7 @@
  package name.levering.ryan.sparql.extensions.fpredicates;
  
@@ -615,9 +138,9 @@ diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/extension
  		
  		return this.function.getBindingSet(this.data.getSubjectExpression(), this.data.getObjectExpression(), source);
  	}
-diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/extensions/functions/aggregate/IsMaxFunction.java work-copy/src/main/name/levering/ryan/sparql/extensions/functions/aggregate/IsMaxFunction.java
---- sparql-0.8/src/main/name/levering/ryan/sparql/extensions/functions/aggregate/IsMaxFunction.java	2006-07-16 19:04:04.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/extensions/functions/aggregate/IsMaxFunction.java	2006-09-24 18:51:23.000000000 -0400
+diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/extensions/functions/aggregate/IsMaxFunction.java work-copy/src/main/name/levering/ryan/sparql/extensions/functions/aggregate/IsMaxFunction.java
+--- upstream/src/main/name/levering/ryan/sparql/extensions/functions/aggregate/IsMaxFunction.java	2006-08-20 20:00:59.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/extensions/functions/aggregate/IsMaxFunction.java	2006-12-02 11:00:47.000000000 -0500
 @@ -128,7 +128,7 @@
  		return new ExternalFunctionFactory() {
  
@@ -627,9 +150,9 @@ diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/extension
  			}
  
  		};
-diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/extensions/functions/aggregate/IsMinFunction.java work-copy/src/main/name/levering/ryan/sparql/extensions/functions/aggregate/IsMinFunction.java
---- sparql-0.8/src/main/name/levering/ryan/sparql/extensions/functions/aggregate/IsMinFunction.java	2006-07-16 19:04:02.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/extensions/functions/aggregate/IsMinFunction.java	2006-09-24 18:51:31.000000000 -0400
+diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/extensions/functions/aggregate/IsMinFunction.java work-copy/src/main/name/levering/ryan/sparql/extensions/functions/aggregate/IsMinFunction.java
+--- upstream/src/main/name/levering/ryan/sparql/extensions/functions/aggregate/IsMinFunction.java	2006-08-20 20:00:59.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/extensions/functions/aggregate/IsMinFunction.java	2006-12-02 11:00:47.000000000 -0500
 @@ -126,7 +126,7 @@
  		return new ExternalFunctionFactory() {
  
@@ -639,9 +162,9 @@ diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/extension
  			}
  
  		};
-diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/extensions/functions/aggregate/MaxFunction.java work-copy/src/main/name/levering/ryan/sparql/extensions/functions/aggregate/MaxFunction.java
---- sparql-0.8/src/main/name/levering/ryan/sparql/extensions/functions/aggregate/MaxFunction.java	2006-07-16 19:04:06.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/extensions/functions/aggregate/MaxFunction.java	2006-09-24 18:51:39.000000000 -0400
+diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/extensions/functions/aggregate/MaxFunction.java work-copy/src/main/name/levering/ryan/sparql/extensions/functions/aggregate/MaxFunction.java
+--- upstream/src/main/name/levering/ryan/sparql/extensions/functions/aggregate/MaxFunction.java	2006-08-20 20:00:59.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/extensions/functions/aggregate/MaxFunction.java	2006-12-02 11:00:47.000000000 -0500
 @@ -121,7 +121,7 @@
  		return new ExternalFunctionFactory() {
  
@@ -651,9 +174,9 @@ diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/extension
  			}
  
  		};
-diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/extensions/functions/aggregate/MinFunction.java work-copy/src/main/name/levering/ryan/sparql/extensions/functions/aggregate/MinFunction.java
---- sparql-0.8/src/main/name/levering/ryan/sparql/extensions/functions/aggregate/MinFunction.java	2006-07-16 19:04:02.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/extensions/functions/aggregate/MinFunction.java	2006-09-24 18:51:45.000000000 -0400
+diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/extensions/functions/aggregate/MinFunction.java work-copy/src/main/name/levering/ryan/sparql/extensions/functions/aggregate/MinFunction.java
+--- upstream/src/main/name/levering/ryan/sparql/extensions/functions/aggregate/MinFunction.java	2006-08-20 20:00:59.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/extensions/functions/aggregate/MinFunction.java	2006-12-02 11:00:47.000000000 -0500
 @@ -121,7 +121,7 @@
  		return new ExternalFunctionFactory() {
  
@@ -663,9 +186,9 @@ diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/extension
  			}
  
  		};
-diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/extensions/with/DefaultWithConstraintLogic.java work-copy/src/main/name/levering/ryan/sparql/extensions/with/DefaultWithConstraintLogic.java
---- sparql-0.8/src/main/name/levering/ryan/sparql/extensions/with/DefaultWithConstraintLogic.java	2006-07-16 19:04:04.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/extensions/with/DefaultWithConstraintLogic.java	2006-08-01 12:51:40.000000000 -0400
+diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/extensions/with/DefaultWithConstraintLogic.java work-copy/src/main/name/levering/ryan/sparql/extensions/with/DefaultWithConstraintLogic.java
+--- upstream/src/main/name/levering/ryan/sparql/extensions/with/DefaultWithConstraintLogic.java	2006-08-20 20:00:59.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/extensions/with/DefaultWithConstraintLogic.java	2006-12-02 11:00:47.000000000 -0500
 @@ -1,6 +1,7 @@
  package name.levering.ryan.sparql.extensions.with;
  
@@ -683,9 +206,9 @@ diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/extension
  		return this.extension.getBindingSet((ExpressionLogic[]) this.data.getArguments().toArray(
  				new ExpressionLogic[] {}), source);
  	}
-diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/logic/BaseLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/BaseLogic.java
---- sparql-0.8/src/main/name/levering/ryan/sparql/logic/BaseLogic.java	2006-07-16 19:04:04.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/logic/BaseLogic.java	2006-09-24 18:40:51.000000000 -0400
+diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/logic/BaseLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/BaseLogic.java
+--- upstream/src/main/name/levering/ryan/sparql/logic/BaseLogic.java	2006-08-20 20:01:01.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/logic/BaseLogic.java	2006-12-02 11:01:18.000000000 -0500
 @@ -345,8 +345,8 @@
  	 * 
  	 * @return the logic that orders Value objects
@@ -697,9 +220,9 @@ diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/logic/Bas
  	}
  
  }
-diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/logic/BNodeRenamingConstructQueryLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/BNodeRenamingConstructQueryLogic.java
---- sparql-0.8/src/main/name/levering/ryan/sparql/logic/BNodeRenamingConstructQueryLogic.java	2006-07-16 19:04:04.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/logic/BNodeRenamingConstructQueryLogic.java	2006-08-01 12:27:53.000000000 -0400
+diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/logic/BNodeRenamingConstructQueryLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/BNodeRenamingConstructQueryLogic.java
+--- upstream/src/main/name/levering/ryan/sparql/logic/BNodeRenamingConstructQueryLogic.java	2006-08-20 20:01:01.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/logic/BNodeRenamingConstructQueryLogic.java	2006-12-02 11:00:49.000000000 -0500
 @@ -94,7 +94,7 @@
  		int offset = this.data.getOffset();
  
@@ -709,10 +232,10 @@ diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/logic/BNo
  
  		// Now apply ordering in reverse order to give priority to the first
  		// variable
-diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/logic/debug/DebugLogicWrapper.java work-copy/src/main/name/levering/ryan/sparql/logic/debug/DebugLogicWrapper.java
---- sparql-0.8/src/main/name/levering/ryan/sparql/logic/debug/DebugLogicWrapper.java	2006-07-16 19:04:04.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/logic/debug/DebugLogicWrapper.java	2006-09-24 18:43:50.000000000 -0400
-@@ -172,8 +172,8 @@
+diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/logic/debug/DebugLogicWrapper.java work-copy/src/main/name/levering/ryan/sparql/logic/debug/DebugLogicWrapper.java
+--- upstream/src/main/name/levering/ryan/sparql/logic/debug/DebugLogicWrapper.java	2006-12-02 11:09:25.000000000 -0500
++++ work-copy/src/main/name/levering/ryan/sparql/logic/debug/DebugLogicWrapper.java	2006-12-02 11:11:22.000000000 -0500
+@@ -173,8 +173,8 @@
  		return new OptionalConstraintDebug(this.baseFactory.getOptionalConstraintLogic(data, valueFactory), this.out);
  	}
  
@@ -723,7 +246,7 @@ diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/logic/deb
  	}
  
  	public ExpressionLogic getOrLogic(BinaryExpressionData data, SPARQLValueFactory valueFactory) {
-@@ -235,8 +235,8 @@
+@@ -236,8 +236,8 @@
  		return this.baseFactory.getValueConversionLogic(valueFactory);
  	}
  
@@ -733,10 +256,10 @@ diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/logic/deb
 +		return this.baseFactory.getValueOrderingLogic(valueFactory);
  	}
  
- }
-diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/logic/debug/FilterConstraintDebug.java work-copy/src/main/name/levering/ryan/sparql/logic/debug/FilterConstraintDebug.java
---- sparql-0.8/src/main/name/levering/ryan/sparql/logic/debug/FilterConstraintDebug.java	2006-07-16 19:04:02.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/logic/debug/FilterConstraintDebug.java	2006-08-01 12:34:06.000000000 -0400
+ 	public ConstructQueryLogic getConstructQueryLogic(ExtendedConstructQueryData data, SPARQLValueFactory valueFactory) {
+diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/logic/debug/FilterConstraintDebug.java work-copy/src/main/name/levering/ryan/sparql/logic/debug/FilterConstraintDebug.java
+--- upstream/src/main/name/levering/ryan/sparql/logic/debug/FilterConstraintDebug.java	2006-08-20 20:01:00.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/logic/debug/FilterConstraintDebug.java	2006-12-02 11:00:48.000000000 -0500
 @@ -1,6 +1,7 @@
  package name.levering.ryan.sparql.logic.debug;
  
@@ -758,9 +281,9 @@ diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/logic/deb
          long end = System.currentTimeMillis();
          this.out.filterConstraintPostExecute(end-start, returnSet);
          return returnSet;
-diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/logic/debug/GraphConstraintDebug.java work-copy/src/main/name/levering/ryan/sparql/logic/debug/GraphConstraintDebug.java
---- sparql-0.8/src/main/name/levering/ryan/sparql/logic/debug/GraphConstraintDebug.java	2006-07-16 19:04:04.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/logic/debug/GraphConstraintDebug.java	2006-08-01 12:34:34.000000000 -0400
+diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/logic/debug/GraphConstraintDebug.java work-copy/src/main/name/levering/ryan/sparql/logic/debug/GraphConstraintDebug.java
+--- upstream/src/main/name/levering/ryan/sparql/logic/debug/GraphConstraintDebug.java	2006-08-20 20:01:00.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/logic/debug/GraphConstraintDebug.java	2006-12-02 11:00:48.000000000 -0500
 @@ -1,6 +1,7 @@
  package name.levering.ryan.sparql.logic.debug;
  
@@ -782,9 +305,9 @@ diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/logic/deb
          long end = System.currentTimeMillis();
          this.out.graphConstraintPostExecute(end-start, returnSet);
          return returnSet;
-diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/logic/debug/GroupConstraintDebug.java work-copy/src/main/name/levering/ryan/sparql/logic/debug/GroupConstraintDebug.java
---- sparql-0.8/src/main/name/levering/ryan/sparql/logic/debug/GroupConstraintDebug.java	2006-07-16 19:04:06.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/logic/debug/GroupConstraintDebug.java	2006-08-01 12:34:25.000000000 -0400
+diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/logic/debug/GroupConstraintDebug.java work-copy/src/main/name/levering/ryan/sparql/logic/debug/GroupConstraintDebug.java
+--- upstream/src/main/name/levering/ryan/sparql/logic/debug/GroupConstraintDebug.java	2006-08-20 20:01:00.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/logic/debug/GroupConstraintDebug.java	2006-12-02 11:00:48.000000000 -0500
 @@ -1,6 +1,7 @@
  package name.levering.ryan.sparql.logic.debug;
  
@@ -806,9 +329,9 @@ diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/logic/deb
          long end = System.currentTimeMillis();
          this.out.groupConstraintPostExecute(end-start, returnSet);
          return returnSet;
-diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/logic/debug/OptionalConstraintDebug.java work-copy/src/main/name/levering/ryan/sparql/logic/debug/OptionalConstraintDebug.java
---- sparql-0.8/src/main/name/levering/ryan/sparql/logic/debug/OptionalConstraintDebug.java	2006-07-16 19:04:04.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/logic/debug/OptionalConstraintDebug.java	2006-08-01 12:34:54.000000000 -0400
+diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/logic/debug/OptionalConstraintDebug.java work-copy/src/main/name/levering/ryan/sparql/logic/debug/OptionalConstraintDebug.java
+--- upstream/src/main/name/levering/ryan/sparql/logic/debug/OptionalConstraintDebug.java	2006-08-20 20:01:00.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/logic/debug/OptionalConstraintDebug.java	2006-12-02 11:00:48.000000000 -0500
 @@ -1,6 +1,7 @@
  package name.levering.ryan.sparql.logic.debug;
  
@@ -830,9 +353,9 @@ diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/logic/deb
          long end = System.currentTimeMillis();
          this.out.optionalConstraintPostExecute(end-start, returnSet);
          return returnSet;
-diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/logic/debug/TripleConstraintDebug.java work-copy/src/main/name/levering/ryan/sparql/logic/debug/TripleConstraintDebug.java
---- sparql-0.8/src/main/name/levering/ryan/sparql/logic/debug/TripleConstraintDebug.java	2006-07-16 19:04:02.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/logic/debug/TripleConstraintDebug.java	2006-08-01 12:35:29.000000000 -0400
+diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/logic/debug/TripleConstraintDebug.java work-copy/src/main/name/levering/ryan/sparql/logic/debug/TripleConstraintDebug.java
+--- upstream/src/main/name/levering/ryan/sparql/logic/debug/TripleConstraintDebug.java	2006-08-20 20:01:00.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/logic/debug/TripleConstraintDebug.java	2006-12-02 11:00:48.000000000 -0500
 @@ -6,6 +6,7 @@
  package name.levering.ryan.sparql.logic.debug;
  
@@ -854,9 +377,9 @@ diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/logic/deb
          long end = System.currentTimeMillis();
          this.out.tripleFetchPostExecute(end-start, returnSet);
          return returnSet;
-diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/logic/debug/UnionConstraintDebug.java work-copy/src/main/name/levering/ryan/sparql/logic/debug/UnionConstraintDebug.java
---- sparql-0.8/src/main/name/levering/ryan/sparql/logic/debug/UnionConstraintDebug.java	2006-07-16 19:04:02.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/logic/debug/UnionConstraintDebug.java	2006-08-01 12:35:45.000000000 -0400
+diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/logic/debug/UnionConstraintDebug.java work-copy/src/main/name/levering/ryan/sparql/logic/debug/UnionConstraintDebug.java
+--- upstream/src/main/name/levering/ryan/sparql/logic/debug/UnionConstraintDebug.java	2006-08-20 20:01:00.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/logic/debug/UnionConstraintDebug.java	2006-12-02 11:00:48.000000000 -0500
 @@ -1,6 +1,7 @@
  package name.levering.ryan.sparql.logic.debug;
  
@@ -878,9 +401,9 @@ diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/logic/deb
          long end = System.currentTimeMillis();
          this.out.unionConstraintPostExecute(end-start, returnSet);
          return returnSet;
-diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/logic/DefaultAskQueryLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/DefaultAskQueryLogic.java
---- sparql-0.8/src/main/name/levering/ryan/sparql/logic/DefaultAskQueryLogic.java	2006-07-16 19:04:06.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/logic/DefaultAskQueryLogic.java	2006-08-01 12:26:33.000000000 -0400
+diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/logic/DefaultAskQueryLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/DefaultAskQueryLogic.java
+--- upstream/src/main/name/levering/ryan/sparql/logic/DefaultAskQueryLogic.java	2006-08-20 20:01:01.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/logic/DefaultAskQueryLogic.java	2006-12-02 11:01:18.000000000 -0500
 @@ -55,7 +55,7 @@
  
          // First bind the result table
@@ -890,10 +413,10 @@ diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/logic/Def
  
          // Return whether or not the iterator returns any rows
          return results.iterator().hasNext();
-diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/logic/DefaultConstructQueryLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/DefaultConstructQueryLogic.java
---- sparql-0.8/src/main/name/levering/ryan/sparql/logic/DefaultConstructQueryLogic.java	2006-07-16 19:04:06.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/logic/DefaultConstructQueryLogic.java	2006-08-01 12:28:15.000000000 -0400
-@@ -29,6 +29,7 @@
+diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/logic/DefaultConstructQueryLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/DefaultConstructQueryLogic.java
+--- upstream/src/main/name/levering/ryan/sparql/logic/DefaultConstructQueryLogic.java	2006-08-20 20:01:01.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/logic/DefaultConstructQueryLogic.java	2006-12-02 11:33:27.000000000 -0500
+@@ -30,6 +30,7 @@
  import org.openrdf.model.BNode;
  import org.openrdf.model.URI;
  import org.openrdf.model.Value;
@@ -901,7 +424,7 @@ diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/logic/Def
  
  /**
   * This query logic constructs an RDF graph by applying an RDF template to a set
-@@ -88,7 +89,7 @@
+@@ -89,7 +90,7 @@
  
          // First bind the result table
          RdfBindingSet results = constraint.constrain(new RdfBindingSetImpl(),
@@ -910,49 +433,18 @@ diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/logic/Def
  
          // Now apply ordering in reverse order to give priority to the first
          // variable
-@@ -104,10 +105,27 @@
+@@ -105,7 +106,7 @@
          if (offset >= 0) {
              results = this.rangeLogic.offset(results, offset);
          }
 -
 +		
-+		// Each solution gets its own binding for bnodes.  Collect a list of the bnodes
-+		// in the construct graph.
-+		HashMap bnodeMap = new HashMap();
-+		for (Iterator i = data.getTriples().iterator(); i.hasNext();) {
-+			TripleConstraint triple = (TripleConstraint) i.next();
-+			Object subject = triple.getSubjectExpression();
-+			Object verb = triple.getPredicateExpression();
-+			Object object = triple.getObjectExpression();
-+			if (subject instanceof BNode) bnodeMap.put(subject, null);
-+			if (verb instanceof BNode) bnodeMap.put(verb, null);
-+			if (object instanceof BNode) bnodeMap.put(object, null);
-+		}
-+	
-         // Now apply the solutions to the template
-         RdfGraphImpl graph = new RdfGraphImpl();
-         for (Iterator solutions = results.iterator(); solutions.hasNext();) {
-+			// Set up new bnode instances for bnodes in the construct graph.
-+			for (Iterator bnodes = bnodeMap.keySet().iterator(); bnodes.hasNext(); )
-+				bnodeMap.put(bnodes.next(), source.getValueFactory().createBNode());
-+			
-             RdfBindingRow row = (RdfBindingRow) solutions.next();
-             Map blankNodeMap = new HashMap();
-             for (Iterator i = this.data.getTriples().iterator(); i.hasNext();) {
-@@ -156,6 +174,10 @@
-                     continue;
-                 }
+         return this.translationLogic.translate(this.data.getTriples(), results);
+     }
  
-+				if (bnodeMap.containsKey(subject)) subject = (Value)bnodeMap.get(subject);
-+				//if (bnodeMap.containsKey(verb)) verb = (Value)bnodeMap.get(verb);
-+				if (bnodeMap.containsKey(object)) object = (Value)bnodeMap.get(object);
-+				
-                 graph.addTriple(new StatementImpl(subject, verb, object));
-             }
-         }
-diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/logic/DefaultDescribeQueryLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/DefaultDescribeQueryLogic.java
---- sparql-0.8/src/main/name/levering/ryan/sparql/logic/DefaultDescribeQueryLogic.java	2006-07-16 19:04:04.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/logic/DefaultDescribeQueryLogic.java	2006-11-03 07:07:13.000000000 -0500
+diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/logic/DefaultDescribeQueryLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/DefaultDescribeQueryLogic.java
+--- upstream/src/main/name/levering/ryan/sparql/logic/DefaultDescribeQueryLogic.java	2006-08-20 20:01:01.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/logic/DefaultDescribeQueryLogic.java	2006-12-02 11:01:18.000000000 -0500
 @@ -93,7 +93,9 @@
  		int offset = this.data.getOffset();
  
@@ -982,9 +474,9 @@ diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/logic/Def
  		}
  		return descriptions;
  	}
-diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/logic/DefaultSelectQueryLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/DefaultSelectQueryLogic.java
---- sparql-0.8/src/main/name/levering/ryan/sparql/logic/DefaultSelectQueryLogic.java	2006-07-16 19:04:06.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/logic/DefaultSelectQueryLogic.java	2006-08-01 12:30:05.000000000 -0400
+diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/logic/DefaultSelectQueryLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/DefaultSelectQueryLogic.java
+--- upstream/src/main/name/levering/ryan/sparql/logic/DefaultSelectQueryLogic.java	2006-08-20 20:01:01.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/logic/DefaultSelectQueryLogic.java	2006-12-02 11:01:18.000000000 -0500
 @@ -86,7 +86,7 @@
  
          // First bind the result table
@@ -992,19 +484,19 @@ diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/logic/Def
 -                source, defaultDatasets, namedDatasets);
 +                source, defaultDatasets, namedDatasets, null, null);
  
-         // Now project to the solution set
-         if (queryExpressions != null) {
-diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/logic/DefaultValueOrderingLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/DefaultValueOrderingLogic.java
---- sparql-0.8/src/main/name/levering/ryan/sparql/logic/DefaultValueOrderingLogic.java	2006-07-16 19:04:04.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/logic/DefaultValueOrderingLogic.java	2006-09-24 18:54:32.000000000 -0400
+         // Now project to the solution set or the variable set
+         if (!queryExpressions.isEmpty()) {
+diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/logic/DefaultValueOrderingLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/DefaultValueOrderingLogic.java
+--- upstream/src/main/name/levering/ryan/sparql/logic/DefaultValueOrderingLogic.java	2006-12-02 11:09:25.000000000 -0500
++++ work-copy/src/main/name/levering/ryan/sparql/logic/DefaultValueOrderingLogic.java	2006-12-02 11:14:00.000000000 -0500
 @@ -1,5 +1,9 @@
  package name.levering.ryan.sparql.logic;
  
 +import name.levering.ryan.sparql.common.impl.DateTime;
 +
 +import name.levering.ryan.sparql.model.logic.NumericPromotionLogic;
-+import name.levering.ryan.sparql.model.logic.ValueConversionLogic;
- import name.levering.ryan.sparql.model.logic.ValueOrderingLogic;
++import name.levering.ryan.sparql.model.logic.helper.ValueConversionLogic;
+ import name.levering.ryan.sparql.model.logic.helper.ValueOrderingLogic;
  
  import org.openrdf.model.BNode;
 @@ -22,6 +26,13 @@
@@ -1069,9 +561,9 @@ diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/logic/Def
  			return -1;
  		}
  
-diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/logic/expression/GreaterThanEqualsLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/expression/GreaterThanEqualsLogic.java
---- sparql-0.8/src/main/name/levering/ryan/sparql/logic/expression/GreaterThanEqualsLogic.java	2006-07-16 19:04:02.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/logic/expression/GreaterThanEqualsLogic.java	2006-07-30 09:08:08.000000000 -0400
+diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/logic/expression/GreaterThanEqualsLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/expression/GreaterThanEqualsLogic.java
+--- upstream/src/main/name/levering/ryan/sparql/logic/expression/GreaterThanEqualsLogic.java	2006-08-20 20:01:00.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/logic/expression/GreaterThanEqualsLogic.java	2006-12-02 11:00:48.000000000 -0500
 @@ -96,11 +96,10 @@
       * 
       * @param string1 the first String to compare
@@ -1086,9 +578,9 @@ diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/logic/exp
      }
  
      /**
-diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/logic/expression/GreaterThanLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/expression/GreaterThanLogic.java
---- sparql-0.8/src/main/name/levering/ryan/sparql/logic/expression/GreaterThanLogic.java	2006-07-16 19:04:06.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/logic/expression/GreaterThanLogic.java	2006-07-30 09:08:08.000000000 -0400
+diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/logic/expression/GreaterThanLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/expression/GreaterThanLogic.java
+--- upstream/src/main/name/levering/ryan/sparql/logic/expression/GreaterThanLogic.java	2006-08-20 20:01:00.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/logic/expression/GreaterThanLogic.java	2006-12-02 11:00:48.000000000 -0500
 @@ -96,11 +96,10 @@
       * 
       * @param string1 the first String to compare
@@ -1103,9 +595,9 @@ diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/logic/exp
      }
  
      /**
-diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/logic/expression/LessThanEqualsLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/expression/LessThanEqualsLogic.java
---- sparql-0.8/src/main/name/levering/ryan/sparql/logic/expression/LessThanEqualsLogic.java	2006-07-16 19:04:04.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/logic/expression/LessThanEqualsLogic.java	2006-07-30 09:08:08.000000000 -0400
+diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/logic/expression/LessThanEqualsLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/expression/LessThanEqualsLogic.java
+--- upstream/src/main/name/levering/ryan/sparql/logic/expression/LessThanEqualsLogic.java	2006-08-20 20:01:00.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/logic/expression/LessThanEqualsLogic.java	2006-12-02 11:00:48.000000000 -0500
 @@ -96,11 +96,10 @@
       * 
       * @param string1 the first String to compare
@@ -1120,9 +612,9 @@ diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/logic/exp
      }
  
      /**
-diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/logic/expression/LessThanLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/expression/LessThanLogic.java
---- sparql-0.8/src/main/name/levering/ryan/sparql/logic/expression/LessThanLogic.java	2006-07-16 19:04:04.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/logic/expression/LessThanLogic.java	2006-07-30 09:08:08.000000000 -0400
+diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/logic/expression/LessThanLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/expression/LessThanLogic.java
+--- upstream/src/main/name/levering/ryan/sparql/logic/expression/LessThanLogic.java	2006-08-20 20:01:00.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/logic/expression/LessThanLogic.java	2006-12-02 11:00:48.000000000 -0500
 @@ -96,11 +96,10 @@
       * 
       * @param string1 the first String to compare
@@ -1137,9 +629,21 @@ diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/logic/exp
      }
      
      /**
-diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/logic/function/BoundLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/function/BoundLogic.java
---- sparql-0.8/src/main/name/levering/ryan/sparql/logic/function/BoundLogic.java	2006-07-16 19:04:04.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/logic/function/BoundLogic.java	2006-08-01 10:43:33.000000000 -0400
+diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/logic/ExtendedConstructQueryLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/ExtendedConstructQueryLogic.java
+--- upstream/src/main/name/levering/ryan/sparql/logic/ExtendedConstructQueryLogic.java	2006-08-20 20:01:01.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/logic/ExtendedConstructQueryLogic.java	2006-12-02 11:20:57.000000000 -0500
+@@ -98,7 +98,7 @@
+ 		boolean distinct = this.data.isDistinct();
+ 
+ 		// First bind the result table
+-		RdfBindingSet results = constraint.constrain(new RdfBindingSetImpl(), source, defaultDatasets, namedDatasets);
++		RdfBindingSet results = constraint.constrain(new RdfBindingSetImpl(), source, defaultDatasets, namedDatasets, null, null);
+ 
+ 		// Now apply ordering in reverse order to give priority to the first
+ 		// variable
+diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/logic/function/BoundLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/function/BoundLogic.java
+--- upstream/src/main/name/levering/ryan/sparql/logic/function/BoundLogic.java	2006-08-20 20:01:00.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/logic/function/BoundLogic.java	2006-12-02 11:00:48.000000000 -0500
 @@ -23,12 +23,7 @@
   * @author Ryan Levering
   * @version 1.0
@@ -1170,9 +674,9 @@ diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/logic/fun
 -
 + 
  }
-diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/logic/function/DataTypeLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/function/DataTypeLogic.java
---- sparql-0.8/src/main/name/levering/ryan/sparql/logic/function/DataTypeLogic.java	2006-07-16 19:04:04.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/logic/function/DataTypeLogic.java	2006-08-01 10:44:08.000000000 -0400
+diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/logic/function/DataTypeLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/function/DataTypeLogic.java
+--- upstream/src/main/name/levering/ryan/sparql/logic/function/DataTypeLogic.java	2006-08-20 20:01:00.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/logic/function/DataTypeLogic.java	2006-12-02 11:00:48.000000000 -0500
 @@ -21,22 +21,17 @@
   * @author Ryan Levering
   * @version 1.0
@@ -1206,9 +710,9 @@ diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/logic/fun
  
  	/**
  	 * Evaluates the datatype of a typed literal that is an argument.
-diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/logic/function/DecimalCastFunction.java work-copy/src/main/name/levering/ryan/sparql/logic/function/DecimalCastFunction.java
---- sparql-0.8/src/main/name/levering/ryan/sparql/logic/function/DecimalCastFunction.java	2006-07-16 19:04:06.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/logic/function/DecimalCastFunction.java	2006-07-30 09:13:49.000000000 -0400
+diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/logic/function/DecimalCastFunction.java work-copy/src/main/name/levering/ryan/sparql/logic/function/DecimalCastFunction.java
+--- upstream/src/main/name/levering/ryan/sparql/logic/function/DecimalCastFunction.java	2006-08-20 20:01:00.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/logic/function/DecimalCastFunction.java	2006-12-02 11:00:48.000000000 -0500
 @@ -144,11 +144,11 @@
       */
      public Value castLiteral(Literal literal) throws IllegalCastException {
@@ -1223,9 +727,9 @@ diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/logic/fun
          }
      }
      
-diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/logic/function/ExternalFunctionLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/function/ExternalFunctionLogic.java
---- sparql-0.8/src/main/name/levering/ryan/sparql/logic/function/ExternalFunctionLogic.java	2006-07-16 19:04:06.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/logic/function/ExternalFunctionLogic.java	2006-08-01 10:57:49.000000000 -0400
+diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/logic/function/ExternalFunctionLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/function/ExternalFunctionLogic.java
+--- upstream/src/main/name/levering/ryan/sparql/logic/function/ExternalFunctionLogic.java	2006-08-20 20:01:00.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/logic/function/ExternalFunctionLogic.java	2006-12-02 11:00:48.000000000 -0500
 @@ -23,34 +23,29 @@
   * @author Ryan Levering
   * @version 1.1
@@ -1283,9 +787,9 @@ diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/logic/fun
  
  	/**
  	 * Evaluates the function by evaluating the arguments and passing them to
-diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/logic/function/FunctionLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/function/FunctionLogic.java
---- sparql-0.8/src/main/name/levering/ryan/sparql/logic/function/FunctionLogic.java	1969-12-31 19:00:00.000000000 -0500
-+++ work-copy/src/main/name/levering/ryan/sparql/logic/function/FunctionLogic.java	2006-08-02 07:51:15.000000000 -0400
+diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/logic/function/FunctionLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/function/FunctionLogic.java
+--- upstream/src/main/name/levering/ryan/sparql/logic/function/FunctionLogic.java	1969-12-31 19:00:00.000000000 -0500
++++ work-copy/src/main/name/levering/ryan/sparql/logic/function/FunctionLogic.java	2006-12-02 11:14:52.000000000 -0500
 @@ -0,0 +1,41 @@
 +/*
 + * SPARQL Engine
@@ -1301,7 +805,7 @@ diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/logic/fun
 +import name.levering.ryan.sparql.common.Variable;
 +import name.levering.ryan.sparql.model.data.CallExpressionData;
 +import name.levering.ryan.sparql.model.logic.ExpressionLogic;
-+import name.levering.ryan.sparql.model.logic.ValueConversionLogic;
++import name.levering.ryan.sparql.model.logic.helper.ValueConversionLogic;
 +
 +import org.openrdf.model.Value;
 +
@@ -1328,9 +832,9 @@ diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/logic/fun
 +        this.data = data;
 +    }
 +}
-diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/logic/function/IsBlankLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/function/IsBlankLogic.java
---- sparql-0.8/src/main/name/levering/ryan/sparql/logic/function/IsBlankLogic.java	2006-07-16 19:04:06.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/logic/function/IsBlankLogic.java	2006-08-01 10:41:22.000000000 -0400
+diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/logic/function/IsBlankLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/function/IsBlankLogic.java
+--- upstream/src/main/name/levering/ryan/sparql/logic/function/IsBlankLogic.java	2006-08-20 20:01:00.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/logic/function/IsBlankLogic.java	2006-12-02 11:00:48.000000000 -0500
 @@ -21,30 +21,23 @@
   * @author Ryan Levering
   * @version 1.0
@@ -1374,9 +878,9 @@ diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/logic/fun
  
  	/**
  	 * Evaluates whether the value returned by an expression is a blank node.
-diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/logic/function/IsIRILogic.java work-copy/src/main/name/levering/ryan/sparql/logic/function/IsIRILogic.java
---- sparql-0.8/src/main/name/levering/ryan/sparql/logic/function/IsIRILogic.java	2006-07-16 19:04:02.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/logic/function/IsIRILogic.java	2006-08-01 10:42:44.000000000 -0400
+diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/logic/function/IsIRILogic.java work-copy/src/main/name/levering/ryan/sparql/logic/function/IsIRILogic.java
+--- upstream/src/main/name/levering/ryan/sparql/logic/function/IsIRILogic.java	2006-08-20 20:01:00.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/logic/function/IsIRILogic.java	2006-12-02 11:00:48.000000000 -0500
 @@ -21,38 +21,30 @@
   * @author Ryan Levering
   * @version 1.0
@@ -1440,9 +944,9 @@ diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/logic/fun
  	public Value evaluate(RdfBindingRow bindings) {
  		ExpressionLogic expression = (ExpressionLogic) this.data.getArguments().get(0);
  		Object value = expression.evaluate(bindings);
-diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/logic/function/IsLiteralLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/function/IsLiteralLogic.java
---- sparql-0.8/src/main/name/levering/ryan/sparql/logic/function/IsLiteralLogic.java	2006-07-16 19:04:04.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/logic/function/IsLiteralLogic.java	2006-08-01 10:42:16.000000000 -0400
+diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/logic/function/IsLiteralLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/function/IsLiteralLogic.java
+--- upstream/src/main/name/levering/ryan/sparql/logic/function/IsLiteralLogic.java	2006-08-20 20:01:00.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/logic/function/IsLiteralLogic.java	2006-12-02 11:00:48.000000000 -0500
 @@ -21,38 +21,31 @@
   * @author Ryan Levering
   * @version 1.0
@@ -1507,9 +1011,9 @@ diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/logic/fun
  	public Value evaluate(RdfBindingRow bindings) {
  		ExpressionLogic expression = (ExpressionLogic) this.data.getArguments().get(0);
  		Object value = expression.evaluate(bindings);
-diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/logic/function/LangLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/function/LangLogic.java
---- sparql-0.8/src/main/name/levering/ryan/sparql/logic/function/LangLogic.java	2006-07-16 19:04:04.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/logic/function/LangLogic.java	2006-08-01 10:40:50.000000000 -0400
+diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/logic/function/LangLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/function/LangLogic.java
+--- upstream/src/main/name/levering/ryan/sparql/logic/function/LangLogic.java	2006-08-20 20:01:00.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/logic/function/LangLogic.java	2006-12-02 11:00:48.000000000 -0500
 @@ -21,30 +21,22 @@
   * @author Ryan Levering
   * @version 1.0
@@ -1552,9 +1056,9 @@ diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/logic/fun
  
  	/**
  	 * Returns the language of a language tagged literal.
-diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/logic/function/LangMatchesLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/function/LangMatchesLogic.java
---- sparql-0.8/src/main/name/levering/ryan/sparql/logic/function/LangMatchesLogic.java	2006-07-16 19:04:02.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/logic/function/LangMatchesLogic.java	2006-08-01 12:40:37.000000000 -0400
+diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/logic/function/LangMatchesLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/function/LangMatchesLogic.java
+--- upstream/src/main/name/levering/ryan/sparql/logic/function/LangMatchesLogic.java	2006-08-20 20:01:00.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/logic/function/LangMatchesLogic.java	2006-12-02 11:00:48.000000000 -0500
 @@ -21,14 +21,7 @@
   * @author Ryan Levering
   * @version 1.0
@@ -1580,9 +1084,9 @@ diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/logic/fun
  		this.converter = converter;
  	}
  
-diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/logic/function/RegexLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/function/RegexLogic.java
---- sparql-0.8/src/main/name/levering/ryan/sparql/logic/function/RegexLogic.java	2006-07-16 19:04:02.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/logic/function/RegexLogic.java	2006-08-01 10:45:58.000000000 -0400
+diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/logic/function/RegexLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/function/RegexLogic.java
+--- upstream/src/main/name/levering/ryan/sparql/logic/function/RegexLogic.java	2006-08-20 20:01:00.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/logic/function/RegexLogic.java	2006-12-02 11:00:48.000000000 -0500
 @@ -25,31 +25,25 @@
   * @author Ryan Levering
   * @version 1.1
@@ -1634,9 +1138,9 @@ diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/logic/fun
  
  	/**
  	 * Converts the evaluated arguments to strings and uses Java string matching
-diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/logic/function/StrLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/function/StrLogic.java
---- sparql-0.8/src/main/name/levering/ryan/sparql/logic/function/StrLogic.java	2006-07-16 19:04:04.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/logic/function/StrLogic.java	2006-08-01 11:20:00.000000000 -0400
+diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/logic/function/StrLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/function/StrLogic.java
+--- upstream/src/main/name/levering/ryan/sparql/logic/function/StrLogic.java	2006-08-20 20:01:00.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/logic/function/StrLogic.java	2006-12-02 11:00:48.000000000 -0500
 @@ -23,28 +23,22 @@
   * @author Ryan Levering
   * @version 1.2
@@ -1682,9 +1186,9 @@ diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/logic/fun
  
  	/**
  	 * Evaluates the argument to the function and does simplistic conversion to
-diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/logic/naive/DefaultFilterConstraintLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/naive/DefaultFilterConstraintLogic.java
---- sparql-0.8/src/main/name/levering/ryan/sparql/logic/naive/DefaultFilterConstraintLogic.java	2006-07-16 19:04:02.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/logic/naive/DefaultFilterConstraintLogic.java	2006-08-01 12:41:27.000000000 -0400
+diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/logic/naive/DefaultFilterConstraintLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/naive/DefaultFilterConstraintLogic.java
+--- upstream/src/main/name/levering/ryan/sparql/logic/naive/DefaultFilterConstraintLogic.java	2006-08-20 20:01:01.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/logic/naive/DefaultFilterConstraintLogic.java	2006-12-02 11:01:18.000000000 -0500
 @@ -8,6 +8,7 @@
  import java.util.Collection;
  import java.util.Collections;
@@ -1702,9 +1206,9 @@ diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/logic/nai
          // Grab the necessary fields from the data
          ExpressionLogic filterExpression = this.data.getExpression();
  
-diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/logic/naive/DefaultGroupConstraintLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/naive/DefaultGroupConstraintLogic.java
---- sparql-0.8/src/main/name/levering/ryan/sparql/logic/naive/DefaultGroupConstraintLogic.java	2006-07-16 19:04:06.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/logic/naive/DefaultGroupConstraintLogic.java	2006-08-01 12:47:14.000000000 -0400
+diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/logic/naive/DefaultGroupConstraintLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/naive/DefaultGroupConstraintLogic.java
+--- upstream/src/main/name/levering/ryan/sparql/logic/naive/DefaultGroupConstraintLogic.java	2006-08-20 20:01:01.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/logic/naive/DefaultGroupConstraintLogic.java	2006-12-02 11:01:18.000000000 -0500
 @@ -9,6 +9,7 @@
  import java.util.Iterator;
  import java.util.LinkedList;
@@ -1764,9 +1268,9 @@ diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/logic/nai
  		}
  		return current;
  	}
-diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/logic/naive/DefaultOptionalConstraintLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/naive/DefaultOptionalConstraintLogic.java
---- sparql-0.8/src/main/name/levering/ryan/sparql/logic/naive/DefaultOptionalConstraintLogic.java	2006-07-16 19:04:02.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/logic/naive/DefaultOptionalConstraintLogic.java	2006-08-01 12:44:17.000000000 -0400
+diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/logic/naive/DefaultOptionalConstraintLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/naive/DefaultOptionalConstraintLogic.java
+--- upstream/src/main/name/levering/ryan/sparql/logic/naive/DefaultOptionalConstraintLogic.java	2006-08-20 20:01:01.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/logic/naive/DefaultOptionalConstraintLogic.java	2006-12-02 11:01:18.000000000 -0500
 @@ -9,6 +9,7 @@
  import java.util.Iterator;
  import java.util.LinkedList;
@@ -1815,9 +1319,9 @@ diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/logic/nai
  		}
  		
  		return this.logic.join(bindings, current, filterQueue);
-diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/logic/naive/DefaultTripleConstraintLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/naive/DefaultTripleConstraintLogic.java
---- sparql-0.8/src/main/name/levering/ryan/sparql/logic/naive/DefaultTripleConstraintLogic.java	2006-07-16 19:04:02.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/logic/naive/DefaultTripleConstraintLogic.java	2006-08-01 12:44:58.000000000 -0400
+diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/logic/naive/DefaultTripleConstraintLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/naive/DefaultTripleConstraintLogic.java
+--- upstream/src/main/name/levering/ryan/sparql/logic/naive/DefaultTripleConstraintLogic.java	2006-08-20 20:01:01.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/logic/naive/DefaultTripleConstraintLogic.java	2006-12-02 11:01:18.000000000 -0500
 @@ -9,6 +9,7 @@
  import java.util.Collection;
  import java.util.Iterator;
@@ -1835,9 +1339,9 @@ diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/logic/nai
  
          ExpressionLogic subExpr = this.data.getSubjectExpression();
          ExpressionLogic predExpr = this.data.getPredicateExpression();
-diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/logic/naive/DefaultUnionConstraintLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/naive/DefaultUnionConstraintLogic.java
---- sparql-0.8/src/main/name/levering/ryan/sparql/logic/naive/DefaultUnionConstraintLogic.java	2006-07-16 19:04:06.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/logic/naive/DefaultUnionConstraintLogic.java	2006-08-01 12:47:41.000000000 -0400
+diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/logic/naive/DefaultUnionConstraintLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/naive/DefaultUnionConstraintLogic.java
+--- upstream/src/main/name/levering/ryan/sparql/logic/naive/DefaultUnionConstraintLogic.java	2006-08-20 20:01:01.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/logic/naive/DefaultUnionConstraintLogic.java	2006-12-02 11:01:18.000000000 -0500
 @@ -7,6 +7,7 @@
  
  import java.util.Collection;
@@ -1864,9 +1368,9 @@ diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/logic/nai
  			}
  		}
  
-diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/logic/streamed/AdvancedGroupConstraintLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/streamed/AdvancedGroupConstraintLogic.java
---- sparql-0.8/src/main/name/levering/ryan/sparql/logic/streamed/AdvancedGroupConstraintLogic.java	1969-12-31 19:00:00.000000000 -0500
-+++ work-copy/src/main/name/levering/ryan/sparql/logic/streamed/AdvancedGroupConstraintLogic.java	2006-10-13 18:53:35.000000000 -0400
+diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/logic/streamed/AdvancedGroupConstraintLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/streamed/AdvancedGroupConstraintLogic.java
+--- upstream/src/main/name/levering/ryan/sparql/logic/streamed/AdvancedGroupConstraintLogic.java	1969-12-31 19:00:00.000000000 -0500
++++ work-copy/src/main/name/levering/ryan/sparql/logic/streamed/AdvancedGroupConstraintLogic.java	2006-12-02 11:15:08.000000000 -0500
 @@ -0,0 +1,568 @@
 +/*
 + * SPARQL Engine
@@ -1902,7 +1406,7 @@ diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/logic/str
 +import name.levering.ryan.sparql.model.data.OptionalConstraintData;
 +import name.levering.ryan.sparql.model.logic.ConstraintLogic;
 +import name.levering.ryan.sparql.model.logic.ExpressionLogic;
-+import name.levering.ryan.sparql.model.logic.SetIntersectLogic;
++import name.levering.ryan.sparql.model.logic.helper.SetIntersectLogic;
 +import name.levering.ryan.sparql.parser.model.ASTAndNode;
 +import name.levering.ryan.sparql.parser.model.ASTEqualsNode;
 +import name.levering.ryan.sparql.parser.model.ASTOrNode;
@@ -2436,9 +1940,9 @@ diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/logic/str
 +		return ret;
 +	}
 +}
-diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/logic/streamed/IndexedSetIntersectLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/streamed/IndexedSetIntersectLogic.java
---- sparql-0.8/src/main/name/levering/ryan/sparql/logic/streamed/IndexedSetIntersectLogic.java	2006-07-16 19:04:06.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/logic/streamed/IndexedSetIntersectLogic.java	2006-09-24 17:49:08.000000000 -0400
+diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/logic/streamed/IndexedSetIntersectLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/streamed/IndexedSetIntersectLogic.java
+--- upstream/src/main/name/levering/ryan/sparql/logic/streamed/IndexedSetIntersectLogic.java	2006-08-20 20:01:01.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/logic/streamed/IndexedSetIntersectLogic.java	2006-12-02 11:01:18.000000000 -0500
 @@ -64,7 +64,7 @@
          final List variables;
  
@@ -2463,9 +1967,9 @@ diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/logic/str
                  return returnValue;
              }
  
-diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/logic/streamed/IndexedSetJoinLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/streamed/IndexedSetJoinLogic.java
---- sparql-0.8/src/main/name/levering/ryan/sparql/logic/streamed/IndexedSetJoinLogic.java	2006-07-16 19:04:04.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/logic/streamed/IndexedSetJoinLogic.java	2006-08-01 19:28:44.000000000 -0400
+diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/logic/streamed/IndexedSetJoinLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/streamed/IndexedSetJoinLogic.java
+--- upstream/src/main/name/levering/ryan/sparql/logic/streamed/IndexedSetJoinLogic.java	2006-08-20 20:01:01.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/logic/streamed/IndexedSetJoinLogic.java	2006-12-02 11:01:18.000000000 -0500
 @@ -81,7 +81,7 @@
  		final List variables;
  
@@ -2495,9 +1999,9 @@ diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/logic/str
  				return returnValue;
  			}
  
-diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/logic/streamed/StreamedFilterConstraintLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/streamed/StreamedFilterConstraintLogic.java
---- sparql-0.8/src/main/name/levering/ryan/sparql/logic/streamed/StreamedFilterConstraintLogic.java	2006-07-16 19:04:02.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/logic/streamed/StreamedFilterConstraintLogic.java	2006-08-01 12:36:00.000000000 -0400
+diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/logic/streamed/StreamedFilterConstraintLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/streamed/StreamedFilterConstraintLogic.java
+--- upstream/src/main/name/levering/ryan/sparql/logic/streamed/StreamedFilterConstraintLogic.java	2006-08-20 20:01:01.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/logic/streamed/StreamedFilterConstraintLogic.java	2006-12-02 11:01:18.000000000 -0500
 @@ -10,6 +10,7 @@
  import java.util.Iterator;
  import java.util.LinkedList;
@@ -2515,9 +2019,9 @@ diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/logic/str
  		return new FilterBindingSet(bindings, this.data.getExpression());
  	}
  
-diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/logic/streamed/StreamedGraphConstraintLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/streamed/StreamedGraphConstraintLogic.java
---- sparql-0.8/src/main/name/levering/ryan/sparql/logic/streamed/StreamedGraphConstraintLogic.java	2006-07-16 19:04:04.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/logic/streamed/StreamedGraphConstraintLogic.java	2006-08-01 12:36:32.000000000 -0400
+diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/logic/streamed/StreamedGraphConstraintLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/streamed/StreamedGraphConstraintLogic.java
+--- upstream/src/main/name/levering/ryan/sparql/logic/streamed/StreamedGraphConstraintLogic.java	2006-08-20 20:01:01.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/logic/streamed/StreamedGraphConstraintLogic.java	2006-12-02 11:01:18.000000000 -0500
 @@ -10,6 +10,7 @@
  import java.util.Collection;
  import java.util.Iterator;
@@ -2598,9 +2102,9 @@ diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/logic/str
              }
          }
          return fullSet;
-diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/logic/streamed/StreamedTripleConstraintLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/streamed/StreamedTripleConstraintLogic.java
---- sparql-0.8/src/main/name/levering/ryan/sparql/logic/streamed/StreamedTripleConstraintLogic.java	2006-07-16 19:04:02.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/logic/streamed/StreamedTripleConstraintLogic.java	2006-08-01 17:59:58.000000000 -0400
+diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/logic/streamed/StreamedTripleConstraintLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/streamed/StreamedTripleConstraintLogic.java
+--- upstream/src/main/name/levering/ryan/sparql/logic/streamed/StreamedTripleConstraintLogic.java	2006-08-20 20:01:01.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/logic/streamed/StreamedTripleConstraintLogic.java	2006-12-02 11:01:18.000000000 -0500
 @@ -10,11 +10,14 @@
  import java.util.Iterator;
  import java.util.List;
@@ -2954,10 +2458,10 @@ diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/logic/str
  			for (Iterator statementIt = statementIterators.iterator(); statementIt.hasNext();) {
  				set.addIterator((GraphStatement) statementIt.next());
  			}
-diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/logic/StreamedLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/StreamedLogic.java
---- sparql-0.8/src/main/name/levering/ryan/sparql/logic/StreamedLogic.java	2006-07-16 19:04:02.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/logic/StreamedLogic.java	2006-09-24 18:39:42.000000000 -0400
-@@ -396,8 +396,8 @@
+diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/logic/StreamedLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/StreamedLogic.java
+--- upstream/src/main/name/levering/ryan/sparql/logic/StreamedLogic.java	2006-08-20 20:01:01.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/logic/StreamedLogic.java	2006-12-02 11:28:06.000000000 -0500
+@@ -378,8 +378,8 @@
  	 *            direction
  	 * @return the logic handling the ordering of an expression
  	 */
@@ -2968,301 +2472,23 @@ diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/logic/Str
  	}
  
  	/**
-diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/logic/StreamedStrictLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/StreamedStrictLogic.java
---- sparql-0.8/src/main/name/levering/ryan/sparql/logic/StreamedStrictLogic.java	2006-07-16 19:04:02.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/logic/StreamedStrictLogic.java	1969-12-31 19:00:00.000000000 -0500
-@@ -1,288 +0,0 @@
--/*
-- * SPARQL Engine
-- * Copyright (C) 2005 Ryan Levering, All rights reserved.
-- * See LICENSE for full license information
-- */
--package name.levering.ryan.sparql.logic;
--
--import java.util.Collection;
--import java.util.HashMap;
--import java.util.Iterator;
--import java.util.List;
--import java.util.Map;
--
--import name.levering.ryan.sparql.common.QueryException;
--import name.levering.ryan.sparql.common.SPARQLConstants;
--import name.levering.ryan.sparql.common.Variable;
--import name.levering.ryan.sparql.common.impl.SPARQLValueFactory;
--import name.levering.ryan.sparql.logic.function.BooleanCastFunction;
--import name.levering.ryan.sparql.logic.function.DateTimeCastFunction;
--import name.levering.ryan.sparql.logic.function.DecimalCastFunction;
--import name.levering.ryan.sparql.logic.function.DoubleCastFunction;
--import name.levering.ryan.sparql.logic.function.ExternalFunction;
--import name.levering.ryan.sparql.logic.function.ExternalFunctionFactory;
--import name.levering.ryan.sparql.logic.function.ExternalFunctionLogic;
--import name.levering.ryan.sparql.logic.function.FloatCastFunction;
--import name.levering.ryan.sparql.logic.function.IRICastFunction;
--import name.levering.ryan.sparql.logic.function.IntegerCastFunction;
--import name.levering.ryan.sparql.logic.function.LiteralCastFunction;
--import name.levering.ryan.sparql.logic.function.StringCastFunction;
--import name.levering.ryan.sparql.logic.naive.DefaultGroupConstraintLogic;
--import name.levering.ryan.sparql.logic.naive.DefaultOptionalConstraintLogic;
--import name.levering.ryan.sparql.logic.naive.DefaultUnionConstraintLogic;
--import name.levering.ryan.sparql.logic.streamed.IndexedSetDistinctionLogic;
--import name.levering.ryan.sparql.logic.streamed.IndexedSetIntersectLogic;
--import name.levering.ryan.sparql.logic.streamed.IndexedSetJoinLogic;
--import name.levering.ryan.sparql.logic.streamed.StreamedFilterConstraintLogic;
--import name.levering.ryan.sparql.logic.streamed.StreamedGraphConstraintLogic;
--import name.levering.ryan.sparql.logic.streamed.StreamedSetProjectionLogic;
--import name.levering.ryan.sparql.logic.streamed.StreamedSetRangeLogic;
--import name.levering.ryan.sparql.logic.streamed.StreamedSetUnionLogic;
--import name.levering.ryan.sparql.logic.streamed.StreamedTripleConstraintLogic;
--import name.levering.ryan.sparql.model.data.AskQueryData;
--import name.levering.ryan.sparql.model.data.CallExpressionData;
--import name.levering.ryan.sparql.model.data.ConstructQueryData;
--import name.levering.ryan.sparql.model.data.DescribeQueryData;
--import name.levering.ryan.sparql.model.data.FilterConstraintData;
--import name.levering.ryan.sparql.model.data.GraphConstraintData;
--import name.levering.ryan.sparql.model.data.GroupConstraintData;
--import name.levering.ryan.sparql.model.data.OptionalConstraintData;
--import name.levering.ryan.sparql.model.data.OrderExpressionData;
--import name.levering.ryan.sparql.model.data.SelectQueryData;
--import name.levering.ryan.sparql.model.data.TripleConstraintData;
--import name.levering.ryan.sparql.model.data.UnboundStatement;
--import name.levering.ryan.sparql.model.data.UnionConstraintData;
--import name.levering.ryan.sparql.model.logic.AskQueryLogic;
--import name.levering.ryan.sparql.model.logic.ConstraintLogic;
--import name.levering.ryan.sparql.model.logic.ConstructQueryLogic;
--import name.levering.ryan.sparql.model.logic.DescribeQueryLogic;
--import name.levering.ryan.sparql.model.logic.ExpressionLogic;
--import name.levering.ryan.sparql.model.logic.OrderExpressionLogic;
--import name.levering.ryan.sparql.model.logic.SelectQueryLogic;
--
--import org.openrdf.model.URI;
--import org.openrdf.model.Value;
--
--/**
-- * This factory implements all the default logic for the SPARQL library
-- * implementation. The logic is streamed, which means that the end result should
-- * be used with iterator() and will be evaluated as next() is called. This can
-- * result in some inefficiencies if the set is used multiple times, but it means
-- * that the memory use is incredibly small.
-- * <p>
-- * Developers wishing to tap into more efficient/specific logic should extend
-- * this class and specify their own logic implementations in place of the logic
-- * they want to replace.
-- * 
-- * @author Ryan Levering
-- * @version 1.1
-- */
--public class StreamedStrictLogic extends BaseLogic {
--
--	/**
--	 * Used to map function IRIs to external functions.
--	 */
--	private final Map functionMap = new HashMap();
--
--	/**
--	 * Creates a new default logic factory with the cast constructors registered
--	 * as external functions.
--	 */
--	public StreamedStrictLogic() {
--		registerCastFunctions();
--	}
--
--	/**
--	 * Intialize the function map with the standard SPARQL casting functions.
--	 */
--	protected void registerCastFunctions() {
--		registerExternalFunction(SPARQLConstants.STRING_TYPE, StringCastFunction.getFactory());
--		registerExternalFunction(SPARQLConstants.FLOAT_TYPE, FloatCastFunction.getFactory());
--		registerExternalFunction(SPARQLConstants.DOUBLE_TYPE, DoubleCastFunction.getFactory());
--		registerExternalFunction(SPARQLConstants.DECIMAL_TYPE, DecimalCastFunction.getFactory());
--		registerExternalFunction(SPARQLConstants.INTEGER_TYPE, IntegerCastFunction.getFactory());
--		registerExternalFunction(SPARQLConstants.DATE_TYPE, DateTimeCastFunction.getFactory());
--		registerExternalFunction(SPARQLConstants.BOOLEAN_TYPE, BooleanCastFunction.getFactory());
--		registerExternalFunction(SPARQLConstants.IRI_TYPE, IRICastFunction.getFactory());
--		registerExternalFunction(SPARQLConstants.LITERAL_TYPE, LiteralCastFunction.getFactory());
--	}
--
--	/**
--	 * Gets the default construct query logic.
--	 * 
--	 * @param data the data containing the query constraint, template, and
--	 *            transformations
--	 * @param valueFactory the value factory used to make new blank nodes
--	 * @return the logic handling the construct query
--	 */
--	public ConstructQueryLogic getConstructQueryLogic(ConstructQueryData data, SPARQLValueFactory valueFactory) {
--		// Check to make sure there are no function calls in the construct
--		// template
--		Collection triples = data.getTriples();
--		for (Iterator constructStatements = triples.iterator(); constructStatements.hasNext();) {
--			UnboundStatement statement = (UnboundStatement) constructStatements.next();
--			if (!(statement.getSubjectExpression() instanceof Value || statement.getSubjectExpression() instanceof Variable)) {
--				throw new QueryException("Logic does not support function calls in construct templates");
--			}
--			if (!(statement.getPredicateExpression() instanceof Value || statement.getPredicateExpression() instanceof Variable)) {
--				throw new QueryException("Logic does not support function calls in construct templates");
--			}
--			if (!(statement.getObjectExpression() instanceof Value || statement.getObjectExpression() instanceof Variable)) {
--				throw new QueryException("Logic does not support function calls in construct templates");
--			}
--		}
--		return new DefaultConstructQueryLogic(data, new StreamedSetRangeLogic(), valueFactory);
--	}
--
--	/**
--	 * Gets the default ask query logic.
--	 * 
--	 * @param data the data containing the query constraint
--	 * @return the logic handling the ask query
--	 */
--	public AskQueryLogic getAskQueryLogic(AskQueryData data) {
--		return new DefaultAskQueryLogic(data);
--	}
--
--	/**
--	 * Gets the default describe query logic.
--	 * 
--	 * @param data the data containing the query constraint and transformations
--	 * @return the logic handling the describe query
--	 */
--	public DescribeQueryLogic getDescribeQueryLogic(DescribeQueryData data) {
--		return new DefaultDescribeQueryLogic(data, new StreamedSetProjectionLogic(), new StreamedSetRangeLogic());
--	}
--
--	/**
--	 * Gets the default select query logic.
--	 * 
--	 * @param data the data containing the query constraint and transformations
--	 * @param logic the logic used to do the set projection
--	 * @return the logic handling the select query
--	 */
--	public SelectQueryLogic getSelectQueryLogic(SelectQueryData data) {
--		List variables = data.getQueryVariables();
--		for (Iterator vars = variables.iterator(); vars.hasNext();) {
--			if (!(vars.next() instanceof Variable)) {
--				throw new QueryException("Logic does not support expressions in select projection");
--			}
--		}
--		return new DefaultSelectQueryLogic(data, new StreamedSetProjectionLogic(), new IndexedSetDistinctionLogic(),
--				new StreamedSetRangeLogic());
--	}
--
--	/**
--	 * Gets the default FILTER constraint logic.
--	 * 
--	 * @param data the data containing the expression to evaluate per row
--	 * @return the logic handling the FILTER constraint
--	 */
--	public ConstraintLogic getFilterConstraintLogic(FilterConstraintData data, SPARQLValueFactory valueFactory) {
--		return new StreamedFilterConstraintLogic(data, getEffectiveBooleanLogic(valueFactory),
--				getValueConversionLogic(valueFactory));
--	}
--
--	/**
--	 * Gets the default GRAPH constraint logic.
--	 * 
--	 * @param data the data containing the group constraint and graph binding
--	 * @return the logic handling the GRAPH constraint
--	 */
--	public ConstraintLogic getGraphConstraintLogic(GraphConstraintData data) {
--		return new StreamedGraphConstraintLogic(data, new StreamedSetUnionLogic());
--	}
--
--	/**
--	 * Gets the default group constraint logic.
--	 * 
--	 * @param data the data containing the sub constraints
--	 * @return the logic handling the group constraint
--	 */
--	public ConstraintLogic getGroupConstraintLogic(GroupConstraintData data) {
--		return new DefaultGroupConstraintLogic(data, new IndexedSetIntersectLogic(), new DefaultIntersectOrderLogic(
--				new IndexedSetIntersectLogic()));
--	}
--
--	/**
--	 * Gets the default triple constraint logic.
--	 * 
--	 * @param data the data containing the unbound statement to match from the
--	 *            source
--	 * @return the logic handling the triple constraint
--	 */
--	public ConstraintLogic getTripleConstraintLogic(TripleConstraintData data) {
--		return new StreamedTripleConstraintLogic(data);
--	}
--
--	/**
--	 * Gets the default UNION constraint logic.
--	 * 
--	 * @param data the data containing the sub group constraints
--	 * @return the logic handling the UNION constraint
--	 */
--	public ConstraintLogic getUnionConstraintLogic(UnionConstraintData data) {
--		return new DefaultUnionConstraintLogic(data, new StreamedSetUnionLogic());
--	}
--
--	/**
--	 * Gets the default OPTIONAL constraint logic.
--	 * 
--	 * @param data the data containing the group constraint
--	 * @return the logic handling the OPTIONAL constraint
--	 */
--	public ConstraintLogic getOptionalConstraintLogic(OptionalConstraintData data, SPARQLValueFactory valueFactory) {
--		return new DefaultOptionalConstraintLogic(data, new IndexedSetIntersectLogic(), new DefaultIntersectOrderLogic(
--				new IndexedSetIntersectLogic()), new IndexedSetJoinLogic(getValueConversionLogic(valueFactory),
--				getEffectiveBooleanLogic(valueFactory)));
--	}
--
--	/**
--	 * Gets the logic dealing with any external function calls, including cast
--	 * constructors.
--	 * 
--	 * @param data the function data containing arguments passed to the external
--	 *            function
--	 * @return the logic handling the external function processing
--	 * @throws IllegalArgumentException if data or the name of the function is
--	 *             null
--	 * @throws QueryException if the function map doesn't contain the called
--	 *             function
--	 */
--	public ExpressionLogic getExternalFunctionLogic(CallExpressionData data, SPARQLValueFactory valueFactory) {
--		URI functionName = data.getName();
--		if (functionName == null) {
--			throw new IllegalArgumentException("External function name cannot be null");
--		}
--		if (!this.functionMap.containsKey(functionName)) {
--			throw new QueryException("Could not find loaded external function '" + functionName + "'");
--		}
--		ExternalFunctionFactory functionFactory = (ExternalFunctionFactory) this.functionMap.get(functionName);
--		ExternalFunction function = functionFactory.create(this, valueFactory);
--
--		return new ExternalFunctionLogic(data, function, valueFactory);
--	}
--
--	/**
--	 * Gets the logic for dealing with ordering data.
--	 * 
--	 * @param data the data containing the expression to order on and the
--	 *            direction
--	 * @return the logic handling the ordering of an expression
--	 */
+diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/logic/StreamedStrictLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/StreamedStrictLogic.java
+--- upstream/src/main/name/levering/ryan/sparql/logic/StreamedStrictLogic.java	2006-08-20 20:01:01.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/logic/StreamedStrictLogic.java	2006-12-02 11:17:59.000000000 -0500
+@@ -270,8 +270,8 @@
+ 	 *            direction
+ 	 * @return the logic handling the ordering of an expression
+ 	 */
 -	public OrderExpressionLogic getOrderExpressionLogic(OrderExpressionData data) {
 -		return new DefaultOrderExpressionLogic(data, getValueOrderingLogic());
--	}
--
--	/**
--	 * Allows subclasses or implementations to register implementation specific
--	 * functions to be recognized in queries.
--	 * 
--	 * @param functionIRI the IRI that uniquely identifies the function
--	 * @param functionFactory the logic that handles the function evaluation
--	 */
--	public void registerExternalFunction(URI functionIRI, ExternalFunctionFactory functionFactory) {
--		this.functionMap.put(functionIRI, functionFactory);
--	}
--
--}
-diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/model/logic/ConstraintLogic.java work-copy/src/main/name/levering/ryan/sparql/model/logic/ConstraintLogic.java
---- sparql-0.8/src/main/name/levering/ryan/sparql/model/logic/ConstraintLogic.java	2006-07-16 19:04:02.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/model/logic/ConstraintLogic.java	2006-08-01 16:54:54.000000000 -0400
++	public OrderExpressionLogic getOrderExpressionLogic(OrderExpressionData data, SPARQLValueFactory valueFactory) {
++		return new DefaultOrderExpressionLogic(data, getValueOrderingLogic(valueFactory));
+ 	}
+ 
+ 	/**
+diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/model/logic/ConstraintLogic.java work-copy/src/main/name/levering/ryan/sparql/model/logic/ConstraintLogic.java
+--- upstream/src/main/name/levering/ryan/sparql/model/logic/ConstraintLogic.java	2006-08-20 20:00:59.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/model/logic/ConstraintLogic.java	2006-12-02 11:00:47.000000000 -0500
 @@ -6,6 +6,7 @@
  package name.levering.ryan.sparql.model.logic;
  
@@ -3287,10 +2513,10 @@ diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/model/log
 +			Map knownValues, Map knownFilters);
  
  }
-diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/model/logic/LogicFactory.java work-copy/src/main/name/levering/ryan/sparql/model/logic/LogicFactory.java
---- sparql-0.8/src/main/name/levering/ryan/sparql/model/logic/LogicFactory.java	2006-07-16 19:04:04.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/model/logic/LogicFactory.java	2006-09-24 18:42:23.000000000 -0400
-@@ -61,7 +61,7 @@
+diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/model/logic/LogicFactory.java work-copy/src/main/name/levering/ryan/sparql/model/logic/LogicFactory.java
+--- upstream/src/main/name/levering/ryan/sparql/model/logic/LogicFactory.java	2006-08-20 20:00:59.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/model/logic/LogicFactory.java	2006-12-02 11:00:47.000000000 -0500
+@@ -63,7 +63,7 @@
  
  	public ConstraintLogic getOptionalConstraintLogic(OptionalConstraintData data, SPARQLValueFactory valueFactory);
  
@@ -3299,7 +2525,7 @@ diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/model/log
  
  	public ExpressionLogic getAdditionLogic(BinaryExpressionData data, SPARQLValueFactory valueFactory);
  
-@@ -117,7 +117,7 @@
+@@ -119,7 +119,7 @@
  
  	public ValueConversionLogic getValueConversionLogic(SPARQLValueFactory valueFactory);
  
@@ -3308,1144 +2534,9 @@ diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/model/log
  
  	public void registerExternalFunction(URI functionIRI, ExternalFunctionFactory functionFactory);
  
-diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/parser/JavaCharStream.java work-copy/src/main/name/levering/ryan/sparql/parser/JavaCharStream.java
---- sparql-0.8/src/main/name/levering/ryan/sparql/parser/JavaCharStream.java	2006-07-16 19:04:04.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/parser/JavaCharStream.java	2006-08-02 07:50:24.000000000 -0400
-@@ -1,547 +1,584 @@
--/* Generated By:JavaCC: Do not edit this line. JavaCharStream.java Version 3.0 */
--package name.levering.ryan.sparql.parser;
--
--/**
-- * An implementation of interface CharStream, where the stream is assumed to
-- * contain only ASCII characters (with java-like unicode escape processing).
-- */
--
--public class JavaCharStream
--{
--  public static final boolean staticFlag = false;
--  static final int hexval(char c) throws java.io.IOException {
--    switch(c)
--    {
--       case '0' :
--          return 0;
--       case '1' :
--          return 1;
--       case '2' :
--          return 2;
--       case '3' :
--          return 3;
--       case '4' :
--          return 4;
--       case '5' :
--          return 5;
--       case '6' :
--          return 6;
--       case '7' :
--          return 7;
--       case '8' :
--          return 8;
--       case '9' :
--          return 9;
--
--       case 'a' :
--       case 'A' :
--          return 10;
--       case 'b' :
--       case 'B' :
--          return 11;
--       case 'c' :
--       case 'C' :
--          return 12;
--       case 'd' :
--       case 'D' :
--          return 13;
--       case 'e' :
--       case 'E' :
--          return 14;
--       case 'f' :
--       case 'F' :
--          return 15;
--    }
--
--    throw new java.io.IOException(); // Should never come here
--  }
--
--  public int bufpos = -1;
--  int bufsize;
--  int available;
--  int tokenBegin;
--  protected int bufline[];
--  protected int bufcolumn[];
--
--  protected int column = 0;
--  protected int line = 1;
--
--  protected boolean prevCharIsCR = false;
--  protected boolean prevCharIsLF = false;
--
--  protected java.io.Reader inputStream;
--
--  protected char[] nextCharBuf;
--  protected char[] buffer;
--  protected int maxNextCharInd = 0;
--  protected int nextCharInd = -1;
--  protected int inBuf = 0;
--
--  protected void ExpandBuff(boolean wrapAround)
--  {
--     char[] newbuffer = new char[bufsize + 2048];
--     int newbufline[] = new int[bufsize + 2048];
--     int newbufcolumn[] = new int[bufsize + 2048];
--
--     try
--     {
--        if (wrapAround)
--        {
--           System.arraycopy(buffer, tokenBegin, newbuffer, 0, bufsize - tokenBegin);
--           System.arraycopy(buffer, 0, newbuffer,
--                                             bufsize - tokenBegin, bufpos);
--           buffer = newbuffer;
--
--           System.arraycopy(bufline, tokenBegin, newbufline, 0, bufsize - tokenBegin);
--           System.arraycopy(bufline, 0, newbufline, bufsize - tokenBegin, bufpos);
--           bufline = newbufline;
--
--           System.arraycopy(bufcolumn, tokenBegin, newbufcolumn, 0, bufsize - tokenBegin);
--           System.arraycopy(bufcolumn, 0, newbufcolumn, bufsize - tokenBegin, bufpos);
--           bufcolumn = newbufcolumn;
--
--           bufpos += (bufsize - tokenBegin);
--        }
--        else
--        {
--           System.arraycopy(buffer, tokenBegin, newbuffer, 0, bufsize - tokenBegin);
--           buffer = newbuffer;
--
--           System.arraycopy(bufline, tokenBegin, newbufline, 0, bufsize - tokenBegin);
--           bufline = newbufline;
--
--           System.arraycopy(bufcolumn, tokenBegin, newbufcolumn, 0, bufsize - tokenBegin);
--           bufcolumn = newbufcolumn;
--
--           bufpos -= tokenBegin;
--        }
--     }
--     catch (Throwable t)
--     {
--        throw new Error(t.getMessage());
--     }
--
--     available = (bufsize += 2048);
--     tokenBegin = 0;
--  }
--
--  protected void FillBuff() throws java.io.IOException
--  {
--     int i;
--     if (maxNextCharInd == 4096)
--        maxNextCharInd = nextCharInd = 0;
--
--     try {
--        if ((i = inputStream.read(nextCharBuf, maxNextCharInd,
--                                            4096 - maxNextCharInd)) == -1)
--        {
--           inputStream.close();
--           throw new java.io.IOException();
--        }
--        else
--           maxNextCharInd += i;
--        return;
--     }
--     catch(java.io.IOException e) {
--        if (bufpos != 0)
--        {
--           --bufpos;
--           backup(0);
--        }
--        else
--        {
--           bufline[bufpos] = line;
--           bufcolumn[bufpos] = column;
--        }
--        throw e;
--     }
--  }
--
--  protected char ReadByte() throws java.io.IOException
--  {
--     if (++nextCharInd >= maxNextCharInd)
--        FillBuff();
--
--     return nextCharBuf[nextCharInd];
--  }
--
--  public char BeginToken() throws java.io.IOException
--  {     
--     if (inBuf > 0)
--     {
--        --inBuf;
--
--        if (++bufpos == bufsize)
--           bufpos = 0;
--
--        tokenBegin = bufpos;
--        return buffer[bufpos];
--     }
--
--     tokenBegin = 0;
--     bufpos = -1;
--
--     return readChar();
--  }     
--
--  protected void AdjustBuffSize()
--  {
--     if (available == bufsize)
--     {
--        if (tokenBegin > 2048)
--        {
--           bufpos = 0;
--           available = tokenBegin;
--        }
--        else
--           ExpandBuff(false);
--     }
--     else if (available > tokenBegin)
--        available = bufsize;
--     else if ((tokenBegin - available) < 2048)
--        ExpandBuff(true);
--     else
--        available = tokenBegin;
--  }
--
--  protected void UpdateLineColumn(char c)
--  {
--     column++;
--
--     if (prevCharIsLF)
--     {
--        prevCharIsLF = false;
--        line += (column = 1);
--     }
--     else if (prevCharIsCR)
--     {
--        prevCharIsCR = false;
--        if (c == '\n')
--        {
--           prevCharIsLF = true;
--        }
--        else
--           line += (column = 1);
--     }
--
--     switch (c)
--     {
--        case '\r' :
--           prevCharIsCR = true;
--           break;
--        case '\n' :
--           prevCharIsLF = true;
--           break;
--        case '\t' :
--           column--;
--           column += (8 - (column & 07));
--           break;
--        default :
--           break;
--     }
--
--     bufline[bufpos] = line;
--     bufcolumn[bufpos] = column;
--  }
--
--  public char readChar() throws java.io.IOException
--  {
--     if (inBuf > 0)
--     {
--        --inBuf;
--
--        if (++bufpos == bufsize)
--           bufpos = 0;
--
--        return buffer[bufpos];
--     }
--
--     char c;
--
--     if (++bufpos == available)
--        AdjustBuffSize();
--
--     if ((buffer[bufpos] = c = ReadByte()) == '\\')
--     {
--        UpdateLineColumn(c);
--
--        int backSlashCnt = 1;
--
--        for (;;) // Read all the backslashes
--        {
--           if (++bufpos == available)
--              AdjustBuffSize();
--
--           try
--           {
--              if ((buffer[bufpos] = c = ReadByte()) != '\\')
--              {
--                 UpdateLineColumn(c);
--                 // found a non-backslash char.
--                 if ((c == 'u') && ((backSlashCnt & 1) == 1))
--                 {
--                    if (--bufpos < 0)
--                       bufpos = bufsize - 1;
--
--                    break;
--                 }
--
--                 backup(backSlashCnt);
--                 return '\\';
--              }
--           }
--           catch(java.io.IOException e)
--           {
--              if (backSlashCnt > 1)
--                 backup(backSlashCnt);
--
--              return '\\';
--           }
--
--           UpdateLineColumn(c);
--           backSlashCnt++;
--        }
--
--        // Here, we have seen an odd number of backslash's followed by a 'u'
--        try
--        {
--           while ((c = ReadByte()) == 'u')
--              ++column;
--
--           buffer[bufpos] = c = (char)(hexval(c) << 12 |
--                                       hexval(ReadByte()) << 8 |
--                                       hexval(ReadByte()) << 4 |
--                                       hexval(ReadByte()));
--
--           column += 4;
--        }
--        catch(java.io.IOException e)
--        {
--           throw new Error("Invalid escape character at line " + line +
--                                         " column " + column + ".");
--        }
--
--        if (backSlashCnt == 1)
--           return c;
--        else
--        {
--           backup(backSlashCnt - 1);
--           return '\\';
--        }
--     }
--     else
--     {
--        UpdateLineColumn(c);
--        return (c);
--     }
--  }
--
--  /**
--   * @deprecated 
--   * @see #getEndColumn
--   */
--
--  public int getColumn() {
--     return bufcolumn[bufpos];
--  }
--
--  /**
--   * @deprecated 
--   * @see #getEndLine
--   */
--
--  public int getLine() {
--     return bufline[bufpos];
--  }
--
--  public int getEndColumn() {
--     return bufcolumn[bufpos];
--  }
--
--  public int getEndLine() {
--     return bufline[bufpos];
--  }
--
--  public int getBeginColumn() {
--     return bufcolumn[tokenBegin];
--  }
--
--  public int getBeginLine() {
--     return bufline[tokenBegin];
--  }
--
--  public void backup(int amount) {
--
--    inBuf += amount;
--    if ((bufpos -= amount) < 0)
--       bufpos += bufsize;
--  }
--
--  public JavaCharStream(java.io.Reader dstream,
--                 int startline, int startcolumn, int buffersize)
--  {
--    inputStream = dstream;
--    line = startline;
--    column = startcolumn - 1;
--
--    available = bufsize = buffersize;
--    buffer = new char[buffersize];
--    bufline = new int[buffersize];
--    bufcolumn = new int[buffersize];
--    nextCharBuf = new char[4096];
--  }
--
--  public JavaCharStream(java.io.Reader dstream,
--                                        int startline, int startcolumn)
--  {
--     this(dstream, startline, startcolumn, 4096);
--  }
--
--  public JavaCharStream(java.io.Reader dstream)
--  {
--     this(dstream, 1, 1, 4096);
--  }
--  public void ReInit(java.io.Reader dstream,
--                 int startline, int startcolumn, int buffersize)
--  {
--    inputStream = dstream;
--    line = startline;
--    column = startcolumn - 1;
--
--    if (buffer == null || buffersize != buffer.length)
--    {
--      available = bufsize = buffersize;
--      buffer = new char[buffersize];
--      bufline = new int[buffersize];
--      bufcolumn = new int[buffersize];
--      nextCharBuf = new char[4096];
--    }
--    prevCharIsLF = prevCharIsCR = false;
--    tokenBegin = inBuf = maxNextCharInd = 0;
--    nextCharInd = bufpos = -1;
--  }
--
--  public void ReInit(java.io.Reader dstream,
--                                        int startline, int startcolumn)
--  {
--     ReInit(dstream, startline, startcolumn, 4096);
--  }
--
--  public void ReInit(java.io.Reader dstream)
--  {
--     ReInit(dstream, 1, 1, 4096);
--  }
--  public JavaCharStream(java.io.InputStream dstream, int startline,
--  int startcolumn, int buffersize)
--  {
--     this(new java.io.InputStreamReader(dstream), startline, startcolumn, 4096);
--  }
--
--  public JavaCharStream(java.io.InputStream dstream, int startline,
--                                                           int startcolumn)
--  {
--     this(dstream, startline, startcolumn, 4096);
--  }
--
--  public JavaCharStream(java.io.InputStream dstream)
--  {
--     this(dstream, 1, 1, 4096);
--  }
--
--  public void ReInit(java.io.InputStream dstream, int startline,
--  int startcolumn, int buffersize)
--  {
--     ReInit(new java.io.InputStreamReader(dstream), startline, startcolumn, 4096);
--  }
--  public void ReInit(java.io.InputStream dstream, int startline,
--                                                           int startcolumn)
--  {
--     ReInit(dstream, startline, startcolumn, 4096);
--  }
--  public void ReInit(java.io.InputStream dstream)
--  {
--     ReInit(dstream, 1, 1, 4096);
--  }
--
--  public String GetImage()
--  {
--     if (bufpos >= tokenBegin)
--        return new String(buffer, tokenBegin, bufpos - tokenBegin + 1);
--     else
--        return new String(buffer, tokenBegin, bufsize - tokenBegin) +
--                              new String(buffer, 0, bufpos + 1);
--  }
--
--  public char[] GetSuffix(int len)
--  {
--     char[] ret = new char[len];
--
--     if ((bufpos + 1) >= len)
--        System.arraycopy(buffer, bufpos - len + 1, ret, 0, len);
--     else
--     {
--        System.arraycopy(buffer, bufsize - (len - bufpos - 1), ret, 0,
--                                                          len - bufpos - 1);
--        System.arraycopy(buffer, 0, ret, len - bufpos - 1, bufpos + 1);
--     }
--
--     return ret;
--  }
--
--  public void Done()
--  {
--     nextCharBuf = null;
--     buffer = null;
--     bufline = null;
--     bufcolumn = null;
--  }
--
--  /**
--   * Method to adjust line and column numbers for the start of a token.
--   */
--  public void adjustBeginLineColumn(int newLine, int newCol)
--  {
--     int start = tokenBegin;
--     int len;
--
--     if (bufpos >= tokenBegin)
--     {
--        len = bufpos - tokenBegin + inBuf + 1;
--     }
--     else
--     {
--        len = bufsize - tokenBegin + bufpos + 1 + inBuf;
--     }
--
--     int i = 0, j = 0, k = 0;
--     int nextColDiff = 0, columnDiff = 0;
--
--     while (i < len &&
--            bufline[j = start % bufsize] == bufline[k = ++start % bufsize])
--     {
--        bufline[j] = newLine;
--        nextColDiff = columnDiff + bufcolumn[k] - bufcolumn[j];
--        bufcolumn[j] = newCol + columnDiff;
--        columnDiff = nextColDiff;
--        i++;
--     } 
--
--     if (i < len)
--     {
--        bufline[j] = newLine++;
--        bufcolumn[j] = newCol + columnDiff;
--
--        while (i++ < len)
--        {
--           if (bufline[j = start % bufsize] != bufline[++start % bufsize])
--              bufline[j] = newLine++;
--           else
--              bufline[j] = newLine;
--        }
--     }
--
--     line = bufline[j];
--     column = bufcolumn[j];
--  }
--
--}
-+/* Generated By:JavaCC: Do not edit this line. JavaCharStream.java Version 4.0 */
-+package name.levering.ryan.sparql.parser;
-+
-+/**
-+ * An implementation of interface CharStream, where the stream is assumed to
-+ * contain only ASCII characters (with java-like unicode escape processing).
-+ */
-+
-+public class JavaCharStream
-+{
-+  public static final boolean staticFlag = false;
-+  static final int hexval(char c) throws java.io.IOException {
-+    switch(c)
-+    {
-+       case '0' :
-+          return 0;
-+       case '1' :
-+          return 1;
-+       case '2' :
-+          return 2;
-+       case '3' :
-+          return 3;
-+       case '4' :
-+          return 4;
-+       case '5' :
-+          return 5;
-+       case '6' :
-+          return 6;
-+       case '7' :
-+          return 7;
-+       case '8' :
-+          return 8;
-+       case '9' :
-+          return 9;
-+
-+       case 'a' :
-+       case 'A' :
-+          return 10;
-+       case 'b' :
-+       case 'B' :
-+          return 11;
-+       case 'c' :
-+       case 'C' :
-+          return 12;
-+       case 'd' :
-+       case 'D' :
-+          return 13;
-+       case 'e' :
-+       case 'E' :
-+          return 14;
-+       case 'f' :
-+       case 'F' :
-+          return 15;
-+    }
-+
-+    throw new java.io.IOException(); // Should never come here
-+  }
-+
-+  public int bufpos = -1;
-+  int bufsize;
-+  int available;
-+  int tokenBegin;
-+  protected int bufline[];
-+  protected int bufcolumn[];
-+
-+  protected int column = 0;
-+  protected int line = 1;
-+
-+  protected boolean prevCharIsCR = false;
-+  protected boolean prevCharIsLF = false;
-+
-+  protected java.io.Reader inputStream;
-+
-+  protected char[] nextCharBuf;
-+  protected char[] buffer;
-+  protected int maxNextCharInd = 0;
-+  protected int nextCharInd = -1;
-+  protected int inBuf = 0;
-+  protected int tabSize = 8;
-+
-+  protected void setTabSize(int i) { tabSize = i; }
-+  protected int getTabSize(int i) { return tabSize; }
-+
-+  protected void ExpandBuff(boolean wrapAround)
-+  {
-+     char[] newbuffer = new char[bufsize + 2048];
-+     int newbufline[] = new int[bufsize + 2048];
-+     int newbufcolumn[] = new int[bufsize + 2048];
-+
-+     try
-+     {
-+        if (wrapAround)
-+        {
-+           System.arraycopy(buffer, tokenBegin, newbuffer, 0, bufsize - tokenBegin);
-+           System.arraycopy(buffer, 0, newbuffer,
-+                                             bufsize - tokenBegin, bufpos);
-+           buffer = newbuffer;
-+
-+           System.arraycopy(bufline, tokenBegin, newbufline, 0, bufsize - tokenBegin);
-+           System.arraycopy(bufline, 0, newbufline, bufsize - tokenBegin, bufpos);
-+           bufline = newbufline;
-+
-+           System.arraycopy(bufcolumn, tokenBegin, newbufcolumn, 0, bufsize - tokenBegin);
-+           System.arraycopy(bufcolumn, 0, newbufcolumn, bufsize - tokenBegin, bufpos);
-+           bufcolumn = newbufcolumn;
-+
-+           bufpos += (bufsize - tokenBegin);
-+        }
-+        else
-+        {
-+           System.arraycopy(buffer, tokenBegin, newbuffer, 0, bufsize - tokenBegin);
-+           buffer = newbuffer;
-+
-+           System.arraycopy(bufline, tokenBegin, newbufline, 0, bufsize - tokenBegin);
-+           bufline = newbufline;
-+
-+           System.arraycopy(bufcolumn, tokenBegin, newbufcolumn, 0, bufsize - tokenBegin);
-+           bufcolumn = newbufcolumn;
-+
-+           bufpos -= tokenBegin;
-+        }
-+     }
-+     catch (Throwable t)
-+     {
-+        throw new Error(t.getMessage());
-+     }
-+
-+     available = (bufsize += 2048);
-+     tokenBegin = 0;
-+  }
-+
-+  protected void FillBuff() throws java.io.IOException
-+  {
-+     int i;
-+     if (maxNextCharInd == 4096)
-+        maxNextCharInd = nextCharInd = 0;
-+
-+     try {
-+        if ((i = inputStream.read(nextCharBuf, maxNextCharInd,
-+                                            4096 - maxNextCharInd)) == -1)
-+        {
-+           inputStream.close();
-+           throw new java.io.IOException();
-+        }
-+        else
-+           maxNextCharInd += i;
-+        return;
-+     }
-+     catch(java.io.IOException e) {
-+        if (bufpos != 0)
-+        {
-+           --bufpos;
-+           backup(0);
-+        }
-+        else
-+        {
-+           bufline[bufpos] = line;
-+           bufcolumn[bufpos] = column;
-+        }
-+        throw e;
-+     }
-+  }
-+
-+  protected char ReadByte() throws java.io.IOException
-+  {
-+     if (++nextCharInd >= maxNextCharInd)
-+        FillBuff();
-+
-+     return nextCharBuf[nextCharInd];
-+  }
-+
-+  public char BeginToken() throws java.io.IOException
-+  {     
-+     if (inBuf > 0)
-+     {
-+        --inBuf;
-+
-+        if (++bufpos == bufsize)
-+           bufpos = 0;
-+
-+        tokenBegin = bufpos;
-+        return buffer[bufpos];
-+     }
-+
-+     tokenBegin = 0;
-+     bufpos = -1;
-+
-+     return readChar();
-+  }     
-+
-+  protected void AdjustBuffSize()
-+  {
-+     if (available == bufsize)
-+     {
-+        if (tokenBegin > 2048)
-+        {
-+           bufpos = 0;
-+           available = tokenBegin;
-+        }
-+        else
-+           ExpandBuff(false);
-+     }
-+     else if (available > tokenBegin)
-+        available = bufsize;
-+     else if ((tokenBegin - available) < 2048)
-+        ExpandBuff(true);
-+     else
-+        available = tokenBegin;
-+  }
-+
-+  protected void UpdateLineColumn(char c)
-+  {
-+     column++;
-+
-+     if (prevCharIsLF)
-+     {
-+        prevCharIsLF = false;
-+        line += (column = 1);
-+     }
-+     else if (prevCharIsCR)
-+     {
-+        prevCharIsCR = false;
-+        if (c == '\n')
-+        {
-+           prevCharIsLF = true;
-+        }
-+        else
-+           line += (column = 1);
-+     }
-+
-+     switch (c)
-+     {
-+        case '\r' :
-+           prevCharIsCR = true;
-+           break;
-+        case '\n' :
-+           prevCharIsLF = true;
-+           break;
-+        case '\t' :
-+           column--;
-+           column += (tabSize - (column % tabSize));
-+           break;
-+        default :
-+           break;
-+     }
-+
-+     bufline[bufpos] = line;
-+     bufcolumn[bufpos] = column;
-+  }
-+
-+  public char readChar() throws java.io.IOException
-+  {
-+     if (inBuf > 0)
-+     {
-+        --inBuf;
-+
-+        if (++bufpos == bufsize)
-+           bufpos = 0;
-+
-+        return buffer[bufpos];
-+     }
-+
-+     char c;
-+
-+     if (++bufpos == available)
-+        AdjustBuffSize();
-+
-+     if ((buffer[bufpos] = c = ReadByte()) == '\\')
-+     {
-+        UpdateLineColumn(c);
-+
-+        int backSlashCnt = 1;
-+
-+        for (;;) // Read all the backslashes
-+        {
-+           if (++bufpos == available)
-+              AdjustBuffSize();
-+
-+           try
-+           {
-+              if ((buffer[bufpos] = c = ReadByte()) != '\\')
-+              {
-+                 UpdateLineColumn(c);
-+                 // found a non-backslash char.
-+                 if ((c == 'u') && ((backSlashCnt & 1) == 1))
-+                 {
-+                    if (--bufpos < 0)
-+                       bufpos = bufsize - 1;
-+
-+                    break;
-+                 }
-+
-+                 backup(backSlashCnt);
-+                 return '\\';
-+              }
-+           }
-+           catch(java.io.IOException e)
-+           {
-+              if (backSlashCnt > 1)
-+                 backup(backSlashCnt);
-+
-+              return '\\';
-+           }
-+
-+           UpdateLineColumn(c);
-+           backSlashCnt++;
-+        }
-+
-+        // Here, we have seen an odd number of backslash's followed by a 'u'
-+        try
-+        {
-+           while ((c = ReadByte()) == 'u')
-+              ++column;
-+
-+           buffer[bufpos] = c = (char)(hexval(c) << 12 |
-+                                       hexval(ReadByte()) << 8 |
-+                                       hexval(ReadByte()) << 4 |
-+                                       hexval(ReadByte()));
-+
-+           column += 4;
-+        }
-+        catch(java.io.IOException e)
-+        {
-+           throw new Error("Invalid escape character at line " + line +
-+                                         " column " + column + ".");
-+        }
-+
-+        if (backSlashCnt == 1)
-+           return c;
-+        else
-+        {
-+           backup(backSlashCnt - 1);
-+           return '\\';
-+        }
-+     }
-+     else
-+     {
-+        UpdateLineColumn(c);
-+        return (c);
-+     }
-+  }
-+
-+  /**
-+   * @deprecated 
-+   * @see #getEndColumn
-+   */
-+
-+  public int getColumn() {
-+     return bufcolumn[bufpos];
-+  }
-+
-+  /**
-+   * @deprecated 
-+   * @see #getEndLine
-+   */
-+
-+  public int getLine() {
-+     return bufline[bufpos];
-+  }
-+
-+  public int getEndColumn() {
-+     return bufcolumn[bufpos];
-+  }
-+
-+  public int getEndLine() {
-+     return bufline[bufpos];
-+  }
-+
-+  public int getBeginColumn() {
-+     return bufcolumn[tokenBegin];
-+  }
-+
-+  public int getBeginLine() {
-+     return bufline[tokenBegin];
-+  }
-+
-+  public void backup(int amount) {
-+
-+    inBuf += amount;
-+    if ((bufpos -= amount) < 0)
-+       bufpos += bufsize;
-+  }
-+
-+  public JavaCharStream(java.io.Reader dstream,
-+                 int startline, int startcolumn, int buffersize)
-+  {
-+    inputStream = dstream;
-+    line = startline;
-+    column = startcolumn - 1;
-+
-+    available = bufsize = buffersize;
-+    buffer = new char[buffersize];
-+    bufline = new int[buffersize];
-+    bufcolumn = new int[buffersize];
-+    nextCharBuf = new char[4096];
-+  }
-+
-+  public JavaCharStream(java.io.Reader dstream,
-+                                        int startline, int startcolumn)
-+  {
-+     this(dstream, startline, startcolumn, 4096);
-+  }
-+
-+  public JavaCharStream(java.io.Reader dstream)
-+  {
-+     this(dstream, 1, 1, 4096);
-+  }
-+  public void ReInit(java.io.Reader dstream,
-+                 int startline, int startcolumn, int buffersize)
-+  {
-+    inputStream = dstream;
-+    line = startline;
-+    column = startcolumn - 1;
-+
-+    if (buffer == null || buffersize != buffer.length)
-+    {
-+      available = bufsize = buffersize;
-+      buffer = new char[buffersize];
-+      bufline = new int[buffersize];
-+      bufcolumn = new int[buffersize];
-+      nextCharBuf = new char[4096];
-+    }
-+    prevCharIsLF = prevCharIsCR = false;
-+    tokenBegin = inBuf = maxNextCharInd = 0;
-+    nextCharInd = bufpos = -1;
-+  }
-+
-+  public void ReInit(java.io.Reader dstream,
-+                                        int startline, int startcolumn)
-+  {
-+     ReInit(dstream, startline, startcolumn, 4096);
-+  }
-+
-+  public void ReInit(java.io.Reader dstream)
-+  {
-+     ReInit(dstream, 1, 1, 4096);
-+  }
-+  public JavaCharStream(java.io.InputStream dstream, String encoding, int startline,
-+  int startcolumn, int buffersize) throws java.io.UnsupportedEncodingException
-+  {
-+     this(encoding == null ? new java.io.InputStreamReader(dstream) : new java.io.InputStreamReader(dstream, encoding), startline, startcolumn, buffersize);
-+  }
-+
-+  public JavaCharStream(java.io.InputStream dstream, int startline,
-+  int startcolumn, int buffersize)
-+  {
-+     this(new java.io.InputStreamReader(dstream), startline, startcolumn, 4096);
-+  }
-+
-+  public JavaCharStream(java.io.InputStream dstream, String encoding, int startline,
-+                        int startcolumn) throws java.io.UnsupportedEncodingException
-+  {
-+     this(dstream, encoding, startline, startcolumn, 4096);
-+  }
-+
-+  public JavaCharStream(java.io.InputStream dstream, int startline,
-+                        int startcolumn)
-+  {
-+     this(dstream, startline, startcolumn, 4096);
-+  }
-+
-+  public JavaCharStream(java.io.InputStream dstream, String encoding) throws java.io.UnsupportedEncodingException
-+  {
-+     this(dstream, encoding, 1, 1, 4096);
-+  }
-+
-+  public JavaCharStream(java.io.InputStream dstream)
-+  {
-+     this(dstream, 1, 1, 4096);
-+  }
-+
-+  public void ReInit(java.io.InputStream dstream, String encoding, int startline,
-+  int startcolumn, int buffersize) throws java.io.UnsupportedEncodingException
-+  {
-+     ReInit(encoding == null ? new java.io.InputStreamReader(dstream) : new java.io.InputStreamReader(dstream, encoding), startline, startcolumn, buffersize);
-+  }
-+
-+  public void ReInit(java.io.InputStream dstream, int startline,
-+  int startcolumn, int buffersize)
-+  {
-+     ReInit(new java.io.InputStreamReader(dstream), startline, startcolumn, buffersize);
-+  }
-+  public void ReInit(java.io.InputStream dstream, String encoding, int startline,
-+                     int startcolumn) throws java.io.UnsupportedEncodingException
-+  {
-+     ReInit(dstream, encoding, startline, startcolumn, 4096);
-+  }
-+  public void ReInit(java.io.InputStream dstream, int startline,
-+                     int startcolumn)
-+  {
-+     ReInit(dstream, startline, startcolumn, 4096);
-+  }
-+  public void ReInit(java.io.InputStream dstream, String encoding) throws java.io.UnsupportedEncodingException
-+  {
-+     ReInit(dstream, encoding, 1, 1, 4096);
-+  }
-+
-+  public void ReInit(java.io.InputStream dstream)
-+  {
-+     ReInit(dstream, 1, 1, 4096);
-+  }
-+
-+  public String GetImage()
-+  {
-+     if (bufpos >= tokenBegin)
-+        return new String(buffer, tokenBegin, bufpos - tokenBegin + 1);
-+     else
-+        return new String(buffer, tokenBegin, bufsize - tokenBegin) +
-+                              new String(buffer, 0, bufpos + 1);
-+  }
-+
-+  public char[] GetSuffix(int len)
-+  {
-+     char[] ret = new char[len];
-+
-+     if ((bufpos + 1) >= len)
-+        System.arraycopy(buffer, bufpos - len + 1, ret, 0, len);
-+     else
-+     {
-+        System.arraycopy(buffer, bufsize - (len - bufpos - 1), ret, 0,
-+                                                          len - bufpos - 1);
-+        System.arraycopy(buffer, 0, ret, len - bufpos - 1, bufpos + 1);
-+     }
-+
-+     return ret;
-+  }
-+
-+  public void Done()
-+  {
-+     nextCharBuf = null;
-+     buffer = null;
-+     bufline = null;
-+     bufcolumn = null;
-+  }
-+
-+  /**
-+   * Method to adjust line and column numbers for the start of a token.
-+   */
-+  public void adjustBeginLineColumn(int newLine, int newCol)
-+  {
-+     int start = tokenBegin;
-+     int len;
-+
-+     if (bufpos >= tokenBegin)
-+     {
-+        len = bufpos - tokenBegin + inBuf + 1;
-+     }
-+     else
-+     {
-+        len = bufsize - tokenBegin + bufpos + 1 + inBuf;
-+     }
-+
-+     int i = 0, j = 0, k = 0;
-+     int nextColDiff = 0, columnDiff = 0;
-+
-+     while (i < len &&
-+            bufline[j = start % bufsize] == bufline[k = ++start % bufsize])
-+     {
-+        bufline[j] = newLine;
-+        nextColDiff = columnDiff + bufcolumn[k] - bufcolumn[j];
-+        bufcolumn[j] = newCol + columnDiff;
-+        columnDiff = nextColDiff;
-+        i++;
-+     } 
-+
-+     if (i < len)
-+     {
-+        bufline[j] = newLine++;
-+        bufcolumn[j] = newCol + columnDiff;
-+
-+        while (i++ < len)
-+        {
-+           if (bufline[j = start % bufsize] != bufline[++start % bufsize])
-+              bufline[j] = newLine++;
-+           else
-+              bufline[j] = newLine;
-+        }
-+     }
-+
-+     line = bufline[j];
-+     column = bufcolumn[j];
-+  }
-+
-+}
-diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/parser/model/ASTFilterConstraint.java work-copy/src/main/name/levering/ryan/sparql/parser/model/ASTFilterConstraint.java
---- sparql-0.8/src/main/name/levering/ryan/sparql/parser/model/ASTFilterConstraint.java	2006-07-16 19:04:06.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/parser/model/ASTFilterConstraint.java	2006-08-01 12:53:24.000000000 -0400
+diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/parser/model/ASTFilterConstraint.java work-copy/src/main/name/levering/ryan/sparql/parser/model/ASTFilterConstraint.java
+--- upstream/src/main/name/levering/ryan/sparql/parser/model/ASTFilterConstraint.java	2006-08-20 20:01:00.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/parser/model/ASTFilterConstraint.java	2006-12-02 11:00:47.000000000 -0500
 @@ -4,6 +4,7 @@
  
  import java.util.Collection;
@@ -4465,9 +2556,9 @@ diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/parser/mo
      }
  
      public Set getVariables() {
-diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/parser/model/ASTGraphConstraint.java work-copy/src/main/name/levering/ryan/sparql/parser/model/ASTGraphConstraint.java
---- sparql-0.8/src/main/name/levering/ryan/sparql/parser/model/ASTGraphConstraint.java	2006-07-16 19:04:02.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/parser/model/ASTGraphConstraint.java	2006-08-01 12:52:10.000000000 -0400
+diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/parser/model/ASTGraphConstraint.java work-copy/src/main/name/levering/ryan/sparql/parser/model/ASTGraphConstraint.java
+--- upstream/src/main/name/levering/ryan/sparql/parser/model/ASTGraphConstraint.java	2006-08-20 20:01:00.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/parser/model/ASTGraphConstraint.java	2006-12-02 11:00:47.000000000 -0500
 @@ -3,6 +3,7 @@
  package name.levering.ryan.sparql.parser.model;
  
@@ -4487,9 +2578,9 @@ diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/parser/mo
      }
  
      public Set getVariables() {
-diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/parser/model/ASTGroupConstraint.java work-copy/src/main/name/levering/ryan/sparql/parser/model/ASTGroupConstraint.java
---- sparql-0.8/src/main/name/levering/ryan/sparql/parser/model/ASTGroupConstraint.java	2006-07-16 19:04:04.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/parser/model/ASTGroupConstraint.java	2006-08-01 12:52:27.000000000 -0400
+diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/parser/model/ASTGroupConstraint.java work-copy/src/main/name/levering/ryan/sparql/parser/model/ASTGroupConstraint.java
+--- upstream/src/main/name/levering/ryan/sparql/parser/model/ASTGroupConstraint.java	2006-08-20 20:01:00.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/parser/model/ASTGroupConstraint.java	2006-12-02 11:00:47.000000000 -0500
 @@ -6,6 +6,7 @@
  import java.util.Collection;
  import java.util.HashSet;
@@ -4510,9 +2601,9 @@ diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/parser/mo
      }
  
      public Set getVariables() {
-diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/parser/model/ASTLiteral.java work-copy/src/main/name/levering/ryan/sparql/parser/model/ASTLiteral.java
---- sparql-0.8/src/main/name/levering/ryan/sparql/parser/model/ASTLiteral.java	2006-07-16 19:04:06.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/parser/model/ASTLiteral.java	2006-07-30 09:13:48.000000000 -0400
+diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/parser/model/ASTLiteral.java work-copy/src/main/name/levering/ryan/sparql/parser/model/ASTLiteral.java
+--- upstream/src/main/name/levering/ryan/sparql/parser/model/ASTLiteral.java	2006-08-20 20:01:00.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/parser/model/ASTLiteral.java	2006-12-02 11:00:47.000000000 -0500
 @@ -61,4 +61,15 @@
          }
      }
@@ -4529,9 +2620,9 @@ diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/parser/mo
 +			&& ((datatype == null && lit.getDatatype() == null) || (datatype != null && lit.getDatatype() != null && datatype.equals(lit.getDatatype()))); 
 +	}
  }
-diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/parser/model/ASTOptionalConstraint.java work-copy/src/main/name/levering/ryan/sparql/parser/model/ASTOptionalConstraint.java
---- sparql-0.8/src/main/name/levering/ryan/sparql/parser/model/ASTOptionalConstraint.java	2006-07-16 19:04:06.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/parser/model/ASTOptionalConstraint.java	2006-08-01 12:52:44.000000000 -0400
+diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/parser/model/ASTOptionalConstraint.java work-copy/src/main/name/levering/ryan/sparql/parser/model/ASTOptionalConstraint.java
+--- upstream/src/main/name/levering/ryan/sparql/parser/model/ASTOptionalConstraint.java	2006-08-20 20:01:00.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/parser/model/ASTOptionalConstraint.java	2006-12-02 11:00:47.000000000 -0500
 @@ -3,6 +3,7 @@
  package name.levering.ryan.sparql.parser.model;
  
@@ -4551,9 +2642,9 @@ diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/parser/mo
      }
  
      public Set getVariables() {
-diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/parser/model/ASTUnionConstraint.java work-copy/src/main/name/levering/ryan/sparql/parser/model/ASTUnionConstraint.java
---- sparql-0.8/src/main/name/levering/ryan/sparql/parser/model/ASTUnionConstraint.java	2006-07-16 19:04:04.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/parser/model/ASTUnionConstraint.java	2006-08-01 12:52:55.000000000 -0400
+diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/parser/model/ASTUnionConstraint.java work-copy/src/main/name/levering/ryan/sparql/parser/model/ASTUnionConstraint.java
+--- upstream/src/main/name/levering/ryan/sparql/parser/model/ASTUnionConstraint.java	2006-08-20 20:01:00.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/parser/model/ASTUnionConstraint.java	2006-12-02 11:00:47.000000000 -0500
 @@ -6,6 +6,7 @@
  import java.util.Collection;
  import java.util.HashSet;
@@ -4573,9 +2664,9 @@ diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/parser/mo
      }
  
      public Set getVariables() {
-diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/parser/model/ASTWithExtension.java work-copy/src/main/name/levering/ryan/sparql/parser/model/ASTWithExtension.java
---- sparql-0.8/src/main/name/levering/ryan/sparql/parser/model/ASTWithExtension.java	2006-07-16 19:04:02.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/parser/model/ASTWithExtension.java	2006-08-01 12:48:48.000000000 -0400
+diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/parser/model/ASTWithExtension.java work-copy/src/main/name/levering/ryan/sparql/parser/model/ASTWithExtension.java
+--- upstream/src/main/name/levering/ryan/sparql/parser/model/ASTWithExtension.java	2006-08-20 20:01:00.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/parser/model/ASTWithExtension.java	2006-12-02 11:00:47.000000000 -0500
 @@ -6,6 +6,7 @@
  import java.util.Collections;
  import java.util.List;
@@ -4595,9 +2686,9 @@ diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/parser/mo
      }
  
      public URI getName() {
-diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/parser/model/DelegatingTripleConstraint.java work-copy/src/main/name/levering/ryan/sparql/parser/model/DelegatingTripleConstraint.java
---- sparql-0.8/src/main/name/levering/ryan/sparql/parser/model/DelegatingTripleConstraint.java	2006-07-16 19:04:02.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/parser/model/DelegatingTripleConstraint.java	2006-08-01 12:25:56.000000000 -0400
+diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/parser/model/DelegatingTripleConstraint.java work-copy/src/main/name/levering/ryan/sparql/parser/model/DelegatingTripleConstraint.java
+--- upstream/src/main/name/levering/ryan/sparql/parser/model/DelegatingTripleConstraint.java	2006-08-20 20:01:00.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/parser/model/DelegatingTripleConstraint.java	2006-12-02 11:00:47.000000000 -0500
 @@ -7,6 +7,7 @@
  
  import java.util.Collection;
@@ -4624,18 +2715,9 @@ diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/parser/mo
 -
 +	
  }
-diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/parser/model/JJTSPARQLParserState.java work-copy/src/main/name/levering/ryan/sparql/parser/model/JJTSPARQLParserState.java
---- sparql-0.8/src/main/name/levering/ryan/sparql/parser/model/JJTSPARQLParserState.java	2006-08-01 11:34:51.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/parser/model/JJTSPARQLParserState.java	2006-08-01 11:46:36.000000000 -0400
-@@ -1,4 +1,4 @@
--/* Generated By:JJTree: Do not edit this line. /home/tauberer/dev/semweb/sparql/sparql-0.8/src/main/name/levering/ryan/sparql/parser/model/JJTSPARQLParserState.java */
-+/* Generated By:JJTree: Do not edit this line. /home/tauberer/dev/semweb/sparql/work-copy/src/main/name/levering/ryan/sparql/parser/model/JJTSPARQLParserState.java */
- 
- package name.levering.ryan.sparql.parser.model;
- 
-diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/parser/model/OrderExpressionNode.java work-copy/src/main/name/levering/ryan/sparql/parser/model/OrderExpressionNode.java
---- sparql-0.8/src/main/name/levering/ryan/sparql/parser/model/OrderExpressionNode.java	2006-07-16 19:04:06.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/parser/model/OrderExpressionNode.java	2006-09-24 18:46:19.000000000 -0400
+diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/parser/model/OrderExpressionNode.java work-copy/src/main/name/levering/ryan/sparql/parser/model/OrderExpressionNode.java
+--- upstream/src/main/name/levering/ryan/sparql/parser/model/OrderExpressionNode.java	2006-08-20 20:01:00.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/parser/model/OrderExpressionNode.java	2006-12-02 11:00:47.000000000 -0500
 @@ -31,6 +31,6 @@
      }
  
@@ -4644,92 +2726,17 @@ diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/parser/mo
 +        this.logic = binder.getLogicFactory().getOrderExpressionLogic(this, binder.getValueFactory());
      }
  }
-diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/parser/model/SPARQLParserTreeConstants.java work-copy/src/main/name/levering/ryan/sparql/parser/model/SPARQLParserTreeConstants.java
---- sparql-0.8/src/main/name/levering/ryan/sparql/parser/model/SPARQLParserTreeConstants.java	2006-08-01 11:35:04.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/parser/model/SPARQLParserTreeConstants.java	2006-08-02 07:55:57.000000000 -0400
+diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/parser/model/SPARQLParserTreeConstants.java work-copy/src/main/name/levering/ryan/sparql/parser/model/SPARQLParserTreeConstants.java
+--- upstream/src/main/name/levering/ryan/sparql/parser/model/SPARQLParserTreeConstants.java	2006-12-02 11:30:46.000000000 -0500
++++ work-copy/src/main/name/levering/ryan/sparql/parser/model/SPARQLParserTreeConstants.java	2006-12-02 10:52:04.000000000 -0500
 @@ -1,4 +1,4 @@
--/* Generated By:JJTree: Do not edit this line. /home/tauberer/dev/semweb/sparql/sparql-0.8/src/main/name/levering/ryan/sparql/parser/model/SPARQLParserTreeConstants.java */
-+/* Generated By:JJTree: Do not edit this line. /home/tauberer/dev/semweb/sparql/work-copy/src/main/name/levering/ryan/sparql/parser/model/SPARQLParserTreeConstants.java */
+-/* Generated By:JJTree: Do not edit this line. /home/tauberer/dev/semweb/sparql/upstream/src/main/name/levering/ryan/sparql/parser/model/SPARQLParserTreeConstants.java */
++/* Generated By:JJTree: Do not edit this line. /home/tauberer/dev/semweb/sparql/src/src/main/name/levering/ryan/sparql/parser/model/SPARQLParserTreeConstants.java */
  
  package name.levering.ryan.sparql.parser.model;
  
-diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/parser/SPARQLParser.java work-copy/src/main/name/levering/ryan/sparql/parser/SPARQLParser.java
---- sparql-0.8/src/main/name/levering/ryan/sparql/parser/SPARQLParser.java	2006-08-01 11:35:06.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/parser/SPARQLParser.java	2006-08-02 07:55:59.000000000 -0400
-@@ -4158,7 +4158,10 @@
-   private int jj_gc = 0;
- 
-   public SPARQLParser(java.io.InputStream stream) {
--    jj_input_stream = new JavaCharStream(stream, 1, 1);
-+     this(stream, null);
-+  }
-+  public SPARQLParser(java.io.InputStream stream, String encoding) {
-+    try { jj_input_stream = new JavaCharStream(stream, encoding, 1, 1); } catch(java.io.UnsupportedEncodingException e) { throw new RuntimeException(e); }
-     token_source = new SPARQLParserTokenManager(jj_input_stream);
-     token = new Token();
-     jj_ntk = -1;
-@@ -4168,7 +4171,10 @@
-   }
- 
-   public void ReInit(java.io.InputStream stream) {
--    jj_input_stream.ReInit(stream, 1, 1);
-+     ReInit(stream, null);
-+  }
-+  public void ReInit(java.io.InputStream stream, String encoding) {
-+    try { jj_input_stream.ReInit(stream, encoding, 1, 1); } catch(java.io.UnsupportedEncodingException e) { throw new RuntimeException(e); }
-     token_source.ReInit(jj_input_stream);
-     token = new Token();
-     jj_ntk = -1;
-@@ -4374,6 +4380,7 @@
-   final private void jj_rescan_token() {
-     jj_rescan = true;
-     for (int i = 0; i < 4; i++) {
-+    try {
-       JJCalls p = jj_2_rtns[i];
-       do {
-         if (p.gen > jj_gen) {
-@@ -4387,6 +4394,7 @@
-         }
-         p = p.next;
-       } while (p != null);
-+      } catch(LookaheadSuccess ls) { }
-     }
-     jj_rescan = false;
-   }
-diff -urN --exclude=.svn sparql-0.8/src/main/name/levering/ryan/sparql/parser/SPARQLParserTokenManager.java work-copy/src/main/name/levering/ryan/sparql/parser/SPARQLParserTokenManager.java
---- sparql-0.8/src/main/name/levering/ryan/sparql/parser/SPARQLParserTokenManager.java	2006-08-01 11:35:06.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/parser/SPARQLParserTokenManager.java	2006-08-02 07:55:59.000000000 -0400
-@@ -3460,14 +3460,12 @@
- int jjimageLen;
- int lengthOfMatch;
- protected char curChar;
--public SPARQLParserTokenManager(JavaCharStream stream)
--{
-+public SPARQLParserTokenManager(JavaCharStream stream){
-    if (JavaCharStream.staticFlag)
-       throw new Error("ERROR: Cannot use a static CharStream class with a non-static lexical analyzer.");
-    input_stream = stream;
- }
--public SPARQLParserTokenManager(JavaCharStream stream, int lexState)
--{
-+public SPARQLParserTokenManager(JavaCharStream stream, int lexState){
-    this(stream);
-    SwitchTo(lexState);
- }
-@@ -3648,9 +3646,8 @@
-    {
-       case 10 :
-          if (image == null)
--            image = new StringBuffer(new String(input_stream.GetSuffix(jjimageLen + (lengthOfMatch = jjmatchedPos + 1))));
--         else
--            image.append(input_stream.GetSuffix(jjimageLen + (lengthOfMatch = jjmatchedPos + 1)));
-+            image = new StringBuffer();
-+         image.append(input_stream.GetSuffix(jjimageLen + (lengthOfMatch = jjmatchedPos + 1)));
-            input_stream.backup(1);
-          break;
-       default :
-diff -urN --exclude=.svn sparql-0.8/src/tests/Creator.java work-copy/src/tests/Creator.java
---- sparql-0.8/src/tests/Creator.java	1969-12-31 19:00:00.000000000 -0500
+diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/tests/Creator.java work-copy/src/tests/Creator.java
+--- upstream/src/tests/Creator.java	1969-12-31 19:00:00.000000000 -0500
 +++ work-copy/src/tests/Creator.java	2006-07-30 09:08:08.000000000 -0400
 @@ -0,0 +1,38 @@
 +import java.io.FileWriter;
@@ -4770,4 +2777,3 @@ diff -urN --exclude=.svn sparql-0.8/src/tests/Creator.java work-copy/src/tests/C
 +    }
 +
 +}
-Binary files sparql-0.8/temp/lib/sparql-core.jar and work-copy/temp/lib/sparql-core.jar differ

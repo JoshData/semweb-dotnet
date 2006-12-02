@@ -751,7 +751,7 @@ namespace SemWeb.Query {
 		}
 		
 		class RdfGroupLogic : name.levering.ryan.sparql.logic.AdvancedGroupConstraintLogic {
-		    public RdfGroupLogic(name.levering.ryan.sparql.model.data.GroupConstraintData data, name.levering.ryan.sparql.model.logic.SetIntersectLogic logic)
+		    public RdfGroupLogic(name.levering.ryan.sparql.model.data.GroupConstraintData data, name.levering.ryan.sparql.model.logic.helper.SetIntersectLogic logic)
 		    	: base(data, logic) {
 		    }
 		    

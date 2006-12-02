@@ -1,3 +1,10 @@
+	* sparql-core.dll: Updated to latest upstream version in the
+	  SF repository.
+	* MySQLStore is now built against MySQL Connector by default,
+	  instead of the ByteFX library.  Put it in the lib directory.
+
+2006-12-02 Version 0.80
+
 	Big changes and new features:
 	* GraphMatch.cs: GraphMatch class completely reimplemented.
 	  The code is much, much shorter and cleaner now.

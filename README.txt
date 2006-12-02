@@ -20,8 +20,9 @@ compile. You'll need to reference System.XML, and if you include Sparql.cs,
 then sparql-core.dll and the IKVM assemblies in the bin directory.
 
 If you include the MySQL and SQLite .cs files, you'll need to reference 
-Mono's ByteFx and Sqlite Client assemblies (see www.mono-project.com).  
-Otherwise just leave out those .cs files.
+MySQL's MySql.Data.dll and Sqlite Client assemblies (see www.mono-project.com).  
+Otherwise just leave out those .cs files.  Put MySql.Data.dll in a "lib"
+directory within the SemWeb directory.
 
 IMPORTED FILES FROM OTHER PROJECTS & CREDITS
 --------------------------------------------
