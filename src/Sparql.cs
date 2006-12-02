@@ -801,8 +801,12 @@ namespace SemWeb.Query {
 		    			}
 		    		}
 		    		
+		    		if (!qs.MetaQuery(graph, opts).QuerySupported)
+		    			return null; // TODO: We could also check if any part has NoData, we can abandon the query entirely 
+		    		
 		    		QueryResultBuilder builder = new QueryResultBuilder();
 		    		builder.varMap = varMap2;
+		    		builder.source = s;
 		    		qs.Query(graph, opts, builder);
 		    		return builder.bindings;
 		    	}
@@ -812,6 +816,7 @@ namespace SemWeb.Query {
 		    
 		    class QueryResultBuilder : QueryResultSink {
 		    	public Hashtable varMap;
+		    	public RdfSourceWrapper source;
 		    	public RdfBindingSetImpl bindings;
 		    	
 				public override void Init(VariableBinding[] variables, bool distinct, bool ordered) {
@@ -836,6 +841,7 @@ namespace SemWeb.Query {
 				}
 
 				public override void AddComments(string comments) {
+					source.Log(comments);
 				}
 		    }
 		    

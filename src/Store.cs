@@ -291,6 +291,42 @@ namespace SemWeb {
 			resource.SetResourceKey(this, value);
 		}
 		
+		public virtual SemWeb.Query.MetaQueryResult MetaQuery(Statement[] graph, SemWeb.Query.QueryOptions options) {
+			SemWeb.Query.MetaQueryResult ret = new SemWeb.Query.MetaQueryResult();
+			
+			ret.QuerySupported = true;
+			ret.IsDefaultImplementation = true;
+			
+			ret.NoData = new bool[graph.Length];
+			for (int i = 0; i < graph.Length; i++) {
+				for (int j = 0; j < 4; j++) {
+					Resource r = graph[i].GetComponent(j);
+					
+					if (r != null && !(r is Variable) && !Contains(r))
+						ret.NoData[i] = true;
+					
+					if (r != null && r is Variable && options.VariableKnownValues != null && options.VariableKnownValues[(Variable)r] != null) {
+						bool found = false;
+						#if !DOTNET2
+						foreach (Resource s in (ICollection)options.VariableKnownValues[(Variable)r]) {
+						#else
+						foreach (Resource s in (ICollection<Resource>)options.VariableKnownValues[(Variable)r]) {
+						#endif
+							if (Contains(s)) {
+								found = true;
+								break;
+							}
+						}
+						if (!found) {
+							ret.NoData[i] = true;
+						}
+					}
+				}
+			}
+			
+			return ret;
+		}
+		
 		public virtual void Query(Statement[] graph, SemWeb.Query.QueryOptions options, SemWeb.Query.QueryResultSink sink) {
 			SemWeb.Query.GraphMatch q = new SemWeb.Query.GraphMatch();
 			foreach (Statement s in graph)
@@ -643,6 +679,13 @@ namespace SemWeb.Stores {
 		public void Select(SelectFilter filter, StatementSink sink) {
 			output.WriteLine("SELECT: " + filter);
 			source.Select(filter, sink);
+		}
+
+		public virtual SemWeb.Query.MetaQueryResult MetaQuery(Statement[] graph, SemWeb.Query.QueryOptions options) {
+			if (source is QueryableSource)
+				return ((QueryableSource)source).MetaQuery(graph, options);
+			else
+				return new SemWeb.Query.MetaQueryResult(); // QuerySupported is by default false
 		}
 
 		public void Query(Statement[] graph, SemWeb.Query.QueryOptions options, SemWeb.Query.QueryResultSink sink) {

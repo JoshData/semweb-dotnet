@@ -381,13 +381,36 @@ namespace SemWeb.Inference {
 				}
 			}
 		}
+		
+		public SemWeb.Query.MetaQueryResult MetaQuery(Statement[] graph, SemWeb.Query.QueryOptions options) {
+			if (!(data is QueryableSource))
+				return new SemWeb.Query.MetaQueryResult();
+			
+			Statement[] graph2;
+			SemWeb.Query.QueryOptions options2;
+			RewriteGraph(graph, options, out graph2, out options2, null);
+			
+			return ((QueryableSource)data).MetaQuery(graph2, options2);
+		}
 
 		public void Query(Statement[] graph, SemWeb.Query.QueryOptions options, SemWeb.Query.QueryResultSink sink) {
 			if (!(data is QueryableSource))
 				throw new NotSupportedException("Underlying source " + data + " is not a QueryableSource.");
+			
+			Statement[] graph2;
+			SemWeb.Query.QueryOptions options2;
+			RewriteGraph(graph, options, out graph2, out options2, sink);
+			
+			// TODO: Because we add variables to the query when we replace things with closures,
+			// we should filter the query results so we don't pass back the bindings for those
+			// variables to the caller.
 		
-			Statement[] graph2 = new Statement[graph.Length];
-			SemWeb.Query.QueryOptions options2 = new SemWeb.Query.QueryOptions();
+			((QueryableSource)data).Query(graph2, options2, sink);
+		}
+
+		void RewriteGraph(Statement[] graph, SemWeb.Query.QueryOptions options, out Statement[] graph2, out SemWeb.Query.QueryOptions options2, SemWeb.Query.QueryResultSink sink) {
+			graph2 = new Statement[graph.Length];
+			options2 = new SemWeb.Query.QueryOptions();
 			
 			options2.DistinguishedVariables = options.DistinguishedVariables;
 			options2.Limit = options.Limit;
@@ -401,18 +424,27 @@ namespace SemWeb.Inference {
 				ResSet pred = GetQueryRes(graph[i], 1, options);
 				ResSet obj = GetQueryRes(graph[i], 2, options);
 				
-				if (pred.Count > 0)
-					SetQueryRes(ref graph2[i], 1, options2, GetClosure(pred, subprops));
+				if (pred.Count == 1 && pred.Contains(type)) {
+					// in an ?x rdf:type ___ query, replace ___ with the subclass closure of ___.
+					if (obj.Count > 0) {
+						Entity[] sc = GetClosure(obj, subclasses);
+						if (sc.Length != obj.Count && sink != null)
+							sink.AddComments("Expanding object of " + graph[i] + " with subclass closure to [" + ToString(sc) + "]");
+						SetQueryRes(ref graph2[i], 2, options2, sc);
+					}
+				}
 				
-				if (pred.Count != 1) continue;
-				
-				if (pred.Contains(type)) {
-					if (obj.Count > 0)
-						SetQueryRes(ref graph2[i], 2, options2, GetClosure(obj, subclasses));
+				// expand properties into subproperties after the above tests,
+				// because we want to be sure the property was originally
+				// just one of the recognized properties
+
+				if (pred.Count > 0) {
+					Entity[] pc = GetClosure(pred, subprops);
+					SetQueryRes(ref graph2[i], 1, options2, pc);
+					if (pc.Length != pred.Count && sink != null)
+						sink.AddComments("Expanding predicate of " + graph[i] + " with subproperty closure to [" + ToString(pc) + "]");
 				}
 			}
-		
-			((QueryableSource)data).Query(graph2, options2, sink);
 		}
 
 		ResSet GetQueryRes(Statement s, int i, SemWeb.Query.QueryOptions options) {
@@ -434,6 +466,7 @@ namespace SemWeb.Inference {
 		}
 		
 		void SetQueryRes(ref Statement s, int i, SemWeb.Query.QueryOptions options, Entity[] values) {
+			// TODO: what if s had originally a variable in position i?
 			if (values.Length == 0)
 				s.SetComponent(i, null);
 			else if (values.Length == 1)
@@ -443,6 +476,13 @@ namespace SemWeb.Inference {
 				s.SetComponent(i, v);
 				options.VariableKnownValues[v] = values;
 			}
+		}
+		
+		string ToString(Entity[] ents) {
+			string[] names = new string[ents.Length];
+			for (int i = 0; i < ents.Length; i++)
+				names[i] = ents[i].ToString();
+			return String.Join(" , ", names);
 		}
 	}
 

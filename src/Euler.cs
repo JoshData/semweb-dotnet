@@ -61,6 +61,12 @@ namespace SemWeb.Inference {
 			}
 		}
 		
+		public SemWeb.Query.MetaQueryResult MetaQuery(Statement[] graph, SemWeb.Query.QueryOptions options) {
+			SemWeb.Query.MetaQueryResult ret = new SemWeb.Query.MetaQueryResult();
+			ret.QuerySupported = true;
+			return ret;
+		}
+		
 		public void Query(Statement[] graph, SemWeb.Query.QueryOptions options, SemWeb.Query.QueryResultSink sink) {
 			ArrayList evidence = prove(rules, world, SelectFilter.FromGraph(graph), -1);
 			if (evidence == null)

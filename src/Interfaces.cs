@@ -18,6 +18,7 @@ namespace SemWeb {
 	}
 
 	public interface QueryableSource : SelectableSource {
+		SemWeb.Query.MetaQueryResult MetaQuery(Statement[] graph, SemWeb.Query.QueryOptions options);
 		void Query(Statement[] graph, SemWeb.Query.QueryOptions options, SemWeb.Query.QueryResultSink sink);
 	}
 	

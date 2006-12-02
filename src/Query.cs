@@ -28,6 +28,13 @@ namespace SemWeb.Query {
 		#endif
 	}
 	
+	public struct MetaQueryResult {
+		public bool QuerySupported;
+		public bool[] NoData;
+		public bool[] IsDefinitive;
+		public bool IsDefaultImplementation;
+	}
+	
 
 	public class QueryFormatException : ApplicationException {
 		public QueryFormatException(string message) : base(message) { }

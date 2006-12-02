@@ -1,20 +1,24 @@
-	Major changes:
+	Big changes and new features:
 	* GraphMatch.cs: GraphMatch class completely reimplemented.
 	  The code is much, much shorter and cleaner now.
 	* RDFS.cs: The RDFS class now implements QueryableSource,
 	  which means SPARQL queries over rdfs-wrapped data sources
 	  can now take advantage of the base data source's
 	  query optimizations (as in the SQLStore).  The implementation
-	  in RDFS doesn't cover all of RDFS yet.
-	* Sparql: DESCRIBE without WHERE clause threw exception.
-	* MultiStore: Close() should close any underlying stores.
+	  in RDFS doesn't cover all of RDFS yet, though.
 	* RdfXmlReader: Load namespace declarations from the
-	  document element early so that the namespaces can be
+	  document element early (in constructor) so that the namespaces can be
 	  read off before streaming the statements begins.
-	* Store.cs: Split off the main interface types out of Store.cs
-	  into Interfaces.cs.
 	* Store.cs: Implement QueryableSource and provide a default
 	  implementation of Query using the GraphMatch class.
+	* The QueryableSource interface gets a new method MetaQuery
+	  which is used to cheaply determine how the Query method
+	  will be performed.
+	Bugs and code cleanup:
+	* Sparql: DESCRIBE without WHERE clause threw exception.
+	* MultiStore: Close() should close any underlying stores.
+	* Store.cs: Split off the main interface types out of Store.cs
+	  into Interfaces.cs.
 	* Store.cs: When compiling with the DOTNET2 flag, only
 	  use generic collections.  Code cleanup.
 

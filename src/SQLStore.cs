@@ -1040,6 +1040,12 @@ namespace SemWeb.Stores {
 			} // lock
 		}
 		
+		public override SemWeb.Query.MetaQueryResult MetaQuery(Statement[] graph, SemWeb.Query.QueryOptions options) {
+			SemWeb.Query.MetaQueryResult ret = base.MetaQuery(graph, options);
+			ret.IsDefaultImplementation = false;
+			return ret;
+		}
+		
 		public override void Query(Statement[] graph, SemWeb.Query.QueryOptions options, SemWeb.Query.QueryResultSink sink) {
 			if (graph.Length == 0) throw new ArgumentException("graph array must have at least one element");
 			

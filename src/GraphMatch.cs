@@ -125,6 +125,18 @@ namespace SemWeb.Query {
 			foreach (Statement s in graph) {
 				// Get the statements in the target model that match this aspect of the query graph.
 				
+				// get a list of values already found for each variable
+				System.Collections.Hashtable foundValues = new System.Collections.Hashtable();
+				foreach (Variable v in bindings.Variables)
+					foundValues[v] = new ResSet();
+				foreach (VariableBinding[] row in bindings.Rows) {
+					if (row == null) continue; // null in first round
+					foreach (VariableBinding b in row)
+						((ResSet)foundValues[b.Variable]).Add(b.Target);
+				}
+				foreach (Variable v in bindings.Variables)
+						foundValues[v] = ((ResSet)foundValues[v]).ToArray();
+				
 				// get a list of variables in this statement;
 				// the filter will have null components for variables, except
 				// for variables with known values, we plug those values in
@@ -138,14 +150,18 @@ namespace SemWeb.Query {
 						
 						vars.Add(v);
 						
-						if (!knownValues.ContainsKey(v)) {
+						Resource[] values = (Resource[])foundValues[v];
+						if (values == null)
+							values = (Resource[])knownValues[v];
+						
+						if (values == null) {
 							f.SetComponent(i, null);
 						} else if (i != 2) {
 							bool fail = false;
-							f.SetComponent(i, ToEntArray((Resource[])knownValues[v], ref fail));
+							f.SetComponent(i, ToEntArray(values, ref fail));
 							if (fail) return;
 						} else {
-							f.SetComponent(i, (Resource[])knownValues[v]);
+							f.SetComponent(i, values);
 						}
 					}
 				}
@@ -162,6 +178,7 @@ namespace SemWeb.Query {
 				// was lost in the SelectFilter).
 				BindingList matches = new BindingList();
 				targetModel.Select(f, new Filter(matches, s, vars));
+				result.AddComments("SELECT: " + f + " => " + matches.Count);
 				
 				// Intersect the existing bindings with the new matches.
 				
@@ -259,7 +276,6 @@ namespace SemWeb.Query {
 				}
 				
 				bindings = newbindings;
-				if (bindings.Rows.Count == 0) break; // no more would be useful
 			}
 			
 			VariableBinding[] initrow = new VariableBinding[bindings.Variables.Count];
