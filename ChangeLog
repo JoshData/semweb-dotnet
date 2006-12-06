@@ -1,7 +1,11 @@
 	* sparql-core.dll: Updated to latest upstream version in the
-	  SF repository.
+	  SourceForge repository.
 	* MySQLStore is now built against MySQL Connector by default,
 	  instead of the ByteFX library.  Put it in the lib directory.
+	* Added Visual Studio 2005 project files (thanks to Carmelo
+	  Badalamenti).
+	* Sparql.cs: Now compiles against the .NET 2.0 SemWeb.dll
+	  with the DOTNET2 precompilation flag set (in both projects).
 
 2006-12-02 Version 0.80
 
