@@ -18,6 +18,22 @@ using SemWebVariable = SemWeb.Variable;
 using SparqlVariable = name.levering.ryan.sparql.common.Variable;
 using ExpressionLogic = name.levering.ryan.sparql.model.logic.ExpressionLogic;
 
+#if !DOTNET2
+using VariableList = System.Collections.ArrayList;
+using BindingList = System.Collections.ArrayList;
+using VarKnownValuesType = System.Collections.Hashtable;
+using VarKnownValuesList = System.Collections.ArrayList;
+using LitFilterList = System.Collections.ArrayList;
+using LitFilterMap = System.Collections.Hashtable;
+#else
+using VariableList = System.Collections.Generic.List<SemWeb.Variable>;
+using BindingList = System.Collections.Generic.List<SemWeb.Query.VariableBinding[]>;
+using VarKnownValuesType = System.Collections.Generic.Dictionary<SemWeb.Variable,System.Collections.Generic.ICollection<SemWeb.Resource>>;
+using VarKnownValuesList = System.Collections.Generic.List<SemWeb.Resource>;
+using LitFilterList = System.Collections.Generic.List<SemWeb.LiteralFilter>;
+using LitFilterMap = System.Collections.Generic.Dictionary<SemWeb.Variable,System.Collections.Generic.ICollection<SemWeb.LiteralFilter>>;
+#endif
+
 namespace SemWeb.Query {
 
 	public class Sparql : SemWeb.Query.Query {
@@ -767,9 +783,9 @@ namespace SemWeb.Query {
 		    		QueryableSource qs = (QueryableSource)s.source;
 		    		QueryOptions opts = new QueryOptions();
 		    		
-		    		opts.DistinguishedVariables = new ArrayList();
-		    		
-		    		opts.VariableKnownValues = new Hashtable();
+		    		opts.DistinguishedVariables = new VariableList();
+
+                    opts.VariableKnownValues = new VarKnownValuesType();
 		    		
 		    		Statement[] graph = new Statement[tripleConstraints.size()];
 		    		Hashtable varMap1 = new Hashtable();
@@ -790,14 +806,14 @@ namespace SemWeb.Query {
 		    			if (graph[i].Predicate is Variable) ((ArrayList)opts.DistinguishedVariables).Add(graph[i].Predicate);
 		    			if (graph[i].Object is Variable) ((ArrayList)opts.DistinguishedVariables).Add(graph[i].Object);
 		    		}
-		    		
-		    		opts.VariableLiteralFilters = new Hashtable();
+
+                    opts.VariableLiteralFilters = new LitFilterMap();
 		    		foreach (DictionaryEntry kv in varMap1) {
 		    			if (knownFilters != null && knownFilters.containsKey(kv.Key)) {
-		    				ArrayList filters = new ArrayList();
+                            LitFilterList filters = new LitFilterList();
 		    				for (java.util.Iterator iter = ((java.util.List)knownFilters.get(kv.Key)).iterator(); iter.hasNext(); )
-		    					filters.Add(iter.next());
-		    				opts.VariableLiteralFilters[kv.Value] = filters;
+		    					filters.Add((LiteralFilter)iter.next());
+		    				opts.VariableLiteralFilters[(Variable)kv.Value] = filters;
 		    			}
 		    		}
 		    		
@@ -858,7 +874,7 @@ namespace SemWeb.Query {
 		    		
 		    		if (knownValues != null && knownValues.get(expr) != null) {
 			    		java.util.Set values = (java.util.Set)knownValues.get(expr);
-			    		ArrayList values2 = new ArrayList();
+                        VarKnownValuesList values2 = new VarKnownValuesList();
 			    		for (java.util.Iterator iter = values.iterator(); iter.hasNext(); ) {
 			    			Resource r = src.ToResource((org.openrdf.model.Value)iter.next());
 			    			if (r != null)

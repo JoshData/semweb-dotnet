@@ -7,7 +7,7 @@ using SemWeb;
 //using SemWeb.Algos;
 
 [assembly: AssemblyTitle("RDFStorage - Move RDF Data Between Storage Types")]
-[assembly: AssemblyCopyright("Copyright (c) 2005 Joshua Tauberer <tauberer@for.net>\nreleased under the GPL.")]
+[assembly: AssemblyCopyright("Copyright (c) 2006 Joshua Tauberer <http://razor.occams.info>\nreleased under the GPL.")]
 [assembly: AssemblyDescription("A tool to move RDF data between storage types.")]
 
 [assembly: Mono.UsageComplement("file1 file2...")]

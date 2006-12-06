@@ -8,7 +8,7 @@ using SemWeb.Stores;
 using SemWeb.Query;
 
 [assembly: AssemblyTitle("RDFQuery - Query RDF Data")]
-[assembly: AssemblyCopyright("Copyright (c) 2005 Joshua Tauberer <tauberer@for.net>\nreleased under the GPL.")]
+[assembly: AssemblyCopyright("Copyright (c) 2006 Joshua Tauberer <http://razor.occams.info>\nreleased under the GPL.")]
 [assembly: AssemblyDescription("A tool for querying RDF data.")]
 
 [assembly: Mono.UsageComplement("n3:datafile.n3 < query.rdf")]
