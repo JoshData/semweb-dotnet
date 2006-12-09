@@ -5,6 +5,7 @@
 	* Added Visual Studio 2005 project files (thanks to RollsAppleTree).
 	* Sparql.cs: Now compiles against the .NET 2.0 SemWeb.dll
 	  with the DOTNET2 precompilation flag set (in both projects).
+	* RDFS.cs: Cleanup.
 
 2006-12-02 Version 0.80
 

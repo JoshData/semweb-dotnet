@@ -26,9 +26,9 @@
         <Parameter Name="data" Type="SemWeb.SelectableSource" />
       </Parameters>
       <Docs>
-        <param name="data">The data and schema source.</param>
-        <summary>Creates a new RDFS reasoner over the provided data source.</summary>
-        <remarks>The data source is scanned for any RDFS schema information in it.</remarks>
+        <param name="data">A source of instance data, but not a schema.</param>
+        <summary>Creates a new RDFS reasoner over the provided data source with no schema information.</summary>
+        <remarks>Use the <see cref="P:SemWeb.Inference.RDFS.Schema" /> property to add schema information to the reasoner.</remarks>
       </Docs>
     </Member>
     <Member MemberName=".ctor">
@@ -83,9 +83,9 @@
         <Parameter Name="sink" Type="SemWeb.StatementSink" />
       </Parameters>
       <Docs>
-        <param name="sink">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
+        <param name="sink">A StatementSink to which statements are streamed.</param>
+        <summary>Streams all statements in the underlying data source to the provided StatementSink.</summary>
+        <remarks>No RDFS reasoning is employed by this method.  This call simply wraps the Select method of the underlying instance data source.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Contains">
@@ -101,7 +101,11 @@
         <param name="template">To be added.</param>
         <summary>To be added.</summary>
         <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
+        <remarks>      <para>Calling Contains(X rdf:type Y), i.e. asking whether X is typed Y, returns true if the entity is marked as being a type of any subclass of Y, or if X is found in the domain or range of a predicate whose domain or range type is Y.</para>
+      <para>When checking if X is a subclass or subproperty of Y with a call to Contains(X rdf:subClassOf/rdf:subPropertyOf Y), true is returned if Y is in the transitive closure of rdf:subClassOf or rdf:subPropertyOf for X, which was already loaded into memory when the schema information was loaded.</para>
+      <para>For all other queries of the form Contains(X P Y), where X and Y may be null but P may not be, Contains returns true if there is a statement X Q Y in the underlying data source where Q is P or is in the subproperty transitive closure of P.</para>
+      <para>For all other calls, the arguments are passed down to the underlying Contains method of the data source without any RDFS processing.</para>
+</remarks>
       </Docs>
     </Member>
     <Member MemberName="Select">
@@ -115,10 +119,19 @@
         <Parameter Name="sink" Type="SemWeb.StatementSink" />
       </Parameters>
       <Docs>
-        <param name="template">To be added.</param>
-        <param name="sink">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
+        <param name="template">A statement template giving the type of statements to return.</param>
+        <param name="sink">A StatementSink to which the matching statements are sent.</param>
+        <summary>Selects statements from the RDFS-closure of the data store.</summary>
+        <remarks>      <para>When all of the fields in the statement are non-<see langword="null" />, the reasoning described in <see cref="M:SemWeb.Inference.RDFS.Contains(SemWeb.Statement)" /> is used rather than what is described below.</para>
+
+      <para>When asking for the subclasses, superclasses, subproperties, or superproperties using Select(X rdfs:subClass/PropertyOf <see langword="null" />) or Select(<see langword="null" /> rdfs:subClass/PropertyOf Y), the transitive closure is returned.</para>
+
+      <para>Asking for all entities with a given type using Select(<see langword="null" /> rdf:type Y) returns all entities marked as being typed as Y or any of its subclasses.  Domains and ranges of properties are not used in this case because it would require selecting for all occurrences of all properties with domains and ranges, which isn't scalable.  (This will probably be enable-able in the future.)  When the type of an entity is requested with a call to Select(X rdf:type <see langword="null" />), the type found for X in the underlying data source is returned and all of its superclasses, and if X is found in the domain or range of any predicates whose domain or range is given in the schema, the domain or range is returned as well.</para>
+
+      <para>For queries Select(X P Y), where X and Y may be null, statements of the form U P V are returned if there is a statement U Q V in the underlying data source where Q is a subproperty of P.  (If X is not <see langword="null" />, U=X; similarly for Y and V.)  Note that the returned statements all contain P as the predicate, the property actually queried on, and not the subproperties which were found in the underlying data source.</para>
+
+      <para>For all other calls, the arguments are passed down to the underlying Select method of the data source without any RDFS processing.</para>
+</remarks>
       </Docs>
     </Member>
     <Member MemberName="Select">
@@ -132,10 +145,10 @@
         <Parameter Name="sink" Type="SemWeb.StatementSink" />
       </Parameters>
       <Docs>
-        <param name="filter">To be added.</param>
-        <param name="sink">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
+        <param name="filter">A filter describing the types of statements to return.</param>
+        <param name="sink">A StatementSink to which the matching statements are sent.</param>
+        <summary>Selects statements from the RDFS-closure of the data store using a SelectFilter.</summary>
+        <remarks>See <see cref="M:SemWeb.Inference.RDFS.Select(SemWeb.Statement,SemWeb.StatementSink)" /> for the type of reasoning employed by this method.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Distinct">
@@ -145,9 +158,9 @@
         <ReturnType>System.Boolean</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
+        <summary>Returns whether the statements returned by calls to Select will be distinct within a single call.</summary>
+        <value>False.</value>
+        <remarks>This property always returns false for the RDFS class.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Contains">
@@ -160,10 +173,10 @@
         <Parameter Name="resource" Type="SemWeb.Resource" />
       </Parameters>
       <Docs>
-        <param name="resource">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
+        <param name="resource">A resource.</param>
+        <summary>Tests whether a Resource is mentioned in the underlying data source.</summary>
+        <returns>True if the Resource is mentioned in the underlying data source.</returns>
+        <remarks>No RDFS reasoning is employed by this method.</remarks>
       </Docs>
     </Member>
     <Member MemberName="MetaQuery">
@@ -216,11 +229,7 @@
 using (N3Writer writer = new N3Writer(Console.Out))
     rdfs.Select(new Statement(null, "http://www.w3.org/1999/02/22-rdf-syntax-ns#type", "http://www.w3.org/2002/07/owl#FunctionalProperty"));  </code>
       </example>
-      <para>There types of inferencing operations are supported:</para>
-      <para>Calling Contains(X rdf:type Y), i.e. asking whether X is typed Y, returns true if the entity is marked as being a type of any subclass of Y, or if X is found in the domain or range of a predicate whose domain or range type is Y.  Asking for all entities with a given type using Select(<see langword="null" /> rdf:type Y) returns all entities marked as being typed as Y or any of its subclasses.  Domains and ranges are not used in this case because it would require selecting for all occurrences of all properties with domains and ranges, which isn't scalable.  (This will probably be enable-able in the future.)  When the type of an entity is requested with a call to Select(X rdf:type <see langword="null" />), the type found for X in the underlying data source is returned and all of its superclasses, and if X is found in the domain or range of any predicates whose domain or range is given in the schema, the domain or range is returned as well.</para>
-      <para>When checking if X is a subclass or subproperty of Y with a call to Contains(X rdf:subClassOf/rdf:subPropertyOf Y), true is returned if Y is in the transitive closure of rdf:subClassOf or rdf:subPropertyOf for X, which was already loaded into memory when the schema information was loaded.  When asking for the subclasses, superclasses, subproperties, or superproperties using Select(X rdfs:subClass/PropertyOf <see langword="null" />) or Select(<see langword="null" /> rdfs:subClass/PropertyOf Y), the transitive closure is returned.</para>
-      <para>For all other queries of the form Contains(X P Y), where X and Y may be null but P may not be, Contains returns true if there is a statement X Q Y in the underlying data source where Q is P or is in the subproperty transitive closure of P.  Similarly, for queries Select(X P Y), statements of the form U P V are returned if there is a statement U Q V in the underlying data source where Q is a subproperty of P.  (If X is not <see langword="null" />, U=X; similarly for Y and V.)  Note that the returned statements all contain P as the predicate, the property actually queried on, and not the subproperties which were found in the underlying data source.</para>
-      <para>For all other queries, the query is passed down to the underlying data source without any RDFS processing.</para>
-    </remarks>
+
+      <para>Calls to <see cref="M:SemWeb.Inference.RDFS.Contains(SemWeb.Statement)" />, <see cref="M:SemWeb.Inference.RDFS.Select(SemWeb.Statement,SemWeb.StatementSink)" />, <see cref="M:SemWeb.Inference.RDFS.Select(SemWeb.SelectFilter,SemWeb.StatementSink)" />, and <see cref="M:SemWeb.Inference.RDFS.Query(SemWeb.Statement[],SemWeb.Query.QueryOptions,SemWeb.Query.QueryResultsSink)" /> are RDFS-reasoning-aware.  That is, they return what you would expect with RDFS reasoning applied to the underlying schema and data source.  See the documentation of those methods for details on the types of reasoning supported by each method.</para>    </remarks>
   </Docs>
 </Type>
