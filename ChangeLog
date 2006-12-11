@@ -2,6 +2,7 @@
 	* RdfXmlWriter crashed over cyclic relations between nodes.
 	Misc:
 	* RDFS.cs: Cleanup.
+	* RdfReader.cs: Generic-ified some collections in the DOTNET2 build.
 	Build changes:
 	* sparql-core.dll: Updated to latest upstream version in the
 	  SourceForge repository.

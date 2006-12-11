@@ -2,6 +2,16 @@ using System;
 using System.Collections;
 using System.IO;
 using System.Web;
+
+#if !DOTNET2
+using VariableSet = System.Collections.Hashtable;
+using VariableList = System.Collections.ICollection;
+using WarningsList = System.Collections.ArrayList;
+#else
+using VariableSet = System.Collections.Generic.Dictionary<SemWeb.Variable,SemWeb.Variable>;
+using VariableList = System.Collections.Generic.ICollection<SemWeb.Variable>;
+using WarningsList = System.Collections.Generic.List<string>;
+#endif
  
 namespace SemWeb {
 	public class ParserException : ApplicationException {
@@ -12,8 +22,8 @@ namespace SemWeb {
 	public abstract class RdfReader : StatementSource, IDisposable {
 		Entity meta = Statement.DefaultMeta;
 		string baseuri = null;
-		ArrayList warnings = new ArrayList();
-		Hashtable variables = new Hashtable();
+		WarningsList warnings = new WarningsList();
+		VariableSet variables = new VariableSet();
 		bool reuseentities = false;
 		NamespaceManager nsmgr = new NamespaceManager();
 
@@ -48,9 +58,13 @@ namespace SemWeb {
 		
 		public NamespaceManager Namespaces { get { return nsmgr; } }
 		
-		public ICollection Variables { get { return variables.Keys; } }
+		public VariableList Variables { get { return variables.Keys; } }
 		
-		public IList Warnings { get { return ArrayList.ReadOnly(warnings); } }
+		#if !DOTNET2
+		public WarningsList Warnings { get { return ArrayList.ReadOnly(warnings); } }
+		#else
+		public System.Collections.Generic.ICollection<string> Warnings { get { return warnings.AsReadOnly(); } }
+		#endif
 		
 		protected void AddVariable(Variable variable) {
 			variables[variable] = variable;
