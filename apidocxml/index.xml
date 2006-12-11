@@ -94,7 +94,7 @@
     </Namespace>
   </Types>
   <Assemblies>
-    <Assembly Name="SemWeb" Version="0.7.4.1">
+    <Assembly Name="SemWeb" Version="0.8.1.0">
       <Attributes>
         <Attribute>
           <AttributeName>System.Reflection.AssemblyKeyName("")</AttributeName>
@@ -122,7 +122,13 @@
         </Attribute>
       </Attributes>
     </Assembly>
-    <Assembly Name="SemWeb.Sparql" Version="0.0.0.0" />
+    <Assembly Name="SemWeb.Sparql" Version="0.0.0.0">
+      <Attributes>
+        <Attribute>
+          <AttributeName>System.Runtime.CompilerServices.RuntimeCompatibility(WrapNonExceptionThrows=true)</AttributeName>
+        </Attribute>
+      </Attributes>
+    </Assembly>
   </Assemblies>
   <Title>SemWeb</Title>
 </Overview>

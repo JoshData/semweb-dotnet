@@ -61,7 +61,7 @@ namespace SemWeb {
 		public VariableList Variables { get { return variables.Keys; } }
 		
 		#if !DOTNET2
-		public WarningsList Warnings { get { return ArrayList.ReadOnly(warnings); } }
+		public IList Warnings { get { return ArrayList.ReadOnly(warnings); } }
 		#else
 		public System.Collections.Generic.ICollection<string> Warnings { get { return warnings.AsReadOnly(); } }
 		#endif
