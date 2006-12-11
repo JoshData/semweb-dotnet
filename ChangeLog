@@ -1,8 +1,11 @@
+2006-12-11 Version 0.81
+
 	Bugs:
 	* RdfXmlWriter crashed over cyclic relations between nodes.
 	Misc:
 	* RDFS.cs: Cleanup.
 	* RdfReader.cs: Generic-ified some collections in the DOTNET2 build.
+	* MySQLStore.cs: Force an ANALYZE TABLE after an Import().
 	Build changes:
 	* sparql-core.dll: Updated to latest upstream version in the
 	  SourceForge repository.

@@ -82,6 +82,9 @@ namespace SemWeb.Stores {
 			//RunCommand("COMMIT");
 			//RunCommand("UNLOCK TABLES");
 			RunCommand("ALTER TABLE " + TableName + "_statements ENABLE KEYS");
+			RunCommand("ANALYZE TABLE " + TableName + "_entities");
+			RunCommand("ANALYZE TABLE " + TableName + "_literals");
+			RunCommand("ANALYZE TABLE " + TableName + "_statements");
 		}
 		
 	}
