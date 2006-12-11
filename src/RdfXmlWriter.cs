@@ -14,6 +14,10 @@ namespace SemWeb {
 		XmlDocument doc;
 		bool initialized = false;
 		bool closeStream = false;
+		
+		bool embedNamedNodes = true;
+		bool usePredicateAttributes = true;
+		bool useParseTypeResource = true;
 				
 		Hashtable nodeMap = new Hashtable();
 		
@@ -237,7 +241,20 @@ namespace SemWeb {
 			XmlElement prednode = CreatePredicate(subjnode, statement.Predicate);
 			
 			if (!(statement.Object is Literal)) {
-				if (nodeMap.ContainsKey(statement.Object)) {
+				if (!nodeMap.ContainsKey(statement.Object) && (embedNamedNodes || statement.Object.Uri == null)) {
+					// Embed the object node right within the predicate node
+					// if we haven't already created a node for the object
+					// and if we're allowed to do so.
+					GetNode((Entity)statement.Object, null, prednode);
+
+				} else {
+					// Otherwise, we will reference the object with a
+					// rdf:resource attribute.
+					
+					// Create the object node at top-level if a node doesn't exist.
+					if (!nodeMap.ContainsKey(statement.Object))
+						GetNode((Entity)statement.Object, null, null);
+
 					if (statement.Object.Uri != null) {
 						string uri = statement.Object.Uri, fragment;
 						if (Relativize(statement.Object.Uri, out fragment))
@@ -256,8 +273,6 @@ namespace SemWeb {
 						nodeReferences[nodeMap[statement.Object]] = null;
 					else
 						nodeReferences[nodeMap[statement.Object]] = prednode;
-				} else {
-					GetNode((Entity)statement.Object, null, prednode);
 				}
 			} else {
 				Literal literal = (Literal)statement.Object;
@@ -299,8 +314,26 @@ namespace SemWeb {
 				if (e.Value == null) continue; // referenced by more than one predicate
 				XmlElement node = (XmlElement)e.Key;
 				XmlElement predicate = (XmlElement)e.Value;
-				if (node.ParentNode != node.OwnerDocument.DocumentElement) continue; // already referenced somewhere
-				if (predicate.ParentNode == node) continue; // can't insert node as child of itself
+
+				if (!embedNamedNodes && node.HasAttribute("about", NS.RDF))
+					continue;
+				
+				// don't move things already embedded
+				if (node.ParentNode != node.OwnerDocument.DocumentElement) continue;
+
+				// we can have circular references between nodes (also
+				// between a node and itself),
+				// which we can't nicely collapse this way.  Make sure
+				// that the predicate we want to insert ourselves into
+				// is not a descendant of the node we're moving!
+				XmlNode ancestry = predicate.ParentNode;
+				bool canMove = true;
+				while (ancestry != null) {
+					if (ancestry == node) { canMove = false; break; }
+					ancestry = ancestry.ParentNode;
+				}
+				if (!canMove) continue;
+
 				node.ParentNode.RemoveChild(node);
 				predicate.AppendChild(node);
 				predicate.RemoveAttribute("resource", NS.RDF); // it's on the lower node
@@ -336,6 +369,8 @@ namespace SemWeb {
 				}
 						
 				if (allSimpleLits && obj.ChildNodes.Count <= 3) {
+					if (!usePredicateAttributes) continue;
+				
 					// Condense by moving all of obj's elements to attributes of the predicate,
 					// and turning a rdf:about into a rdf:resource, and then remove obj completely.
 					if (obj.Attributes.Count == 1)
@@ -347,6 +382,8 @@ namespace SemWeb {
 					if (pred.ChildNodes.Count == 0) pred.IsEmpty = true;
 
 				} else if (obj.Attributes.Count == 0) { // no rdf:about
+					if (!useParseTypeResource) continue;
+
 					// Condense this node using parseType=Resource
 					pred.RemoveChild(obj);
 					foreach (XmlElement opred in obj.ChildNodes)
