@@ -17,7 +17,7 @@ namespace SemWeb {
 		
 		bool embedNamedNodes = true;
 		bool usePredicateAttributes = true;
-		bool useParseTypeResource = true;
+		bool useParseTypeResource = false; // this is broken because it uses Clone(), which breaks references in Hashtables
 				
 		Hashtable nodeMap = new Hashtable();
 		
@@ -168,13 +168,25 @@ namespace SemWeb {
 					Normalize(type, out prefix, out localname);
 					XmlElement newnode = doc.CreateElement(prefix + ":" + localname, ns.GetNamespace(prefix));
 					
+					ArrayList children = new ArrayList();
 					foreach (XmlNode childnode in ret)
-						newnode.AppendChild(childnode.Clone());
+						children.Add(childnode);
+					foreach (XmlNode childnode in children) {
+						ret.RemoveChild(childnode);
+						newnode.AppendChild(childnode);
+					}
+						
 					foreach (XmlAttribute childattr in ret.Attributes)
 						newnode.Attributes.Append((XmlAttribute)childattr.Clone());
-					
+						
 					ret.ParentNode.ReplaceChild(newnode, ret);
+					
 					nodeMap[entity] = newnode;
+					if (nodeReferences.ContainsKey(ret)) {
+						nodeReferences[newnode] = nodeReferences[ret];
+						nodeReferences.Remove(ret);
+					}
+					
 					return newnode;
 				} else {
 					// The node is already typed, so just add a type predicate.

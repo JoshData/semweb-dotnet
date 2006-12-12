@@ -1,3 +1,6 @@
+	Bugs:
+	* RdfXmlWriter: Another bad bug where some data gets totally losts.
+
 2006-12-11 Version 0.81
 
 	Bugs:
