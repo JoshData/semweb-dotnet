@@ -20,7 +20,6 @@ namespace SemWeb.Stores {
 		public MySQLStore(string connectionString, string table)
 			: base(table) {
 			this.connectionString = connectionString;
-			RefreshConnection();
 		}
 
 		protected override bool HasUniqueStatementsConstraint { get { return true; } }
@@ -36,36 +35,41 @@ namespace SemWeb.Stores {
 
 		public override void Close() {
 			base.Close();
-			connection.Close();
-		}
-		
-		private void RefreshConnection() {
 			if (connection != null)
 				connection.Close();
-			connection = new MySqlConnection(connectionString);
-			connection.Open();		
+		}
+		
+		private void Open() {
+			if (connection != null)
+				return;
+			MySqlConnection c = new MySqlConnection(connectionString);
+			c.Open();
+			connection = c; // only set field if open was successful
 		}
 		
 		protected override void RunCommand(string sql) {
+			Open();
 			if (Debug) Console.Error.WriteLine(sql);
 			using (MySqlCommand cmd = new MySqlCommand(sql, connection))
 				cmd.ExecuteNonQuery();
 		}
 		
 		protected override object RunScalar(string sql) {
+			Open();
 			using (MySqlCommand cmd = new MySqlCommand(sql, connection)) {
-			object ret = null;
-			using (IDataReader reader = cmd.ExecuteReader()) {
-			if (reader.Read()) {
-				ret = reader[0];
-			}
-			}
-			if (Debug) Console.Error.WriteLine(sql + " => " + ret);
-			return ret;
+				object ret = null;
+				using (IDataReader reader = cmd.ExecuteReader()) {
+					if (reader.Read()) {
+						ret = reader[0];
+					}
+				}
+				if (Debug) Console.Error.WriteLine(sql + " => " + ret);
+				return ret;
 			}
 		}
 
 		protected override IDataReader RunReader(string sql) {
+			Open();
 			if (Debug) Console.Error.WriteLine(sql);
 			using (MySqlCommand cmd = new MySqlCommand(sql, connection)) {
 				return cmd.ExecuteReader();
