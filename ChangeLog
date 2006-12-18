@@ -2,6 +2,8 @@
 
 	* Implemented the rdfs:member property in the MemoryStore
 	  and all SQL stores.  It matches against any rdf:_# predicate.
+	  Also Store.SelectObjects will automatically sort the results
+	  by the rdf:_# number when the predicate is rdfs:member.
 	* RdfXmlWriter: Another bad bug where some data gets totally losts.
 	* MySQLStore: Don't open the connection until it's needed.
 

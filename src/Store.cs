@@ -227,12 +227,18 @@ namespace SemWeb {
 		}
 		
 		public Resource[] SelectObjects(Entity subject, Entity predicate) {
-			ResSet resources = new ResSet();
-			ResourceCollector collector = new ResourceCollector();
-			collector.SPO = 2;
-			collector.Table = resources;
-			Select(new Statement(subject, predicate, null, null), collector);
-			return resources.ToArray();
+			if (predicate.Uri != null && predicate.Uri == NS.RDFS + "member") {
+				ResourceCollector2 collector = new ResourceCollector2();
+				Select(new Statement(subject, predicate, null, null), collector);
+				return collector.GetItems();
+			} else {
+				ResSet resources = new ResSet();
+				ResourceCollector collector = new ResourceCollector();
+				collector.SPO = 2;
+				collector.Table = resources;
+				Select(new Statement(subject, predicate, null, null), collector);
+				return resources.ToArray();
+			}
 		}
 		public Entity[] SelectSubjects(Entity predicate, Resource @object) {
 			ResSet resources = new ResSet();
@@ -249,6 +255,42 @@ namespace SemWeb {
 				if (SPO == 0) Table.Add(s.Subject);
 				if (SPO == 2) Table.Add(s.Object);
 				return true;
+			}
+		}
+		class ResourceCollector2 : StatementSink {
+			ArrayList items = new ArrayList();
+			ArrayList other = new ArrayList();
+			public bool Add(Statement s) {
+				if (s.Predicate.Uri == null || !s.Predicate.Uri.StartsWith(NS.RDF + "_")) {
+					other.Add(s.Object);
+				} else {
+					string num = s.Predicate.Uri.Substring(NS.RDF.Length+1);
+					try {
+						int idx = int.Parse(num);
+						items.Add(new Item(s.Object, idx));
+					} catch {
+						other.Add(s.Object);
+					}
+				}
+				return true;
+			}
+			public Resource[] GetItems() {
+				items.Sort();
+				Resource[] ret = new Resource[items.Count + other.Count];
+				int ctr = 0;
+				foreach (Item item in items)
+					ret[ctr++] = item.r;
+				foreach (Resource item in other)
+					ret[ctr++] = item;
+				return ret;
+			}
+			class Item : IComparable {
+				public Resource r;
+				int idx;
+				public Item(Resource r, int idx) { this.r = r; this.idx = idx; }
+				public int CompareTo(object other) {
+					return idx.CompareTo(((Item)other).idx);
+				}
 			}
 		}
 		
