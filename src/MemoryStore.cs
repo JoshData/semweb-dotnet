@@ -35,6 +35,8 @@ namespace SemWeb {
 		Hashtable pbnodeToId = null;
 		Hashtable pbnodeFromId = null;
 		
+		const string rdfli = NS.RDF + "_";
+		
 		public MemoryStore() {
 			statements = new StatementList();
 		}
@@ -178,10 +180,19 @@ namespace SemWeb {
 			
 			if (source == null) return;
 			
+			bool isRdfsMemberPredicate = (template.Predicate != null && template.Predicate.Uri != null
+				&& template.Predicate.Uri == NS.RDFS + "member");
+			if (isRdfsMemberPredicate)
+				template.Predicate = null;
+			
 			for (int i = 0; i < source.Count; i++) {
 				Statement statement = source[i];
 				if (!template.Matches(statement))
 					continue;
+				
+				if (isRdfsMemberPredicate && (statement.Predicate.Uri == null || !statement.Predicate.Uri.StartsWith(rdfli)))
+					continue;
+					
 				if (!result.Add(statement)) return;
 			}
 		}

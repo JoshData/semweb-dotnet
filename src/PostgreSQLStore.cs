@@ -51,6 +51,21 @@ namespace SemWeb.Stores {
 			command.Append(column);
 			command.Append(" IS NULL");
 		}
+		
+		protected override void CreateLikeTest(string column, string match, int method, System.Text.StringBuilder command) {
+			command.Append(column);
+			command.Append(" LIKE ;");
+			if (method == 1) command.Append("%"); // contains
+			
+			// Postgres is weird. Because we will use the backslash to escape % and _, we have
+			// to escape the string twice.  Once regularly, and then again to escape all
+			// backslashes and %'s and _'s.
+			System.Text.StringBuilder bldr = new System.Text.StringBuilder();
+			EscapedAppend(bldr, match, false, false);
+			EscapedAppend(command, match, false, true);
+			
+			command.Append("%'");
+		}
 
 		public override void Close() {
 			connection.Close();

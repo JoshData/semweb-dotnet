@@ -391,7 +391,7 @@ namespace SemWeb.Inference {
 		
 		public SemWeb.Query.MetaQueryResult MetaQuery(Statement[] graph, SemWeb.Query.QueryOptions options) {
 			if (!(data is QueryableSource))
-				return new SemWeb.Query.MetaQueryResult();
+				return new SemWeb.Query.MetaQueryResult(); // not supported
 			
 			Statement[] graph2;
 			SemWeb.Query.QueryOptions options2;

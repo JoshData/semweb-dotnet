@@ -81,7 +81,7 @@ namespace SemWeb {
 			if (Normalize(uri, out prefix, out localname)) {
 				bool ok = true;
 				if (localname.Length == 0) ok = false;
-				else if (!char.IsLetter(localname[0])) ok = false;
+				else if (!char.IsLetter(localname[0]) && localname[0] != '_') ok = false;
 				foreach (char c in localname)
 					if (!char.IsLetterOrDigit(c) && c != '-' && c != '_')
 						ok = false;

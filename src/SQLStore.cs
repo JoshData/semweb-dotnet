@@ -75,11 +75,25 @@ namespace SemWeb.Stores {
 		protected abstract bool SupportsSubquery { get; }
 		
 		protected abstract void CreateNullTest(string column, System.Text.StringBuilder command);
+		protected abstract void CreateLikeTest(string column, string prefix, int method, System.Text.StringBuilder command);
+		
+		protected virtual bool CreateEntityPrefixTest(string column, string prefix, System.Text.StringBuilder command) {
+			command.Append('(');
+			command.Append(column);
+			command.Append(" IN (SELECT id from ");
+			command.Append(TableName);
+			command.Append("_entities WHERE ");
+			CreateLikeTest("value", prefix, 0, command);
+			command.Append("))");
+			return true;
+		}
 
 		private string INSERT_INTO_LITERALS_VALUES { get { return "INSERT INTO " + table + "_literals VALUES "; } }
 		private string INSERT_INTO_ENTITIES_VALUES { get { return "INSERT INTO " + table + "_entities VALUES "; } }
 		private string INSERT_INTO_STATEMENTS_VALUES { get { return "INSERT " + (HasUniqueStatementsConstraint ? InsertIgnoreCommand : "") + " INTO " + table + "_statements VALUES "; } }
 			
+		const string rdfs_member = NS.RDFS + "member";
+		const string rdf_li = NS.RDF + "_";
 		
 		private void Init() {
 			if (!firstUse) return;
@@ -719,6 +733,10 @@ namespace SemWeb.Stores {
 				if (!AppendMultiRes((MultiRes)r, cmd)) return false;
 				cmd.Append(" ))");
 			} else {
+				if (r.Uri != null && r.Uri == rdfs_member) {
+					if (CreateEntityPrefixTest(col, rdf_li, cmd)) return true;
+				}
+				
 				int id = GetResourceId(r, false);
 				if (id == 0) return false;
 				cmd.Append('(');
@@ -915,6 +933,19 @@ namespace SemWeb.Stores {
 				entMap[GetResourceId(r, false)] = r;
 		}
 		
+		bool isOrContains(Resource r, string uri) {
+			if (r == null) return false;
+			if (r is MultiRes) {
+				foreach (Resource rr in ((MultiRes)r).items)
+					if (isOrContains(rr, uri))
+						return true;
+			} else {
+				if (r.Uri != null && r.Uri == uri)
+					return true;
+			}
+			return false;
+		}
+		
 		public override void Select(Statement template, StatementSink result) {
 			if (result == null) throw new ArgumentNullException();
 			Select(template.Subject, template.Predicate, template.Object, template.Meta, null, result, 0);
@@ -939,6 +970,11 @@ namespace SemWeb.Stores {
 			columns.PredicateUri = templatePredicate == null;
 			columns.ObjectData = templateObject == null || (templateObject is MultiRes && ((MultiRes)templateObject).ContainsLiterals());
 			columns.MetaUri = templateMeta == null;
+			
+			if (isOrContains(templatePredicate, rdfs_member)) {
+				columns.PredicateId = true;
+				columns.PredicateUri = true;
+			}
 			
 			// Meta URIs tend to be repeated a lot, so we don't
 			// want to ever select them from the database.
@@ -1316,6 +1352,12 @@ namespace SemWeb.Stores {
 			else
 				return new Literal(lv, ll, ld);
 		}
+		
+		private string CreateLikeTest(string column, string match, int method) {
+			StringBuilder s = new StringBuilder();
+			CreateLikeTest(column, match, method, s);
+			return s.ToString();
+		}
 
 		private string FilterToSQL(LiteralFilter filter, string col) {
 			if (filter is SemWeb.Filters.StringCompareFilter) {
@@ -1324,11 +1366,11 @@ namespace SemWeb.Stores {
 			}
 			if (filter is SemWeb.Filters.StringContainsFilter) {
 				SemWeb.Filters.StringContainsFilter f = (SemWeb.Filters.StringContainsFilter)filter;
-				return col + " LIKE " + quote + "%" + Escape(f.Pattern, false).Replace("%", "\\%") + "%" + quote;
+				return CreateLikeTest(col, f.Pattern, 1); // 1=contains
 			}
 			if (filter is SemWeb.Filters.StringStartsWithFilter) {
 				SemWeb.Filters.StringStartsWithFilter f = (SemWeb.Filters.StringStartsWithFilter)filter;
-				return col + " LIKE " + quote + Escape(f.Pattern, false).Replace("%", "\\%") + "%" + quote;
+				return CreateLikeTest(col, f.Pattern, 0); // 0=starts-with
 			}
 			if (filter is SemWeb.Filters.NumericCompareFilter) {
 				SemWeb.Filters.NumericCompareFilter f = (SemWeb.Filters.NumericCompareFilter)filter;
@@ -1367,18 +1409,18 @@ namespace SemWeb.Stores {
 		private string Escape(string str, bool quotes) {
 			if (str == null) return "NULL";
 			StringBuilder b = new StringBuilder();
-			EscapedAppend(b, str, quotes);
+			EscapedAppend(b, str, quotes, false);
 			return b.ToString();
 		}
 		
 		protected void EscapedAppend(StringBuilder b, string str) {
-			EscapedAppend(b, str, true);
+			EscapedAppend(b, str, true, false);
 		}
 
 		protected virtual char GetQuoteChar() {
 			return '\"';
 		}
-		protected virtual void EscapedAppend(StringBuilder b, string str, bool quotes) {
+		protected virtual void EscapedAppend(StringBuilder b, string str, bool quotes, bool forLike) {
 			if (quotes) b.Append(quote);
 			for (int i = 0; i < str.Length; i++) {
 				char c = str[i];
@@ -1388,6 +1430,12 @@ namespace SemWeb.Stores {
 					case '\"':
 					case '*':
 						b.Append('\\');
+						b.Append(c);
+						break;
+					case '%':
+					case '_':
+						if (forLike)
+							b.Append('\\');
 						b.Append(c);
 						break;
 					default:

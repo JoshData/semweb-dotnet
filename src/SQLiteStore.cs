@@ -30,7 +30,15 @@ namespace SemWeb.Stores {
 			command.Append(" ISNULL");
 		}
 		
-		protected override void EscapedAppend(StringBuilder b, string str, bool quotes) {
+		protected override void CreateLikeTest(string column, string match, int method, System.Text.StringBuilder command) {
+			command.Append(column);
+			command.Append(" LIKE '");
+			if (method == 1) command.Append("%"); // contains
+			EscapedAppend(command, match, false, true);
+			command.Append("%' ESCAPE '\\'");
+		}
+		
+		protected override void EscapedAppend(StringBuilder b, string str, bool quotes, bool forLike) {
 			if (quotes) b.Append('\'');
 			for (int i = 0; i < str.Length; i++) {
 				char c = str[i];
@@ -39,6 +47,14 @@ namespace SemWeb.Stores {
 						b.Append(c);
 						b.Append(c);
 						break;
+
+					case '%':
+					case '_':
+						if (forLike)
+							b.Append('\\');
+						b.Append(c);
+						break;
+					
 					default:
 						b.Append(c);
 						break;

@@ -8,9 +8,11 @@
 
 <h1>SemWeb: Selecting Statements</h1>
 
+<h2>Using statement templates</h2>
+
 <p>In the previous tutorial you saw the <tt>Select</tt> method of <tt>StatementSource</tt>s, which streams all of the statements into a sink.  The name "Select" was derived from SQL syntax, where it's used to retrieve rows that match a criteria.  In SemWeb, Select is used to retreive statements matching a filter.  (And as with SQL, when no criteria is given all statements are retrieved.)</p>
 
-<p>A filter is a <tt>Statement</tt> but with subject, predicate, and object possibly <tt>null</tt>.  <tt>null</tt>s are wildcards.  So here are a few examples:</p>
+<p>A template is a <tt>Statement</tt> but with subject, predicate, and object possibly <tt>null</tt>.  <tt>null</tt>s are wildcards.  So here are a few examples:</p>
 
 <pre class="code">
 store.Select(sink);  // selects all statements
@@ -31,7 +33,7 @@ foreach (Resource r in store.SelectObjects(person, foafname))
 	Console.WriteLine(r);
 </pre>
 
-Other methods are overrides of Select that rather than sending the results to a sink, load them into memory so that you may for-each over them:
+<p>Other methods are overrides of Select that rather than sending the results to a sink, load them into memory so that you may for-each over them:</p>
 
 <pre class="code">
 foreach (Statement statement in store.Select(new Statement(null, rdftype, foafPerson))) {
@@ -47,32 +49,78 @@ foreach (Statement statement in store.Select(new Statement(null, rdftype, foafPe
 using SemWeb;
 
 public class Select {
-	const string RDF = "http://www.w3.org/1999/02/22-rdf-syntax-ns#";
-	const string FOAF = "http://xmlns.com/foaf/0.1/";
-	
-	static readonly Entity rdftype = RDF+"type";
-	static readonly Entity foafPerson = FOAF+"Person";
-	static readonly Entity foafknows = FOAF+"knows";
-	static readonly Entity foafname = FOAF+"name";
+    const string RDF = "http://www.w3.org/1999/02/22-rdf-syntax-ns#";
+    const string FOAF = "http://xmlns.com/foaf/0.1/";
+    
+    static readonly Entity rdftype = RDF+"type";
+    static readonly Entity foafPerson = FOAF+"Person";
+    static readonly Entity foafknows = FOAF+"knows";
+    static readonly Entity foafname = FOAF+"name";
 
-	public static void Main() {
-		Store store = new MemoryStore();
-		store.Import(RdfReader.LoadFromUri(new Uri("http://dannyayers.com/misc/foaf/foaf.rdf")));
-		
-		Console.WriteLine("These are the people in the file:");
-		foreach (Statement s in store.Select(new Statement(null, rdftype, foafPerson))) {
-			foreach (Resource r in store.SelectObjects(s.Subject, foafname))
-				Console.WriteLine(r);
-		}
-		Console.WriteLine();
+    public static void Main() {
+        Store store = new MemoryStore();
+        store.Import(RdfReader.LoadFromUri(new Uri("http://dannyayers.com/misc/foaf/foaf.rdf")));
+        
+        Console.WriteLine("These are the people in the file:");
+        foreach (Statement s in store.Select(new Statement(null, rdftype, foafPerson))) {
+            foreach (Resource r in store.SelectObjects(s.Subject, foafname))
+                Console.WriteLine(r);
+        }
+        Console.WriteLine();
 
-		Console.WriteLine("And here's RDF/XML just for some of the file:");
-		using (RdfWriter w = new RdfXmlWriter(Console.Out)) {
-			store.Select(new Statement(null, foafname, null), w);
-			store.Select(new Statement(null, foafknows, null), w);
-		}
-		Console.WriteLine();	
-	}
+        Console.WriteLine("And here's RDF/XML just for some of the file:");
+        using (RdfWriter w = new RdfXmlWriter(Console.Out)) {
+            store.Select(new Statement(null, foafname, null), w);
+            store.Select(new Statement(null, foafknows, null), w);
+        }
+        Console.WriteLine();    
+    }
+}
+</pre>
+
+<h2>Other notes</h2>
+
+<p>RDF collections, like Bag, Alt, and Seq, in RDF/XML use a strange
+<tt>rdf:li</tt> pseudo-property.  <tt>rdf:li</tt> isn't actually a
+property.  It is an abbreviation for <tt>rdf:_1</tt>, <tt>rdf:_2</tt>,
+etc. in that order.  Thus when you select for members of a collection,
+you can't use <tt>rdf:li</tt>.  However, RDFS defines the property
+<tt>rdfs:member</tt> which <tt>rdf:_##</tt> properties are all
+subproperties of.  The SemWeb stores all recognize the <tt>rdfs:member</tt>
+predicate and will match it to any of the <tt>rdf:_##</tt> predicates.<p>
+
+<p>Here's an example of that:</p>
+
+<pre class="code" file="../examples/containers.cs">// This example deals with RDF containers.  You can use the rdfs:member
+// property to match any rdf:_### (i.e. rdf:li) property.
+
+using System;
+using SemWeb;
+
+public class Containers {
+
+    const string RDF = "http://www.w3.org/1999/02/22-rdf-syntax-ns#";
+    const string RDFS = "http://www.w3.org/2000/01/rdf-schema#";
+    
+    public static void Main() {
+        MemoryStore store = new MemoryStore();
+        
+        Entity container = new Entity("http://www.example.org/#container");
+        
+        store.Add(new Statement(container, RDF+"type", (Entity)(RDF+"Bag")));
+        store.Add(new Statement(container, RDF+"_1", (Literal)"One"));
+        store.Add(new Statement(container, RDF+"_2", (Literal)"Two"));
+        store.Add(new Statement(container, RDF+"_3", (Literal)"Three"));
+        
+        // use the rdfs:member property to match for any rdf:_### predicates.
+        Entity rdfs_member = (Entity)(RDFS+"member");
+        
+        using (RdfWriter writer = new N3Writer(Console.Out)) {
+            writer.Namespaces.AddNamespace(RDF, "rdf");
+            
+            store.Select(new Statement(container, rdfs_member, null), writer);
+        }
+    }
 }
 </pre>
 
