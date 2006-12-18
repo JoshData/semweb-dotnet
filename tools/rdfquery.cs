@@ -43,9 +43,11 @@ public class RDFQuery {
 			qs = new SQLQuerySink(Console.Out, "rdf");
 		else if (opts.format == "html")
 			qs = new HTMLQuerySink(Console.Out);
-		else if (opts.format == "xml") {
+		else if (opts.format == "xml")
 			qs = new SparqlXmlQuerySink(Console.Out);
-		} else {
+		else if (opts.format == "lubm")
+			qs = new LUBMReferenceAnswerOutputQuerySink();
+		else {
 			Console.Error.WriteLine("Invalid output format.");
 			return;
 		}
@@ -283,3 +285,39 @@ public class SQLQuerySink : QueryResultSink {
 
 }
 
+internal class LUBMReferenceAnswerOutputQuerySink : QueryResultSink {
+	int[] varorder;
+
+	public override void Init(VariableBinding[] variables, bool distinct, bool ordered) {
+		varorder = new int[variables.Length];
+		string[] varnames = new string[variables.Length];
+		
+		for (int i = 0; i < variables.Length; i++) {
+			varorder[i] = i;
+			varnames[i] = variables[i].Name.ToUpper();
+		}
+		
+		Array.Sort(varnames, varorder);
+		
+		for (int i = 0; i < varnames.Length; i++)
+			Console.Write(varnames[i] + " ");
+		Console.WriteLine();
+	}
+	public override bool Add(VariableBinding[] result) {
+		foreach (int idx in varorder) {
+			VariableBinding var = result[idx];
+			if (var.Name != null && var.Target != null) {
+				if (var.Target.Uri != null)
+					Console.Write(var.Target.Uri + " ");
+				else if (var.Target is Literal)
+					Console.Write(((Literal)var.Target).Value + " ");
+				else if (var.Target is BNode)
+					Console.Write("(bnode) ");
+				else
+					Console.Write(var.Target + " ");
+			}
+		}
+		Console.WriteLine();
+		return true;
+	}
+}
