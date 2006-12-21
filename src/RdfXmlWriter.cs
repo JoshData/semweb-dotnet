@@ -15,6 +15,7 @@ namespace SemWeb {
 		bool initialized = false;
 		bool closeStream = false;
 		
+		bool useRdfLi = true;
 		bool embedNamedNodes = true;
 		bool usePredicateAttributes = true;
 		bool useParseTypeResource = false; // this is broken because it uses Clone(), which breaks references in Hashtables
@@ -26,8 +27,11 @@ namespace SemWeb {
 		Hashtable nameAlloc = new Hashtable();
 		Hashtable nodeReferences = new Hashtable();
 		ArrayList predicateNodes = new ArrayList();
+		Hashtable nodeLiCounter = new Hashtable();
 		
 		static Entity rdftype = "http://www.w3.org/1999/02/22-rdf-syntax-ns#type";
+		static Entity rdfli = "http://www.w3.org/1999/02/22-rdf-syntax-ns#li";
+		static string RDFNS_ = NS.RDF + "_";
 		
 		public RdfXmlWriter(XmlDocument dest) { doc = dest; }
 		
@@ -55,7 +59,6 @@ namespace SemWeb {
 			if (doc == null) doc = new XmlDocument();
 			
 			doc.AppendChild(doc.CreateXmlDeclaration("1.0", null, null));
-			
 			string rdfprefix = ns.GetPrefix(NS.RDF);
 			if (rdfprefix == null) {
 				if (ns.GetNamespace("rdf") == null) {
@@ -186,6 +189,10 @@ namespace SemWeb {
 						nodeReferences[newnode] = nodeReferences[ret];
 						nodeReferences.Remove(ret);
 					}
+					if (nodeLiCounter.ContainsKey(ret)) {
+						nodeLiCounter[newnode] = nodeLiCounter[ret];
+						nodeLiCounter.Remove(ret);
+					}
 					
 					return newnode;
 				} else {
@@ -231,7 +238,19 @@ namespace SemWeb {
 		
 		private XmlElement CreatePredicate(XmlElement subject, Entity predicate) {
 			if (predicate.Uri == null)
-				throw new InvalidOperationException("Predicates cannot be blank nodes.");
+				throw new InvalidOperationException("Predicates cannot be blank nodes when serializing RDF to XML.");
+			
+			if (useRdfLi && predicate.Uri.StartsWith(RDFNS_)) {
+				try {
+					int n = int.Parse(predicate.Uri.Substring(RDFNS_.Length));
+					int expected = nodeLiCounter.ContainsKey(subject) ? (int)nodeLiCounter[subject] : 1;
+					if (n == expected) {
+						predicate = rdfli;
+						nodeLiCounter[subject] = expected+1;
+					}
+				} catch {
+				}
+			}			
 			
 			string prefix, localname;
 			Normalize(predicate.Uri, out prefix, out localname);
