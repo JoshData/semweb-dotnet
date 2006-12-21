@@ -1,4 +1,4 @@
-2006-12-11 Version 0.811
+2006-12-21 Version 0.811
 
 	* Implemented the rdfs:member property in the MemoryStore
 	  and all SQL stores.  It matches against any rdf:_# predicate.
