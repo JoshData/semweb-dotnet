@@ -258,8 +258,8 @@ namespace SemWeb {
 			}
 		}
 		class ResourceCollector2 : StatementSink {
-			ArrayList items = new ArrayList();
-			ArrayList other = new ArrayList();
+			System.Collections.ArrayList items = new System.Collections.ArrayList();
+			ResSet other = new ResSet();
 			public bool Add(Statement s) {
 				if (s.Predicate.Uri == null || !s.Predicate.Uri.StartsWith(NS.RDF + "_")) {
 					other.Add(s.Object);
@@ -621,6 +621,132 @@ namespace SemWeb.Stores {
 		
 		public override void Replace(Statement find, Statement replacement) { throw new InvalidOperationException("Replace is not a valid operation on a MultiStore."); }
 		
+		public override SemWeb.Query.MetaQueryResult MetaQuery(Statement[] graph, SemWeb.Query.QueryOptions options) {
+			SemWeb.Query.MetaQueryResult ret = base.MetaQuery(graph, options);
+			
+			// If the MultiStore is falling back on the default Query implementation, then
+			// return ret.  But if we can optimize the query by passing chunks of it
+			// down to the data sources, then we unset the flag in ret that the default
+			// implementation will be used.
+			
+			SemWeb.Query.GraphMatch.QueryPart[] chunks = ChunkQuery(graph, options);
+			if (chunks != null && chunks.Length != graph.Length) // something was chunked
+				ret.IsDefaultImplementation = false;
+			
+			return ret;
+		}
+		
+		public override void Query(Statement[] graph, SemWeb.Query.QueryOptions options, SemWeb.Query.QueryResultSink sink) {
+			SemWeb.Query.GraphMatch.QueryPart[] chunks = ChunkQuery(graph, options);
+			if (chunks == null || chunks.Length == graph.Length) {
+				base.Query(graph, options, sink);
+				return;
+			}
+			
+			SemWeb.Query.GraphMatch.RunGeneralQuery(chunks, options.VariableKnownValues, options.VariableLiteralFilters,
+				0, options.Limit, sink);
+		}
+		
+		private SemWeb.Query.GraphMatch.QueryPart[] ChunkQuery(Statement[] query, SemWeb.Query.QueryOptions options) {
+			// MetaQuery the data sources to get their capabilities.
+			SemWeb.Query.MetaQueryResult[] mq = new SemWeb.Query.MetaQueryResult[allsources.Count];
+			for (int i = 0; i < allsources.Count; i++) {
+				if (!(allsources[i] is QueryableSource))
+					return null;
+				mq[i] = ((QueryableSource)allsources[i]).MetaQuery(query, options);
+				if (!mq[i].QuerySupported)
+					return null;
+			}
+		
+			System.Collections.ArrayList chunks = new System.Collections.ArrayList();
+			
+			int curSource = -1;
+			ArrayList curStatements = new ArrayList();
+			
+			for (int j = 0; j < query.Length; j++) {
+				if (curSource != -1) {
+					// If we have a curSource and it definitively answers this
+					// statement in the graph, include this statement in the
+					// current chunk.
+					if (mq[curSource].IsDefinitive != null && mq[curSource].IsDefinitive[j]) {
+						curStatements.Add(query[j]);
+						continue;
+					}
+					
+					// If we have a curSource and no other source answers this
+					// statement, also include this statement in the current chunk.
+					bool foundOther = false;
+					for (int i = 0; i < mq.Length; i++) {
+						if (i == curSource) continue;
+						if (mq[i].NoData != null && mq[i].NoData[j]) continue;
+						foundOther = true;
+						break;
+					}
+					if (!foundOther) {
+						curStatements.Add(query[j]);
+						continue;
+					}
+					
+					// Some other source could possibly answer this statement,
+					// so we complete the chunk we started.
+					SemWeb.Query.GraphMatch.QueryPart c = new SemWeb.Query.GraphMatch.QueryPart(
+						(Statement[])curStatements.ToArray(typeof(Statement)),
+						(QueryableSource)allsources[curSource]
+						);
+					chunks.Add(c);
+					
+					curSource = -1;
+					curStatements.Clear();
+				}
+			
+				// Find a definitive source for this statement
+				for (int i = 0; i < mq.Length; i++) {
+					if (mq[i].IsDefinitive != null && mq[i].IsDefinitive[j]) {
+						curSource = i;
+						curStatements.Add(query[j]);
+						break;
+					}
+				}
+				if (curSource != -1) // found a definitive source
+					continue;
+					
+				// See if only one source can answer this statement.
+				// Also build a list of sources that can answer the
+				// statement, so don't break out of this loop early.
+				ArrayList answerables = new ArrayList();
+				int findSource = -1;
+				for (int i = 0; i < mq.Length; i++) {
+					if (mq[i].NoData != null && mq[i].NoData[j]) continue;
+					answerables.Add(allsources[i]);
+					if (findSource == -1)
+						findSource = i;
+					else
+						findSource = -2; // found a second source that can answer this
+				}
+				if (findSource >= 0) {
+					curSource = findSource;
+					curStatements.Add(query[j]);
+					continue;
+				}
+				
+				// More than one source can answer this, so make a one-statement chunk.
+				SemWeb.Query.GraphMatch.QueryPart cc = new SemWeb.Query.GraphMatch.QueryPart(
+					query[j],
+					(QueryableSource[])answerables.ToArray(typeof(QueryableSource))
+					);
+				chunks.Add(cc);
+			}
+
+			if (curSource != -1) {
+				SemWeb.Query.GraphMatch.QueryPart c = new SemWeb.Query.GraphMatch.QueryPart(
+					(Statement[])curStatements.ToArray(typeof(Statement)),
+					(QueryableSource)allsources[curSource]
+					);
+				chunks.Add(c);
+			}
+			
+			return (SemWeb.Query.GraphMatch.QueryPart[])chunks.ToArray(typeof(SemWeb.Query.GraphMatch.QueryPart));
+		}
 	}
 	
 	public abstract class SimpleSourceWrapper : SelectableSource {

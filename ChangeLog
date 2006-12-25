@@ -1,3 +1,13 @@
+	* MultiStore's QueryableSource implementation now implements
+	  a distributed query over the sources it combines.  Rather
+	  that using the default GraphMatch engine, which uses the
+	  SelectableSource interface of the underlying data sources,
+	  it now breaks the query into chunks, where possible, and
+	  sends entire chunks to the possibly optmized QueryableSource
+	  interfaces of the underlying data sources.
+	* GraphMatch reorganized a little so MultiStore can take
+	  advantage of its algorithm for distributing a query.
+
 2006-12-21 Version 0.811
 
 	* Implemented the rdfs:member property in the MemoryStore

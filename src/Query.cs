@@ -12,6 +12,16 @@ using System.Collections;
 using System.Collections.Generic;
 #endif
 
+#if !DOTNET2
+using ResList = System.Collections.ICollection;
+using LitFilterMap = System.Collections.Hashtable;
+using LitFilterList = System.Collections.ArrayList;
+#else
+using ResList = System.Collections.Generic.ICollection<SemWeb.Resource>;
+using LitFilterMap = System.Collections.Generic.Dictionary<SemWeb.Variable,System.Collections.Generic.ICollection<SemWeb.LiteralFilter>>;
+using LitFilterList = System.Collections.Generic.List<SemWeb.LiteralFilter>;
+#endif
+
 namespace SemWeb.Query {
 
 	public struct QueryOptions {
@@ -26,6 +36,28 @@ namespace SemWeb.Query {
 		public IDictionary<Variable,ICollection<Resource>> VariableKnownValues;
 		public IDictionary<Variable,ICollection<LiteralFilter>> VariableLiteralFilters;
 		#endif
+		
+		public void SetVariableKnownValues(Variable variable, ResList knownValues) {
+			if (VariableKnownValues == null)
+			#if !DOTNET2
+				VariableKnownValues = new Hashtable();
+			#else
+				VariableKnownValues = new Dictionary<Variable,ICollection<Resource>>();
+			#endif
+			
+			VariableKnownValues[variable] = knownValues;
+		}
+		
+		public void AddLiteralFilter(Variable variable, LiteralFilter filter) {
+			if (VariableLiteralFilters == null)
+				VariableLiteralFilters = new LitFilterMap();
+			LitFilterList list = (LitFilterList)VariableLiteralFilters[variable];
+			if (list == null) {
+			 	list  = new LitFilterList();
+				VariableLiteralFilters[variable] = list;
+			}
+			list.Add(filter);
+		}
 	}
 	
 	public struct MetaQueryResult {
@@ -87,10 +119,18 @@ namespace SemWeb.Query {
 	
 	internal class QueryResultBufferSink : QueryResultSink {
 		#if !DOTNET2
+		public ArrayList Variables = new ArrayList();
 		public ArrayList Bindings = new ArrayList();
 		#else
+		public List<Variable> Variables = new List<Variable>();
 		public List<VariableBinding[]> Bindings = new List<VariableBinding[]>();
 		#endif
+
+		public override void Init(VariableBinding[] variables, bool distinct, bool ordered) {
+			foreach (VariableBinding b in variables)
+				Variables.Add(b.Variable);
+		}
+
 		public override bool Add(VariableBinding[] result) {
 			VariableBinding[] clone = new VariableBinding[result.Length];
 			result.CopyTo(clone, 0);
