@@ -2,7 +2,7 @@
   <TypeSignature Language="C#" Value="public class N3Reader : SemWeb.RdfReader" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
-    <AssemblyVersion>0.8.1.0</AssemblyVersion>
+    <AssemblyVersion>0.8.1.1</AssemblyVersion>
   </AssemblyInfo>
   <Base>
     <BaseTypeName>SemWeb.RdfReader</BaseTypeName>
@@ -45,6 +45,7 @@
     store.Import(data);
 }  </code>
       </example>
+      <para>Once the document is fully read, all namespace declarations in the document are available in the <see cref="P:SemWeb.RdfReader.Namespaces" /> property and can be copied into the namespace manager of a <see cref="T:SemWeb.RdfWriter" /> using the <see cref="M:SemWeb.NamespaceManager.AddFrom(SemWeb.NamespaceManager)" /> method.</para>
     </remarks>
   </Docs>
 </Type>

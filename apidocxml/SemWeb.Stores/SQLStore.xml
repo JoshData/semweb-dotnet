@@ -2,7 +2,7 @@
   <TypeSignature Language="C#" Value="public abstract class SQLStore : SemWeb.Store, SemWeb.Stores.SupportsPersistableBNodes" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
-    <AssemblyVersion>0.8.1.0</AssemblyVersion>
+    <AssemblyVersion>0.8.1.1</AssemblyVersion>
   </AssemblyInfo>
   <Base>
     <BaseTypeName>SemWeb.Store</BaseTypeName>
@@ -161,25 +161,6 @@
         <remarks>None.</remarks>
       </Docs>
     </Member>
-    <Member MemberName="EscapedAppend">
-      <MemberSignature Language="C#" Value="protected virtual void EscapedAppend (System.Text.StringBuilder b, string str, bool quotes);" />
-      <MemberType>Method</MemberType>
-      <ReturnValue>
-        <ReturnType>System.Void</ReturnType>
-      </ReturnValue>
-      <Parameters>
-        <Parameter Name="b" Type="System.Text.StringBuilder" />
-        <Parameter Name="str" Type="System.String" />
-        <Parameter Name="quotes" Type="System.Boolean" />
-      </Parameters>
-      <Docs>
-        <param name="b">To be added.</param>
-        <param name="str">To be added.</param>
-        <param name="quotes">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
-      </Docs>
-    </Member>
     <Member MemberName="GetQuoteChar">
       <MemberSignature Language="C#" Value="protected virtual char GetQuoteChar ();" />
       <MemberType>Method</MemberType>
@@ -288,6 +269,68 @@
       <Docs>
         <summary>To be added.</summary>
         <value>To be added.</value>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="CreateEntityPrefixTest">
+      <MemberSignature Language="C#" Value="protected virtual bool CreateEntityPrefixTest (string column, string prefix, System.Text.StringBuilder command);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Boolean</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="column" Type="System.String" />
+        <Parameter Name="prefix" Type="System.String" />
+        <Parameter Name="command" Type="System.Text.StringBuilder" />
+      </Parameters>
+      <Docs>
+        <param name="column">To be added.</param>
+        <param name="prefix">To be added.</param>
+        <param name="command">To be added.</param>
+        <summary>To be added.</summary>
+        <returns>To be added.</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="CreateLikeTest">
+      <MemberSignature Language="C#" Value="protected abstract void CreateLikeTest (string column, string prefix, int method, System.Text.StringBuilder command);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="column" Type="System.String" />
+        <Parameter Name="prefix" Type="System.String" />
+        <Parameter Name="method" Type="System.Int32" />
+        <Parameter Name="command" Type="System.Text.StringBuilder" />
+      </Parameters>
+      <Docs>
+        <param name="column">To be added.</param>
+        <param name="prefix">To be added.</param>
+        <param name="method">To be added.</param>
+        <param name="command">To be added.</param>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="EscapedAppend">
+      <MemberSignature Language="C#" Value="protected virtual void EscapedAppend (System.Text.StringBuilder b, string str, bool quotes, bool forLike);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="b" Type="System.Text.StringBuilder" />
+        <Parameter Name="str" Type="System.String" />
+        <Parameter Name="quotes" Type="System.Boolean" />
+        <Parameter Name="forLike" Type="System.Boolean" />
+      </Parameters>
+      <Docs>
+        <param name="b">To be added.</param>
+        <param name="str">To be added.</param>
+        <param name="quotes">To be added.</param>
+        <param name="forLike">To be added.</param>
+        <summary>To be added.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>

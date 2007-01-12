@@ -2,7 +2,7 @@
   <TypeSignature Language="C#" Value="public struct QueryOptions" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
-    <AssemblyVersion>0.8.1.0</AssemblyVersion>
+    <AssemblyVersion>0.8.1.1</AssemblyVersion>
   </AssemblyInfo>
   <Base>
     <BaseTypeName>System.ValueType</BaseTypeName>
@@ -49,6 +49,40 @@
         <ReturnType>System.Collections.IDictionary</ReturnType>
       </ReturnValue>
       <Docs>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="AddLiteralFilter">
+      <MemberSignature Language="C#" Value="public void AddLiteralFilter (SemWeb.Variable variable, SemWeb.LiteralFilter filter);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="variable" Type="SemWeb.Variable" />
+        <Parameter Name="filter" Type="SemWeb.LiteralFilter" />
+      </Parameters>
+      <Docs>
+        <param name="variable">To be added.</param>
+        <param name="filter">To be added.</param>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="SetVariableKnownValues">
+      <MemberSignature Language="C#" Value="public void SetVariableKnownValues (SemWeb.Variable variable, System.Collections.ICollection knownValues);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="variable" Type="SemWeb.Variable" />
+        <Parameter Name="knownValues" Type="System.Collections.ICollection" />
+      </Parameters>
+      <Docs>
+        <param name="variable">To be added.</param>
+        <param name="knownValues">To be added.</param>
         <summary>To be added.</summary>
         <remarks>To be added.</remarks>
       </Docs>

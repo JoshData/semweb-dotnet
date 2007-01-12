@@ -1,3 +1,7 @@
+	* RdfXmlWriter: A new Options nested class and a new set of
+	  constructors allows the style of the output to be controlled.
+	  Use RdfXmlWriter.Options.XMP to enforce output consistent with
+	  the XMP spec.
 	* MultiStore's QueryableSource implementation now implements
 	  a distributed query over the sources it combines.  Rather
 	  that using the default GraphMatch engine, which uses the

@@ -2,7 +2,7 @@
   <TypeSignature Language="C#" Value="public interface SelectableSource : SemWeb.StatementSource" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
-    <AssemblyVersion>0.8.1.0</AssemblyVersion>
+    <AssemblyVersion>0.8.1.1</AssemblyVersion>
   </AssemblyInfo>
   <Interfaces>
     <Interface>

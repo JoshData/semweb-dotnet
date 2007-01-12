@@ -1,0 +1,201 @@
+<Type Name="RdfXmlWriter+Options" FullName="SemWeb.RdfXmlWriter+Options">
+  <TypeSignature Language="C#" Value="public class RdfXmlWriter.Options" />
+  <AssemblyInfo>
+    <AssemblyName>SemWeb</AssemblyName>
+    <AssemblyVersion>0.8.1.1</AssemblyVersion>
+  </AssemblyInfo>
+  <Base>
+    <BaseTypeName>System.Object</BaseTypeName>
+  </Base>
+  <Interfaces />
+  <Members>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public Options ();" />
+      <MemberType>Constructor</MemberType>
+      <Parameters />
+      <Docs>
+        <summary>This is the default public constructor.</summary>
+        <remarks>None.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="EmbedNamedNodes">
+      <MemberSignature Language="C#" Value="public bool EmbedNamedNodes;" />
+      <MemberType>Field</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Boolean</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Sets whether named nodes (nodes with URIs) are embedded within property elements.</summary>
+        <remarks><para>When this field is <see langword="true" />, the following output might be generated:</para>
+
+<code lang="RDF/XML">&lt;rdf:Description&gt;
+   &lt;ex:hasRelationTo&gt;
+      &lt;rdf:Description rdf:about="http://www.example.org/"&gt;
+         ...
+      &lt;/rdf:Description&gt;
+   &lt;/ex:hasRelationTo&gt;
+&lt;/rdf:Description&gt;</code>
+
+<para>But when this field is <see langword="false" />, the following output would be generated instead:</para>
+
+<code lang="RDF/XML">&lt;rdf:Description&gt;
+   &lt;ex:hasRelationTo rdf:resource="http://www.example.org/"/&gt;
+&lt;/rdf:Description&gt;
+&lt;rdf:Description rdf:about="http://www.example.org/"&gt;
+   ...
+&lt;/rdf:Description&gt;</code></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Full">
+      <MemberSignature Language="C#" Value="public static SemWeb.RdfXmlWriter.Options Full;" />
+      <MemberType>Field</MemberType>
+      <ReturnValue>
+        <ReturnType>SemWeb.RdfXmlWriter+Options</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>An instance of Options specifying that all output options are turned on.</summary>
+        <remarks>All of the instance fields in this object are <see langword="true" />, providing general RDF/XML output with options to make the document more readable.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="UseParseTypeLiteral">
+      <MemberSignature Language="C#" Value="public bool UseParseTypeLiteral;" />
+      <MemberType>Field</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Boolean</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Sets whether parseType=Literal is used for xsd:XMLLiteral values.</summary>
+        <remarks><para>When this field is <see langword="true" />, the following output might be generated:</para>
+
+<code lang="RDF/XML">&lt;rdf:Description&gt;
+   &lt;ex:hasContent rdf:parseType="Literal"&gt;
+      &lt;myContent&gt;this is &lt;b&gt;my&lt;/b&gt; content&lt;/myContent&gt;
+   &lt;/ex:hasContent&gt;
+&lt;/rdf:Description&gt;</code>
+
+<para>But when this field is <see langword="false" />, the following output would be generated instead:</para>
+
+<code lang="RDF/XML">&lt;rdf:Description&gt;
+   &lt;ex:hasContent&gt;
+      &amp;lt;myContent&amp;gt;this is &amp;lt;b&amp;gt;my&amp;lt;/b&amp;gt; content&amp;lt;/myContent&amp;gt;
+   &lt;/ex:hasContent&gt;
+&lt;/rdf:Description&gt;</code>
+</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="UsePredicateAttributes">
+      <MemberSignature Language="C#" Value="public bool UsePredicateAttributes;" />
+      <MemberType>Field</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Boolean</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Sets whether predicate attributes may be used.</summary>
+        <remarks><para>When this field is <see langword="true" />, the following output might be generated:</para>
+
+<code lang="RDF/XML">&lt;foaf:Person&gt;
+   &lt;foaf:knows foaf:firstname="John" foaf:lastname="Doe"/&gt;
+&lt;/foaf:Person&gt;</code>
+
+<para>But when this field is <see langword="false" />, the following output would be generated instead:</para>
+
+<code lang="RDF/XML">&lt;foaf:Person&gt;
+   &lt;foaf:knows&gt;
+      &lt;rdf:Description&gt;
+         &lt;foaf:firstname&gt;John&lt;/foaf:firstname&gt;
+         &lt;foaf:lastname&gt;Doe&lt;/foaf:lastname&gt;
+      &lt;/rdf:Description&gt;
+   &lt;/foaf:knows&gt;
+&lt;/foaf:Person&gt;</code></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="UseRdfID">
+      <MemberSignature Language="C#" Value="public bool UseRdfID;" />
+      <MemberType>Field</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Boolean</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Sets whether the rdf:ID attribute is used to identify named nodes with URIs relative to the Base URI of the document, instead of an rdf:about attribute.</summary>
+        <remarks><para>When this field is <see langword="true" />, the following output might be generated:</para>
+
+<code lang="RDF/XML">&lt;foaf:Person rdf:ID="John"&gt;
+   ...
+&lt;/foaf:Person&gt;</code>
+
+<para>But when this field is <see langword="false" />, the following output would be generated instead:</para>
+
+<code lang="RDF/XML">&lt;foaf:Person rdf:about="http://www.example.org/baseURI#John"&gt;
+   ...
+&lt;/foaf:Person&gt;</code>
+</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="UseRdfLI">
+      <MemberSignature Language="C#" Value="public bool UseRdfLI;" />
+      <MemberType>Field</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Boolean</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Sets whether rdf:_nnn URIs are replaced with rdf:li.</summary>
+        <remarks><para>This field controls whether rdf:_nnn properties are written out as rdf:li.  This field only has an effect when the rdf:_nnn properties are streamed into the RdfXmlWriter in numerical order.</para>
+
+<para>When this field is <see langword="true" />, the following output might be generated:</para>
+
+<code lang="RDF/XML">&lt;rdf:Bag&gt;
+   &lt;rdf:li rdf:resource="http://www.example.org/one"/&gt;
+   &lt;rdf:li rdf:resource="http://www.example.org/two"/&gt;
+   &lt;rdf:li rdf:resource="http://www.example.org/three"/&gt;
+&lt;/rdf:Bag&gt;</code>
+
+<para>But when this field is <see langword="false" />, the following output would be generated instead:</para>
+
+<code lang="RDF/XML">&lt;rdf:Bag&gt;
+   &lt;rdf:_1 rdf:resource="http://www.example.org/one"/&gt;
+   &lt;rdf:_2 rdf:resource="http://www.example.org/two"/&gt;
+   &lt;rdf:_3 rdf:resource="http://www.example.org/three"/&gt;
+&lt;/rdf:Bag&gt;</code>
+</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="UseTypedNodes">
+      <MemberSignature Language="C#" Value="public bool UseTypedNodes;" />
+      <MemberType>Field</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Boolean</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Sets whether typed rdf:Description elements are allowed.</summary>
+        <remarks><para>When this field is <see langword="true" />, the following output might be generated:</para>
+
+<code lang="RDF/XML">&lt;foaf:Person&gt;
+   ...
+&lt;/foaf:Person&gt;</code>
+
+<para>But when this field is <see langword="false" />, the following output would be generated instead:</para>
+
+<code lang="RDF/XML">&lt;rdf:Description&gt;
+   &lt;rdf:type rdf:resource="http://xmlns.com/foaf/0.1/Person"/&gt;
+   ...
+&lt;/rdf:Description&gt;</code>
+</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="XMP">
+      <MemberSignature Language="C#" Value="public static SemWeb.RdfXmlWriter.Options XMP;" />
+      <MemberType>Field</MemberType>
+      <ReturnValue>
+        <ReturnType>SemWeb.RdfXmlWriter+Options</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>An instance of Options with only the options turned on supported by the Adobe XMP metadata format.</summary>
+        <remarks>The Adobe XMP format is a reduced version of RDF/XML used for embedding metadata in images and other files.  This class turns off the output options of the RdfXmlWriter that are not supported in XMP.  The UseTypedNodes, UseRdfID, UseParseTypeLiteral, and UsePredicateAttributes fields are set to <see langword="false" />.  The remaining fields are set to <see langword="true" />.</remarks>
+      </Docs>
+    </Member>
+  </Members>
+  <Docs>
+    <summary>This class specifies output style options for the <see cref="T:SemWeb.RdfXmlWriter" />.</summary>
+    <remarks>This class defines two static fields which have option settings for two common styles: <see cref="F:SemWeb.RdfXmlWriter+Options.Full" /> and <see cref="F:SemWeb.RdfXmlWriter+Options.XMP" />.  See the documentation for those fields for details.</remarks>
+  </Docs>
+</Type>

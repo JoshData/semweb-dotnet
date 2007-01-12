@@ -4,3 +4,6 @@ all: *.cs
 
 runtests: all
 	mono helloworld.exe > helloworld.output.rdf
+
+clean:
+	rm *.exe*
