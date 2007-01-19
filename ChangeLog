@@ -5,6 +5,8 @@
 	* N3Writer: Write out xsd:integer and xsd:double typed values
 	  without quotes in the formats that support it (integers in
 	  N3 and Turtle, doubles only in N3).
+	* N3Reader: When an unquoted numeric literal is parsed, type it
+	  with xsd:integer or if it's non-integral xsd:double.
 	* MultiStore's QueryableSource implementation now implements
 	  a distributed query over the sources it combines.  Rather
 	  that using the default GraphMatch engine, which uses the

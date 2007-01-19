@@ -654,8 +654,12 @@ namespace SemWeb {
 			
 			// In Turtle, numbers are restricted to [0-9]+, and are datatyped xsd:integer.
 			double numval;
-			if (double.TryParse(str, System.Globalization.NumberStyles.Any, null, out numval))
-				return new Literal(numval.ToString());
+			if (double.TryParse(str, System.Globalization.NumberStyles.Any, null, out numval)) {
+				if (numval >= long.MinValue && numval <= long.MaxValue && numval == (double)(long)numval)
+					return new Literal(((long)numval).ToString(), null, NS.XMLSCHEMA + "integer");
+				else
+					return new Literal(numval.ToString(), null, NS.XMLSCHEMA + "double");
+			}
 			
 			// If @keywords is used, alphanumerics that aren't keywords
 			// are local names in the default namespace.
