@@ -20,6 +20,9 @@ namespace SemWeb {
 		
 		Formats format = Formats.Turtle;
 		
+		private const string xsdInteger = NS.XMLSCHEMA + "integer";
+		private const string xsdDouble = NS.XMLSCHEMA + "double";
+		
 		public enum Formats {
 			NTriples,
 			Turtle,
@@ -39,7 +42,7 @@ namespace SemWeb {
 		public override void Add(Statement statement) {
 			if (statement.AnyNull) throw new ArgumentNullException();
 			WriteStatement2(URI(statement.Subject), URI(statement.Predicate),
-				statement.Object is Literal ? ((Literal)statement.Object).ToString() : URI((Entity)statement.Object));
+				statement.Object is Literal ? Literal((Literal)statement.Object) : URI((Entity)statement.Object));
 		}
 
 		public override void Close() {
@@ -55,6 +58,12 @@ namespace SemWeb {
 				writer.Flush();
 		}
 
+		private string Literal(Literal literal) {
+			if (format == Formats.NTriples || literal.DataType == null) return literal.ToString();
+			if (literal.DataType == xsdInteger) return literal.ParseValue().ToString();
+			if (literal.DataType == xsdDouble && format == Formats.Notation3) return literal.ParseValue().ToString();
+			return literal.ToString();
+		}
 		
 		private string URI(Entity entity) {
 			if (entity is Variable && ((Variable)entity).LocalName != null)
