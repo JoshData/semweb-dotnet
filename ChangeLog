@@ -1,3 +1,5 @@
+2007-01-21 Version 0.82 -- 1st Release Candidate for version 1.0
+
 	* RdfXmlWriter: A new Options nested class and a new set of
 	  constructors allows the style of the output to be controlled.
 	  Use RdfXmlWriter.Options.XMP to enforce output consistent with
