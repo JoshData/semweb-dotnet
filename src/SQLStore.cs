@@ -126,7 +126,7 @@ namespace SemWeb.Stores {
 			if (verdatastr == null)
 				RunCommand("INSERT INTO " + table + "_literals (id, value) VALUES (0, " + Escape(newverdata, true) + ")");
 			else if (verdatastr != newverdata)
-				RunCommand("UPDATE " + table + "_literals SET value = " + newverdata + " WHERE id = 0");
+				RunCommand("UPDATE " + table + "_literals SET value = " + Escape(newverdata, true) + " WHERE id = 0");
 				
 			return isNew;
 		}
@@ -1206,6 +1206,8 @@ namespace SemWeb.Stores {
 							if (options.VariableKnownValues != null) {
 								ICollection values = (ICollection)options.VariableKnownValues[v];
 								if (values != null) {
+									if (values.Count == 0)
+										return;
 									Resource r = ToMultiRes((Resource[])new ArrayList(values).ToArray(typeof(Resource)));
 									if (!WhereItem(myRef, r, whereClause, whereClause.Length != 0)) {
 										// We know at this point that the query cannot return any results.

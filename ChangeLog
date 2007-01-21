@@ -17,6 +17,7 @@
 	* GraphMatch reorganized a little so MultiStore can take
 	  advantage of its algorithm for distributing a query.
 	* Literal: Use XmlConvert class to parse XSD values in ParseValue().
+	* SQLStore: Minor bug fix/crash in Query.
 
 2006-12-21 Version 0.811
 
