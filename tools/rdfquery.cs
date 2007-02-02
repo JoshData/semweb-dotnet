@@ -95,9 +95,14 @@ public class RDFQuery {
 			SemWeb.Query.QueryOptions qopts = new SemWeb.Query.QueryOptions();
 			qopts.DistinguishedVariables = queryModelVars;
 
-			foreach (Entity e in queryModel.GetEntities())
-				if (e is BNode && !(e is Variable))
-					queryModel.Replace(e, new Variable(((BNode)e).LocalName));
+			// Replace bnodes in the query with Variables
+			int bnodectr = 0;
+			foreach (Entity e in queryModel.GetEntities()) {
+				if (e is BNode && !(e is Variable)) {
+					BNode b = (BNode)e;
+					queryModel.Replace(e, new Variable(b.LocalName != null ? b.LocalName : "bnodevar" + (++bnodectr)));
+				}
+			}
 			
 			((QueryableSource)model).Query(queryModel.ToArray(), qopts, qs);
 		} else {
