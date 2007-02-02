@@ -598,7 +598,7 @@ namespace SemWeb {
 			
 			if (str == "(") {
 				// A list
-				Entity ent = null;
+				Entity head = null, ent = null;
 				while (true) {
 					bool rev2;
 					Resource res = ReadResource(context, out rev2);
@@ -607,6 +607,8 @@ namespace SemWeb {
 					
 					if (ent == null) {
 						ent = new BNode();
+						if (head == null)
+							head = ent;
 					} else {
 						Entity sub = new BNode();
 						Add(context.store, new Statement(ent, entRDFREST, sub, context.meta), loc);
@@ -619,7 +621,8 @@ namespace SemWeb {
 					ent = entRDFNIL; // according to Turtle spec
 				else
 					Add(context.store, new Statement(ent, entRDFREST, entRDFNIL, context.meta), loc);
-				return ent;
+				
+				return head;
 			}
 			
 			if (str == ")")

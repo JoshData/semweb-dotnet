@@ -1,3 +1,5 @@
+	* N3Reader: Reading of "(...)" lists was not working right.
+
 2007-01-21 Version 0.82 -- 1st Release Candidate for version 1.0
 
 	* RdfXmlWriter: A new Options nested class and a new set of
