@@ -1,3 +1,49 @@
+/**
+ * SQLStore.cs: An abstract implementation of an RDF triple store
+ * using an SQL-based backend.  This class is extended by the
+ * MySQLStore, SQLiteStore, and PostreSQLStore classes.
+ *
+ * The SQLStore creates three tables to store its data.  The tables
+ * are organizes follows:
+ *   table                columns
+ * PREFIX_entites    id (int), value (case-sensitive string)
+ * PREFIX_literals   id (int), value (case-sens. string), language (short case-insens. string),
+                     datatype (case-sense. string), hash (28byte case-sense string)
+ * PREFIX_statements subject (int), predicate (int), object (int), meta (int), objecttype (tiny int)
+ *
+ * Every resource (named node, bnode, and literal) is given a numeric ID.
+ * Zero is reserved.  One is used for the bnode in the static field Statement.DefaultMeta.
+ * The numbers for entities and literals are drawn from the same set of numbers,
+ * so there cannot be an entity and a literal with the same ID.
+ *
+ * The subject, predicate, object, and meta columns in the _statements table
+ * refer to the numeric IDs of resources.  objecttype is zero if the object
+ * is an entity (named or blank), otherwise one if it is a literal.  Some databases
+ * (i.e. MySQL) add a UNIQUE constraint over the subject, predicate, object,
+ * and meta columns so that the database is guaranteed not to have duplicate
+ * rows.  Not all databases will do this, though.
+ *
+ * All literals have a row in the _literals table.  The value, language, and
+ * datatype columns have the obvious things.  Notably, the datatype column
+ * is a string column, even though you might think of it as an entity that
+ * should be in the entities table.  The hash column contains a SHA1 hash
+ * over the three fields and is used to speed up look-ups for literals.  It
+ * also is used for creating a UNIQUE index over the table.  Because literal
+ * values can be arbitrarily long, creating a fixed-size hash is the only
+ * way to reliably create a UNIQUE constraint over the table.  A literal
+ * value is entered into this table at most once.  You can't have two rows
+ * that have the exact same value, language, and datatype.
+ *
+ * The _entities table contains all *named* entities.  Basically it is just
+ * a mapping between entity IDs in the _statements table and their URIs.
+ * Importantly, bnodes are not represented in this table (it would be a
+ * waste of space since they have nothing to map IDs to).  A UNIQUE constraint
+ * is placed over the value column to ensure that a URI ends up in the table
+ * at most once.  Because bnodes are not in this table, the only way to
+ * get a list of them is to see what IDs are used in _statements that are
+ * not in this table or in the _literals table.
+ */
+
 using System;
 using System.Collections;
 using System.Collections.Specialized;
@@ -9,45 +55,91 @@ using System.Text;
 using SemWeb.Util;
 
 namespace SemWeb.Stores {
-	// TODO: It's not safe to have two concurrent accesses to the same database
-	// because the creation of new entities will use the same IDs.
-	
 	public abstract class SQLStore : Store, SupportsPersistableBNodes {
+		// Table initialization, etc.
+		// --------------------------
+	
+		// This is a version number representing the current 'schema' implemented
+		// by this class in case of future updates.
 		int dbformat = 1;
 	
+		// 'table' is the prefix of the tables used by this store, i.e.
+		// {table}_statements, {table}_literals, {table}_entities.  This is
+		// set in the constructor.
 		string table;
+		
+		// 'guid' is a GUID assigned to this store.  It is created the
+		// first time the SQL table structure is made and is saved in
+		// the info block of the literal with ID zero.
 		string guid;
 		
+		// this flag tracks the first access to the backend, when it
+		// creates tables and indexes if necessary
 		bool firstUse = true;
+
+		// Importing
+		// ------------
 		
+		// The SQL store operates in two modes, isImporting == false and
+		// isImporting == true.  The first mode is the usual mode, where
+		// calls to Add are executed immediately.  The second mode, which
+		// is activated by the Import() method, batches Add calls to make
+		// insertions faster.  While importing, no public methods should be
+		// called except by this class itself.
 		bool isImporting = false;
+		
+		// Each time we need to add a resource, we need to find it an ID.
+		// When importing, we track the next ID available in this field
+		// and increment it as necessary.  When not importing, we do a
+		// DB query to find the next available ID.
 		int cachedNextId = -1;
+		
+		// These variables hold on to the IDs of literals and entities during
+		// importing. They are periodically cleared.
 		Hashtable entityCache = new Hashtable();
 		Hashtable literalCache = new Hashtable();
 		
+		// This is a buffer of statements waiting to be processed.
+		StatementList addStatementBuffer = null;
+		
+		// These track the performance of our buffer so we can adjust its size
+		// on the fly to maximize performance.
+		int importAddBufferSize = 200, importAddBufferRotation = 0;
+		TimeSpan importAddBufferTime = TimeSpan.MinValue;
+		
+		// Other Flags
+		// -----------
+		
+		// When adding a statement that has a bnode in it (not while importing),
+		// we have to do a two-staged procedure.  This holds on to a list of
+		// GUIDs that we've temporarily assigned to bnodes that are cleared
+		// at the end of Add().
 		ArrayList anonEntityHeldIds = new ArrayList();
 		
+		// Tracks whether any statements have been removed from the store by this
+		// object.  When Close() is called, if true, the entities and literals
+		// tables are cleaned up to remove unreferenced resoures.
 		bool statementsRemoved = false;
 
+		// Debugging flags from environment variables.
 		static bool Debug = System.Environment.GetEnvironmentVariable("SEMWEB_DEBUG_SQL") != null;
 		static bool DebugLogSpeed = System.Environment.GetEnvironmentVariable("SEMWEB_DEBUG_SQL_LOG_SPEED") != null;
 		
+		// This guy is reused in various calls to avoid allocating a new one of
+		// these all the time.
 		StringBuilder cmdBuffer = new StringBuilder();
 		 
-		// Buffer statements to process together.
-		StatementList addStatementBuffer = null;
-		
+		// The quote character that surrounds strings in SQL statements.
+		// Initialized in the constructor.
 		char quote;
 		
+		// Ensure that calls to Select() and Query() are synchronized to make these methods thread-safe.
 		object syncroot = new object();
 		
-		Hashtable metaEntities;
-		
+		// Our SHA1 object which we use to create hashes of literal values.
 		SHA1 sha = SHA1.Create();
 		
-		int importAddBufferSize = 200, importAddBufferRotation = 0;
-		TimeSpan importAddBufferTime = TimeSpan.MinValue;
-				
+		// This class is placed inside entities to cache their numeric IDs.
 		private class ResourceKey {
 			public int ResId;
 			
@@ -57,10 +149,21 @@ namespace SemWeb.Stores {
 			public override bool Equals(object other) { return (other is ResourceKey) && ((ResourceKey)other).ResId == ResId; }
 		}
 		
+		// Some helpers.
+		
+		const string rdfs_member = NS.RDFS + "member";
+		const string rdf_li = NS.RDF + "_";
+		
 		private static readonly string[] fourcols = new string[] { "subject", "predicate", "object", "meta" };
 		private static readonly string[] predcol = new string[] { "predicate" };
 		private static readonly string[] metacol = new string[] { "meta" };
 
+		private string INSERT_INTO_LITERALS_VALUES { get { return "INSERT INTO " + table + "_literals VALUES "; } }
+		private string INSERT_INTO_ENTITIES_VALUES { get { return "INSERT INTO " + table + "_entities VALUES "; } }
+		private string INSERT_INTO_STATEMENTS_VALUES { get { return "INSERT " + (HasUniqueStatementsConstraint ? InsertIgnoreCommand : "") + " INTO " + table + "_statements VALUES "; } }
+			
+
+		// The constructor called by subclasses.
 		protected SQLStore(string table) {
 			this.table = table;
 			
@@ -68,7 +171,12 @@ namespace SemWeb.Stores {
 		}
 		
 		protected string TableName { get { return table; } }
+		
+		// The next few abstract and virtual methods allow implementors to control
+		// what features the SQLStore takes advantage of and controls the SQL
+		// language use.
 
+		// See the API docs for more on these.
 		protected abstract bool HasUniqueStatementsConstraint { get; } // may not return true unless INSERT (IGNORE COMMAND) is supported
 		protected abstract string InsertIgnoreCommand { get; }
 		protected abstract bool SupportsInsertCombined { get; }
@@ -87,14 +195,12 @@ namespace SemWeb.Stores {
 			command.Append("))");
 			return true;
 		}
-
-		private string INSERT_INTO_LITERALS_VALUES { get { return "INSERT INTO " + table + "_literals VALUES "; } }
-		private string INSERT_INTO_ENTITIES_VALUES { get { return "INSERT INTO " + table + "_entities VALUES "; } }
-		private string INSERT_INTO_STATEMENTS_VALUES { get { return "INSERT " + (HasUniqueStatementsConstraint ? InsertIgnoreCommand : "") + " INTO " + table + "_statements VALUES "; } }
-			
-		const string rdfs_member = NS.RDFS + "member";
-		const string rdf_li = NS.RDF + "_";
 		
+		// If this is the first use, initialize the table and index structures.
+		// CreateTable() will create tables if they don't already exist.
+		// CreateIndexes() will only be run if this is a new database, so that
+		// the user may customize the indexes after the table is first created
+		// without SemWeb adding its own indexes the next time again.
 		private void Init() {
 			if (!firstUse) return;
 			firstUse = false;
@@ -104,6 +210,8 @@ namespace SemWeb.Stores {
 				CreateIndexes();
 		}
 		
+		// Creates the info block in the literal row with ID zero.  Returns true
+		// if it created a new info block (i.e. this is a new database).
 		private bool CreateVersion() {	
 			string verdatastr = RunScalarString("SELECT value FROM " + table + "_literals WHERE id = 0");
 			bool isNew = (verdatastr == null);
@@ -148,9 +256,18 @@ namespace SemWeb.Stores {
 			return ret;
 		}
 		
+		// Now we get to the Store implementation.
+		
+		// Why do we return true here?
 		public override bool Distinct { get { return true; } }
 		
-		public override int StatementCount { get { Init(); RunAddBuffer(); return RunScalarInt("select count(subject) from " + table + "_statements", 0); } }
+		public override int StatementCount {
+			get {
+				Init();
+				RunAddBuffer();
+				return RunScalarInt("select count(subject) from " + table + "_statements", 0);
+			}
+		}
 		
 		public string GetStoreGuid() { return guid; }
 		
@@ -169,6 +286,11 @@ namespace SemWeb.Stores {
 			}
 		}
 		
+		// Returns the next ID available for a resource.  If we're importing,
+		// use and increment the cached ID.  Otherwise, scan the tables for
+		// the highest ID in use and use that plus one.  (We have to scan all
+		// tables because bnode IDs are only in the statements table and
+		// entities and literals may be orphaned so those are only in those tables.)
 		private int NextId() {
 			if (isImporting && cachedNextId != -1)
 				return ++cachedNextId;
@@ -196,6 +318,7 @@ namespace SemWeb.Stores {
 			if (maxid >= nextid) nextid = maxid + 1;
 		}
 		
+		// Implements Store.Clear() by dropping the tables entirely.
 		public override void Clear() {
 			// Drop the tables, if they exist.
 			try { RunCommand("DROP TABLE " + table + "_statements;"); } catch (Exception) { }
@@ -206,19 +329,24 @@ namespace SemWeb.Stores {
 			Init();
 			if (addStatementBuffer != null) addStatementBuffer.Clear();
 			
-			metaEntities = null;
-
 			//RunCommand("DELETE FROM " + table + "_statements;");
 			//RunCommand("DELETE FROM " + table + "_literals;");
 			//RunCommand("DELETE FROM " + table + "_entities;");
 		}
 		
+		// Computes a hash for a literal value to put in the hash column of the _literals table.
 		private string GetLiteralHash(Literal literal) {
 			byte[] data = System.Text.Encoding.Unicode.GetBytes(literal.ToString());
 			byte[] hash = sha.ComputeHash(data);
 			return Convert.ToBase64String(hash);
 		}
 		
+		// Gets the ID of a literal in the database given an actual Literal object.
+		// If create is false, return 0 if no such literal exists in the database.
+		// Otherwise, create a row for the literal if none exists putting the
+		// SQL insertion statement into the buffer argument.
+		// If we're in isImporting mode, we expect that the literal's ID has already
+		// been pre-fetched and put into literalCache (if the literal exists in the DB).
 		private int GetLiteralId(Literal literal, bool create, StringBuilder buffer, bool insertCombined, ref bool firstInsert) {
 			// Returns the literal ID associated with the literal.  If a literal
 			// doesn't exist and create is true, a new literal is created,
@@ -251,6 +379,7 @@ namespace SemWeb.Stores {
 			return 0;
 		}
 		
+		// Creates the SQL command to add a literal to the _literals table.
 		private int AddLiteral(Literal literal, StringBuilder buffer, bool insertCombined, ref bool firstInsert) {
 			int id = NextId();
 			
@@ -298,6 +427,12 @@ namespace SemWeb.Stores {
 			return id;
 		}
 
+		// Gets the ID of an entity in the database given a URI.
+		// If create is false, return 0 if no such entity exists in the database.
+		// Otherwise, create a row for the entity if none exists putting the
+		// SQL insertion statement into the entityInsertBuffer argument.
+		// If we're in isImporting mode, we expect that the entity's ID has already
+		// been pre-fetched and put into entityCache (if the entity exists in the DB).
 		private int GetEntityId(string uri, bool create, StringBuilder entityInsertBuffer, bool insertCombined, bool checkIfExists, ref bool firstInsert) {
 			// Returns the resource ID associated with the URI.  If a resource
 			// doesn't exist and create is true, a new resource is created,
@@ -359,11 +494,24 @@ namespace SemWeb.Stores {
 			return id;
 		}
 		
+		// Gets the ID of an entity in the database given a URI.
+		// If create is false, return 0 if no such entity exists in the database.
+		// Otherwise, create a row for the entity if none exists.
 		private int GetResourceId(Resource resource, bool create) {
 			bool firstLiteralInsert = true, firstEntityInsert = true;
 			return GetResourceIdBuffer(resource, create, null, null, false, ref firstLiteralInsert, ref firstEntityInsert);
 		}
 		
+		// Gets the ID of an entity or literal in the database given a Resource object.
+		// If create is false, return 0 if no such entity exists in the database.
+		// Otherwise, create a row for the resource if none exists putting the
+		// SQL insertion statements into the literalInsertBuffer and entityInsertBuffer arguments.
+		// If we're in isImporting mode, we expect that the resources's ID has already
+		// been pre-fetched and put into one of the cache variables (if the resource exists in the DB).
+		// If we're trying to get the ID for a bnode (i.e. we want to add it to the database),
+		//   if we're isImporting, we know the next ID we can use -- increment and return that.
+		//   otherwise we have to create a temporary row in the _entities table to hold onto
+		//   the ID just until we add the statement, at which point the row can be removed.
 		private int GetResourceIdBuffer(Resource resource, bool create, StringBuilder literalInsertBuffer, StringBuilder entityInsertBuffer, bool insertCombined, ref bool firstLiteralInsert, ref bool firstEntityInsert) {
 			if (resource == null) return 0;
 			
@@ -412,11 +560,14 @@ namespace SemWeb.Stores {
 			return id;
 		}
 
+		// Gets the type of the Resource, 0 for entities; 1 for literals.
 		private int ObjectType(Resource r) {
 			if (r is Literal) return 1;
 			return 0;
 		}
 		
+		// Creates an entity given its ID and its URI, and put it into
+		// the cache argument if the argument is not null.
 		private Entity MakeEntity(int resourceId, string uri, Hashtable cache) {
 			if (resourceId == 0)
 				return null;
@@ -443,11 +594,13 @@ namespace SemWeb.Stores {
 			return ent;
 		}
 		
+		// Adds a statement to the store.
+		// If we're isImoprting, buffer the statement, and if the buffer is full,
+		// run the buffer.
+		// Otherwise, add it immediately.
 		public override void Add(Statement statement) {
 			if (statement.AnyNull) throw new ArgumentNullException();
 			
-			metaEntities = null;
-
 			if (addStatementBuffer != null) {
 				addStatementBuffer.Add(statement);
 				RunAddBufferDynamic();
@@ -687,7 +840,6 @@ namespace SemWeb.Stores {
 			RunCommand(cmd.ToString());
 			
 			statementsRemoved = true;
-			metaEntities = null;
 		}
 		
 		public override Entity[] GetEntities() {
@@ -1063,7 +1215,7 @@ namespace SemWeb.Stores {
 					Entity subject = GetSelectedEntity(sid, suri, templateSubject, columns.SubjectId, columns.SubjectUri, entMap);
 					Entity predicate = GetSelectedEntity(pid, puri, templatePredicate, columns.PredicateId, columns.PredicateUri, entMap);
 					Resource objec = GetSelectedResource(oid, ot, ouri, lv, ll, ld, templateObject, columns.ObjectId, columns.ObjectData, entMap);
-					Entity meta = GetSelectedEntity(mid, muri, templateMeta, columns.MetaId, columns.MetaUri, templateMeta != null ? entMap : metaEntities);
+					Entity meta = GetSelectedEntity(mid, muri, templateMeta, columns.MetaId, columns.MetaUri, templateMeta != null ? entMap : null);
 
 					if (litFilters != null && !LiteralFilter.MatchesFilters(objec, litFilters, this))
 						continue;
@@ -1393,21 +1545,6 @@ namespace SemWeb.Stores {
 			}			
 		}
 		
-		/*private void LoadMetaEntities() {
-			if (metaEntities != null) return;
-			metaEntities = new Hashtable();
-			
-			// MySQL "optimizes" the statement below in such a way that the subquery isn't executed first!
-			// this misses meta entities that are anonymous, but that's ok
-			using (IDataReader reader = RunReader("select id, value from " + table + "_entities where id in (select distinct meta from " + table + "_statements)")) {
-				while (reader.Read()) {
-					int id = reader.GetInt32(0);
-					string uri = reader.GetString(1);
-					metaEntities[id] = MakeEntity(id, uri, null);
-				}
-			}
-		}*/
-		
 		private string Escape(string str, bool quotes) {
 			if (str == null) return "NULL";
 			StringBuilder b = new StringBuilder();
@@ -1503,7 +1640,6 @@ namespace SemWeb.Stores {
 				RunCommand(cmd.ToString());
 			}
 
-			metaEntities = null;
 		}
 		
 		public override void Replace(Statement find, Statement replacement) {
@@ -1540,7 +1676,6 @@ namespace SemWeb.Stores {
 				return;
 			
 			RunCommand(cmd.ToString());
-			metaEntities = null;
 		}
 		
 		protected abstract void RunCommand(string sql);
