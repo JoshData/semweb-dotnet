@@ -1,4 +1,8 @@
 	* N3Reader: Reading of "(...)" lists was not working right.
+	* Resource.cs: BNodes without LocalName and variables without
+	  names would ToString() with their hash code, but negative
+	  hash codes look funny, so it outputs the abs(hashcode) now.
+	  Also added Literal.FromValue(Decimal).
 
 2007-01-21 Version 0.82 -- 1st Release Candidate for version 1.0
 

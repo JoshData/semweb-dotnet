@@ -194,7 +194,7 @@ namespace SemWeb {
 			if (LocalName != null)
 				return "_:" + LocalName;
 			else
-				return "_:bnode" + GetHashCode();
+				return "_:bnode" + Math.Abs(GetHashCode());
 		}
 	}
 	
@@ -209,7 +209,7 @@ namespace SemWeb {
 			if (LocalName != null)
 				return "?" + LocalName;
 			else
-				return "?var" + GetHashCode();
+				return "?var" + Math.Abs(GetHashCode());
 		}
 	}
 
@@ -377,6 +377,9 @@ namespace SemWeb {
 		}
 		public static Literal FromValue(ulong value) {
 			return new Literal(value.ToString(), null, NS.XMLSCHEMA + "unsignedLong");
+		}
+		public static Literal FromValue(Decimal value) {
+			return new Literal(value.ToString(), null, NS.XMLSCHEMA + "decimal");
 		}
 		public static Literal FromValue(bool value) {
 			return new Literal(value ? "true" : "false", null, NS.XMLSCHEMA + "boolean");
