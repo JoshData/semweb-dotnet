@@ -14,7 +14,7 @@ namespace SemWeb {
 #endif
 	{
 	
-		StoreImpl impl;
+		internal StoreImpl impl;
 
 		public MemoryStore()
 			: this(new StoreImpl()) {
@@ -30,17 +30,18 @@ namespace SemWeb {
 		}
 		
 		private MemoryStore(StoreImpl impl) {
+			this.impl = impl;
 			AddSource2(impl);
 		}
 		
 		public override void AddSource(SelectableSource store) {
-			throw new InvalidOperationException("Not valid on the MemoryStore.");
+			throw new InvalidOperationException("AddSource is not valid on the MemoryStore.");
 		}
 		
 		public override void AddSource(SelectableSource store, string uri) {
-			throw new InvalidOperationException("Not valid on the MemoryStore.");
+			throw new InvalidOperationException("AddSource is not valid on the MemoryStore.");
 		}
-		
+
 		public Statement[] ToArray() {
 			return impl.ToArray();
 		}

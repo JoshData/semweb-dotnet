@@ -79,7 +79,7 @@ public class RDFQuery {
 
 		SelectableSource model;
 
-		StatementSource source = Store.CreateForInput(opts.RemainingArguments[0]);
+		StatementSource source = Store.Create(opts.RemainingArguments[0]);
 		if (source is SelectableSource) model = (SelectableSource)source;
 		else model = new MemoryStore(source);
 		

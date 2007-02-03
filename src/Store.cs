@@ -6,14 +6,17 @@ using System.Collections.Generic;
 #endif
 using System.Data;
 
+using SemWeb.Inference;
 using SemWeb.Util;
 
 #if !DOTNET2
 using SourceList = System.Collections.ArrayList;
 using NamedSourceMap = System.Collections.Hashtable;
+using ReasonerList = System.Collections.ArrayList;
 #else
 using SourceList = System.Collections.Generic.List<SemWeb.SelectableSource>;
 using NamedSourceMap = System.Collections.Generic.Dictionary<string, SemWeb.SelectableSource>;
+using ReasonerList = System.Collections.Generic.List<SemWeb.Inference.Reasoner>;
 #endif
 
 namespace SemWeb {
@@ -25,15 +28,37 @@ namespace SemWeb {
 		// Static helper methods for creating data sources and sinks
 		// from spec strings.
 		
-		public static StatementSource CreateForInput(string spec) {
-			if (spec.StartsWith("rdfs+") || spec.StartsWith("euler+")) {
-				StatementSource s = CreateForInput(spec.Substring(spec.IndexOf("+")+1));
-				if (!(s is SelectableSource)) s = new MemoryStore(s);
-				if (spec.StartsWith("rdfs+"))
-					return new SemWeb.Inference.RDFS(s, (SelectableSource)s);
-				if (spec.StartsWith("euler+"))
-					return new SemWeb.Inference.Euler(s);
+		public static Store Create(string spec) {
+			Store ret = new Store();
+			
+			bool rdfs = false, euler = false;
+			
+			if (spec.StartsWith("rdfs+")) {
+				rdfs = true;
+				spec = spec.Substring(5);
 			}
+			if (spec.StartsWith("euler+")) {
+				euler = true;
+				spec = spec.Substring(6);
+			}
+				
+			foreach (string spec2 in spec.Split('\n', '|')) {
+				StatementSource s = CreateForInput(spec2.Trim());
+				if (s is SelectableSource)
+					ret.AddSource((SelectableSource)s);
+				else
+					ret.AddSource(new MemoryStore(s));
+			}
+			
+			if (rdfs)
+				ret.AddReasoner(new RDFS(ret));
+			if (euler)
+				ret.AddReasoner(new Euler(ret)); // loads it all into memory!
+			
+			return ret;
+		}
+		
+		public static StatementSource CreateForInput(string spec) {
 			if (spec.StartsWith("debug+")) {
 				StatementSource s = CreateForInput(spec.Substring(6));
 				if (!(s is SelectableSource)) s = new MemoryStore(s);
@@ -47,21 +72,6 @@ namespace SemWeb {
 		}
 		
 		private static object Create(string spec, bool output) {
-			string[] multispecs = spec.Split('\n', '|');
-			if (multispecs.Length > 1) {
-				Store multistore = new Store();
-				foreach (string mspec in multispecs) {
-					object mstore = Create(mspec.Trim(), output);
-					if (mstore is SelectableSource) {
-						multistore.AddSource((SelectableSource)mstore);
-					} else if (mstore is StatementSource) {
-						MemoryStore m = new MemoryStore((StatementSource)mstore);
-						multistore.AddSource(m);
-					}
-				}
-				return multistore;
-			}
-		
 			string type = spec;
 			
 			int c = spec.IndexOf(':');
@@ -156,13 +166,15 @@ namespace SemWeb {
 		
 		SourceList allsources = new SourceList(); // a list of the sources in unnamed graphs and namedgraphs
 		
+		ReasonerList reasoners = new ReasonerList(); // a list of reasoning engines applied to this data model, which are run in order
+		
 		// GENERAL METHODS
 		
 		public Store() {
 		}
 		
 		public Store(StatementSource source) {
-			AddSource(new MemoryStore(source));
+			AddSource(new MemoryStore.StoreImpl(source));
 		}
 		
 		public Store(SelectableSource source) {
@@ -170,11 +182,13 @@ namespace SemWeb {
 		}
 
 		public virtual void AddSource(SelectableSource store) {
+			if (store is MemoryStore) store = ((MemoryStore)store).impl;
 			unnamedgraphs.Add(store);
 			allsources.Add(store);
 		}
 		
 		public virtual void AddSource(SelectableSource store, string uri) {
+			if (store is MemoryStore) store = ((MemoryStore)store).impl;
 			namedgraphs[uri] = store;
 			allsources.Add(store);
 		}
@@ -182,6 +196,10 @@ namespace SemWeb {
 		internal void AddSource2(SelectableSource store) {
 			unnamedgraphs.Add(store);
 			allsources.Add(store);
+		}
+		
+		public virtual void AddReasoner(Reasoner reasoner) {
+			reasoners.Add(reasoner);
 		}
 		
 		public void Write(System.IO.TextWriter writer) {
@@ -195,9 +213,12 @@ namespace SemWeb {
 		// IDisposable
 		
 		public void Dispose() {
-			foreach (object s in allsources)
+			foreach (SelectableSource s in allsources)
 				if (s is IDisposable)
 					((IDisposable)s).Dispose();
+			foreach (Reasoner r in reasoners)
+				if (r is IDisposable)
+					((IDisposable)r).Dispose();
 		}
 		
 		// StatementSource
@@ -205,6 +226,9 @@ namespace SemWeb {
 		public bool Distinct {
 			get {
 				if (allsources.Count > 1) return false;
+				foreach (Reasoner r in reasoners)
+					if (!r.Distinct)
+						return false;
 				if (allsources.Count == 0) return true;
 				return ((SelectableSource)allsources[0]).Distinct;
 			}
@@ -264,7 +288,42 @@ namespace SemWeb {
 			return sink.Exists;
 		}
 		
+		private class ReasoningHelper {
+			public Reasoner reasoner;
+			public Store nextStore;
+		}
+		
+		private ReasoningHelper GetReasoningHelper(SelectableSource[] sources) {
+			if (reasoners.Count == 0)
+				return null;
+		
+			ReasoningHelper ret = new ReasoningHelper();
+			
+			ret.reasoner = (Reasoner)reasoners[reasoners.Count-1];
+			
+			ret.nextStore = new Store();
+			if (sources == null) {
+				ret.nextStore.unnamedgraphs = unnamedgraphs;
+				ret.nextStore.namedgraphs = namedgraphs;
+				ret.nextStore.allsources = allsources;
+			} else {
+				ret.nextStore.unnamedgraphs.AddRange(sources);
+				ret.nextStore.allsources.AddRange(sources);
+			}
+			for (int i = 0; i < reasoners.Count-1; i++)
+				ret.nextStore.reasoners.Add(reasoners[i]);
+			return ret;
+		}
+		
 		public void Select(Statement template, StatementSink result) {
+			// If reasoning is applied, delegate this call to the last reasoner
+			// and pass it a clone of this store but with itself removed.
+			ReasoningHelper rh = GetReasoningHelper(null);
+			if (rh != null) {
+				rh.reasoner.Select(template, rh.nextStore, result);
+				return;
+			}
+		
 			SelectableSource[] sources = GetSources(ref template.Meta);
 			if (sources == null) return;
 			foreach (SelectableSource s in sources)
@@ -278,7 +337,22 @@ namespace SemWeb {
 				Entity meta2 = meta;
 				SelectableSource[] sources = GetSources(ref meta2);
 				if (sources == null) continue;
-				filter.Metas = new Entity[] { meta2 };
+				
+				if (meta2 == null)
+					filter.Metas = null;
+				else
+					filter.Metas = new Entity[] { meta2 };
+
+				// If reasoning is applied, delegate this call to the last reasoner
+				// and pass it either:
+				// 		a clone of this store but with itself removed, if the meta we are processing now is null, or
+				//		that, but only with the sources that apply to this meta
+				ReasoningHelper rh = GetReasoningHelper(sources);
+				if (rh != null) {
+					rh.reasoner.Select(filter, rh.nextStore, result);
+					continue;
+				}
+				
 				foreach (SelectableSource s in sources)
 					s.Select(filter, result);
 			}
@@ -374,25 +448,28 @@ namespace SemWeb {
 		// QueryableSource
 		
 		public SemWeb.Query.MetaQueryResult MetaQuery(Statement[] graph, SemWeb.Query.QueryOptions options) {
+			// If reasoning is applied, delegate this call to the last reasoner
+			// and pass it a clone of this store but with itself removed.
+			ReasoningHelper rh = GetReasoningHelper(null);
+			if (rh != null)
+				return rh.reasoner.MetaQuery(graph, options, rh.nextStore);
+			
 			// Special case for one wrapped data source that supports QueryableSource:
 			if (allsources.Count == 1 && allsources[0] is QueryableSource)
 				return ((QueryableSource)allsources[0]).MetaQuery(graph, options);
 		
-			SemWeb.Query.MetaQueryResult ret = DefaultMetaQuery(this, graph, options);
-			
-			// If the MultiStore will be falling back on the default Query implementation, then
-			// return ret.  But if we can optimize the query by passing chunks of it
-			// down to the data sources, then we unset the flag in ret that the default
-			// implementation will be used.
-			
-			SemWeb.Query.GraphMatch.QueryPart[] chunks = ChunkQuery(graph, options);
-			if (chunks != null && chunks.Length != graph.Length) // something was chunked
-				ret.IsDefaultImplementation = false;
-			
-			return ret;
+			return new SemWeb.Inference.SimpleEntailment().MetaQuery(graph, options, this);
 		}
 		
 		public void Query(Statement[] graph, SemWeb.Query.QueryOptions options, SemWeb.Query.QueryResultSink sink) {
+			// If reasoning is applied, delegate this call to the last reasoner
+			// and pass it a clone of this store but with itself removed.
+			ReasoningHelper rh = GetReasoningHelper(null);
+			if (rh != null) {
+				rh.reasoner.Query(graph, options, rh.nextStore, sink);
+				return;
+			}
+
 			// Special case for one wrapped data source that supports QueryableSource:
 			if (allsources.Count == 1 && allsources[0] is QueryableSource) {
 				((QueryableSource)allsources[0]).Query(graph, options, sink);
@@ -405,7 +482,7 @@ namespace SemWeb {
 			// If we couldn't chunk the graph, or we got degenerate/useless chunking
 			// (i.e. one chunk per statement), then just use the default GraphMatch implementation.
 			if (chunks == null || chunks.Length == graph.Length) {
-				Store.DefaultQuery(this, graph, options, sink);
+				new SemWeb.Inference.SimpleEntailment().Query(graph, options, this, sink);
 				return;
 			}
 			
@@ -512,74 +589,6 @@ namespace SemWeb {
 			}
 			
 			return (SemWeb.Query.GraphMatch.QueryPart[])chunks.ToArray(typeof(SemWeb.Query.GraphMatch.QueryPart));
-		}
-
-		public static SemWeb.Query.MetaQueryResult DefaultMetaQuery(SelectableSource source, Statement[] graph, SemWeb.Query.QueryOptions options) {
-			SemWeb.Query.MetaQueryResult ret = new SemWeb.Query.MetaQueryResult();
-			
-			ret.QuerySupported = true;
-			ret.IsDefaultImplementation = true;
-			
-			ret.NoData = new bool[graph.Length];
-			for (int i = 0; i < graph.Length; i++) {
-				for (int j = 0; j < 4; j++) {
-					Resource r = graph[i].GetComponent(j);
-					
-					if (r != null && !(r is Variable) && !source.Contains(r))
-						ret.NoData[i] = true;
-					
-					if (r != null && r is Variable && options.VariableKnownValues != null && options.VariableKnownValues[(Variable)r] != null) {
-						bool found = false;
-						#if !DOTNET2
-						foreach (Resource s in (ICollection)options.VariableKnownValues[(Variable)r]) {
-						#else
-						foreach (Resource s in (ICollection<Resource>)options.VariableKnownValues[(Variable)r]) {
-						#endif
-							if (source.Contains(s)) {
-								found = true;
-								break;
-							}
-						}
-						if (!found) {
-							ret.NoData[i] = true;
-						}
-					}
-				}
-			}
-			
-			return ret;
-		}
-		
-		public static void DefaultQuery(SelectableSource source, Statement[] graph, SemWeb.Query.QueryOptions options, SemWeb.Query.QueryResultSink sink) {
-			SemWeb.Query.GraphMatch q = new SemWeb.Query.GraphMatch();
-			foreach (Statement s in graph)
-				q.AddGraphStatement(s);
-				
-			q.ReturnLimit = options.Limit;
-			
-			if (options.VariableKnownValues != null) {
-			#if !DOTNET2
-			foreach (DictionaryEntry ent in options.VariableKnownValues)
-				q.SetVariableRange((Variable)ent.Key, (ICollection)ent.Value);
-			#else
-			foreach (KeyValuePair<Variable,ICollection<Resource>> ent in options.VariableKnownValues)
-				q.SetVariableRange(ent.Key, ent.Value);
-			#endif
-			}
-
-			if (options.VariableLiteralFilters != null) {			
-			#if !DOTNET2
-			foreach (DictionaryEntry ent in options.VariableLiteralFilters)
-				foreach (LiteralFilter filter in (ICollection)ent.Value)
-					q.AddLiteralFilter((Variable)ent.Key, filter);
-			#else
-			foreach (KeyValuePair<Variable,ICollection<LiteralFilter>> ent in options.VariableLiteralFilters)
-				foreach (LiteralFilter filter in ent.Value)
-					q.AddLiteralFilter(ent.Key, filter);
-			#endif
-			}
-
-			q.Run(source, sink);
 		}
 
 		// StaticSource

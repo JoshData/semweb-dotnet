@@ -64,7 +64,6 @@ namespace SemWeb.Query {
 		public bool QuerySupported;
 		public bool[] NoData;
 		public bool[] IsDefinitive;
-		public bool IsDefaultImplementation;
 	}
 	
 

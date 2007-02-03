@@ -156,7 +156,7 @@ public class RDFStorage {
 							Console.Error.WriteLine(warning);
 						parser.Dispose();
 					} else {
-						StatementSource src = Store.CreateForInput(infile);
+						StatementSource src = Store.Create(infile);
 						src.Select(filter);
 					}
 					

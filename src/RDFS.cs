@@ -15,7 +15,7 @@ using VarKnownValuesType = System.Collections.Generic.Dictionary<SemWeb.Variable
 
 namespace SemWeb.Inference {
 
-	public class RDFS : QueryableSource, IDisposable {
+	public class RDFS : Reasoner {
 		static readonly Entity type = NS.RDF + "type";
 		static readonly Entity subClassOf = NS.RDFS + "subClassOf";
 		static readonly Entity subPropertyOf = NS.RDFS + "subPropertyOf";
@@ -38,40 +38,25 @@ namespace SemWeb.Inference {
 		Hashtable domainof = new Hashtable();
 		Hashtable rangeof = new Hashtable();
 		
-		SelectableSource data;
-		
 		StatementSink schemasink;
 		
-		public RDFS(SelectableSource data) {
-			this.data = data;
+		public RDFS() {
 			schemasink = new SchemaSink(this);
 		}
 		
-		public RDFS(StatementSource schema, SelectableSource data)
-		: this(data) {
+		public RDFS(StatementSource schema) : this() {
 			LoadSchema(schema);
-		}
-		
-		void IDisposable.Dispose() {
-			if (data is IDisposable)
-				((IDisposable)data).Dispose();
 		}
 		
 		public StatementSink Schema { get { return schemasink; } }
 		
-		/*string SupportsPersistableBNodes.GetStoreGuid() { if (data is SupportsPersistableBNodes) return ((SupportsPersistableBNodes)data).GetStoreGuid(); return null; }
-		
-		string SupportsPersistableBNodes.GetNodeId(BNode node) { if (data is SupportsPersistableBNodes) return ((SupportsPersistableBNodes)data).GetNodeId(node); return null; }
-		
-		BNode SupportsPersistableBNodes.GetNodeFromId(string persistentId) { if (data is SupportsPersistableBNodes) return ((SupportsPersistableBNodes)data).GetNodeFromId(persistentId); return null; }*/
-
 		class SchemaSink : StatementSink {
 			RDFS rdfs;
 			public SchemaSink(RDFS parent) { rdfs = parent; }
-			bool StatementSink.Add(Statement s) { rdfs.Add(s); return true; }
+			bool StatementSink.Add(Statement s) { rdfs.AddAxiom(s); return true; }
 		}
 		
-		void Add(Statement schemastatement) {
+		void AddAxiom(Statement schemastatement) {
 			if (schemastatement.Predicate == subClassOf && schemastatement.Object is Entity) {
 				AddRelation(schemastatement.Subject, (Entity)schemastatement.Object, superclasses, subclasses);
 				AddRelation(schemastatement.Subject, rdfsresource, superclasses, subclasses);
@@ -115,28 +100,9 @@ namespace SemWeb.Inference {
 			}
 		}
 		
-		public bool Distinct { get { return false; } }
+		public override bool Distinct { get { return false; } }
 		
-		public void Select(StatementSink sink) { data.Select(sink); }
-		
-		public bool Contains(Resource resource) {
-			return data.Contains(resource);
-		}
-		
-		public bool Contains(Statement template) {
-			return Store.DefaultContains(this, template);
-		}
-		
-		public void Select(Statement template, StatementSink sink) {
-			if (template.Predicate == null) {
-				data.Select(template, sink);
-				return;
-			}
-			
-			Select(new SelectFilter(template), sink);
-		}
-		
-		public void Select(SelectFilter filter, StatementSink sink) {
+		public override void Select(SelectFilter filter, SelectableSource data, StatementSink sink) {
 			if (filter.Predicates == null || filter.LiteralFilters != null) {
 				data.Select(filter, sink);
 				return;
@@ -389,21 +355,18 @@ namespace SemWeb.Inference {
 			}
 		}
 		
-		public SemWeb.Query.MetaQueryResult MetaQuery(Statement[] graph, SemWeb.Query.QueryOptions options) {
-			if (!(data is QueryableSource))
-				return new SemWeb.Query.MetaQueryResult(); // not supported
-			
+		public override SemWeb.Query.MetaQueryResult MetaQuery(Statement[] graph, SemWeb.Query.QueryOptions options, SelectableSource data) {
 			Statement[] graph2;
 			SemWeb.Query.QueryOptions options2;
 			RewriteGraph(graph, options, out graph2, out options2, null);
 			
-			return ((QueryableSource)data).MetaQuery(graph2, options2);
+			if (!(data is QueryableSource))
+				return new SimpleEntailment().MetaQuery(graph2, options2, data);
+			else
+				return ((QueryableSource)data).MetaQuery(graph2, options2);
 		}
 
-		public void Query(Statement[] graph, SemWeb.Query.QueryOptions options, SemWeb.Query.QueryResultSink sink) {
-			if (!(data is QueryableSource))
-				throw new NotSupportedException("Underlying source " + data + " is not a QueryableSource.");
-			
+		public override void Query(Statement[] graph, SemWeb.Query.QueryOptions options, SelectableSource data, SemWeb.Query.QueryResultSink sink) {
 			Statement[] graph2;
 			SemWeb.Query.QueryOptions options2;
 			RewriteGraph(graph, options, out graph2, out options2, sink);
@@ -412,7 +375,10 @@ namespace SemWeb.Inference {
 			// we should filter the query results so we don't pass back the bindings for those
 			// variables to the caller.
 		
-			((QueryableSource)data).Query(graph2, options2, sink);
+			if (!(data is QueryableSource))
+				new SimpleEntailment().Query(graph2, options2, data, sink);
+			else
+				((QueryableSource)data).Query(graph2, options2, sink);
 		}
 
 		void RewriteGraph(Statement[] graph, SemWeb.Query.QueryOptions options, out Statement[] graph2, out SemWeb.Query.QueryOptions options2, SemWeb.Query.QueryResultSink sink) {

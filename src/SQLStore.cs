@@ -1250,9 +1250,7 @@ namespace SemWeb.Stores {
 		}
 		
 		public SemWeb.Query.MetaQueryResult MetaQuery(Statement[] graph, SemWeb.Query.QueryOptions options) {
-			SemWeb.Query.MetaQueryResult ret = Store.DefaultMetaQuery(this, graph, options);
-			ret.IsDefaultImplementation = false;
-			return ret;
+			return new SemWeb.Inference.SimpleEntailment().MetaQuery(graph, options, this);
 		}
 		
 		public void Query(Statement[] graph, SemWeb.Query.QueryOptions options, SemWeb.Query.QueryResultSink sink) {

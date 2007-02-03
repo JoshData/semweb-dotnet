@@ -13,11 +13,10 @@ using SemWeb.Util;
 
 namespace SemWeb.Inference {
 	
-	public class Euler : QueryableSource {
+	public class Euler : Reasoner {
 	
 		static bool Debug = false;
 
-		SelectableSource world;
 		Hashtable rules;
 		
 		static Hashtable builtInRelations;
@@ -36,48 +35,26 @@ namespace SemWeb.Inference {
 				builtInRelations[r.Uri] = r;
 		}
 		
-		public Euler(StatementSource rules) : this(rules, null) {
-		}
-		
-		public Euler(StatementSource rules, SelectableSource world) {
+		public Euler(StatementSource rules) {
 			this.rules = RulesToCases(rules);
-			this.world = world;
 		}
 		
-		public bool Distinct { get { return false; } } // not sure...
+		public override bool Distinct { get { return false; } } // not sure...
 		
-		public void Select(StatementSink sink) {
-			Select(Statement.All, sink);
-		}
-
-		public bool Contains(Resource resource) {
-			if (world != null)
-				return world.Contains(resource);
-			return false; // TODO: Also search axioms.
-		}
-		
-		public bool Contains(Statement template) {
-			return Store.DefaultContains(this, template);
-		}
-		
-		public void Select(Statement template, StatementSink sink) {
-			Select(new SelectFilter(template), sink);
-		}
-		
-		public void Select(SelectFilter filter, StatementSink sink) {
+		public override void Select(SelectFilter filter, SelectableSource targetModel, StatementSink sink) {
 			if (filter.Subjects == null) filter.Subjects = new Entity[] { new Variable("subject") };
 			if (filter.Predicates == null) filter.Predicates = new Entity[] { new Variable("predicate") };
 			if (filter.Objects == null) filter.Objects = new Entity[] { new Variable("object") };
 			
 			foreach (Statement s in filter) { // until we can operate on filter directly
-				ArrayList evidence = prove(rules, world, new Statement[] { s }, -1);
+				ArrayList evidence = prove(rules, targetModel, new Statement[] { s }, -1);
 				if (evidence == null)
 					continue; // not provable (in max number of steps, if that were given)
 				
 				foreach (EvidenceItem ei in evidence) {
 					foreach (Statement h in ei.head) { // better be just one statement
 						if (filter.LiteralFilters != null
-							&& !LiteralFilter.MatchesFilters(h.Object, filter.LiteralFilters, world))
+							&& !LiteralFilter.MatchesFilters(h.Object, filter.LiteralFilters, targetModel))
 							continue;
 						
 						sink.Add(h);
@@ -86,17 +63,16 @@ namespace SemWeb.Inference {
 			}
 		}
 		
-		public SemWeb.Query.MetaQueryResult MetaQuery(Statement[] graph, SemWeb.Query.QueryOptions options) {
+		public override SemWeb.Query.MetaQueryResult MetaQuery(Statement[] graph, SemWeb.Query.QueryOptions options, SelectableSource targetModel) {
 			SemWeb.Query.MetaQueryResult ret = new SemWeb.Query.MetaQueryResult();
 			ret.QuerySupported = true;
 			// TODO: Best to check also whether variables in the query are even known to us.
-			// Need to implement Contains() completely first.
 			return ret;
 		}
 		
-		public void Query(Statement[] graph, SemWeb.Query.QueryOptions options, SemWeb.Query.QueryResultSink sink) {
+		public override void Query(Statement[] graph, SemWeb.Query.QueryOptions options, SelectableSource targetModel, SemWeb.Query.QueryResultSink sink) {
 			// Try to do the inferencing.
-			ArrayList evidence = prove(rules, world, graph, -1);
+			ArrayList evidence = prove(rules, targetModel, graph, -1);
 			if (evidence == null)
 				return; // not provable (in max number of steps, if that were given)
 			
@@ -250,10 +226,8 @@ namespace SemWeb.Inference {
 			}
 		}
 		
-		public static Proof[] Prove(StatementSource rules, SelectableSource world, Statement[] goal) {
-			Hashtable cases = RulesToCases(rules);
-			
-			ArrayList evidence = prove(cases, world, goal, -1);
+		public Proof[] Prove(SelectableSource world, Statement[] goal) {
+			ArrayList evidence = prove(rules, world, goal, -1);
 			if (evidence == null)
 				throw new Exception("Could not complete proof within the maximum number of steps allowed.");
 			
@@ -419,14 +393,29 @@ namespace SemWeb.Inference {
 					
 					if (cases.ContainsKey(caseKey))
 						tcases.AddRange((IList)cases[caseKey]);
+					
+					Statement t_resolved = evaluate(t, c.env);
 						
+					// if t has no unbound variables and we've matched something from
+					// the axioms, don't bother looking at the world, and don't bother
+					// proving it any other way than by the axiom.
+					bool lookAtWorld = true;
+					foreach (Sequent seq in tcases) {
+						if (seq.head == t_resolved) {
+							lookAtWorld = false;
+							tcases.Clear();
+							tcases.Add(seq);
+							break;
+						}
+					}
+
 					// if there is a seprate world, get all of the world
 					// statements that witness t
-					if (world != null) {
+					if (world != null && lookAtWorld) {
 						MemoryStore w = new MemoryStore();
 					
 						//Console.WriteLine("Q: " + evaluate_filter(t, c.env));
-						world.Select(evaluate_filter(t, c.env), w);
+						world.Select(t_resolved, w);
 						foreach (Statement s in w) {
 							//if (Debug) Console.WriteLine("Euler: World Select Response:  " + s);
 							Sequent seq = new Sequent(s);
@@ -519,23 +508,6 @@ namespace SemWeb.Inference {
 				(Entity)evaluate2(t.Predicate, env),
 				(Resource)evaluate2(t.Object, env),
 				t.Meta);
-		}
-		
-		private static Resource[] evaluate_array(Resource r, Hashtable env) {
-			object v = evaluate(r, env);
-			if (v == null) return null;
-			if (v is Entity) return new Entity[] { (Entity)v };
-			if (v is Resource) return new Resource[] { (Resource)v };
-			if (v is Resource[]) return (Resource[])v;
-			throw new InvalidOperationException();
-		}
-		
-		private static SelectFilter evaluate_filter(Statement t, Hashtable env) {
-			return new SelectFilter(
-				(Entity[])evaluate_array(t.Subject, env),
-				(Entity[])evaluate_array(t.Predicate, env),
-				(Resource[])evaluate_array(t.Object, env),
-				new Entity[] { t.Meta });
 		}
 		
 		// The next few routines convert a set of axioms from a StatementSource
