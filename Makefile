@@ -1,6 +1,17 @@
 VERSION=0.82
     # don't forget to update src/AssemblyInfo.cs!!
 
+########################
+
+# Some checks to see if dependenies are available for
+# optional assemblies.
+
+npgsql_available := $(shell gacutil -l Npgsql | grep -c PublicKeyToken)
+sqlite_available := $(shell gacutil -l Mono.Data.SqliteClient | grep -c PublicKeyToken)
+mysql_available := $(shell gacutil -l MySql.Data | grep -c PublicKeyToken)
+
+########################
+
 all: bin/SemWeb.dll bin/SemWeb.PostgreSQLStore.dll bin/SemWeb.MySQLStore.dll bin/SemWeb.SqliteStore.dll bin/SemWeb.Sparql.dll bin/rdfstorage.exe bin/rdfquery.exe
 
 # Core Library
@@ -14,7 +25,7 @@ MAIN_SOURCES = \
 	src/RdfReader.cs src/RdfXmlReader.cs src/N3Reader.cs \
 	src/RdfWriter.cs src/RdfXmlWriter.cs src/N3Writer.cs \
 	src/Query.cs src/GraphMatch.cs src/LiteralFilters.cs src/RSquary.cs \
-	src/Inference.cs src/RDFS.cs \
+	src/Inference.cs src/RDFS.cs src/Euler.cs src/SpecialRelations.cs \
 	src/Algos.cs src/Remote.cs \
 	src/XPathSemWebNavigator.cs
 
@@ -30,18 +41,30 @@ bin/SemWeb.Sparql.dll: src/Sparql.cs src/SparqlProtocol.cs
 		-r:System.Web
 
 bin/SemWeb.PostgreSQLStore.dll: src/PostgreSQLStore.cs bin/SemWeb.dll
+ifneq "$(npgsql_available)" "0"
 	mcs -debug src/PostgreSQLStore.cs -out:bin/SemWeb.PostgreSQLStore.dll -t:library \
-	-r:bin/SemWeb.dll -r:System.Data -r:Npgsql
+		-r:bin/SemWeb.dll -r:System.Data -r:Npgsql
+else
+	@echo "SKIPPING compilation of SemWeb.PosgreSQLStore.dll because Npgsql assembly seems to be not available in the GAC.";
+endif
 
 bin/SemWeb.SqliteStore.dll: src/SQLiteStore.cs bin/SemWeb.dll
+ifneq "$(sqlite_available)" "0"
 	mcs -debug src/SQLiteStore.cs -out:bin/SemWeb.SqliteStore.dll -t:library \
-	-r:bin/SemWeb.dll -r:System.Data -r:Mono.Data.SqliteClient
+		-r:bin/SemWeb.dll -r:System.Data -r:Mono.Data.SqliteClient
+else
+	@echo "SKIPPING compilation of SemWeb.SqliteStore.dll because Mono.Data.SqliteClient assembly seems to be not available in the GAC.";
+endif
 	
 bin/SemWeb.MySQLStore.dll: src/MySQLStore.cs bin/SemWeb.dll
+ifneq "$(mysql_available)" "0"
 	mcs -debug src/MySQLStore.cs -out:bin/SemWeb.MySQLStore.dll -t:library\
-	 -r:bin/SemWeb.dll -r:System.Data -r:MySql.Data -d:CONNECTOR -lib:lib
+		 -r:bin/SemWeb.dll -r:System.Data -r:MySql.Data -d:CONNECTOR -lib:lib
 	#mcs -debug src/MySQLStore.cs -out:bin/SemWeb.MySQLStore-ByteFX.dll -t:library\
 	# -r:bin/SemWeb.dll -r:System.Data -r:ByteFX.Data -d:BYTEFX
+else
+	@echo "SKIPPING compilation of SemWeb.MySQLStore.dll because MySql.Data assembly seems to be not available in the GAC.";
+endif
 
 # Utility programs
 
