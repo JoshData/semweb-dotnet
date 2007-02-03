@@ -548,8 +548,8 @@ namespace SemWeb.Inference {
 				if (p.Meta == Statement.DefaultMeta) {
 					if (p.Predicate == entLOGIMPLIES && p.Object is Entity) {
 						Hashtable bnodemap = new Hashtable();
-						Statement[] body = BnodesToVariables(rules_store.Select(new Statement(null, null, null,  (Entity)p.Subject)).ToArray(), bnodemap);
-						Statement[] head = BnodesToVariables(rules_store.Select(new Statement(null, null, null,  (Entity)p.Object)).ToArray(), bnodemap);
+						Statement[] body = BnodesToVariables(new Store(rules_store).Select(new Statement(null, null, null,  (Entity)p.Subject)).ToArray(), bnodemap);
+						Statement[] head = BnodesToVariables(new Store(rules_store).Select(new Statement(null, null, null,  (Entity)p.Object)).ToArray(), bnodemap);
 						
 						// Set the meta of these statements to DefaultMeta
 						for (int i = 0; i < body.Length; i++)
@@ -611,8 +611,9 @@ namespace SemWeb.Inference {
 		}
 		
 		private static Statement[] CollectCallArgs(Statement[] body, Hashtable callArgs) {
-			MemoryStore b = new MemoryStore(body);
-			foreach (Statement s in new MemoryStore(b)) { // make a copy since we remove statements from b within
+			MemoryStore b1 = new MemoryStore(body);
+			Store b = new Store(b1);
+			foreach (Statement s in new MemoryStore(body)) { // make a copy since we remove statements from b within
 				if (FindUserPredicate(s.Predicate) == null) continue;
 				
 				Entity subj = s.Subject;
@@ -644,7 +645,7 @@ namespace SemWeb.Inference {
 					callArgs[head] = argList.ToArray(typeof(Resource));
 			}
 
-			return b.ToArray();
+			return b1.ToArray();
 		}
 		
 		private static void AddSequent(Hashtable cases, Sequent s) {

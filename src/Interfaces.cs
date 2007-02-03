@@ -22,11 +22,22 @@ namespace SemWeb {
 		void Query(Statement[] graph, SemWeb.Query.QueryOptions options, SemWeb.Query.QueryResultSink sink);
 	}
 	
+	public interface StaticSource : SelectableSource {
+		int StatementCount { get; }
+
+		Entity[] GetEntities();
+		Entity[] GetPredicates();
+		Entity[] GetMetas();
+
+		string GetPersistentBNodeId(BNode node);
+		BNode GetBNodeFromPersistentId(string persistentId);
+	}
+	
 	public interface StatementSink {
 		bool Add(Statement statement);
 	}
 
-	public interface ModifiableSource : StatementSink {
+	public interface ModifiableSource : SelectableSource, StatementSink {
 		void Clear();
 		void Import(StatementSource source);
 		void Remove(Statement template);

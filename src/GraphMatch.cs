@@ -46,11 +46,11 @@ namespace SemWeb.Query {
 		}
 		
 		public GraphMatch(RdfReader query) :
-			this(new MemoryStore(query),
+			this(new Store(query),
 				query.BaseUri == null ? null : new Entity(query.BaseUri)) {
 		}
 
-		public GraphMatch(Store queryModel) : this(queryModel, null) {
+		public GraphMatch(StatementSource queryModel) : this(new Store(queryModel), null) {
 		}
 		
 		private GraphMatch(Store queryModel, Entity queryNode) {

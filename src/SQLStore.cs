@@ -55,7 +55,7 @@ using System.Text;
 using SemWeb.Util;
 
 namespace SemWeb.Stores {
-	public abstract class SQLStore : Store, SupportsPersistableBNodes {
+	public abstract class SQLStore : QueryableSource, StaticSource, ModifiableSource {
 		// Table initialization, etc.
 		// --------------------------
 	
@@ -259,9 +259,9 @@ namespace SemWeb.Stores {
 		// Now we get to the Store implementation.
 		
 		// Why do we return true here?
-		public override bool Distinct { get { return true; } }
+		public bool Distinct { get { return true; } }
 		
-		public override int StatementCount {
+		public int StatementCount {
 			get {
 				Init();
 				RunAddBuffer();
@@ -271,15 +271,18 @@ namespace SemWeb.Stores {
 		
 		public string GetStoreGuid() { return guid; }
 		
-		public string GetNodeId(BNode node) {
+		public string GetPersistentBNodeId(BNode node) {
 			ResourceKey rk = (ResourceKey)GetResourceKey(node);
 			if (rk == null) return null;
-			return rk.ResId.ToString();
+			return GetStoreGuid() + ":" + rk.ResId.ToString();
 		}
 		
-		public BNode GetNodeFromId(string persistentId) {
+		public BNode GetBNodeFromPersistentId(string persistentId) {
 			try {
-				int id = int.Parse(persistentId);
+				int colon = persistentId.IndexOf(':');
+				if (colon == -1) return null;
+				if (GetStoreGuid() != persistentId.Substring(0, colon)) return null;
+				int id = int.Parse(persistentId.Substring(colon+1));
 				return (BNode)MakeEntity(id, null, null);
 			} catch (Exception) {
 				return null;
@@ -319,7 +322,7 @@ namespace SemWeb.Stores {
 		}
 		
 		// Implements Store.Clear() by dropping the tables entirely.
-		public override void Clear() {
+		public void Clear() {
 			// Drop the tables, if they exist.
 			try { RunCommand("DROP TABLE " + table + "_statements;"); } catch (Exception) { }
 			try { RunCommand("DROP TABLE " + table + "_literals;"); } catch (Exception) { }
@@ -598,7 +601,11 @@ namespace SemWeb.Stores {
 		// If we're isImoprting, buffer the statement, and if the buffer is full,
 		// run the buffer.
 		// Otherwise, add it immediately.
-		public override void Add(Statement statement) {
+		bool StatementSink.Add(Statement statement) {
+			Add(statement);
+			return true;
+		}
+		public void Add(Statement statement) {
 			if (statement.AnyNull) throw new ArgumentNullException();
 			
 			if (addStatementBuffer != null) {
@@ -827,7 +834,7 @@ namespace SemWeb.Stores {
 			}
 		}
 		
-		public override void Remove(Statement template) {
+		public void Remove(Statement template) {
 			Init();
 			RunAddBuffer();
 
@@ -842,15 +849,21 @@ namespace SemWeb.Stores {
 			statementsRemoved = true;
 		}
 		
-		public override Entity[] GetEntities() {
+		public void RemoveAll(Statement[] templates) {
+			// TODO: Optimize this.
+			foreach (Statement t in templates)
+				Remove(t);
+		}
+		
+		public Entity[] GetEntities() {
 			return GetAllEntities(fourcols);
 		}
 			
-		public override Entity[] GetPredicates() {
+		public Entity[] GetPredicates() {
 			return GetAllEntities(predcol);
 		}
 		
-		public override Entity[] GetMetas() {
+		public Entity[] GetMetas() {
 			return GetAllEntities(metacol);
 		}
 
@@ -973,10 +986,14 @@ namespace SemWeb.Stores {
 		// QUERYING THE DATABASE //
 		///////////////////////////
 		
-		public override bool Contains(Resource resource) {
+		public bool Contains(Resource resource) {
 			return GetResourceId(resource, false) != 0;
 		}
 		
+		public bool Contains(Statement template) {
+			return Store.DefaultContains(this, template);
+		}
+
 		internal struct SelectColumnFilter {
 			public bool SubjectId, PredicateId, ObjectId, MetaId;
 			public bool SubjectUri, PredicateUri, ObjectData, MetaUri;
@@ -1021,8 +1038,12 @@ namespace SemWeb.Stores {
 				cmd.Append("_entities AS muri ON q.meta = muri.id");
 			}
 		}
+		
+		public void Select(StatementSink result) {
+			Select(Statement.All, result);
+		}
 
-		public override void Select(SelectFilter filter, StatementSink result) {
+		public void Select(SelectFilter filter, StatementSink result) {
 			if (result == null) throw new ArgumentNullException();
 			foreach (Entity[] s in SplitArray(filter.Subjects))
 			foreach (Entity[] p in SplitArray(filter.Predicates))
@@ -1098,7 +1119,7 @@ namespace SemWeb.Stores {
 			return false;
 		}
 		
-		public override void Select(Statement template, StatementSink result) {
+		public void Select(Statement template, StatementSink result) {
 			if (result == null) throw new ArgumentNullException();
 			Select(template.Subject, template.Predicate, template.Object, template.Meta, null, result, 0);
 		}
@@ -1228,13 +1249,13 @@ namespace SemWeb.Stores {
 			} // lock
 		}
 		
-		public override SemWeb.Query.MetaQueryResult MetaQuery(Statement[] graph, SemWeb.Query.QueryOptions options) {
-			SemWeb.Query.MetaQueryResult ret = base.MetaQuery(graph, options);
+		public SemWeb.Query.MetaQueryResult MetaQuery(Statement[] graph, SemWeb.Query.QueryOptions options) {
+			SemWeb.Query.MetaQueryResult ret = Store.DefaultMetaQuery(this, graph, options);
 			ret.IsDefaultImplementation = false;
 			return ret;
 		}
 		
-		public override void Query(Statement[] graph, SemWeb.Query.QueryOptions options, SemWeb.Query.QueryResultSink sink) {
+		public void Query(Statement[] graph, SemWeb.Query.QueryOptions options, SemWeb.Query.QueryResultSink sink) {
 			if (graph.Length == 0) throw new ArgumentException("graph array must have at least one element");
 			
 			// Order the variables mentioned in the graph.
@@ -1593,7 +1614,7 @@ namespace SemWeb.Stores {
 			b.Replace("*", "\\*");
 		}*/
 
-		public override void Import(StatementSource source) {
+		public void Import(StatementSource source) {
 			if (source == null) throw new ArgumentNullException();
 			if (isImporting) throw new InvalidOperationException("Store is already importing.");
 			
@@ -1609,7 +1630,7 @@ namespace SemWeb.Stores {
 			
 			try {
 				isImporting = true;
-				base.Import(source);
+				source.Select(this);
 			} finally {
 				RunAddBuffer();
 				EndTransaction();
@@ -1622,7 +1643,7 @@ namespace SemWeb.Stores {
 			}
 		}
 
-		public override void Replace(Entity a, Entity b) {
+		public void Replace(Entity a, Entity b) {
 			Init();
 			RunAddBuffer();
 			int id = GetResourceId(b, true);
@@ -1642,7 +1663,7 @@ namespace SemWeb.Stores {
 
 		}
 		
-		public override void Replace(Statement find, Statement replacement) {
+		public void Replace(Statement find, Statement replacement) {
 			if (find.AnyNull) throw new ArgumentNullException("find");
 			if (replacement.AnyNull) throw new ArgumentNullException("replacement");
 			if (find == replacement) return;
@@ -1678,6 +1699,14 @@ namespace SemWeb.Stores {
 			RunCommand(cmd.ToString());
 		}
 		
+		private object GetResourceKey(Resource resource) {
+			return resource.GetResourceKey(this);
+		}
+
+		private void SetResourceKey(Resource resource, object value) {
+			resource.SetResourceKey(this, value);
+		}
+
 		protected abstract void RunCommand(string sql);
 		protected abstract object RunScalar(string sql);
 		protected abstract IDataReader RunReader(string sql);
@@ -1701,7 +1730,7 @@ namespace SemWeb.Stores {
 			throw new FormatException("SQL store returned a literal value as " + ret);
 		}
 		
-		public override void Close() {
+		public virtual void Close() {
 			if (statementsRemoved) {
 				RunCommand("DELETE FROM " + table + "_literals where (select count(*) from " + table + "_statements where object=id) = 0 and id > 0");
 				RunCommand("DELETE FROM " + table + "_entities where (select count(*) from " + table + "_statements where subject=id) = 0 and (select count(*) from " + table + "_statements where predicate=id) = 0 and (select count(*) from " + table + "_statements where object=id) = 0 and (select count(*) from " + table + "_statements where meta=id) = 0 ;");

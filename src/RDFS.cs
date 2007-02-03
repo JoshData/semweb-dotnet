@@ -15,7 +15,7 @@ using VarKnownValuesType = System.Collections.Generic.Dictionary<SemWeb.Variable
 
 namespace SemWeb.Inference {
 
-	public class RDFS : QueryableSource, SupportsPersistableBNodes, IDisposable {
+	public class RDFS : QueryableSource, IDisposable {
 		static readonly Entity type = NS.RDF + "type";
 		static readonly Entity subClassOf = NS.RDFS + "subClassOf";
 		static readonly Entity subPropertyOf = NS.RDFS + "subPropertyOf";
@@ -59,11 +59,11 @@ namespace SemWeb.Inference {
 		
 		public StatementSink Schema { get { return schemasink; } }
 		
-		string SupportsPersistableBNodes.GetStoreGuid() { if (data is SupportsPersistableBNodes) return ((SupportsPersistableBNodes)data).GetStoreGuid(); return null; }
+		/*string SupportsPersistableBNodes.GetStoreGuid() { if (data is SupportsPersistableBNodes) return ((SupportsPersistableBNodes)data).GetStoreGuid(); return null; }
 		
 		string SupportsPersistableBNodes.GetNodeId(BNode node) { if (data is SupportsPersistableBNodes) return ((SupportsPersistableBNodes)data).GetNodeId(node); return null; }
 		
-		BNode SupportsPersistableBNodes.GetNodeFromId(string persistentId) { if (data is SupportsPersistableBNodes) return ((SupportsPersistableBNodes)data).GetNodeFromId(persistentId); return null; }
+		BNode SupportsPersistableBNodes.GetNodeFromId(string persistentId) { if (data is SupportsPersistableBNodes) return ((SupportsPersistableBNodes)data).GetNodeFromId(persistentId); return null; }*/
 
 		class SchemaSink : StatementSink {
 			RDFS rdfs;

@@ -567,35 +567,26 @@ namespace SemWeb.Query {
 			
 			public Resource Depersist(Resource r) {
 				if (r.Uri == null || !sparql.AllowPersistBNodes) return r;
-				if (!(source is SupportsPersistableBNodes)) return r;
+				if (!(source is StaticSource)) return r;
 				if (!r.Uri.StartsWith(Sparql.BNodePersistUri)) return r;
 				
-				SupportsPersistableBNodes spb = (SupportsPersistableBNodes)source;
+				StaticSource spb = (StaticSource)source;
 				string uri = r.Uri;
-				string guid = uri.Substring(Sparql.BNodePersistUri.Length);
-				int c = guid.IndexOf(':');
-				if (c > 0) {
-					string id = guid.Substring(c+1);
-					guid = guid.Substring(0, c);
-					if (spb.GetStoreGuid() != null && guid == spb.GetStoreGuid()) {
-						BNode node = spb.GetNodeFromId(id);
-						if (node != null)
-							return node;
-					}
-				}
+				string id = uri.Substring(Sparql.BNodePersistUri.Length);
+				BNode node = spb.GetBNodeFromPersistentId(id);
+				if (node != null)
+					return node;
 				
 				return r;
 			}
 			
 			public Resource Persist(Resource r) {
 				if (!(r is BNode) || !sparql.AllowPersistBNodes) return r;
-				if (!(source is SupportsPersistableBNodes)) return r;
-				SupportsPersistableBNodes spb = (SupportsPersistableBNodes)source;
-				string guid = spb.GetStoreGuid();
-				if (guid == null) return r;
-				string id = spb.GetNodeId((BNode)r);
+				if (!(source is StaticSource)) return r;
+				StaticSource spb = (StaticSource)source;
+				string id = spb.GetPersistentBNodeId((BNode)r);
 				if (id == null) return r;
-				return new Entity(Sparql.BNodePersistUri + guid + ":" + id);
+				return new Entity(Sparql.BNodePersistUri + ":" + id);
 			}
 			
 			public static org.openrdf.model.Value Wrap(Resource res) {

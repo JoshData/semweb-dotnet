@@ -43,7 +43,7 @@ namespace SemWeb {
 			return !(a == b);
 		}
 		
-		internal object GetResourceKey(object key) {
+		public object GetResourceKey(object key) {
 			if (ekKey == key) return ekValue;
 			if (extraKeys == null) return null;
 			for (int i = 0; i < extraKeys.Count; i++) {
@@ -53,7 +53,7 @@ namespace SemWeb {
 			}
 			return null;
 		}
-		internal void SetResourceKey(object key, object value) {
+		public void SetResourceKey(object key, object value) {
 			if (ekKey == null || ekKey == key) {
 				ekKey = key;
 				ekValue = value;

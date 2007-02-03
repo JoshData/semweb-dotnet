@@ -128,7 +128,7 @@ namespace SemWeb.Algos {
 				// against the whole store, rather than the MSG in
 				// isolation.  But that gets much too expensive.
 				MemoryStore msgremoved = new MemoryStore();
-				MakeLeanMSG(msg, msgg.GetBNodes(), msgremoved);
+				MakeLeanMSG(new Store(msg), msgg.GetBNodes(), msgremoved);
 				
 				// Whatever was removed from msg, remove it from the main graph.
 				store.RemoveAll(msgremoved.ToArray());
@@ -511,7 +511,7 @@ namespace SemWeb.Algos {
 			return ret;
 		}
 		
-		public static void FindMSG(SelectableSource store, Entity node, Store msg) {
+		public static void FindMSG(SelectableSource store, Entity node, StatementSink msg) {
 			if (node.Uri != null) throw new ArgumentException("node must be anonymous");
 			
 			ResSet nodesSeen = new ResSet();
@@ -535,14 +535,14 @@ namespace SemWeb.Algos {
 		}
 		
 		private class Sink : StatementSink {
-			Store msg;
+			StatementSink msg;
 			ResSet add;
-			public Sink(Store msg, ResSet add) {
+			public Sink(StatementSink msg, ResSet add) {
 				this.msg = msg;
 				this.add = add;
 			}
 			public bool Add(Statement s) {
-				if (msg.Contains(s)) return true;
+				if (msg is SelectableSource && ((SelectableSource)msg).Contains(s)) return true;
 				msg.Add(s);
 				if (s.Subject.Uri == null) add.Add(s.Subject);
 				if (s.Predicate.Uri == null) add.Add(s.Predicate);
