@@ -3,6 +3,8 @@
 	  names would ToString() with their hash code, but negative
 	  hash codes look funny, so it outputs the abs(hashcode) now.
 	  Also added Literal.FromValue(Decimal).
+	* Euler: Slight public API change.  All of the cwm math:
+	  special predicates are implemented.
 
 2007-01-21 Version 0.82 -- 1st Release Candidate for version 1.0
 
