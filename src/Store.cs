@@ -17,10 +17,13 @@ namespace SemWeb {
 		Entity rdfType;
 		
 		public static StatementSource CreateForInput(string spec) {
-			if (spec.StartsWith("rdfs+")) {
-				StatementSource s = CreateForInput(spec.Substring(5));
+			if (spec.StartsWith("rdfs+") || spec.StartsWith("euler+")) {
+				StatementSource s = CreateForInput(spec.Substring(spec.IndexOf("+")+1));
 				if (!(s is SelectableSource)) s = new MemoryStore(s);
-				return new SemWeb.Inference.RDFS(s, (SelectableSource)s);
+				if (spec.StartsWith("rdfs+"))
+					return new SemWeb.Inference.RDFS(s, (SelectableSource)s);
+				if (spec.StartsWith("euler+"))
+					return new SemWeb.Inference.Euler(s);
 			}
 			if (spec.StartsWith("debug+")) {
 				StatementSource s = CreateForInput(spec.Substring(6));
@@ -376,6 +379,7 @@ namespace SemWeb {
 				
 			q.ReturnLimit = options.Limit;
 			
+			if (options.VariableKnownValues != null) {
 			#if !DOTNET2
 			foreach (DictionaryEntry ent in options.VariableKnownValues)
 				q.SetVariableRange((Variable)ent.Key, (ICollection)ent.Value);
@@ -383,7 +387,9 @@ namespace SemWeb {
 			foreach (KeyValuePair<Variable,ICollection<Resource>> ent in options.VariableKnownValues)
 				q.SetVariableRange(ent.Key, ent.Value);
 			#endif
-			
+			}
+
+			if (options.VariableLiteralFilters != null) {			
 			#if !DOTNET2
 			foreach (DictionaryEntry ent in options.VariableLiteralFilters)
 				foreach (LiteralFilter filter in (ICollection)ent.Value)
@@ -393,6 +399,7 @@ namespace SemWeb {
 				foreach (LiteralFilter filter in ent.Value)
 					q.AddLiteralFilter(ent.Key, filter);
 			#endif
+			}
 
 			q.Run(this, sink);
 		}
@@ -899,18 +906,21 @@ namespace SemWeb.Stores {
 		}
 
 		public bool Contains(Resource resource) {
+			if (source == null) return false;
 			if (!containsresource.ContainsKey(resource))
 				containsresource[resource] = source.Contains(resource);
 			return (bool)containsresource[resource];
 		}
 
 		public bool Contains(Statement template) {
+			if (source == null) return false;
 			if (!containsstmtresults.ContainsKey(template))
 				containsstmtresults[template] = source.Contains(template);
 			return (bool)containsstmtresults[template];
 		}
 		
 		public void Select(Statement template, StatementSink sink) {
+			if (source == null) return;
 			if (!selectresults.ContainsKey(template)) {
 				MemoryStore s = new MemoryStore();
 				source.Select(template, s);
@@ -920,6 +930,7 @@ namespace SemWeb.Stores {
 		}
 	
 		public void Select(SelectFilter filter, StatementSink sink) {
+			if (source == null) return;
 			if (!selfilterresults.ContainsKey(filter)) {
 				MemoryStore s = new MemoryStore();
 				source.Select(filter, s);
