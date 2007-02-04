@@ -271,11 +271,18 @@ namespace SemWeb {
 				|| (resource is Entity && Contains(new Statement(null, null, null, (Entity)resource)));*/
 		}
 		
-		public bool Contains(Statement statement) {
-			SelectableSource[] sources = GetSources(ref statement.Meta);
+		public bool Contains(Statement template) {
+			// If reasoning is applied, use DefaultContains so that
+			// we use a Select call which will delegate the query
+			// to the reasoner.
+			ReasoningHelper rh = GetReasoningHelper(null);
+			if (rh != null)
+				return DefaultContains(this, template);
+			
+			SelectableSource[] sources = GetSources(ref template.Meta);
 			if (sources == null) return false;
 			foreach (SelectableSource s in sources)
-				if (s.Contains(statement))
+				if (s.Contains(template))
 					return true;
 			return false;
 		}

@@ -385,17 +385,16 @@ namespace SemWeb.Inference {
 					// t can be proved either by the use of a rule
 					// or if t literally exists in the world
 
+					Statement t_resolved = evaluate(t, c.env);
+						
 					ArrayList tcases = new ArrayList();
 					
 					// get all of the rules that apply to the predicate in question
-					object caseKey = t.Predicate;
-					if (caseKey is Variable) caseKey = "WILDCARD";
+					if (t_resolved.Predicate != null && cases.ContainsKey(t_resolved.Predicate))
+						tcases.AddRange((IList)cases[t_resolved.Predicate]);
+					if (cases.ContainsKey("WILDCARD"))
+						tcases.AddRange((IList)cases["WILDCARD"]);
 					
-					if (cases.ContainsKey(caseKey))
-						tcases.AddRange((IList)cases[caseKey]);
-					
-					Statement t_resolved = evaluate(t, c.env);
-						
 					// if t has no unbound variables and we've matched something from
 					// the axioms, don't bother looking at the world, and don't bother
 					// proving it any other way than by the axiom.
@@ -414,10 +413,10 @@ namespace SemWeb.Inference {
 					if (world != null && lookAtWorld) {
 						MemoryStore w = new MemoryStore();
 					
-						//Console.WriteLine("Q: " + evaluate_filter(t, c.env));
+						if (Debug) Console.WriteLine("Euler: Ask World: " + t_resolved);
 						world.Select(t_resolved, w);
 						foreach (Statement s in w) {
-							//if (Debug) Console.WriteLine("Euler: World Select Response:  " + s);
+							if (Debug) Console.WriteLine("Euler: World Select Response:  " + s);
 							Sequent seq = new Sequent(s);
 							tcases.Add(seq);
 						}
@@ -425,7 +424,7 @@ namespace SemWeb.Inference {
 					
 					// If there is no evidence or potential evidence (i.e. rules)
 					// for t, then we dump this QueueItem.
-					if (tcases.Count == 0) continue;
+					if (tcases.Count == 0) 	continue;
 					
 					// Otherwise we try each piece of evidence in turn.
 					foreach (Sequent rl in tcases) {
@@ -496,17 +495,11 @@ namespace SemWeb.Inference {
 			return t;
 		}
 		
-		private static Resource evaluate2(Resource t, Hashtable env) {
-			Resource ret = evaluate(t, env);
-			if (ret == null) ret = t;
-			return ret;
-		}
-		
 		private static Statement evaluate(Statement t, Hashtable env) {
 			return new Statement(
-				(Entity)evaluate2(t.Subject, env),
-				(Entity)evaluate2(t.Predicate, env),
-				(Resource)evaluate2(t.Object, env),
+				(Entity)evaluate(t.Subject, env),
+				(Entity)evaluate(t.Predicate, env),
+				(Resource)evaluate(t.Object, env),
 				t.Meta);
 		}
 		

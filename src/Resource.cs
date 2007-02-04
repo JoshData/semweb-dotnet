@@ -90,7 +90,16 @@ namespace SemWeb {
 			
 			if (Uri != null) return String.Compare(Uri, r.Uri, false, System.Globalization.CultureInfo.InvariantCulture);
 			
-			if (this is BNode) return GetHashCode().CompareTo(r.GetHashCode());
+			if (this is BNode) {
+				BNode me = (BNode)this, o = (BNode)other;
+				if (me.LocalName != null || o.LocalName != null) {
+					if (me.LocalName == null) return -1;
+					if (o.LocalName == null) return -1;
+					int x = String.Compare(me.LocalName, o.LocalName, false, System.Globalization.CultureInfo.InvariantCulture);
+					if (x != 0) return x;
+				}
+				return GetHashCode().CompareTo(r.GetHashCode());
+			}
 
 			if (this is Literal) {
 				int x = String.Compare(((Literal)this).Value, ((Literal)r).Value, false, System.Globalization.CultureInfo.InvariantCulture);

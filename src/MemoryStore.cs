@@ -42,6 +42,12 @@ namespace SemWeb {
 			throw new InvalidOperationException("AddSource is not valid on the MemoryStore.");
 		}
 
+		public Statement this[int index] {
+			get {
+				return impl[index];
+			}
+		}
+
 		public Statement[] ToArray() {
 			return impl.ToArray();
 		}

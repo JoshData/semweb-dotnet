@@ -92,9 +92,7 @@ namespace SemWeb.Query {
 					spec = spec.Substring("noreuse,".Length);
 				}
 
-				StatementSource src = Store.CreateForInput(spec);
-				if (!(src is SelectableSource))
-					src = new MemoryStore(src);
+				Store src = Store.Create(spec);
 					
 				if (reuse)
 					sources[path] = src;
