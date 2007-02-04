@@ -12,7 +12,7 @@ mysql_available := $(shell gacutil -l MySql.Data | grep -c PublicKeyToken)
 
 ########################
 
-all: bin/SemWeb.dll bin/SemWeb.PostgreSQLStore.dll bin/SemWeb.MySQLStore.dll bin/SemWeb.SqliteStore.dll bin/SemWeb.Sparql.dll bin/rdfstorage.exe bin/rdfquery.exe
+all: bin/SemWeb.dll bin/SemWeb.PostgreSQLStore.dll bin/SemWeb.MySQLStore.dll bin/SemWeb.SqliteStore.dll bin/SemWeb.Sparql.dll bin/rdfstorage.exe bin/rdfquery.exe bin/euler.exe
 
 # Core Library
 	
@@ -72,6 +72,9 @@ bin/rdfstorage.exe: tools/rdfstorage.cs bin/SemWeb.dll
 	
 bin/rdfquery.exe: tools/rdfquery.cs bin/SemWeb.dll
 	mcs -debug tools/rdfquery.cs -out:bin/rdfquery.exe -r:bin/SemWeb.dll -r:bin/SemWeb.Sparql.dll -r:Mono.GetOptions	
+
+bin/euler.exe: tools/euler.cs bin/SemWeb.dll
+	mcs -debug tools/euler.cs -out:bin/euler.exe -r:bin/SemWeb.dll
 
 # Generating documentation files
 
