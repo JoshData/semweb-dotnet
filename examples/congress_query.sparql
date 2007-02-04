@@ -1,0 +1,11 @@
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+PREFIX bill: <tag:govshare.info,2005:rdf/usbill/>
+SELECT *
+WHERE {
+ ?bill rdf:type bill:SenateBill .
+ ?bill bill:congress "108" .
+ ?bill bill:number "1024" .
+ ?bill bill:cosponsor ?person .
+ ?person foaf:name ?name .
+}

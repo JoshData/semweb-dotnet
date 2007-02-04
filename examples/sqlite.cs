@@ -10,19 +10,19 @@ public class Sqlite {
 	static readonly Entity foafname = FOAF+"name";
 
 	public static void Main() {
-		Store store = (Store)Store.CreateForInput("sqlite:rdf:Uri=file:foaf.sqlite;version=3");
+		Store store = Store.Create("sqlite:rdf:Uri=file:foaf.sqlite;version=3");
 		
 		Entity newPerson = new Entity("http://www.example.org/me");
 		store.Add(new Statement(newPerson, rdftype, foafPerson));
 		store.Add(new Statement(newPerson, foafname, (Literal)"New Guy"));
 		
 		Console.WriteLine("These are the people in the file:");
-		foreach (Statement s in store.Select(new Statement(null, rdftype, foafPerson))) {
-			foreach (Resource r in store.SelectObjects(s.Subject, foafname))
+		foreach (Entity s in store.SelectSubjects(rdftype, foafPerson)) {
+			foreach (Resource r in store.SelectObjects(s, foafname))
 				Console.WriteLine(r);
 		}
 		Console.WriteLine();
 		
-		store.Close();
+		store.Dispose();
 	}
 }
