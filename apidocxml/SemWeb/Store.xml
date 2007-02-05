@@ -1,5 +1,5 @@
 <Type Name="Store" FullName="SemWeb.Store">
-  <TypeSignature Language="C#" Value="public abstract class Store : IDisposable, SemWeb.ModifiableSource, SemWeb.QueryableSource" />
+  <TypeSignature Language="C#" Value="public class Store : IDisposable, SemWeb.ModifiableSource, SemWeb.QueryableSource, SemWeb.StaticSource" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
     <AssemblyVersion>0.8.1.1</AssemblyVersion>
@@ -15,12 +15,15 @@
       <InterfaceName>SemWeb.QueryableSource</InterfaceName>
     </Interface>
     <Interface>
+      <InterfaceName>SemWeb.StaticSource</InterfaceName>
+    </Interface>
+    <Interface>
       <InterfaceName>System.IDisposable</InterfaceName>
     </Interface>
   </Interfaces>
   <Members>
     <Member MemberName="Clear">
-      <MemberSignature Language="C#" Value="public abstract void Clear ();" />
+      <MemberSignature Language="C#" Value="public void Clear ();" />
       <MemberType>Method</MemberType>
       <ReturnValue>
         <ReturnType>System.Void</ReturnType>
@@ -28,7 +31,7 @@
       <Parameters />
       <Docs>
         <summary>Clears the contents of the store.</summary>
-        <remarks>The store is empty after a call to Clear.</remarks>
+        <remarks>An <see cref="T:System.InvalidOperationException" /> is thrown if more than one data source has been added to the Store with AddSource or if the data source added is not a <see cref="T:SemWeb.ModifiableSource" />.  The underlying data source is cleared with <see cref="M:SemWeb.ModifiableSource.Clear()" />.</remarks>
       </Docs>
     </Member>
     <Member MemberName="GetEntitiesOfType">
@@ -48,7 +51,7 @@
       </Docs>
     </Member>
     <Member MemberName="Add">
-      <MemberSignature Language="C#" Value="public abstract void Add (SemWeb.Statement statement);" />
+      <MemberSignature Language="C#" Value="public void Add (SemWeb.Statement statement);" />
       <MemberType>Method</MemberType>
       <ReturnValue>
         <ReturnType>System.Void</ReturnType>
@@ -59,22 +62,23 @@
       <Docs>
         <param name="statement">The statement to add.</param>
         <summary>Adds a statement to the store.</summary>
-        <remarks>The Subject, Predicate, Object, and Meta fields of the statement must not be <see langword="null" />.</remarks>
+        <remarks><para>The Subject, Predicate, Object, and Meta fields of the statement must not be <see langword="null" /> or an <see cref="T:System.ArgumentNullException" /> is thrown.</para>
+<para>An <see cref="T:System.InvalidOperationException" /> is thrown if more than one data source has been added to the Store with AddSource or if the data source added is not a <see cref="T:SemWeb.ModifiableSource" />.</para></remarks>
       </Docs>
     </Member>
     <Member MemberName="Remove">
-      <MemberSignature Language="C#" Value="public abstract void Remove (SemWeb.Statement statement);" />
+      <MemberSignature Language="C#" Value="public void Remove (SemWeb.Statement template);" />
       <MemberType>Method</MemberType>
       <ReturnValue>
         <ReturnType>System.Void</ReturnType>
       </ReturnValue>
       <Parameters>
-        <Parameter Name="statement" Type="SemWeb.Statement" />
+        <Parameter Name="template" Type="SemWeb.Statement" />
       </Parameters>
       <Docs>
-        <param name="statement">A statement or statement template to remove from the store.</param>
+        <param name="template">A statement or statement template to remove from the store.</param>
         <summary>Removes statements from the store.</summary>
-        <remarks>See <see cref="M:SemWeb.ModifiableSource.Remove(SemWeb.Statement)" />.</remarks>
+        <remarks>Every matching statement from all of the data sources included in this store is removed from the store that contains it. An <see cref="T:System.InvalidOperationException" /> is thrown if any data source added to the Store with AddSource is not a <see cref="T:SemWeb.ModifiableSource" />.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Import">
@@ -88,12 +92,12 @@
       </Parameters>
       <Docs>
         <param name="source">The source whose statements will be added into the store.</param>
-        <summary>Loads the contents of a StatementSource into the store.</summary>
-        <remarks>See <see cref="M:SemWeb.ModifiableSource.Import(SemWeb.StatementSource)" />.</remarks>
+        <summary>Batch loads the contents of a StatementSource into the store.</summary>
+        <remarks><para>An <see cref="T:System.InvalidOperationException" /> is thrown if more than one data source has been added to the Store with AddSource or if the data source added is not a <see cref="T:SemWeb.ModifiableSource" />.</para><para>See <see cref="M:SemWeb.ModifiableSource.Import(SemWeb.StatementSource)" />.</para></remarks>
       </Docs>
     </Member>
     <Member MemberName="Contains">
-      <MemberSignature Language="C#" Value="public virtual bool Contains (SemWeb.Statement template);" />
+      <MemberSignature Language="C#" Value="public bool Contains (SemWeb.Statement template);" />
       <MemberType>Method</MemberType>
       <ReturnValue>
         <ReturnType>System.Boolean</ReturnType>
@@ -112,7 +116,7 @@ any statement matching the template.</returns>
       </Docs>
     </Member>
     <Member MemberName="Select">
-      <MemberSignature Language="C#" Value="public abstract void Select (SemWeb.Statement template, SemWeb.StatementSink result);" />
+      <MemberSignature Language="C#" Value="public void Select (SemWeb.Statement template, SemWeb.StatementSink result);" />
       <MemberType>Method</MemberType>
       <ReturnValue>
         <ReturnType>System.Void</ReturnType>
@@ -173,7 +177,7 @@ any statement matching the template.</returns>
       </Docs>
     </Member>
     <Member MemberName="StatementCount">
-      <MemberSignature Language="C#" Value="public abstract int StatementCount { get; };" />
+      <MemberSignature Language="C#" Value="public int StatementCount { get; };" />
       <MemberType>Property</MemberType>
       <ReturnValue>
         <ReturnType>System.Int32</ReturnType>
@@ -181,7 +185,7 @@ any statement matching the template.</returns>
       <Docs>
         <summary>Gets the number of statements in the store.</summary>
         <value>The number of statements in the store.</value>
-        <remarks>None.</remarks>
+        <remarks><para>An <see cref="T:System.InvalidOperationException" /> is thrown if any data source added to the Store with AddSource is not a <see cref="T:SemWeb.StaticSource" />.</para></remarks>
       </Docs>
     </Member>
     <Member MemberName="Write">
@@ -200,7 +204,7 @@ any statement matching the template.</returns>
       </Docs>
     </Member>
     <Member MemberName="GetEntities">
-      <MemberSignature Language="C#" Value="public abstract SemWeb.Entity[] GetEntities ();" />
+      <MemberSignature Language="C#" Value="public SemWeb.Entity[] GetEntities ();" />
       <MemberType>Method</MemberType>
       <ReturnValue>
         <ReturnType>SemWeb.Entity[]</ReturnType>
@@ -213,7 +217,7 @@ any statement matching the template.</returns>
       </Docs>
     </Member>
     <Member MemberName="GetPredicates">
-      <MemberSignature Language="C#" Value="public abstract SemWeb.Entity[] GetPredicates ();" />
+      <MemberSignature Language="C#" Value="public SemWeb.Entity[] GetPredicates ();" />
       <MemberType>Method</MemberType>
       <ReturnValue>
         <ReturnType>SemWeb.Entity[]</ReturnType>
@@ -225,42 +229,8 @@ any statement matching the template.</returns>
         <remarks>None.</remarks>
       </Docs>
     </Member>
-    <Member MemberName="GetResourceKey">
-      <MemberSignature Language="C#" Value="protected object GetResourceKey (SemWeb.Resource resource);" />
-      <MemberType>Method</MemberType>
-      <ReturnValue>
-        <ReturnType>System.Object</ReturnType>
-      </ReturnValue>
-      <Parameters>
-        <Parameter Name="resource" Type="SemWeb.Resource" />
-      </Parameters>
-      <Docs>
-        <param name="resource">The resource from which the cached information is retrieved.</param>
-        <summary>Used by Store implementations to retrieve cached information in an entity.</summary>
-        <returns>The object previously cached with <paramref name="resource" /> by a call to <see cref="M:SemWeb.Store.SetResourceKey(SemWeb.Resource,System.Object)" />, or <see langword="null" /> if no resource key was set.</returns>
-        <remarks>None.</remarks>
-      </Docs>
-    </Member>
-    <Member MemberName="SetResourceKey">
-      <MemberSignature Language="C#" Value="protected void SetResourceKey (SemWeb.Resource resource, object value);" />
-      <MemberType>Method</MemberType>
-      <ReturnValue>
-        <ReturnType>System.Void</ReturnType>
-      </ReturnValue>
-      <Parameters>
-        <Parameter Name="resource" Type="SemWeb.Resource" />
-        <Parameter Name="value" Type="System.Object" />
-      </Parameters>
-      <Docs>
-        <param name="resource">The resource onto which the data is kept.</param>
-        <param name="value">Data to be associated with the resource.</param>
-        <summary>Used by Store implementations to cache information with the entity.</summary>
-        <remarks>
-          <paramref name="value" /> is stored in a Hashtable within <paramref name="resource" />.  To retreive the value later, use <see cref="M:SemWeb.Store.GetResourceKey" />.</remarks>
-      </Docs>
-    </Member>
     <Member MemberName="Replace">
-      <MemberSignature Language="C#" Value="public virtual void Replace (SemWeb.Entity find, SemWeb.Entity replacement);" />
+      <MemberSignature Language="C#" Value="public void Replace (SemWeb.Entity find, SemWeb.Entity replacement);" />
       <MemberType>Method</MemberType>
       <ReturnValue>
         <ReturnType>System.Void</ReturnType>
@@ -273,16 +243,16 @@ any statement matching the template.</returns>
         <param name="find">The Entity to search for in the store.</param>
         <param name="replacement">The Entity to replace <paramref name="a" />.</param>
         <summary>Replaces all occurences of one Entity with another Entity.</summary>
-        <remarks>All occurences of <paramref name="find" /> in statements in the store are replaced with references to <paramref name="replacement" />.</remarks>
+        <remarks><para>All occurences of <paramref name="find" /> in statements in the Store are replaced with references to <paramref name="replacement" />.</para> <para>An <see cref="T:System.InvalidOperationException" /> is thrown if any data source added to the Store with AddSource does not implement <see cref="T:SemWeb.ModifiableSource" />.</para></remarks>
       </Docs>
     </Member>
     <Member MemberName=".ctor">
-      <MemberSignature Language="C#" Value="protected Store ();" />
+      <MemberSignature Language="C#" Value="public Store ();" />
       <MemberType>Constructor</MemberType>
       <Parameters />
       <Docs>
-        <summary>The protected no-arg constructor used by inherited classes.</summary>
-        <remarks>None.</remarks>
+        <summary>Creates an empty store with no data storage backing.</summary>
+        <remarks>Use <see cref="M:SemWeb.Store.AddSource(SemWeb.SelectableSource)" /> to add data to the store.</remarks>
       </Docs>
     </Member>
     <Member MemberName="CreateForInput">
@@ -296,8 +266,8 @@ any statement matching the template.</returns>
       </Parameters>
       <Docs>
         <param name="spec">A specifier string, whose format is given below.</param>
-        <summary>Creates a store from which statements will be read.</summary>
-        <returns>A StatementSource from which statements can be read.  An <see cref="T:SemWeb.RdfReader" /> or <see cref="T:SemWeb.Store" /> is returned.  Cast the value to <see cref="T:SemWeb.Store" /> when appropriate.</returns>
+        <summary>Creates a StatementSource in the factory design pattern from which statements will be read.</summary>
+        <returns>A StatementSource from which statements can be read.  You may cast the value to <see cref="T:SemWeb.RdfReader" /> or <see cref="T:SemWeb.SelectableSource" /> when appropriate.</returns>
         <remarks>
           <para>The specifier string is in one of the following formats.  When a filename is expected, a dash can be used to indicate standard input.</para>
           <list type="table">
@@ -345,7 +315,7 @@ Example:  "n3:mydata.n3"</description>
               <description>A <see cref="T:SemWeb.Remote.SparqlHttpSource" />, which accesses a remote data source using the SPARQL Protocol.  Example: "sparql-http:http://www.govtrack.us/sparql"</description>
             </item>
           </list>
-          <para>The SQL stores can be both read from and written to.</para>
+          <para>The SQL stores can be both read from and written to, despite the name of this method.</para>
         </remarks>
       </Docs>
     </Member>
@@ -361,7 +331,7 @@ Example:  "n3:mydata.n3"</description>
       <Docs>
         <param name="spec">A specification string whose format is given below.</param>
         <summary>Creates a <see cref="T:SemWeb.StatementSink" /> into which statements will be added.</summary>
-        <returns>A StatementSink.  An <see cref="T:SemWeb.RdfWriter" /> or <see cref="T:SemWeb.Store" /> is returned.  Cast the value to <see cref="T:SemWeb.Store" /> when appropriate.</returns>
+        <returns>A StatementSink.  You may cast the value to <see cref="T:SemWeb.RdfWriter" /> or <see cref="T:SemWeb.ModifiableSource" /> when appropriate.</returns>
         <remarks>
           <para>The specifier string is in one of the following formats.  When a filename is expected, a dash can be used to indicate standard output.</para>
           <list type="table">
@@ -393,7 +363,7 @@ Example:  "turtle:mydata.turtle"</description>
             <item>
               <term>SQL-based stores</term>
               <description>
-For Sqlite, MySQL, and PostgreSQL-based stores, use the spec string described in <see cref="M:SemWeb.Store.CreateForInput(string)" />.  These stores can be both read from and written to.</description>
+For Sqlite, MySQL, and PostgreSQL-based stores, use the spec string described in <see cref="M:SemWeb.Store.CreateForInput(string)" />.  These stores can be both read from and written to, despite the name of this method.</description>
             </item>
           </list>
         </remarks>
@@ -444,7 +414,7 @@ For Sqlite, MySQL, and PostgreSQL-based stores, use the spec string described in
       </Docs>
     </Member>
     <Member MemberName="Replace">
-      <MemberSignature Language="C#" Value="public virtual void Replace (SemWeb.Statement find, SemWeb.Statement replacement);" />
+      <MemberSignature Language="C#" Value="public void Replace (SemWeb.Statement find, SemWeb.Statement replacement);" />
       <MemberType>Method</MemberType>
       <ReturnValue>
         <ReturnType>System.Void</ReturnType>
@@ -457,11 +427,11 @@ For Sqlite, MySQL, and PostgreSQL-based stores, use the spec string described in
         <param name="find">The statement to find.  This parameter must be a complete statement (with subject, predicate, and object non-null), not a template.</param>
         <param name="replacement">The statement that will replace the first statement.</param>
         <summary>Replaces a single statement with another statement.</summary>
-        <remarks>Store implementations may choose to optimize this method over a call to Remove followed by Add.</remarks>
+        <remarks><para>Store implementations may choose to optimize this method over a call to Remove followed by Add.</para><para>An <see cref="T:System.InvalidOperationException" /> is thrown if any data source added to the Store with AddSource does not implement <see cref="T:SemWeb.ModifiableSource" />.</para></remarks>
       </Docs>
     </Member>
     <Member MemberName="GetMetas">
-      <MemberSignature Language="C#" Value="public abstract SemWeb.Entity[] GetMetas ();" />
+      <MemberSignature Language="C#" Value="public SemWeb.Entity[] GetMetas ();" />
       <MemberType>Method</MemberType>
       <ReturnValue>
         <ReturnType>SemWeb.Entity[]</ReturnType>
@@ -485,20 +455,20 @@ For Sqlite, MySQL, and PostgreSQL-based stores, use the spec string described in
       <Docs>
         <param name="templates">An array of statement templates.  Statement templates may contain a <see langword="null" /> subject, predicate, object, and/or meta.</param>
         <summary>Removes all statements matching an array of templates.</summary>
-        <remarks>See <see cref="M:SemWeb.ModifiableSource.RemoveAll(SemWeb.Statement[])" />.</remarks>
+        <remarks>An <see cref="T:System.InvalidOperationException" /> is thrown if any data source added to the Store with AddSource does not implement <see cref="T:SemWeb.ModifiableSource" />.</remarks>
       </Docs>
     </Member>
-    <Member MemberName="Close">
-      <MemberSignature Language="C#" Value="public virtual void Close ();" />
+    <Member MemberName="Dispose">
+      <MemberSignature Language="C#" Value="public void Dispose ();" />
       <MemberType>Method</MemberType>
       <ReturnValue>
         <ReturnType>System.Void</ReturnType>
       </ReturnValue>
       <Parameters />
       <Docs>
-        <summary>Closes the store.</summary>
-        <remarks>Stores may release external resources or close remote connections in this method.
-        Users of the Store class should Close stores when they are finished being used.</remarks>
+        <summary>Releases any external resources associated with the Store.</summary>
+        <remarks>Calls <see cref="M:System.IDisposable.Dispose()" /> on any data sources added to the Store with the AddSource method that implement <see cref="T:System.IDisposable" />. Stores may release external resources or close remote connections through Dispose, so
+        users of the Store class should Dispose stores when they are finished being used.</remarks>
       </Docs>
     </Member>
     <Member MemberName="DefaultContains">
@@ -520,7 +490,7 @@ For Sqlite, MySQL, and PostgreSQL-based stores, use the spec string described in
       </Docs>
     </Member>
     <Member MemberName="Distinct">
-      <MemberSignature Language="C#" Value="public abstract bool Distinct { get; };" />
+      <MemberSignature Language="C#" Value="public bool Distinct { get; };" />
       <MemberType>Property</MemberType>
       <ReturnValue>
         <ReturnType>System.Boolean</ReturnType>
@@ -532,7 +502,7 @@ For Sqlite, MySQL, and PostgreSQL-based stores, use the spec string described in
       </Docs>
     </Member>
     <Member MemberName="Select">
-      <MemberSignature Language="C#" Value="public abstract void Select (SemWeb.SelectFilter filter, SemWeb.StatementSink result);" />
+      <MemberSignature Language="C#" Value="public void Select (SemWeb.SelectFilter filter, SemWeb.StatementSink result);" />
       <MemberType>Method</MemberType>
       <ReturnValue>
         <ReturnType>System.Void</ReturnType>
@@ -584,7 +554,7 @@ For Sqlite, MySQL, and PostgreSQL-based stores, use the spec string described in
       </Docs>
     </Member>
     <Member MemberName="Contains">
-      <MemberSignature Language="C#" Value="public virtual bool Contains (SemWeb.Resource resource);" />
+      <MemberSignature Language="C#" Value="public bool Contains (SemWeb.Resource resource);" />
       <MemberType>Method</MemberType>
       <ReturnValue>
         <ReturnType>System.Boolean</ReturnType>
@@ -595,12 +565,12 @@ For Sqlite, MySQL, and PostgreSQL-based stores, use the spec string described in
       <Docs>
         <param name="resource">A Resource (entity, literal, or bnode).</param>
         <summary>Tests whether the store contains any statements that mention the given resource.</summary>
-        <returns>A boolean value indicating whether the store contains any statements mentioning the resource.</returns>
+        <returns>A boolean value indicating whether the Store contains any statements mentioning the resource.</returns>
         <remarks>None.</remarks>
       </Docs>
     </Member>
     <Member MemberName="MetaQuery">
-      <MemberSignature Language="C#" Value="public virtual SemWeb.Query.MetaQueryResult MetaQuery (SemWeb.Statement[] graph, SemWeb.Query.QueryOptions options);" />
+      <MemberSignature Language="C#" Value="public SemWeb.Query.MetaQueryResult MetaQuery (SemWeb.Statement[] graph, SemWeb.Query.QueryOptions options);" />
       <MemberType>Method</MemberType>
       <ReturnValue>
         <ReturnType>SemWeb.Query.MetaQueryResult</ReturnType>
@@ -618,7 +588,7 @@ For Sqlite, MySQL, and PostgreSQL-based stores, use the spec string described in
       </Docs>
     </Member>
     <Member MemberName="Query">
-      <MemberSignature Language="C#" Value="public virtual void Query (SemWeb.Statement[] graph, SemWeb.Query.QueryOptions options, SemWeb.Query.QueryResultSink sink);" />
+      <MemberSignature Language="C#" Value="public void Query (SemWeb.Statement[] graph, SemWeb.Query.QueryOptions options, SemWeb.Query.QueryResultSink sink);" />
       <MemberType>Method</MemberType>
       <ReturnValue>
         <ReturnType>System.Void</ReturnType>
@@ -636,9 +606,177 @@ For Sqlite, MySQL, and PostgreSQL-based stores, use the spec string described in
         <remarks>See <see cref="T:SemWeb.QueryableSource" /> for more information.  The default implementation of this method uses the <see cref="T:SemWeb.Query.GraphMatch" /> class to answer the query.</remarks>
       </Docs>
     </Member>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public Store (SemWeb.SelectableSource source);" />
+      <MemberType>Constructor</MemberType>
+      <Parameters>
+        <Parameter Name="source" Type="SemWeb.SelectableSource" />
+      </Parameters>
+      <Docs>
+        <param name="source">The data source to add to the Store.</param>
+        <summary>Creates a store that wraps the given SelectableSource.</summary>
+        <remarks>Other data sources can be added with <see cref="M:SemWeb.Store.AddSource(SemWeb.SelectableSource)" />.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public Store (SemWeb.StatementSource source);" />
+      <MemberType>Constructor</MemberType>
+      <Parameters>
+        <Parameter Name="source" Type="SemWeb.StatementSource" />
+      </Parameters>
+      <Docs>
+        <param name="source">A source of statements.</param>
+        <summary>Creates a Store that loads the statements from the StatementSource into memory.</summary>
+        <remarks>The store loads the statements into memory.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="AddReasoner">
+      <MemberSignature Language="C#" Value="public virtual void AddReasoner (SemWeb.Inference.Reasoner reasoner);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="reasoner" Type="SemWeb.Inference.Reasoner" />
+      </Parameters>
+      <Docs>
+        <param name="reasoner">A reasoning engine, such as <see cref="T:SemWeb.Inference.RDFS" /> or <see cref="T:SemWeb.Inference.Euler" />.</param>
+        <summary>Adds inferencing capabilities to the Select and Query methods of this Store.</summary>
+        <remarks>The Select and Query methods will apply inferencing to the store.  The reasoners are applied recursively in the reverse order that they were added with this method.  That is, if reasoner A is added before reasoner B, then a call to select will start with reasoner B, but when reasoner B queries the underlying data it will query reasoner A, and reasoner A will actually access any underlying data.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="AddSource">
+      <MemberSignature Language="C#" Value="public virtual void AddSource (SemWeb.SelectableSource store);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="store" Type="SemWeb.SelectableSource" />
+      </Parameters>
+      <Docs>
+        <param name="store">A data source.</param>
+        <summary>Adds a data source to this store.</summary>
+        <remarks>None.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="AddSource">
+      <MemberSignature Language="C#" Value="public virtual void AddSource (SemWeb.SelectableSource store, string uri);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="store" Type="SemWeb.SelectableSource" />
+        <Parameter Name="uri" Type="System.String" />
+      </Parameters>
+      <Docs>
+        <param name="store">A data source.</param>
+        <param name="uri">A URI identifying the data source.</param>
+        <summary>Adds a named data source to this store.</summary>
+        <remarks><para>The data source is added to the store and is identified by <paramref name="uri" />. An <see cref="T:System.ArgumentException" /> is thrown if <paramref name="uri" /> has already been used in a previous call to this method.</para>  <para>In calls to Contains(Statement), Select, Add, Remove, RemoveAll, and Replace(Statement,Statement), the Meta field of the statement argument is used to choose which data source added with AddSource to query for information.  When the supplied Meta field is <see langword="null" /> or when no named data sources have been added to the Store through a call to this method, all data sources are queried. However, when named data sources have been added with this method and the supplied Meta field is <see cref="F:SemWeb.Statement.DefaultMeta" />, only unnamed data sources added through the other AddSource method (<see cref="M:SemWeb.Store.AddSource(SemWeb.SelectableSource)" />) are queried, and when the supplied <see cref="F:SemWeb.Statement.DefaultMeta" />'s URI matches the URI of a named data source added through this method, only that data source is queried.</para></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Create">
+      <MemberSignature Language="C#" Value="public static SemWeb.Store Create (string spec);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>SemWeb.Store</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="spec" Type="System.String" />
+      </Parameters>
+      <Docs>
+        <param name="spec">A specification string whose format is given below.</param>
+        <summary>Creates a Store in the factory design pattern.</summary>
+        <returns>A Store object to which data sources and reasoning may have been added according to the specification string <paramref name="spec" />.</returns>
+        <remarks><para><paramref name="spec" /> is a newline- or pipe- ("|") delimited string of specification strings to be passed to <see cref="M:SemWeb.Store.CreateForInput(string)" />.</para>  <para>For each of those substrings, <see cref="M:SemWeb.Store.CreateForInput(string)" /> is called on that string.  If the result is a <see cref="T:SemWeb.SelectableSource" />, it is added to the returned Store with AddSource.  If the data source is a <see cref="T:SemWeb.StatementSource" /> but not a <see cref="T:SemWeb.SelectableSource" />, like an <see cref="T:SemWeb.RdfReader" />, the contents of the data source are first loaded into a <see cref="T:SemWeb.MemoryStore" /> and the <see cref="T:SemWeb.MemoryStore" /> is then added to the Store to be returned.</para>
+		  <para>In addition, <paramref name="spec" /> can be prefixed with "rdfs+" so that an <see cref="T:SemWeb.Inference.RDFS" /> reasoning engine is added to the Store with AddReasoner.</para>
+		  <para>The following are example specification strings:</para>
+<example>
+  <code>mysql:rdf:Database=databasename;Server=localhost;User Id=username  (creates a Store around a SQLStore)
+
+rdfs+mysql:rdf:Database=databasename;Server=localhost;User Id=username (creates a Store around an SQLStore and applies RDFS reasoning)
+
+n3:filename.n3 (loads the file into memory and returns a Store containing the data)
+
+n3:file1.n3|n3:file2.n3|...  (loads each of the files into memory and returns a Store containing all of them)</code>
+</example></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="DefaultReplace">
+      <MemberSignature Language="C#" Value="public static void DefaultReplace (SemWeb.ModifiableSource source, SemWeb.Entity find, SemWeb.Entity replacement);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="source" Type="SemWeb.ModifiableSource" />
+        <Parameter Name="find" Type="SemWeb.Entity" />
+        <Parameter Name="replacement" Type="SemWeb.Entity" />
+      </Parameters>
+      <Docs>
+        <param name="source">To be added.</param>
+        <param name="find">To be added.</param>
+        <param name="replacement">To be added.</param>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="DefaultReplace">
+      <MemberSignature Language="C#" Value="public static void DefaultReplace (SemWeb.ModifiableSource source, SemWeb.Statement find, SemWeb.Statement replacement);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="source" Type="SemWeb.ModifiableSource" />
+        <Parameter Name="find" Type="SemWeb.Statement" />
+        <Parameter Name="replacement" Type="SemWeb.Statement" />
+      </Parameters>
+      <Docs>
+        <param name="source">To be added.</param>
+        <param name="find">To be added.</param>
+        <param name="replacement">To be added.</param>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="GetBNodeFromPersistentId">
+      <MemberSignature Language="C#" Value="public SemWeb.BNode GetBNodeFromPersistentId (string persistentId);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>SemWeb.BNode</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="persistentId" Type="System.String" />
+      </Parameters>
+      <Docs>
+        <param name="persistentId">To be added.</param>
+        <summary>To be added.</summary>
+        <returns>To be added.</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="GetPersistentBNodeId">
+      <MemberSignature Language="C#" Value="public string GetPersistentBNodeId (SemWeb.BNode node);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>System.String</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="node" Type="SemWeb.BNode" />
+      </Parameters>
+      <Docs>
+        <param name="node">To be added.</param>
+        <summary>To be added.</summary>
+        <returns>To be added.</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
   </Members>
   <Docs>
-    <summary>A repository for <see cref="T:SemWeb.Statement" />s.</summary>
-    <remarks>This class is abstract.  The <see cref="T:SemWeb.MemoryStore" /> maintains an in-memory array of statements.  Other stores are available in the <see cref="N:SemWeb.Stores" /> namespace.</remarks>
+    <summary>The store class is used to group data sources and to provide inferencing capabilities over data sources.</summary>
+    <remarks>The <see cref="T:SemWeb.MemoryStore" /> is a special subclass of Store which maintains an in-memory array of statements.</remarks>
   </Docs>
 </Type>

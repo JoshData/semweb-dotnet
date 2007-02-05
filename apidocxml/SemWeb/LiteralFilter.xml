@@ -77,6 +77,6 @@
   </Members>
   <Docs>
     <summary>The LiteralFilter represents a filter over literal values.</summary>
-    <remarks>This class is used to filter the results of a Select using the <see cref="T:SemWeb.SelectFilter" /> type.</remarks>
+    <remarks>This class is used to filter the results of a Select using the <see cref="T:SemWeb.SelectFilter" /> type.  This is an abstract base class for filters, which are defined in the <see cref="N:SemWeb.Filters" /> namespace.</remarks>
   </Docs>
 </Type>

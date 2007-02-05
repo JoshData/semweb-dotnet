@@ -82,7 +82,9 @@
   <Docs>
     <summary>A graph of statements held in memory.</summary>
     <remarks>
-      <para>The MemoryStore is the main storage mechanism for small amounts of data.  Here are some examples of using a MemoryStore:</para>
+      <para>The MemoryStore is the main storage mechanism for small amounts of data.</para>
+      <para>Although the MemoryStore inherits from Store, which can be used to group multiple data sources together, it is illegal to call AddSource on a MemoryStore.</para>
+      <para>Here are some examples of using a MemoryStore:</para>
       <example>
         <code lang="C#">// Load data from mydata.rdf file
 MemoryStore store = new MemoryStore(new RdfXmlReader("mydata.rdf"));

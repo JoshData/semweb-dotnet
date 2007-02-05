@@ -475,6 +475,22 @@
         <remarks>None.</remarks>
       </Docs>
     </Member>
+    <Member MemberName="FromValue">
+      <MemberSignature Language="C#" Value="public static SemWeb.Literal FromValue (decimal value);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>SemWeb.Literal</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="value" Type="System.Decimal" />
+      </Parameters>
+      <Docs>
+        <param name="value">A value.</param>
+        <summary>Returns an XSD-typed decimal literal from the given value.</summary>
+        <returns>A new Literal object with the indicated XSD datatype and a value in the lexical space of that datatype according to the parameters given.</returns>
+        <remarks>None.</remarks>
+      </Docs>
+    </Member>
   </Members>
   <Docs>
     <summary>A literal (text string) node in an RDF graph.</summary>

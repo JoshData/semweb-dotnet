@@ -26,24 +26,23 @@
       </ReturnValue>
       <Docs>
         <summary>Sets whether named nodes (nodes with URIs) are embedded within property elements.</summary>
-        <remarks><para>When this field is <see langword="true" />, the following output might be generated:</para>
-
-<code lang="RDF/XML">&lt;rdf:Description&gt;
+        <remarks>
+          <para>When this field is <see langword="true" />, the following output might be generated:</para>
+          <code lang="RDF/XML">&lt;rdf:Description&gt;
    &lt;ex:hasRelationTo&gt;
       &lt;rdf:Description rdf:about="http://www.example.org/"&gt;
          ...
       &lt;/rdf:Description&gt;
    &lt;/ex:hasRelationTo&gt;
 &lt;/rdf:Description&gt;</code>
-
-<para>But when this field is <see langword="false" />, the following output would be generated instead:</para>
-
-<code lang="RDF/XML">&lt;rdf:Description&gt;
+          <para>But when this field is <see langword="false" />, the following output would be generated instead:</para>
+          <code lang="RDF/XML">&lt;rdf:Description&gt;
    &lt;ex:hasRelationTo rdf:resource="http://www.example.org/"/&gt;
 &lt;/rdf:Description&gt;
 &lt;rdf:Description rdf:about="http://www.example.org/"&gt;
    ...
-&lt;/rdf:Description&gt;</code></remarks>
+&lt;/rdf:Description&gt;</code>
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName="Full">
@@ -65,22 +64,20 @@
       </ReturnValue>
       <Docs>
         <summary>Sets whether parseType=Literal is used for xsd:XMLLiteral values.</summary>
-        <remarks><para>When this field is <see langword="true" />, the following output might be generated:</para>
-
-<code lang="RDF/XML">&lt;rdf:Description&gt;
+        <remarks>
+          <para>When this field is <see langword="true" />, the following output might be generated:</para>
+          <code lang="RDF/XML">&lt;rdf:Description&gt;
    &lt;ex:hasContent rdf:parseType="Literal"&gt;
       &lt;myContent&gt;this is &lt;b&gt;my&lt;/b&gt; content&lt;/myContent&gt;
    &lt;/ex:hasContent&gt;
 &lt;/rdf:Description&gt;</code>
-
-<para>But when this field is <see langword="false" />, the following output would be generated instead:</para>
-
-<code lang="RDF/XML">&lt;rdf:Description&gt;
+          <para>But when this field is <see langword="false" />, the following output would be generated instead:</para>
+          <code lang="RDF/XML">&lt;rdf:Description&gt;
    &lt;ex:hasContent&gt;
       &amp;lt;myContent&amp;gt;this is &amp;lt;b&amp;gt;my&amp;lt;/b&amp;gt; content&amp;lt;/myContent&amp;gt;
    &lt;/ex:hasContent&gt;
 &lt;/rdf:Description&gt;</code>
-</remarks>
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName="UsePredicateAttributes">
@@ -91,22 +88,21 @@
       </ReturnValue>
       <Docs>
         <summary>Sets whether predicate attributes may be used.</summary>
-        <remarks><para>When this field is <see langword="true" />, the following output might be generated:</para>
-
-<code lang="RDF/XML">&lt;foaf:Person&gt;
+        <remarks>
+          <para>When this field is <see langword="true" />, the following output might be generated:</para>
+          <code lang="RDF/XML">&lt;foaf:Person&gt;
    &lt;foaf:knows foaf:firstname="John" foaf:lastname="Doe"/&gt;
 &lt;/foaf:Person&gt;</code>
-
-<para>But when this field is <see langword="false" />, the following output would be generated instead:</para>
-
-<code lang="RDF/XML">&lt;foaf:Person&gt;
+          <para>But when this field is <see langword="false" />, the following output would be generated instead:</para>
+          <code lang="RDF/XML">&lt;foaf:Person&gt;
    &lt;foaf:knows&gt;
       &lt;rdf:Description&gt;
          &lt;foaf:firstname&gt;John&lt;/foaf:firstname&gt;
          &lt;foaf:lastname&gt;Doe&lt;/foaf:lastname&gt;
       &lt;/rdf:Description&gt;
    &lt;/foaf:knows&gt;
-&lt;/foaf:Person&gt;</code></remarks>
+&lt;/foaf:Person&gt;</code>
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName="UseRdfID">
@@ -117,18 +113,16 @@
       </ReturnValue>
       <Docs>
         <summary>Sets whether the rdf:ID attribute is used to identify named nodes with URIs relative to the Base URI of the document, instead of an rdf:about attribute.</summary>
-        <remarks><para>When this field is <see langword="true" />, the following output might be generated:</para>
-
-<code lang="RDF/XML">&lt;foaf:Person rdf:ID="John"&gt;
+        <remarks>
+          <para>When this field is <see langword="true" />, the following output might be generated:</para>
+          <code lang="RDF/XML">&lt;foaf:Person rdf:ID="John"&gt;
    ...
 &lt;/foaf:Person&gt;</code>
-
-<para>But when this field is <see langword="false" />, the following output would be generated instead:</para>
-
-<code lang="RDF/XML">&lt;foaf:Person rdf:about="http://www.example.org/baseURI#John"&gt;
+          <para>But when this field is <see langword="false" />, the following output would be generated instead:</para>
+          <code lang="RDF/XML">&lt;foaf:Person rdf:about="http://www.example.org/baseURI#John"&gt;
    ...
 &lt;/foaf:Person&gt;</code>
-</remarks>
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName="UseRdfLI">
@@ -139,24 +133,21 @@
       </ReturnValue>
       <Docs>
         <summary>Sets whether rdf:_nnn URIs are replaced with rdf:li.</summary>
-        <remarks><para>This field controls whether rdf:_nnn properties are written out as rdf:li.  This field only has an effect when the rdf:_nnn properties are streamed into the RdfXmlWriter in numerical order.</para>
-
-<para>When this field is <see langword="true" />, the following output might be generated:</para>
-
-<code lang="RDF/XML">&lt;rdf:Bag&gt;
+        <remarks>
+          <para>This field controls whether rdf:_nnn properties are written out as rdf:li.  This field only has an effect when the rdf:_nnn properties are streamed into the RdfXmlWriter in numerical order.</para>
+          <para>When this field is <see langword="true" />, the following output might be generated:</para>
+          <code lang="RDF/XML">&lt;rdf:Bag&gt;
    &lt;rdf:li rdf:resource="http://www.example.org/one"/&gt;
    &lt;rdf:li rdf:resource="http://www.example.org/two"/&gt;
    &lt;rdf:li rdf:resource="http://www.example.org/three"/&gt;
 &lt;/rdf:Bag&gt;</code>
-
-<para>But when this field is <see langword="false" />, the following output would be generated instead:</para>
-
-<code lang="RDF/XML">&lt;rdf:Bag&gt;
+          <para>But when this field is <see langword="false" />, the following output would be generated instead:</para>
+          <code lang="RDF/XML">&lt;rdf:Bag&gt;
    &lt;rdf:_1 rdf:resource="http://www.example.org/one"/&gt;
    &lt;rdf:_2 rdf:resource="http://www.example.org/two"/&gt;
    &lt;rdf:_3 rdf:resource="http://www.example.org/three"/&gt;
 &lt;/rdf:Bag&gt;</code>
-</remarks>
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName="UseTypedNodes">
@@ -167,19 +158,17 @@
       </ReturnValue>
       <Docs>
         <summary>Sets whether typed rdf:Description elements are allowed.</summary>
-        <remarks><para>When this field is <see langword="true" />, the following output might be generated:</para>
-
-<code lang="RDF/XML">&lt;foaf:Person&gt;
+        <remarks>
+          <para>When this field is <see langword="true" />, the following output might be generated:</para>
+          <code lang="RDF/XML">&lt;foaf:Person&gt;
    ...
 &lt;/foaf:Person&gt;</code>
-
-<para>But when this field is <see langword="false" />, the following output would be generated instead:</para>
-
-<code lang="RDF/XML">&lt;rdf:Description&gt;
+          <para>But when this field is <see langword="false" />, the following output would be generated instead:</para>
+          <code lang="RDF/XML">&lt;rdf:Description&gt;
    &lt;rdf:type rdf:resource="http://xmlns.com/foaf/0.1/Person"/&gt;
    ...
 &lt;/rdf:Description&gt;</code>
-</remarks>
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName="XMP">

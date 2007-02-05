@@ -1,10 +1,13 @@
 <Type Name="ModifiableSource" FullName="SemWeb.ModifiableSource">
-  <TypeSignature Language="C#" Value="public interface ModifiableSource : SemWeb.StatementSink" />
+  <TypeSignature Language="C#" Value="public interface ModifiableSource : SemWeb.SelectableSource, SemWeb.StatementSink" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
     <AssemblyVersion>0.8.1.1</AssemblyVersion>
   </AssemblyInfo>
   <Interfaces>
+    <Interface>
+      <InterfaceName>SemWeb.SelectableSource</InterfaceName>
+    </Interface>
     <Interface>
       <InterfaceName>SemWeb.StatementSink</InterfaceName>
     </Interface>
