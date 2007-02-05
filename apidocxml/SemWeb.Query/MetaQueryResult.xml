@@ -9,17 +9,6 @@
   </Base>
   <Interfaces />
   <Members>
-    <Member MemberName="IsDefaultImplementation">
-      <MemberSignature Language="C#" Value="public bool IsDefaultImplementation;" />
-      <MemberType>Field</MemberType>
-      <ReturnValue>
-        <ReturnType>System.Boolean</ReturnType>
-      </ReturnValue>
-      <Docs>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
-      </Docs>
-    </Member>
     <Member MemberName="IsDefinitive">
       <MemberSignature Language="C#" Value="public bool[] IsDefinitive;" />
       <MemberType>Field</MemberType>

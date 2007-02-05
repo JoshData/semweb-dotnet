@@ -44,15 +44,15 @@ new GraphMatch(queryGraph).Run(targetData, Console.Out);  </code>
       </Docs>
     </Member>
     <Member MemberName=".ctor">
-      <MemberSignature Language="C#" Value="public GraphMatch (SemWeb.Store queryModel);" />
+      <MemberSignature Language="C#" Value="public GraphMatch (SemWeb.StatementSource queryModel);" />
       <MemberType>Constructor</MemberType>
       <Parameters>
-        <Parameter Name="queryModel" Type="SemWeb.Store" />
+        <Parameter Name="queryModel" Type="SemWeb.StatementSource" />
       </Parameters>
       <Docs>
         <param name="queryModel">A graph that represents the query.</param>
-        <summary>Creates a query based on a graph in a Store.</summary>
-        <remarks>See <see cref="C:SemWeb.Query.GraphMatch(SemWeb.StatementSource)" />.</remarks>
+        <summary>Creates a query based on a graph in <paramref name="queryModel" />.</summary>
+        <remarks>None.</remarks>
       </Docs>
     </Member>
     <Member MemberName="AddGraphStatement">
