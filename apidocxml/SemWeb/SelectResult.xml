@@ -1,5 +1,5 @@
 <Type Name="SelectResult" FullName="SemWeb.SelectResult">
-  <TypeSignature Language="C#" Value="public abstract class SelectResult : SemWeb.StatementSource, System.Collections.IEnumerable" />
+  <TypeSignature Language="C#" Value="public abstract class SelectResult : SemWeb.StatementSource, System.Collections.Generic.IEnumerable&lt;SemWeb.Statement&gt;" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
     <AssemblyVersion>0.8.1.1</AssemblyVersion>
@@ -12,7 +12,7 @@
       <InterfaceName>SemWeb.StatementSource</InterfaceName>
     </Interface>
     <Interface>
-      <InterfaceName>System.Collections.IEnumerable</InterfaceName>
+      <InterfaceName>System.Collections.Generic.IEnumerable&lt;SemWeb.Statement&gt;</InterfaceName>
     </Interface>
   </Interfaces>
   <Members>

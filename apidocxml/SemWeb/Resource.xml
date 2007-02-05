@@ -1,5 +1,5 @@
 <Type Name="Resource" FullName="SemWeb.Resource">
-  <TypeSignature Language="C#" Value="public abstract class Resource : IComparable" />
+  <TypeSignature Language="C#" Value="public abstract class Resource : IComparable&lt;SemWeb.Resource&gt;" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
     <AssemblyVersion>0.8.1.1</AssemblyVersion>
@@ -9,7 +9,7 @@
   </Base>
   <Interfaces>
     <Interface>
-      <InterfaceName>System.IComparable</InterfaceName>
+      <InterfaceName>System.IComparable&lt;SemWeb.Resource&gt;</InterfaceName>
     </Interface>
   </Interfaces>
   <Members>
@@ -68,13 +68,13 @@
       </Docs>
     </Member>
     <Member MemberName="CompareTo">
-      <MemberSignature Language="C#" Value="public int CompareTo (object other);" />
+      <MemberSignature Language="C#" Value="public int CompareTo (SemWeb.Resource other);" />
       <MemberType>Method</MemberType>
       <ReturnValue>
         <ReturnType>System.Int32</ReturnType>
       </ReturnValue>
       <Parameters>
-        <Parameter Name="other" Type="System.Object" />
+        <Parameter Name="other" Type="SemWeb.Resource" />
       </Parameters>
       <Docs>
         <param name="other">The other resource.</param>

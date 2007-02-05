@@ -120,10 +120,10 @@
       </Docs>
     </Member>
     <Member MemberName="Variables">
-      <MemberSignature Language="C#" Value="public System.Collections.ICollection Variables { get; };" />
+      <MemberSignature Language="C#" Value="public System.Collections.Generic.ICollection&lt;SemWeb.Variable&gt; Variables { get; };" />
       <MemberType>Property</MemberType>
       <ReturnValue>
-        <ReturnType>System.Collections.ICollection</ReturnType>
+        <ReturnType>System.Collections.Generic.ICollection&lt;SemWeb.Variable&gt;</ReturnType>
       </ReturnValue>
       <Docs>
         <summary>A list of <see cref="T:SemWeb.Variable" />s found in the stream.</summary>
@@ -191,10 +191,10 @@
       </Docs>
     </Member>
     <Member MemberName="Warnings">
-      <MemberSignature Language="C#" Value="public System.Collections.IList Warnings { get; };" />
+      <MemberSignature Language="C#" Value="public System.Collections.Generic.ICollection&lt;string&gt; Warnings { get; };" />
       <MemberType>Property</MemberType>
       <ReturnValue>
-        <ReturnType>System.Collections.IList</ReturnType>
+        <ReturnType>System.Collections.Generic.ICollection&lt;System.String&gt;</ReturnType>
       </ReturnValue>
       <Docs>
         <summary>Gets a list of warnings generated while parsing the input stream.</summary>

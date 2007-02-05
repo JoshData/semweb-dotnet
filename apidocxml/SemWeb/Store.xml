@@ -62,8 +62,10 @@
       <Docs>
         <param name="statement">The statement to add.</param>
         <summary>Adds a statement to the store.</summary>
-        <remarks><para>The Subject, Predicate, Object, and Meta fields of the statement must not be <see langword="null" /> or an <see cref="T:System.ArgumentNullException" /> is thrown.</para>
-<para>An <see cref="T:System.InvalidOperationException" /> is thrown if more than one data source has been added to the Store with AddSource or if the data source added is not a <see cref="T:SemWeb.ModifiableSource" />.</para></remarks>
+        <remarks>
+          <para>The Subject, Predicate, Object, and Meta fields of the statement must not be <see langword="null" /> or an <see cref="T:System.ArgumentNullException" /> is thrown.</para>
+          <para>An <see cref="T:System.InvalidOperationException" /> is thrown if more than one data source has been added to the Store with AddSource or if the data source added is not a <see cref="T:SemWeb.ModifiableSource" />.</para>
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName="Remove">
@@ -82,7 +84,7 @@
       </Docs>
     </Member>
     <Member MemberName="Import">
-      <MemberSignature Language="C#" Value="public virtual void Import (SemWeb.StatementSource source);" />
+      <MemberSignature Language="C#" Value="public void Import (SemWeb.StatementSource source);" />
       <MemberType>Method</MemberType>
       <ReturnValue>
         <ReturnType>System.Void</ReturnType>
@@ -93,7 +95,10 @@
       <Docs>
         <param name="source">The source whose statements will be added into the store.</param>
         <summary>Batch loads the contents of a StatementSource into the store.</summary>
-        <remarks><para>An <see cref="T:System.InvalidOperationException" /> is thrown if more than one data source has been added to the Store with AddSource or if the data source added is not a <see cref="T:SemWeb.ModifiableSource" />.</para><para>See <see cref="M:SemWeb.ModifiableSource.Import(SemWeb.StatementSource)" />.</para></remarks>
+        <remarks>
+          <para>An <see cref="T:System.InvalidOperationException" /> is thrown if more than one data source has been added to the Store with AddSource or if the data source added is not a <see cref="T:SemWeb.ModifiableSource" />.</para>
+          <para>See <see cref="M:SemWeb.ModifiableSource.Import(SemWeb.StatementSource)" />.</para>
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName="Contains">
@@ -185,7 +190,9 @@ any statement matching the template.</returns>
       <Docs>
         <summary>Gets the number of statements in the store.</summary>
         <value>The number of statements in the store.</value>
-        <remarks><para>An <see cref="T:System.InvalidOperationException" /> is thrown if any data source added to the Store with AddSource is not a <see cref="T:SemWeb.StaticSource" />.</para></remarks>
+        <remarks>
+          <para>An <see cref="T:System.InvalidOperationException" /> is thrown if any data source added to the Store with AddSource is not a <see cref="T:SemWeb.StaticSource" />.</para>
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName="Write">
@@ -243,7 +250,10 @@ any statement matching the template.</returns>
         <param name="find">The Entity to search for in the store.</param>
         <param name="replacement">The Entity to replace <paramref name="a" />.</param>
         <summary>Replaces all occurences of one Entity with another Entity.</summary>
-        <remarks><para>All occurences of <paramref name="find" /> in statements in the Store are replaced with references to <paramref name="replacement" />.</para> <para>An <see cref="T:System.InvalidOperationException" /> is thrown if any data source added to the Store with AddSource does not implement <see cref="T:SemWeb.ModifiableSource" />.</para></remarks>
+        <remarks>
+          <para>All occurences of <paramref name="find" /> in statements in the Store are replaced with references to <paramref name="replacement" />.</para>
+          <para>An <see cref="T:System.InvalidOperationException" /> is thrown if any data source added to the Store with AddSource does not implement <see cref="T:SemWeb.ModifiableSource" />.</para>
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName=".ctor">
@@ -427,7 +437,10 @@ For Sqlite, MySQL, and PostgreSQL-based stores, use the spec string described in
         <param name="find">The statement to find.  This parameter must be a complete statement (with subject, predicate, and object non-null), not a template.</param>
         <param name="replacement">The statement that will replace the first statement.</param>
         <summary>Replaces a single statement with another statement.</summary>
-        <remarks><para>Store implementations may choose to optimize this method over a call to Remove followed by Add.</para><para>An <see cref="T:System.InvalidOperationException" /> is thrown if any data source added to the Store with AddSource does not implement <see cref="T:SemWeb.ModifiableSource" />.</para></remarks>
+        <remarks>
+          <para>Store implementations may choose to optimize this method over a call to Remove followed by Add.</para>
+          <para>An <see cref="T:System.InvalidOperationException" /> is thrown if any data source added to the Store with AddSource does not implement <see cref="T:SemWeb.ModifiableSource" />.</para>
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName="GetMetas">
@@ -646,35 +659,38 @@ For Sqlite, MySQL, and PostgreSQL-based stores, use the spec string described in
       </Docs>
     </Member>
     <Member MemberName="AddSource">
-      <MemberSignature Language="C#" Value="public virtual void AddSource (SemWeb.SelectableSource store);" />
+      <MemberSignature Language="C#" Value="public virtual void AddSource (SemWeb.SelectableSource source);" />
       <MemberType>Method</MemberType>
       <ReturnValue>
         <ReturnType>System.Void</ReturnType>
       </ReturnValue>
       <Parameters>
-        <Parameter Name="store" Type="SemWeb.SelectableSource" />
+        <Parameter Name="source" Type="SemWeb.SelectableSource" />
       </Parameters>
       <Docs>
-        <param name="store">A data source.</param>
+        <param name="source">A data source.</param>
         <summary>Adds a data source to this store.</summary>
         <remarks>None.</remarks>
       </Docs>
     </Member>
     <Member MemberName="AddSource">
-      <MemberSignature Language="C#" Value="public virtual void AddSource (SemWeb.SelectableSource store, string uri);" />
+      <MemberSignature Language="C#" Value="public virtual void AddSource (SemWeb.SelectableSource source, string uri);" />
       <MemberType>Method</MemberType>
       <ReturnValue>
         <ReturnType>System.Void</ReturnType>
       </ReturnValue>
       <Parameters>
-        <Parameter Name="store" Type="SemWeb.SelectableSource" />
+        <Parameter Name="source" Type="SemWeb.SelectableSource" />
         <Parameter Name="uri" Type="System.String" />
       </Parameters>
       <Docs>
-        <param name="store">A data source.</param>
+        <param name="source">A data source.</param>
         <param name="uri">A URI identifying the data source.</param>
         <summary>Adds a named data source to this store.</summary>
-        <remarks><para>The data source is added to the store and is identified by <paramref name="uri" />. An <see cref="T:System.ArgumentException" /> is thrown if <paramref name="uri" /> has already been used in a previous call to this method.</para>  <para>In calls to Contains(Statement), Select, Add, Remove, RemoveAll, and Replace(Statement,Statement), the Meta field of the statement argument is used to choose which data source added with AddSource to query for information.  When the supplied Meta field is <see langword="null" /> or when no named data sources have been added to the Store through a call to this method, all data sources are queried. However, when named data sources have been added with this method and the supplied Meta field is <see cref="F:SemWeb.Statement.DefaultMeta" />, only unnamed data sources added through the other AddSource method (<see cref="M:SemWeb.Store.AddSource(SemWeb.SelectableSource)" />) are queried, and when the supplied <see cref="F:SemWeb.Statement.DefaultMeta" />'s URI matches the URI of a named data source added through this method, only that data source is queried.</para></remarks>
+        <remarks>
+          <para>The data source is added to the store and is identified by <paramref name="uri" />. An <see cref="T:System.ArgumentException" /> is thrown if <paramref name="uri" /> has already been used in a previous call to this method.</para>
+          <para>In calls to Contains(Statement), Select, Add, Remove, RemoveAll, and Replace(Statement,Statement), the Meta field of the statement argument is used to choose which data source added with AddSource to query for information.  When the supplied Meta field is <see langword="null" /> or when no named data sources have been added to the Store through a call to this method, all data sources are queried. However, when named data sources have been added with this method and the supplied Meta field is <see cref="F:SemWeb.Statement.DefaultMeta" />, only unnamed data sources added through the other AddSource method (<see cref="M:SemWeb.Store.AddSource(SemWeb.SelectableSource)" />) are queried, and when the supplied <see cref="F:SemWeb.Statement.DefaultMeta" />'s URI matches the URI of a named data source added through this method, only that data source is queried.</para>
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName="Create">
@@ -690,18 +706,22 @@ For Sqlite, MySQL, and PostgreSQL-based stores, use the spec string described in
         <param name="spec">A specification string whose format is given below.</param>
         <summary>Creates a Store in the factory design pattern.</summary>
         <returns>A Store object to which data sources and reasoning may have been added according to the specification string <paramref name="spec" />.</returns>
-        <remarks><para><paramref name="spec" /> is a newline- or pipe- ("|") delimited string of specification strings to be passed to <see cref="M:SemWeb.Store.CreateForInput(string)" />.</para>  <para>For each of those substrings, <see cref="M:SemWeb.Store.CreateForInput(string)" /> is called on that string.  If the result is a <see cref="T:SemWeb.SelectableSource" />, it is added to the returned Store with AddSource.  If the data source is a <see cref="T:SemWeb.StatementSource" /> but not a <see cref="T:SemWeb.SelectableSource" />, like an <see cref="T:SemWeb.RdfReader" />, the contents of the data source are first loaded into a <see cref="T:SemWeb.MemoryStore" /> and the <see cref="T:SemWeb.MemoryStore" /> is then added to the Store to be returned.</para>
-		  <para>In addition, <paramref name="spec" /> can be prefixed with "rdfs+" so that an <see cref="T:SemWeb.Inference.RDFS" /> reasoning engine is added to the Store with AddReasoner.</para>
-		  <para>The following are example specification strings:</para>
-<example>
-  <code>mysql:rdf:Database=databasename;Server=localhost;User Id=username  (creates a Store around a SQLStore)
+        <remarks>
+          <para>
+            <paramref name="spec" /> is a newline- or pipe- ("|") delimited string of specification strings to be passed to <see cref="M:SemWeb.Store.CreateForInput(string)" />.</para>
+          <para>For each of those substrings, <see cref="M:SemWeb.Store.CreateForInput(string)" /> is called on that string.  If the result is a <see cref="T:SemWeb.SelectableSource" />, it is added to the returned Store with AddSource.  If the data source is a <see cref="T:SemWeb.StatementSource" /> but not a <see cref="T:SemWeb.SelectableSource" />, like an <see cref="T:SemWeb.RdfReader" />, the contents of the data source are first loaded into a <see cref="T:SemWeb.MemoryStore" /> and the <see cref="T:SemWeb.MemoryStore" /> is then added to the Store to be returned.</para>
+          <para>In addition, <paramref name="spec" /> can be prefixed with "rdfs+" so that an <see cref="T:SemWeb.Inference.RDFS" /> reasoning engine is added to the Store with AddReasoner.</para>
+          <para>The following are example specification strings:</para>
+          <example>
+            <code>mysql:rdf:Database=databasename;Server=localhost;User Id=username  (creates a Store around a SQLStore)
 
 rdfs+mysql:rdf:Database=databasename;Server=localhost;User Id=username (creates a Store around an SQLStore and applies RDFS reasoning)
 
 n3:filename.n3 (loads the file into memory and returns a Store containing the data)
 
 n3:file1.n3|n3:file2.n3|...  (loads each of the files into memory and returns a Store containing all of them)</code>
-</example></remarks>
+          </example>
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName="DefaultReplace">
