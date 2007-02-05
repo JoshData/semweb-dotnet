@@ -6,7 +6,8 @@
 	
 	<body>
 
-<h1>SemWeb: Selecting Many Things at Once</h1>
+<p><a href="index.html">SemWeb Documentation</a></p>
+<h1>Selecting Many Things at Once</h1>
 
 <p>For anything but the MemoryStore, there is considerable overhead in each request for information from an underlying database.  With the MySQL store, for instance, a call to <tt>Select</tt> makes a SQL SELECT query on the database.  There is overhead in constructing, transmitting across processes, and parsing the query, and then the response.  This makes repeated calls to <tt>Select</tt> (the method) much slower than they should be if they could be combined into a single SQL SELECT.</p>
 

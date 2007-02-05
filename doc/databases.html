@@ -6,6 +6,7 @@
 	
 	<body>
 
+<p><a href="index.html">SemWeb Documentation</a></p>
 <h1>SemWeb: Using Databases</h1>
 
 <p>Besides the <tt>MemoryStore</tt>, SemWeb provides three SQL-backed persistent stores: for MySQL, PostgreSQL, and Sqlite.  Since Sqlite is the simplest to get going, I'll use it as an example.</p>
@@ -31,7 +32,7 @@
 <p>We want to get going quickly, so we'll use SemWeb's <tt>rdfstorage.exe</tt> tool to move some data into a Sqlite database.  Go to a command prompt in the bin directory of the SemWeb package.  Then run:</p>
 
 <pre class="code">
-mono rdfstorage.exe foaf.rdf --out "sqlite:rdf:Uri=file:foaf.sqlite;version=3"
+$ mono rdfstorage.exe foaf.rdf --out "sqlite:rdf:Uri=file:foaf.sqlite;version=3"
 </pre>
 
 (In Windows, you can leave off the 'mono' to use the Microsoft runtime.)  You'll get the following output (or something like it):
@@ -54,18 +55,18 @@ Total Time: 0m0s, 162 statements, 1857 st/sec
 <p>Create a store backed by the database using the following method:</p>
 
 <pre class="code">
-Store store = (Store)Store.CreateForInput("sqlite:rdf:Uri=file:foaf.sqlite;version=3");
+Store store = Store.Create("sqlite:rdf:Uri=file:foaf.sqlite;version=3");
 </pre>
 
-<p>The argument to <tt>CreateForInput</tt> is the same "spec" string as before.  This method can be used to create various types of data sources in the factory design pattern.  For this type of store, you can read and write to it even though it was created with the <tt>CreateForInput</tt> method.  (You could just as well have used <tt>CreateForOutput</tt>.)</p>
+<p>The argument to <tt>Create</tt> is the same "spec" string as before.  This method can be used to create various types of data sources in the factory design pattern.</p>
 
-<p>The actual implementation of the Sqlite store is in the <tt>SemWeb.SqliteStore.dll</tt> assembly, but by using <tt>CreateForInput</tt> you don't need to reference that assembly at compile time.  Just make sure it's available at run time.</p>
+<p>The actual implementation of the Sqlite store is in the <tt>SemWeb.SqliteStore.dll</tt> assembly, but by using <tt>Create</tt> you don't need to reference that assembly at compile time.  Just make sure it's available at run time.</p>
 
 <p>Now you can select statements from it just as before.  It will be a little slower than the memory-backed store, but you haven't loaded the entire store into memory.</p>
 
 <p>You can also add statements into the store, just as with the memory store.</p>
 
-<p>Be sure to close the database at the end.</p>
+<p>Be sure to close the database at the end with <tt>Dispose</tt>.</p>
 
 <p>Here's a complete program:</p>
 
@@ -81,20 +82,20 @@ public class Sqlite {
     static readonly Entity foafname = FOAF+"name";
 
     public static void Main() {
-        Store store = (Store)Store.CreateForInput("sqlite:rdf:Uri=file:foaf.sqlite;version=3");
+        Store store = Store.Create("sqlite:rdf:Uri=file:foaf.sqlite;version=3");
         
         Entity newPerson = new Entity("http://www.example.org/me");
         store.Add(new Statement(newPerson, rdftype, foafPerson));
         store.Add(new Statement(newPerson, foafname, (Literal)"New Guy"));
         
         Console.WriteLine("These are the people in the file:");
-        foreach (Statement s in store.Select(new Statement(null, rdftype, foafPerson))) {
-            foreach (Resource r in store.SelectObjects(s.Subject, foafname))
+        foreach (Entity s in store.SelectSubjects(rdftype, foafPerson)) {
+            foreach (Resource r in store.SelectObjects(s, foafname))
                 Console.WriteLine(r);
         }
         Console.WriteLine();
         
-        store.Close();
+        store.Dispose();
     }
 }
 </pre>
@@ -107,12 +108,8 @@ just replace the &ldquo;spec&rdquo; string ("sqlite:rdf:...") with something lik
 <pre>"mysql:rdf:Database=rdf; . . ."</pre>
 
 <p>Everything after the second colon is a MySQL connection string to make the connection.
-You'll have to consult the ByteFX or MySQL/Connector.Net documentation for more information
+You'll have to consult the MySQL/Connector.Net documentation for more information
 about the connection string.</p>
-
-<p>As a last note, for MySQL and Postgres, you should run ANALYZE commands on the <i>prefix</i>_statements,
-_entities, and _literals table after loading large amounts of data (>1 million statements) so that
-queries against the database perform as best as they can.</p>
 
 </body>
 </html>

@@ -6,7 +6,8 @@
 	
 	<body>
 
-<h1>SemWeb: Selecting Statements</h1>
+<p><a href="index.html">SemWeb Documentation</a></p>
+<h1>Selecting Statements</h1>
 
 <h2>Using statement templates</h2>
 
@@ -15,25 +16,27 @@
 <p>A template is a <tt>Statement</tt> but with subject, predicate, and object possibly <tt>null</tt>.  <tt>null</tt>s are wildcards.  So here are a few examples:</p>
 
 <pre class="code">
-store.Select(sink);  // selects all statements
+store.Select(sink);  // selects all statements, streaming them into sink
 store.Select(new Statement(null, null, null), sink);  // the same
-store.Select(Statement.All, sink);  // shorthand
+store.Select(Statement.All, sink);  // the same, but shorthand
 
 store.Select(new Statement(subj, null, null), sink);  // any statement with that particular subject entity
 store.Select(new Statement(subj, pred, null), sink);  // any statement with that particular subject and predicate
 store.Select(new Statement(subj, pred, obj), sink);  // just that statement, if it exists in the store
 </pre>
 
-<p>The sink can be any <tt>StatementSink</tt>.  This includes <tt>RdfWriters</tt>, which would let you write out just a part of a store, other stores, to move part of a store into another, or your own class, to do other processing.</p>
+<p>The sink can be any <tt>StatementSink</tt>.  This includes <tt>RdfWriters</tt>, which would let 
+you write out just a part of a store to a file, and <tt>Stores</tt> like the <tt>MemoryStore</tt>
+so that you can move statements between data sources.</p>
 
-<p>Stores provide a few convenience methods for selecting over small data sources.  Two methods are provided for getting all of the subjects found with a given predicate and object, and similarly all objects found with a given subject and predicate.  This can be used to move around in a graph:</p>
+<p>Stores provide a few convenience methods.  Two methods are provided for getting all of the subjects found with a given predicate and object, and similarly all objects found with a given subject and predicate.  This can be used to move around in a graph:</p>
 
 <pre class="code">
 foreach (Resource r in store.SelectObjects(person, foafname))
-	Console.WriteLine(r);
+	Console.WriteLine("His name is: " + r);
 </pre>
 
-<p>Other methods are overrides of Select that rather than sending the results to a sink, load them into memory so that you may for-each over them:</p>
+<p>Other convenience methods are overrides of Select that rather than sending the results to a sink, load them into memory so that you may for-each over them:</p>
 
 <pre class="code">
 foreach (Statement statement in store.Select(new Statement(null, rdftype, foafPerson))) {
@@ -42,6 +45,15 @@ foreach (Statement statement in store.Select(new Statement(null, rdftype, foafPe
 </pre>
 
 <p>You obviously shouldn't use these on data sources of unbounded size as you wouldn't necessarily want to load the results all into memory.</p>
+
+<p>These convenience methods are only provided in the <tt>Store</tt> class and its subclasses.
+If you want to use them on data from a file or other data source that doesn't extend <tt>Store</tt>,
+load the data into a <tt>MemoryStore</tt>:</p>
+
+<pre class="code">
+Store store = new MemoryStore();
+store.Import(RdfReader.LoadFromUri(new Uri("http://dannyayers.com/misc/foaf/foaf.rdf")));
+</pre>
 
 <p>Here's an example program that loads a FOAF document and extracts some information using Select:</p>
 

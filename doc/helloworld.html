@@ -6,7 +6,8 @@
 	
 	<body>
 
-<h1>SemWeb: Hello World</h1>
+<p><a href="index.html">SemWeb Documentation</a></p>
+<h1>SemWeb Hello World</h1>
 
 <p>Here's an example of using SemWeb to construct an RDF/XML or Notation 3 file.</p>
 
@@ -52,13 +53,19 @@ Entity wants = "http://example.org/wants";
 Entity desire = new BNode();
 </pre>
 
-<p>Next, we create statements using these entities.  To create a statement, use the <tt>Statement</tt> constructor, which takes a subject, predicate, and object.  Note that <tt>Statement</tt>s are <i>structs</i>, not classes.  In principle, this should allow applications to scale to large number of statements much better than if statements were objects (although I haven't tested it).</p>
+<p>Next, we create statements using these entities.  To create a statement, use the <tt>Statement</tt> constructor, which takes a subject, predicate, and object.  Note that <tt>Statement</tt>s are <i>structs</i>, not classes, but this probably won't affect you.</p>
+
+<pre class="code">
+Statement assertion = new Statement(computer, says, new Literal("Hello world!"));
+</pre>
+
+<p>Another conversion operator is defined to make it easy for you to create Literals out of strings.
+Unlike the one that is implict for Entities, this one is <i>explicit</i>, which means you
+always need to write out the cast.  We could have written the previous line like this insted:
 
 <pre class="code">
 Statement assertion = new Statement(computer, says, (Literal)"Hello world!");
 </pre>
-
-<p>Note that another conversion operator was used, here to convert a string into a <tt>Literal</tt>.  It's shorthand for <tt>new Literal("Hello world!")</tt>.  The Literal conversion operator is defined as <i>explicit</i>, which means you always have to use an explicit cast if you want to use the conversion operator.</p>
 
 <p>Statements have to be put into a <tt>Store</tt> like this:</p>
 
@@ -81,7 +88,7 @@ store.Add(new Statement(desire, RDF+"type", (Entity)"http://example.org/Desire")
 
 <pre class="code">
 using (RdfWriter writer = new RdfXmlWriter(Console.Out)) {
-	writer.Write(store);
+    writer.Write(store);
 }
 </pre>
 
@@ -92,42 +99,43 @@ mcs helloworld.cs -r:SemWeb.dll
 mono helloworld.exe
 </pre>
 
-<p>If you're using VisualStudio, just compile and run.</p>
+<p>If you're using VisualStudio, put this in a new project, reference <tt>SemWeb.dll</tt>
+and compile and run it.</p>
 
 <p>Here's the output:</p>
 
 <pre class="code">&lt;?xml version="1.0"?&gt;
 &lt;rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:exampleorg="http://example.org/"&gt;
-	&lt;rdf:Description rdf:about="http://example.org/computer"&gt;
-		&lt;exampleorg:says&gt;Hello world!&lt;/exampleorg:says&gt;
-		&lt;exampleorg:wants&gt;
-			&lt;exampleorg:Desire&gt;
-				&lt;exampleorg:description&gt;to be human&lt;/exampleorg:description&gt;
-			&lt;/exampleorg:Desire&gt;
-		&lt;/exampleorg:wants&gt;
-	&lt;/rdf:Description&gt;
+    &lt;rdf:Description rdf:about="http://example.org/computer"&gt;
+        &lt;exampleorg:says&gt;Hello world!&lt;/exampleorg:says&gt;
+        &lt;exampleorg:wants&gt;
+            &lt;exampleorg:Desire&gt;
+                &lt;exampleorg:description&gt;to be human&lt;/exampleorg:description&gt;
+            &lt;/exampleorg:Desire&gt;
+        &lt;/exampleorg:wants&gt;
+    &lt;/rdf:Description&gt;
 &lt;/rdf:RDF&gt;</pre>
 
 <p>We didn't provide the writer with any namespace prefixes, so it made one up.  To provide a prefix for a namespace, use the <tt>Namespaces</tt> property of the writer:</p>
 
 <pre class="code">
-using (RdfWriter writer = new RdfXmlWriter(Console.Out, nsmgr)) {
-	writer.Namespaces.AddNamespace("http://example.org/", "ex");
-	...
+using (RdfWriter writer = new RdfXmlWriter(Console.Out)) {
+    writer.Namespaces.AddNamespace("http://example.org/", "ex");
+    ...
 </pre>
 
 <p>You need to set the namespaces before any statements are streamed to the writer.  Here's the final output:</p>
 
 <pre class="code" file="../examples/helloworld.output.rdf">&lt;?xml version="1.0"?&gt;
 &lt;rdf:RDF xmlns:ex="http://example.org/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"&gt;
-	&lt;rdf:Description rdf:about="http://example.org/computer"&gt;
-		&lt;ex:says&gt;Hello world!&lt;/ex:says&gt;
-		&lt;ex:wants&gt;
-			&lt;ex:Desire&gt;
-				&lt;ex:description&gt;to be human&lt;/ex:description&gt;
-			&lt;/ex:Desire&gt;
-		&lt;/ex:wants&gt;
-	&lt;/rdf:Description&gt;
+    &lt;rdf:Description rdf:about="http://example.org/computer"&gt;
+        &lt;ex:says&gt;Hello world!&lt;/ex:says&gt;
+        &lt;ex:wants&gt;
+            &lt;ex:Desire&gt;
+                &lt;ex:description&gt;to be human&lt;/ex:description&gt;
+            &lt;/ex:Desire&gt;
+        &lt;/ex:wants&gt;
+    &lt;/rdf:Description&gt;
 &lt;/rdf:RDF&gt;</pre>
 
 <p>To write out the statements in Notation 3 format, just use the <tt>N3Writer</tt> class instead.  It produces this output:</p>

@@ -6,11 +6,12 @@
 	
 	<body>
 
-<h1>SemWeb: Reading RDF</h1>
+<p><a href="index.html">SemWeb Documentation</a></p>
+<h1>Reading RDF</h1>
 
 <p>Reading RDF files is pretty easy so here are a few examples.</p>
 
-<p>This loads an RDF/XML file into the store:</p>
+<p>This loads an RDF/XML file into a MemoryStore:</p>
 
 <pre class="code">
 MemoryStore store = new MemoryStore();
@@ -40,8 +41,8 @@ store.Import(RdfReader.LoadFromUri(new Uri("http://www.mozilla.org/news.rdf")));
 <p>The following is pretty much equivalent to the code above:</p>
 
 <pre class="code">
-RdfReader file = RdfReader.LoadFromUri(new Uri("http://www.mozilla.org/news.rdf"));
-file.Select(store);
+RdfReader webrdf = RdfReader.LoadFromUri(new Uri("http://www.mozilla.org/news.rdf"));
+webrdf.Select(store);
 </pre>
 
 <p>For a <tt>MemoryStore</tt>, there is no difference.  Other stores may override <tt>Import</tt> with transaction or locking mechanics to speed up the process of loading a large data file.</p>
@@ -50,10 +51,10 @@ file.Select(store);
 
 <pre class="code">
 class StatementPrinter : StatementSink {
-	public bool Add(Statement assertion) {
-		Console.WriteLine(assertion.ToString());
-		return true;
-	}
+    public bool Add(Statement assertion) {
+        Console.WriteLine(assertion.ToString());
+        return true;
+    }
 }
 </pre>
 
@@ -71,27 +72,24 @@ something like this:</p>
 Console.WriteLine("Subject: " + assertion.Subject.Uri);
 Console.WriteLine("Predicate: " + assertion.Predicate.Uri);
 if (assertion.Object is Entity)
-	Console.WriteLine("Object: " + ((Entity)assertion.Object).Uri + " (Entity)");
+    Console.WriteLine("Object: " + ((Entity)assertion.Object).Uri + " (it's an entity)");
 else
-	Console.WriteLine("Object: " + ((Literal)assertion.Object).Value +  "(Literal)");
+    Console.WriteLine("Object: " + ((Literal)assertion.Object).Value + " (it's a literal)");
 </pre>
 
 <p>Of course, beware that BNodes are entities without URIs, and the <tt>Uri</tt>
-property may return <tt>null</tt>.</p>
+property will return <tt>null</tt> in that case.</p>
 
 <p>To stream the statements from the web directly to the custom sink, use:</p>
 
 <pre class="code">
-file.Select(new StatementPrinter());
+webrdf.Select(new StatementPrinter());
 </pre>
 
-<p>There's one final twist.  Stores, as I mentioned, are a type of sink, letting you stream statements into them.  They are simultaneously a type of source!  This lets you stream statements out of them.  So if you have statements in a store, you can stream them to any sink, including your own custom sinks.  Furthermore, <tt>RdfWriter</tt>s are sinks, which means this is another way to write an RDF/XML file:</p>
-
-<pre class="code">
-using (RdfWriter writer = new RdfXmlWriter(Console.Out)) {
-	store.Select(writer); // exactly the same as writer.Write(store);
-}
-</pre>
+<p>There's one final twist.  Stores, as I mentioned, are a type of sink, letting you stream 
+statements into them.  They are simultaneously a type of source!  This lets you stream statements 
+out of them too, just as you stream statements out of the <tt>RdfXmlReader</tt> and into your
+own class.</p>
 
 </body>
 </html>
