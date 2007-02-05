@@ -35,6 +35,7 @@
       <Type Name="SelectFilter" />
       <Type Name="Variable" />
       <Type Name="RdfXmlWriter+Options" />
+      <Type Name="StaticSource" />
     </Namespace>
     <Namespace Name="SemWeb.Query">
       <Type Name="QueryResultSink" />
@@ -52,7 +53,6 @@
       <Type Name="MetaQueryResult" />
     </Namespace>
     <Namespace Name="SemWeb.Stores">
-      <Type Name="MultiStore" />
       <Type Name="SQLStore" />
       <Type Name="SupportsPersistableBNodes" />
       <Type Name="SimpleSourceWrapper" />
@@ -60,7 +60,6 @@
       <Type Name="DebuggedSource" />
     </Namespace>
     <Namespace Name="SemWeb.Util">
-      <Type Name="XPathSemWebNavigator" />
       <Type Name="StatementList" />
       <Type Name="DistinctStatementsSink" />
       <Type Name="StatementMap" />
@@ -92,11 +91,41 @@
       <Type Name="Rule" />
       <Type Name="ProofStep" />
       <Type Name="Proof" />
+      <Type Name="Reasoner" />
+      <Type Name="SimpleEntailment" />
+      <Type Name="Euler" />
+      <Type Name="RdfRelation" />
+    </Namespace>
+    <Namespace Name="SemWeb.Inference.Relations">
+      <Type Name="MathUnaryRelation" />
+      <Type Name="MathAbsoluteValueRelation" />
+      <Type Name="MathCosRelation" />
+      <Type Name="MathDegreesRelation" />
+      <Type Name="MathEqualToRelation" />
+      <Type Name="MathNegationRelation" />
+      <Type Name="MathRoundedRelation" />
+      <Type Name="MathSinRelation" />
+      <Type Name="MathSinhRelation" />
+      <Type Name="MathTanRelation" />
+      <Type Name="MathTanhRelation" />
+      <Type Name="MathPairRelation" />
+      <Type Name="MathAtan2Relation" />
+      <Type Name="MathDifferenceRelation" />
+      <Type Name="MathExponentiationRelation" />
+      <Type Name="MathIntegerQuotientRelation" />
+      <Type Name="MathQuotientRelation" />
+      <Type Name="MathRemainderRelation" />
+      <Type Name="MathListRelation" />
+      <Type Name="MathSumRelation" />
+      <Type Name="MathProductRelation" />
     </Namespace>
   </Types>
   <Assemblies>
-    <Assembly Name="SemWeb" Version="0.8.1.1">
+    <Assembly Name="SemWeb" Version="0.8.2.0">
       <Attributes>
+        <Attribute>
+          <AttributeName>System.Runtime.CompilerServices.RuntimeCompatibility(WrapNonExceptionThrows=true)</AttributeName>
+        </Attribute>
         <Attribute>
           <AttributeName>System.Reflection.AssemblyKeyName("")</AttributeName>
         </Attribute>
@@ -104,7 +133,7 @@
           <AttributeName>System.Reflection.AssemblyTrademark("")</AttributeName>
         </Attribute>
         <Attribute>
-          <AttributeName>System.Reflection.AssemblyCopyright("Copyright (c) 2006 Joshua Tauberer &lt;http://razor.occams.info&gt;")</AttributeName>
+          <AttributeName>System.Reflection.AssemblyCopyright("Copyright (c) 2007 Joshua Tauberer &lt;http://razor.occams.info&gt;")</AttributeName>
         </Attribute>
         <Attribute>
           <AttributeName>System.Reflection.AssemblyProduct("")</AttributeName>
@@ -123,7 +152,13 @@
         </Attribute>
       </Attributes>
     </Assembly>
-    <Assembly Name="SemWeb.Sparql" Version="0.0.0.0" />
+    <Assembly Name="SemWeb.Sparql" Version="0.0.0.0">
+      <Attributes>
+        <Attribute>
+          <AttributeName>System.Runtime.CompilerServices.RuntimeCompatibility(WrapNonExceptionThrows=true)</AttributeName>
+        </Attribute>
+      </Attributes>
+    </Assembly>
   </Assemblies>
   <Title>SemWeb</Title>
 </Overview>

@@ -21,10 +21,10 @@
       </Docs>
     </Member>
     <Member MemberName="DistinguishedVariables">
-      <MemberSignature Language="C#" Value="public System.Collections.ICollection DistinguishedVariables;" />
+      <MemberSignature Language="C#" Value="public System.Collections.Generic.ICollection&lt;SemWeb.Variable&gt; DistinguishedVariables;" />
       <MemberType>Field</MemberType>
       <ReturnValue>
-        <ReturnType>System.Collections.ICollection</ReturnType>
+        <ReturnType>System.Collections.Generic.ICollection&lt;SemWeb.Variable&gt;</ReturnType>
       </ReturnValue>
       <Docs>
         <summary>To be added.</summary>
@@ -32,10 +32,10 @@
       </Docs>
     </Member>
     <Member MemberName="VariableKnownValues">
-      <MemberSignature Language="C#" Value="public System.Collections.IDictionary VariableKnownValues;" />
+      <MemberSignature Language="C#" Value="public System.Collections.Generic.IDictionary&lt;SemWeb.Variable,System.Collections.Generic.ICollection&lt;SemWeb.Resource&gt;&gt; VariableKnownValues;" />
       <MemberType>Field</MemberType>
       <ReturnValue>
-        <ReturnType>System.Collections.IDictionary</ReturnType>
+        <ReturnType>System.Collections.Generic.IDictionary&lt;SemWeb.Variable,System.Collections.Generic.ICollection&lt;SemWeb.Resource&gt;&gt;</ReturnType>
       </ReturnValue>
       <Docs>
         <summary>To be added.</summary>
@@ -43,10 +43,10 @@
       </Docs>
     </Member>
     <Member MemberName="VariableLiteralFilters">
-      <MemberSignature Language="C#" Value="public System.Collections.IDictionary VariableLiteralFilters;" />
+      <MemberSignature Language="C#" Value="public System.Collections.Generic.IDictionary&lt;SemWeb.Variable,System.Collections.Generic.ICollection&lt;SemWeb.LiteralFilter&gt;&gt; VariableLiteralFilters;" />
       <MemberType>Field</MemberType>
       <ReturnValue>
-        <ReturnType>System.Collections.IDictionary</ReturnType>
+        <ReturnType>System.Collections.Generic.IDictionary&lt;SemWeb.Variable,System.Collections.Generic.ICollection&lt;SemWeb.LiteralFilter&gt;&gt;</ReturnType>
       </ReturnValue>
       <Docs>
         <summary>To be added.</summary>
@@ -71,14 +71,14 @@
       </Docs>
     </Member>
     <Member MemberName="SetVariableKnownValues">
-      <MemberSignature Language="C#" Value="public void SetVariableKnownValues (SemWeb.Variable variable, System.Collections.ICollection knownValues);" />
+      <MemberSignature Language="C#" Value="public void SetVariableKnownValues (SemWeb.Variable variable, System.Collections.Generic.ICollection&lt;SemWeb.Resource&gt; knownValues);" />
       <MemberType>Method</MemberType>
       <ReturnValue>
         <ReturnType>System.Void</ReturnType>
       </ReturnValue>
       <Parameters>
         <Parameter Name="variable" Type="SemWeb.Variable" />
-        <Parameter Name="knownValues" Type="System.Collections.ICollection" />
+        <Parameter Name="knownValues" Type="System.Collections.Generic.ICollection&lt;SemWeb.Resource&gt;" />
       </Parameters>
       <Docs>
         <param name="variable">To be added.</param>

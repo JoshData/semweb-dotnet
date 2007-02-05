@@ -88,14 +88,14 @@ new GraphMatch(queryGraph).Run(targetData, Console.Out);  </code>
       </Docs>
     </Member>
     <Member MemberName="SetVariableRange">
-      <MemberSignature Language="C#" Value="public void SetVariableRange (SemWeb.Variable variable, System.Collections.ICollection range);" />
+      <MemberSignature Language="C#" Value="public void SetVariableRange (SemWeb.Variable variable, System.Collections.Generic.ICollection&lt;SemWeb.Resource&gt; range);" />
       <MemberType>Method</MemberType>
       <ReturnValue>
         <ReturnType>System.Void</ReturnType>
       </ReturnValue>
       <Parameters>
         <Parameter Name="variable" Type="SemWeb.Variable" />
-        <Parameter Name="range" Type="System.Collections.ICollection" />
+        <Parameter Name="range" Type="System.Collections.Generic.ICollection&lt;SemWeb.Resource&gt;" />
       </Parameters>
       <Docs>
         <param name="variable">To be added.</param>
