@@ -158,7 +158,7 @@ namespace SemWeb.Inference {
 				ret.Append("\t");
 				ret.Append(step.Rule.ToString());
 				ret.Append("\n");
-				ArrayList vars = new ArrayList(step.Substitutions.Keys);
+				System.Collections.ArrayList vars = new System.Collections.ArrayList(step.Substitutions.Keys);
 				vars.Sort();
 				foreach (Variable v in vars) {
 					ret.Append("\t\t");

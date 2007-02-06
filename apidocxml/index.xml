@@ -1,11 +1,10 @@
 <Overview>
   <Remarks>
     <para>SemWeb is a C#/.NET library for manipulating RDF data and interacting with the semantic web.
-	SemWeb was written by Joshua Tauberer (tauberer@for.net) and has its home at <a href="http://taubz.for.net/code/semweb">http://taubz.for.net/code/semweb</a>.  It is developed
+	SemWeb was written by Joshua Tauberer (http://razor.occams.info) and has its home at http://razor.occams.info/code/semweb  It is developed
 	and tested under Mono, but it should run on Windows fine, in principle.</para>
-    <para>For some basic examples, see the documentation page for the SemWeb.MemoryStore class.</para>
   </Remarks>
-  <Copyright>See <a href="http://taubz.for.net/code/semweb">http://taubz.for.net/code/semweb</a>.</Copyright>
+  <Copyright>See <a href="http://razor.occams.info/code/semweb">http://razor.occams.info/code/semweb</a>.</Copyright>
   <Types>
     <Namespace Name="SemWeb">
       <Type Name="StatementSink" />
@@ -54,7 +53,6 @@
     </Namespace>
     <Namespace Name="SemWeb.Stores">
       <Type Name="SQLStore" />
-      <Type Name="SupportsPersistableBNodes" />
       <Type Name="SimpleSourceWrapper" />
       <Type Name="CachedSource" />
       <Type Name="DebuggedSource" />
@@ -95,29 +93,6 @@
       <Type Name="SimpleEntailment" />
       <Type Name="Euler" />
       <Type Name="RdfRelation" />
-    </Namespace>
-    <Namespace Name="SemWeb.Inference.Relations">
-      <Type Name="MathUnaryRelation" />
-      <Type Name="MathAbsoluteValueRelation" />
-      <Type Name="MathCosRelation" />
-      <Type Name="MathDegreesRelation" />
-      <Type Name="MathEqualToRelation" />
-      <Type Name="MathNegationRelation" />
-      <Type Name="MathRoundedRelation" />
-      <Type Name="MathSinRelation" />
-      <Type Name="MathSinhRelation" />
-      <Type Name="MathTanRelation" />
-      <Type Name="MathTanhRelation" />
-      <Type Name="MathPairRelation" />
-      <Type Name="MathAtan2Relation" />
-      <Type Name="MathDifferenceRelation" />
-      <Type Name="MathExponentiationRelation" />
-      <Type Name="MathIntegerQuotientRelation" />
-      <Type Name="MathQuotientRelation" />
-      <Type Name="MathRemainderRelation" />
-      <Type Name="MathListRelation" />
-      <Type Name="MathSumRelation" />
-      <Type Name="MathProductRelation" />
     </Namespace>
   </Types>
   <Assemblies>

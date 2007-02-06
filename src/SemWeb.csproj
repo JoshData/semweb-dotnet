@@ -16,7 +16,7 @@
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
+    <OutputPath>bin_generics\Debug\</OutputPath>
     <DefineConstants>TRACE;DEBUG;DOTNET2</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -24,7 +24,7 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
-    <OutputPath>..\bin\</OutputPath>
+    <OutputPath>..\bin_generics\</OutputPath>
     <DefineConstants>TRACE;DOTNET2</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -62,15 +62,15 @@
   <ItemGroup>
     <Reference Include="IKVM.GNU.Classpath, Version=0.28.0.0, Culture=neutral, PublicKeyToken=13235d27fcbfff58">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>C:\Documents and Settings\user\Desktop\esperimenti\semweb\bin\IKVM.GNU.Classpath.dll</HintPath>
+      <HintPath>C:\Documents and Settings\user\Desktop\esperimenti\semweb\bin_generics\IKVM.GNU.Classpath.dll</HintPath>
     </Reference>
     <Reference Include="IKVM.Runtime, Version=0.28.0.0, Culture=neutral, PublicKeyToken=13235d27fcbfff58">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>C:\Documents and Settings\user\Desktop\esperimenti\semweb\bin\IKVM.Runtime.dll</HintPath>
+      <HintPath>C:\Documents and Settings\user\Desktop\esperimenti\semweb\bin_generics\IKVM.Runtime.dll</HintPath>
     </Reference>
     <Reference Include="sparql-core, Version=0.0.0.0, Culture=neutral">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>C:\Documents and Settings\user\Desktop\esperimenti\semweb\bin\sparql-core.dll</HintPath>
+      <HintPath>C:\Documents and Settings\user\Desktop\esperimenti\semweb\bin_generics\sparql-core.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />

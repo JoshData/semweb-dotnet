@@ -181,19 +181,22 @@ namespace SemWeb {
 			AddSource(source);
 		}
 
-		public virtual void AddSource(SelectableSource store) {
-			if (store is MemoryStore) store = ((MemoryStore)store).impl;
-			unnamedgraphs.Add(store);
-			allsources.Add(store);
+		public virtual void AddSource(SelectableSource source) {
+			if (source is MemoryStore) source = ((MemoryStore)source).impl;
+			unnamedgraphs.Add(source);
+			allsources.Add(source);
 		}
 		
-		public virtual void AddSource(SelectableSource store, string uri) {
-			if (store is MemoryStore) store = ((MemoryStore)store).impl;
-			namedgraphs[uri] = store;
-			allsources.Add(store);
+		public virtual void AddSource(SelectableSource source, string uri) {
+			if (namedgraphs.ContainsKey(uri))
+				throw new ArgumentException("URI has already been associated with a data source.");
+			if (source is MemoryStore) source = ((MemoryStore)source).impl;
+			namedgraphs[uri] = source;
+			allsources.Add(source);
 		}
 		
 		internal void AddSource2(SelectableSource store) {
+			// Used by MemoryStore only!
 			unnamedgraphs.Add(store);
 			allsources.Add(store);
 		}
@@ -722,8 +725,11 @@ namespace SemWeb {
 				source.Remove(template);
 		}
 
-		public virtual void Import(StatementSource source) {
-			source.Select(this);
+		public void Import(StatementSource source) {
+			// We don't know where to put the data unless we are wrapping just one store.
+			if (allsources.Count != 1) throw new InvalidOperationException("I don't know which data source to put the statements into.");
+			if (!(allsources[0] is ModifiableSource)) throw new InvalidOperationException("The data source is not modifiable.");
+			((ModifiableSource)allsources[0]).Import(source);
 		}
 		
 		public void RemoveAll(Statement[] templates) {

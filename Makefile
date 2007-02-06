@@ -12,7 +12,31 @@ mysql_available := $(shell gacutil -l MySql.Data | grep -c PublicKeyToken)
 
 ########################
 
-all: bin/SemWeb.dll bin/SemWeb.PostgreSQLStore.dll bin/SemWeb.MySQLStore.dll bin/SemWeb.SqliteStore.dll bin/SemWeb.Sparql.dll bin/rdfstorage.exe bin/rdfquery.exe bin/euler.exe
+# If PROFILE is empty, then our default target is to
+# shell out a make for each profile.  Otherwise, we
+# just build the profile we're given.  Since we can't
+# build any of the .NET target files without a PROFILE,
+# those targets are in the else condition.
+ifeq "$(PROFILE)" ""
+
+all:
+	PROFILE=DOTNET1 make
+	PROFILE=DOTNET2 make
+
+# If we have a PROFILE specified.
+else
+
+ifeq "$(PROFILE)" "DOTNET1"
+BIN=bin
+MCS=mcs
+endif
+
+ifeq "$(PROFILE)" "DOTNET2"
+BIN=bin_generics
+MCS=gmcs -d:DOTNET2
+endif
+
+all: $(BIN)/SemWeb.dll $(BIN)/SemWeb.PostgreSQLStore.dll $(BIN)/SemWeb.MySQLStore.dll $(BIN)/SemWeb.SqliteStore.dll $(BIN)/SemWeb.Sparql.dll $(BIN)/rdfstorage.exe $(BIN)/rdfquery.exe $(BIN)/euler.exe
 
 # Core Library
 	
@@ -28,59 +52,62 @@ MAIN_SOURCES = \
 	src/Inference.cs src/RDFS.cs src/Euler.cs src/SpecialRelations.cs \
 	src/Algos.cs src/Remote.cs
 
-bin/SemWeb.dll: $(MAIN_SOURCES) Makefile
-	mcs -debug $(MAIN_SOURCES) -out:bin/SemWeb.dll -t:library \
+$(BIN)/SemWeb.dll: $(MAIN_SOURCES) Makefile
+	$(MCS) -debug $(MAIN_SOURCES) -out:$(BIN)/SemWeb.dll -t:library \
 		-r:System.Data -r:System.Web
 
 # Auxiliary Assemblies
 
-bin/SemWeb.Sparql.dll: src/Sparql.cs src/SparqlProtocol.cs
-	mcs -debug src/Sparql.cs src/SparqlProtocol.cs -out:bin/SemWeb.Sparql.dll \
-		-t:library -r:bin/SemWeb.dll -r:bin/sparql-core.dll -r:bin/IKVM.GNU.Classpath.dll \
+$(BIN)/SemWeb.Sparql.dll: src/Sparql.cs src/SparqlProtocol.cs
+	$(MCS) -debug src/Sparql.cs src/SparqlProtocol.cs -out:$(BIN)/SemWeb.Sparql.dll \
+		-t:library -r:$(BIN)/SemWeb.dll -r:$(BIN)/sparql-core.dll -r:$(BIN)/IKVM.GNU.Classpath.dll \
 		-r:System.Web
 
-bin/SemWeb.PostgreSQLStore.dll: src/PostgreSQLStore.cs bin/SemWeb.dll
+$(BIN)/SemWeb.PostgreSQLStore.dll: src/PostgreSQLStore.cs $(BIN)/SemWeb.dll
 ifneq "$(npgsql_available)" "0"
-	mcs -debug src/PostgreSQLStore.cs -out:bin/SemWeb.PostgreSQLStore.dll -t:library \
-		-r:bin/SemWeb.dll -r:System.Data -r:Npgsql
+	$(MCS) -debug src/PostgreSQLStore.cs -out:$(BIN)/SemWeb.PostgreSQLStore.dll -t:library \
+		-r:$(BIN)/SemWeb.dll -r:System.Data -r:Npgsql
 else
 	@echo "SKIPPING compilation of SemWeb.PosgreSQLStore.dll because Npgsql assembly seems to be not available in the GAC.";
 endif
 
-bin/SemWeb.SqliteStore.dll: src/SQLiteStore.cs bin/SemWeb.dll
+$(BIN)/SemWeb.SqliteStore.dll: src/SQLiteStore.cs $(BIN)/SemWeb.dll
 ifneq "$(sqlite_available)" "0"
-	mcs -debug src/SQLiteStore.cs -out:bin/SemWeb.SqliteStore.dll -t:library \
-		-r:bin/SemWeb.dll -r:System.Data -r:Mono.Data.SqliteClient
+	$(MCS) -debug src/SQLiteStore.cs -out:$(BIN)/SemWeb.SqliteStore.dll -t:library \
+		-r:$(BIN)/SemWeb.dll -r:System.Data -r:Mono.Data.SqliteClient
 else
 	@echo "SKIPPING compilation of SemWeb.SqliteStore.dll because Mono.Data.SqliteClient assembly seems to be not available in the GAC.";
 endif
 	
-bin/SemWeb.MySQLStore.dll: src/MySQLStore.cs bin/SemWeb.dll
+$(BIN)/SemWeb.MySQLStore.dll: src/MySQLStore.cs $(BIN)/SemWeb.dll
 ifneq "$(mysql_available)" "0"
-	mcs -debug src/MySQLStore.cs -out:bin/SemWeb.MySQLStore.dll -t:library\
-		 -r:bin/SemWeb.dll -r:System.Data -r:MySql.Data -d:CONNECTOR -lib:lib
-	#mcs -debug src/MySQLStore.cs -out:bin/SemWeb.MySQLStore-ByteFX.dll -t:library\
-	# -r:bin/SemWeb.dll -r:System.Data -r:ByteFX.Data -d:BYTEFX
+	$(MCS) -debug src/MySQLStore.cs -out:$(BIN)/SemWeb.MySQLStore.dll -t:library\
+		 -r:$(BIN)/SemWeb.dll -r:System.Data -r:MySql.Data -d:CONNECTOR -lib:lib
+	#$(MCS) -debug src/MySQLStore.cs -out:$(BIN)/SemWeb.MySQLStore-ByteFX.dll -t:library\
+	# -r:$(BIN)/SemWeb.dll -r:System.Data -r:ByteFX.Data -d:BYTEFX
 else
 	@echo "SKIPPING compilation of SemWeb.MySQLStore.dll because MySql.Data assembly seems to be not available in the GAC.";
 endif
 
 # Utility programs
 
-bin/rdfstorage.exe: tools/rdfstorage.cs bin/SemWeb.dll
-	mcs -debug tools/rdfstorage.cs -out:bin/rdfstorage.exe -r:bin/SemWeb.dll -r:Mono.GetOptions
+$(BIN)/rdfstorage.exe: tools/rdfstorage.cs $(BIN)/SemWeb.dll
+	$(MCS) -debug tools/rdfstorage.cs -out:$(BIN)/rdfstorage.exe -r:$(BIN)/SemWeb.dll -r:Mono.GetOptions
 	
-bin/rdfquery.exe: tools/rdfquery.cs bin/SemWeb.dll
-	mcs -debug tools/rdfquery.cs -out:bin/rdfquery.exe -r:bin/SemWeb.dll -r:bin/SemWeb.Sparql.dll -r:Mono.GetOptions	
+$(BIN)/rdfquery.exe: tools/rdfquery.cs $(BIN)/SemWeb.dll
+	$(MCS) -debug tools/rdfquery.cs -out:$(BIN)/rdfquery.exe -r:$(BIN)/SemWeb.dll -r:$(BIN)/SemWeb.Sparql.dll -r:Mono.GetOptions	
 
-bin/euler.exe: tools/euler.cs bin/SemWeb.dll
-	mcs -debug tools/euler.cs -out:bin/euler.exe -r:bin/SemWeb.dll
+$(BIN)/euler.exe: tools/euler.cs $(BIN)/SemWeb.dll
+	$(MCS) -debug tools/euler.cs -out:$(BIN)/euler.exe -r:$(BIN)/SemWeb.dll
+
+endif
+# that's the end of the test if we have a PROFILE given
 
 # Generating documentation files
 
 apidocxml: Makefile
 	monodocer \
-		-assembly:bin/SemWeb.dll -assembly:bin/SemWeb.Sparql.dll \
+		-assembly:bin_generics/SemWeb.dll -assembly:bin_generics/SemWeb.Sparql.dll \
 		-path:apidocxml --delete --pretty
 	#mono /usr/lib/monodoc/monodocs2slashdoc.exe doc > SemWeb.docs.xml
 	mkdir -p apidocs
@@ -91,7 +118,7 @@ apidocxml: Makefile
 package: all
 	rm -rf package-workspace
 	mkdir -p package-workspace/semweb-$(VERSION)
-	cp -R bin src tools apidocs doc \
+	cp -R bin bin_generics src tools apidocs doc \
 		ChangeLog Makefile README.txt semweb.mds \
 		package-workspace/semweb-$(VERSION)
 	mkdir package-workspace/semweb-$(VERSION)/examples

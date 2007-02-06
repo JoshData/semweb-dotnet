@@ -221,9 +221,9 @@
     </Member>
   </Members>
   <Docs>
-    <summary>A SPARQL query processor, supporting only SELECT at the moment.</summary>
+    <summary>A SPARQL query engine.</summary>
     <remarks>
-      <para>This class is based on the engine at http://sparql.sourceforge.net/ by Ryan Levering, version 0.7.</para>
+      <para>This class is based on the engine at http://sparql.sourceforge.net/ by Ryan Levering, version 0.8.</para>
       <example>
         <para>This example runs a SELECT query on a data source and writes the results as XML to standard output.</para>
         <code lang="C#">MemoryStore datamodel = new MemoryStore(new RdfXmlReader("rdfdata.rdf"));
