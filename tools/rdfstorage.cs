@@ -68,14 +68,14 @@ public class RDFStorage {
 			meta = new Entity(opts.meta);
 		
 		if (opts.clear) {
-			if (!(storage is Store)) {
+			if (!(storage is ModifiableSource)) {
 				Console.Error.WriteLine("The --clear option cannot be used with this type of output method.  Ignoring --clear.");
 			} else {
 				try {
 					if (meta == null)
-						((Store)storage).Clear();
+						((ModifiableSource)storage).Clear();
 					else
-						((Store)storage).Remove(new Statement(null, null, null, meta));
+						((ModifiableSource)storage).Remove(new Statement(null, null, null, meta));
 				} catch (Exception e) {
 					Console.Error.WriteLine("The --clear option was not successful: " + e.Message);
 				}
@@ -84,8 +84,8 @@ public class RDFStorage {
 		
 		MultiRdfParser multiparser = new MultiRdfParser(opts.RemainingArguments, opts.@in, meta, opts.baseuri, !opts.stats);
 		
-		if (storage is Store) {
-			((Store)storage).Import(multiparser);
+		if (storage is ModifiableSource) {
+			((ModifiableSource)storage).Import(multiparser);
 		} else {
 			//if (!opts.makelean) {
 				multiparser.Select(storage);

@@ -55,7 +55,11 @@ public class RDFQuery {
 		Query query;
 		
 		MemoryStore queryModel = null;
+		#if !DOTNET2
 		System.Collections.ICollection queryModelVars = null;
+		#else
+		System.Collections.Generic.ICollection<Variable> queryModelVars = null;
+		#endif
 		
 		if (opts.type == "rsquary") {
 			RdfReader queryparser = RdfReader.Create("n3", "-");
