@@ -55,7 +55,7 @@ using System.Text;
 using SemWeb.Util;
 
 namespace SemWeb.Stores {
-	public abstract class SQLStore : QueryableSource, StaticSource, ModifiableSource {
+	public abstract class SQLStore : QueryableSource, StaticSource, ModifiableSource, IDisposable {
 		// Table initialization, etc.
 		// --------------------------
 	
@@ -1726,6 +1726,10 @@ namespace SemWeb.Stores {
 			if (ret is string) return (string)ret;
 			if (ret is byte[]) return System.Text.Encoding.UTF8.GetString((byte[])ret);
 			throw new FormatException("SQL store returned a literal value as " + ret);
+		}
+		
+		void IDisposable.Dispose() {
+			Close();
 		}
 		
 		public virtual void Close() {
