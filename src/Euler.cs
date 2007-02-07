@@ -392,15 +392,16 @@ namespace SemWeb.Inference {
 					// get all of the rules that apply to the predicate in question
 					if (t_resolved.Predicate != null && cases.ContainsKey(t_resolved.Predicate))
 						tcases.AddRange((IList)cases[t_resolved.Predicate]);
-					if (cases.ContainsKey("WILDCARD"))
-						tcases.AddRange((IList)cases["WILDCARD"]);
+
+					/*if (cases.ContainsKey("WILDCARD")) // not supported yet -- infinite regress not handled
+						tcases.AddRange((IList)cases["WILDCARD"]);*/
 					
 					// if t has no unbound variables and we've matched something from
 					// the axioms, don't bother looking at the world, and don't bother
 					// proving it any other way than by the axiom.
 					bool lookAtWorld = true;
 					foreach (Sequent seq in tcases) {
-						if (seq.head == t_resolved) {
+						if (seq.body.Length == 0 && seq.head == t_resolved) {
 							lookAtWorld = false;
 							tcases.Clear();
 							tcases.Add(seq);
@@ -421,10 +422,10 @@ namespace SemWeb.Inference {
 							tcases.Add(seq);
 						}
 					}
-					
+
 					// If there is no evidence or potential evidence (i.e. rules)
-					// for t, then we dump this QueueItem.
-					if (tcases.Count == 0) 	continue;
+					// for t, then we will dump this QueueItem by not queuing any
+					// subproofs.
 					
 					// Otherwise we try each piece of evidence in turn.
 					foreach (Sequent rl in tcases) {
@@ -505,6 +506,8 @@ namespace SemWeb.Inference {
 		
 		// The next few routines convert a set of axioms from a StatementSource
 		// into a data structure of use for the algorithm, with Sequents and things.
+		
+		
 
 		private static Hashtable RulesToCases(StatementSource rules) {
 			Hashtable cases = new Hashtable();
@@ -512,41 +515,36 @@ namespace SemWeb.Inference {
 			foreach (Statement p in rules_store) {
 				if (p.Meta == Statement.DefaultMeta) {
 					if (p.Predicate == entLOGIMPLIES && p.Object is Entity) {
-						Hashtable bnodemap = new Hashtable();
-						Statement[] body = BnodesToVariables(new Store(rules_store).Select(new Statement(null, null, null,  (Entity)p.Subject)).ToArray(), bnodemap);
-						Statement[] head = BnodesToVariables(new Store(rules_store).Select(new Statement(null, null, null,  (Entity)p.Object)).ToArray(), bnodemap);
+						MemoryStore body = new MemoryStore();
+						MemoryStore head = new MemoryStore();
+					
+						rules_store.Select(new Statement(null, null, null,  (Entity)p.Subject), new RemoveMeta(body));
+						rules_store.Select(new Statement(null, null, null,  (Entity)p.Object), new RemoveMeta(head));
 						
-						// Set the meta of these statements to DefaultMeta
-						for (int i = 0; i < body.Length; i++)
-							body[i].Meta = Statement.DefaultMeta;
-						for (int i = 0; i < head.Length; i++)
-							head[i].Meta = Statement.DefaultMeta;
-						
-						// Make sure all variables in the head are bound
-						// in the body.
+						// Any variables in the head not bound in the body represent existentially closed bnodes.
+						// (Euler's OWL test case does this. Wish they had used bnodes instead of vars...)
 						ResSet bodyvars = new ResSet();
 						foreach (Statement b in body) {
 							if (b.Subject is Variable) bodyvars.Add(b.Subject);
 							if (b.Predicate is Variable) bodyvars.Add(b.Predicate);
 							if (b.Object is Variable) bodyvars.Add(b.Object);
 						}
-						foreach (Statement h in head) {
-							if (h.Subject is Variable && !bodyvars.Contains(h.Subject)) throw new ArgumentException("The variable " + h.Subject + " is not bound in the body of a rule.");
-							if (h.Predicate is Variable && !bodyvars.Contains(h.Predicate)) throw new ArgumentException("The variable " + h.Predicate + " is not bound in the body of a rule.");
-							if (h.Object is Variable && !bodyvars.Contains(h.Object)) throw new ArgumentException("The variable " + h.Object + " is not bound in the body of a rule.");
+						foreach (Entity v in head.GetEntities()) {
+							if (v is Variable && !bodyvars.Contains(v))
+								head.Replace(v, new BNode(((Variable)v).LocalName));
 						}
 						
 						// Replace (...) lists in the body that are tied to the subjects
 						// of user predicates with callArgs objects.
 						Hashtable callArgs = new Hashtable();
-						body = CollectCallArgs(body, callArgs);
+						CollectCallArgs(body, callArgs);
 						
 						// Rules can't have more than one statement in their
 						// consequent.  The best we can do is break up
 						// the consequent into multiple rules.  (Since all head
 						// variables are bound in body, it's equivalent...?)
 						foreach (Statement h in head)
-							AddSequent(cases, new Sequent(h, body, callArgs));
+							AddSequent(cases, new Sequent(h, body.ToArray(), callArgs));
 					} else {
 						AddSequent(cases, new Sequent(p, new Statement[0], null));
 					}
@@ -556,28 +554,16 @@ namespace SemWeb.Inference {
 			return cases;
 		}
 
-		private static Statement[] BnodesToVariables(Statement[] ss, Hashtable map) {
-			for (int i = 0; i < ss.Length; i++) {
-				for (int j = 0; j < 3; j++) {
-					Resource r = ss[i].GetComponent(j);
-					if (r is BNode && !(r is Variable)) {
-						if (map.ContainsKey(r)) {
-							r = (Resource)map[r];
-						} else {
-							Variable v = new Variable("bnv" + map.Count);
-							map[r] = v;
-							r = v;
-						}
-						ss[i].SetComponent(j, r);
-					}
-				}
+		private class RemoveMeta : StatementSink {
+			StatementSink sink;
+			public RemoveMeta(StatementSink s) { sink = s; }
+			public bool Add(Statement s) {
+				s.Meta = Statement.DefaultMeta;
+				return sink.Add(s);
 			}
-			return ss;
 		}
 		
-		private static Statement[] CollectCallArgs(Statement[] body, Hashtable callArgs) {
-			MemoryStore b1 = new MemoryStore(body);
-			Store b = new Store(b1);
+		private static void CollectCallArgs(MemoryStore body, Hashtable callArgs) {
 			foreach (Statement s in new MemoryStore(body)) { // make a copy since we remove statements from b within
 				if (FindUserPredicate(s.Predicate) == null) continue;
 				
@@ -589,17 +575,17 @@ namespace SemWeb.Inference {
 				ArrayList argList = new ArrayList();
 				
 				while (true) {
-					Resource[] objs = b.SelectObjects(subj, entRDFFIRST);
+					Resource[] objs = body.SelectObjects(subj, entRDFFIRST);
 					if (objs.Length == 0) break; // if this is the first iteration, then we're just not looking at a list
 												 // on later iterations, the list must not be well-formed, so we'll just
 												 // stop reading it here
 					
 					argList.Add(objs[0]); // assume a properly formed list
-					b.Remove(new Statement(subj, entRDFFIRST, null));
+					body.Remove(new Statement(subj, entRDFFIRST, null));
 					
-					Resource[] rests = b.SelectObjects(subj, entRDFREST);
+					Resource[] rests = body.SelectObjects(subj, entRDFREST);
 					if (rests.Length == 0) break; // not well formed
-					b.Remove(new Statement(subj, entRDFREST, null));
+					body.Remove(new Statement(subj, entRDFREST, null));
 					if (rests[0] == entRDFNIL) break; // that's the end of the list
 					if (!(rests[0] is Entity)) break; // also not well formed
 					
@@ -609,8 +595,6 @@ namespace SemWeb.Inference {
 				if (argList.Count > 0)
 					callArgs[head] = argList.ToArray(typeof(Resource));
 			}
-
-			return b1.ToArray();
 		}
 		
 		private static void AddSequent(Hashtable cases, Sequent s) {
