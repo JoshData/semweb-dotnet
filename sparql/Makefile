@@ -16,6 +16,7 @@ sparql-core.dll: $(SPARQL)/lib/sparql-core.jar
 		$(SPARQL)/lib/openrdf-model.jar
 	mono --aot -O=all sparql-core.dll
 	cp sparql-core.dll* ../bin
+	cp sparql-core.dll* ../bin_generics
 
 linked-libs/sparql-core.dll: sparql-core.dll
 	echo "<linker>" > sparql-linker.xml

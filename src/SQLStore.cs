@@ -1375,7 +1375,11 @@ namespace SemWeb.Stores {
 							}
 							
 							if (options.VariableKnownValues != null) {
-								ICollection values = (ICollection)options.VariableKnownValues[v];
+								ICollection values = null;
+								#if DOTNET2
+								if (options.VariableKnownValues.ContainsKey(v))
+								#endif
+									values = (ICollection)options.VariableKnownValues[v];
 								if (values != null) {
 									if (values.Count == 0)
 										return;
@@ -1415,7 +1419,11 @@ namespace SemWeb.Stores {
 
 			foreach (Variable v in varOrder) {
 				if (options.VariableLiteralFilters == null) continue;
+				#if !DOTNET2
 				if (options.VariableLiteralFilters[v] == null) continue;
+				#else
+				if (!options.VariableLiteralFilters.ContainsKey(v)) continue;
+				#endif
 				
 				foreach (LiteralFilter filter in (ICollection)options.VariableLiteralFilters[v]) {
 					string s = FilterToSQL(filter, "vlit" + (int)varRef2[v] + ".value");

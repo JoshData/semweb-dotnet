@@ -202,8 +202,18 @@ namespace SemWeb.Query {
 							if (!varCollector.Contains(v))
 								varCollector.Add(v);
 							
-							Resource[] values = (Resource[])foundValues[v];
-							if (values == null && knownValues[v] != null)
+							Resource[] values = null;
+							#if DOTNET2
+							if (foundValues.ContainsKey(v))
+							#endif
+								values = (Resource[])foundValues[v];
+							if (values == null && 
+							#if !DOTNET2
+							knownValues[v] != null
+							#else
+							knownValues.ContainsKey(v)
+							#endif
+							)
 								#if !DOTNET2
 								values = (Resource[])new ArrayList((ICollection)knownValues[v]).ToArray(typeof(Resource));
 								#else
@@ -222,10 +232,11 @@ namespace SemWeb.Query {
 						}
 					}
 					
-					if (s.Object is Variable && litFilters[(Variable)s.Object] != null)
 					#if !DOTNET2
+					if (s.Object is Variable && litFilters[(Variable)s.Object] != null)
 						f.LiteralFilters = (LiteralFilter[])((LitFilterList)litFilters[(Variable)s.Object]).ToArray(typeof(LiteralFilter));
 					#else
+					if (s.Object is Variable && litFilters.ContainsKey((Variable)s.Object))
 						f.LiteralFilters = ((LitFilterList)litFilters[(Variable)s.Object]).ToArray();
 					#endif
 					
@@ -287,7 +298,7 @@ namespace SemWeb.Query {
 				
 				newbindings.Variables = new Variable[bindings.Variables.Length + vars.Length - nCommonVars];
 				bindings.Variables.CopyTo(newbindings.Variables, 0);
-				int ctr = newbindings.Variables.Length;
+				int ctr = bindings.Variables.Length;
 				int[] newindexes = new int[vars.Length];
 				for (int i = 0; i < vars.Length; i++) {
 					if (Array.IndexOf(newbindings.Variables, vars[i]) == -1) {

@@ -44,7 +44,13 @@ namespace SemWeb.Inference {
 					if (r != null && !(r is Variable) && !source.Contains(r))
 						ret.NoData[i] = true;
 					
-					if (r != null && r is Variable && options.VariableKnownValues != null && options.VariableKnownValues[(Variable)r] != null) {
+					if (r != null && r is Variable && options.VariableKnownValues != null && 
+					#if !DOTNET2
+					options.VariableKnownValues.Contains((Variable)r)
+					#else
+					options.VariableKnownValues.ContainsKey((Variable)r)
+					#endif
+					) {
 						bool found = false;
 						#if !DOTNET2
 						foreach (Resource s in (ICollection)options.VariableKnownValues[(Variable)r]) {

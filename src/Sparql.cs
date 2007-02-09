@@ -791,9 +791,9 @@ namespace SemWeb.Query {
 		    			if (graph[i].AnyNull) return new RdfBindingSetImpl();
 		    			
 		    			// Don't distinguish the meta variable for now.
-		    			if (graph[i].Subject is Variable) ((ArrayList)opts.DistinguishedVariables).Add(graph[i].Subject);
-		    			if (graph[i].Predicate is Variable) ((ArrayList)opts.DistinguishedVariables).Add(graph[i].Predicate);
-		    			if (graph[i].Object is Variable) ((ArrayList)opts.DistinguishedVariables).Add(graph[i].Object);
+		    			if (graph[i].Subject is Variable) ((VariableList)opts.DistinguishedVariables).Add((Variable)graph[i].Subject);
+		    			if (graph[i].Predicate is Variable) ((VariableList)opts.DistinguishedVariables).Add((Variable)graph[i].Predicate);
+		    			if (graph[i].Object is Variable) ((VariableList)opts.DistinguishedVariables).Add((Variable)graph[i].Object);
 		    		}
 
                     opts.VariableLiteralFilters = new LitFilterMap();
