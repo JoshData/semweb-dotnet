@@ -68,13 +68,6 @@ public class RDFQuery {
 		} else if (opts.type == "sparql") {
 			string querystring = Console.In.ReadToEnd();
 			query = new Sparql(querystring);
-			
-			// My graph match is more efficient when it's
-			// applicable.
-			try {
-				//query = ((Sparql)query).ToGraphMatch();
-			} catch (NotSupportedException) {
-			}
 		} else {
 			throw new Exception("Invalid query format: " + opts.type);
 		}

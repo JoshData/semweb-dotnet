@@ -123,12 +123,12 @@ namespace SemWeb.Query {
 			
 			public HTMLQuerySink(TextWriter output) { this.output = output; }
 
-			public override void Init(VariableBinding[] variables, bool distinct, bool ordered) {
+			public override void Init(Variable[] variables, bool distinct, bool ordered) {
 				output.WriteLine("<table>");
 				output.WriteLine("<tr>");
-				foreach (VariableBinding var in variables) {
-					if (var.Name == null) continue;
-					output.WriteLine("<th>" + var.Name + "</th>");
+				foreach (Variable var in variables) {
+					if (var.LocalName == null) continue;
+					output.WriteLine("<th>" + var.LocalName + "</th>");
 				}
 				output.WriteLine("</tr>");
 			}
@@ -137,12 +137,13 @@ namespace SemWeb.Query {
 				output.WriteLine("</table>");
 			}
 			
-			public override bool Add(VariableBinding[] result) {
+			public override bool Add(VariableBindings result) {
 				output.WriteLine("<tr>");
-				foreach (VariableBinding var in result) {
-					if (var.Name == null) continue;
-					string t = var.Target.ToString();
-					if (var.Target is Literal) t = ((Literal)var.Target).Value;
+				foreach (Variable var in result.Variables) {
+					if (var.LocalName == null) continue;
+					Resource varTarget = result[var];
+					string t = varTarget.ToString();
+					if (varTarget is Literal) t = ((Literal)varTarget).Value;
 					t = t.Replace("&", "&amp;");
 					t = t.Replace("<", "&lt;");
 					output.WriteLine("<td>" + t + "</td>");

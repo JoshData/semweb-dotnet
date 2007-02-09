@@ -20,14 +20,12 @@ using ExpressionLogic = name.levering.ryan.sparql.model.logic.ExpressionLogic;
 
 #if !DOTNET2
 using VariableList = System.Collections.ArrayList;
-using BindingList = System.Collections.ArrayList;
 using VarKnownValuesType = System.Collections.Hashtable;
 using VarKnownValuesList = System.Collections.ArrayList;
 using LitFilterList = System.Collections.ArrayList;
 using LitFilterMap = System.Collections.Hashtable;
 #else
 using VariableList = System.Collections.Generic.List<SemWeb.Variable>;
-using BindingList = System.Collections.Generic.List<SemWeb.Query.VariableBinding[]>;
 using VarKnownValuesType = System.Collections.Generic.Dictionary<SemWeb.Variable,System.Collections.Generic.ICollection<SemWeb.Resource>>;
 using VarKnownValuesList = System.Collections.Generic.List<SemWeb.Resource>;
 using LitFilterList = System.Collections.Generic.List<SemWeb.LiteralFilter>;
@@ -238,17 +236,15 @@ namespace SemWeb.Query {
 			
 			// Prepare binding objects
 			java.util.List vars = results.getVariables();
-			VariableBinding[] bindings = new VariableBinding[vars.size()];
 			SparqlVariable[] svars = new SparqlVariable[vars.size()];
 			SemWebVariable[] vars2 = new SemWebVariable[vars.size()];
-			for (int i = 0; i < bindings.Length; i++) {
+			for (int i = 0; i < svars.Length; i++) {
 				svars[i] = (SparqlVariable)vars.get(i);
 				vars2[i] = new SemWebVariable(svars[i].getName());
-				bindings[i] = new VariableBinding(vars2[i], null);
 			}
 			
 			// Initialize the result sink
-			resultsink.Init(bindings, false, false); // set distinct and ordered
+			resultsink.Init(vars2, false, false); // set distinct and ordered
 			
 			// Set the comments
 			resultsink.AddComments(queryString + "\n");
@@ -267,16 +263,18 @@ namespace SemWeb.Query {
 				ctr++;
 			
 				if (ctr < ReturnStart && ReturnStart != -1) continue;
+				
+				Resource[] bindings = new Resource[vars2.Length];
 
 				for (int i = 0; i < bindings.Length; i++) {
 					Resource r = sourcewrapper.ToResource(row.getValue(svars[i]));
 					r = sourcewrapper.Persist(r);
-					bindings[i] = new VariableBinding(bindings[i].Variable, r);
+					bindings[i] = r;
 				}
 
 				resultsink.AddComments(sourcewrapper.GetLog());
 				
-				resultsink.Add(bindings);
+				resultsink.Add(new VariableBindings(vars2, bindings));
 
 				ctr2++;
 				if (ctr2 >= ReturnLimit && ReturnLimit != -1) break;
@@ -826,22 +824,22 @@ namespace SemWeb.Query {
 		    	public RdfSourceWrapper source;
 		    	public RdfBindingSetImpl bindings;
 		    	
-				public override void Init(VariableBinding[] variables, bool distinct, bool ordered) {
+				public override void Init(Variable[] variables, bool distinct, bool ordered) {
 					java.util.ArrayList vars = new java.util.ArrayList();
-					foreach (VariableBinding b in variables)
-						if (varMap[b.Variable] != null) // because of bad treatment of meta
-							vars.add((SparqlVariable)varMap[b.Variable]);
+					foreach (Variable b in variables)
+						if (varMap[b] != null) // because of bad treatment of meta
+							vars.add((SparqlVariable)varMap[b]);
 					
 					bindings = new RdfBindingSetImpl(vars);
 					bindings.setDistinct(distinct);
 					bindings.setOrdered(ordered);
 				}
 				
-				public override bool Add(VariableBinding[] result) {
+				public override bool Add(VariableBindings result) {
 					RdfBindingRowImpl row = new RdfBindingRowImpl(bindings);
-					for (int i = 0; i < result.Length; i++) {
-						if (varMap[result[i].Variable] == null) continue; // because of the bad treatment of meta
-						row.addBinding( (SparqlVariable)varMap[result[i].Variable], RdfSourceWrapper.Wrap(result[i].Target) );
+					for (int i = 0; i < result.Count; i++) {
+						if (varMap[result.Variables[i]] == null) continue; // because of the bad treatment of meta
+						row.addBinding( (SparqlVariable)varMap[result.Variables[i]], RdfSourceWrapper.Wrap(result.Values[i]) );
 					}
 					bindings.addRow(row);
 					return true;
