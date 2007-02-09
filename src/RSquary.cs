@@ -33,14 +33,14 @@ namespace SemWeb.Query {
 				output.WriteComment(comments);
 		}
 		
-		public override void Init(VariableBinding[] variables, bool distinct, bool ordered) {
+		public override void Init(Variable[] variables, bool distinct, bool ordered) {
 			output.WriteStartElement("sparql");
 			output.WriteAttributeString("xmlns", "http://www.w3.org/2005/sparql-results#");
 			output.WriteStartElement("head");
-			foreach (VariableBinding var in variables) {
-				if (var.Name == null) continue;
+			foreach (Variable var in variables) {
+				if (var.LocalName == null) continue;
 				output.WriteStartElement("variable");
-				output.WriteAttributeString("name", var.Name);
+				output.WriteAttributeString("name", var.LocalName);
 				output.WriteEndElement();
 			}
 			output.WriteEndElement(); // head
@@ -51,21 +51,24 @@ namespace SemWeb.Query {
 			// instead of <results>, we might want <boolean>true</boolean>
 		}
 		
-		public override bool Add(VariableBinding[] result) {
+		public override bool Add(VariableBindings result) {
 			output.WriteStartElement("result");
-			foreach (VariableBinding var in result) {
-				if (var.Name == null) continue;
+			for (int i = 0; i < result.Count; i++) {
+				Variable var = result.Variables[i];
+				Resource val = result.Values[i];
+				
+				if (var.LocalName == null) continue;
 				
 				output.WriteStartElement("binding");
-				output.WriteAttributeString("name", var.Name);
-				if (var.Target == null) {
+				output.WriteAttributeString("name", var.LocalName);
+				if (val == null) {
 					output.WriteStartElement("unbound");
 					output.WriteEndElement();
-				} else if (var.Target.Uri != null) {
-					output.WriteElementString("uri", var.Target.Uri);
-				} else if (var.Target is Literal) {
+				} else if (val.Uri != null) {
+					output.WriteElementString("uri", val.Uri);
+				} else if (val is Literal) {
 					output.WriteStartElement("literal");
-					Literal literal = (Literal)var.Target;
+					Literal literal = (Literal)val;
 					if (literal.DataType != null)
 						output.WriteAttributeString("datatype", literal.DataType);
 					if (literal.Language != null)
@@ -74,11 +77,11 @@ namespace SemWeb.Query {
 					output.WriteEndElement();				
 				} else {
 					string id;
-					if (blankNodes.ContainsKey(var.Target))
-						id = (string)blankNodes[var.Target];
+					if (blankNodes.ContainsKey(val))
+						id = (string)blankNodes[val];
 					else {
 						id = "r" + (++blankNodeCounter);
-						blankNodes[var.Target] = id;
+						blankNodes[val] = id;
 					}
 					output.WriteStartElement("bnode");
 					output.WriteString(id);

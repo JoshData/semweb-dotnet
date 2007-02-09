@@ -470,7 +470,7 @@ namespace SemWeb {
 		
 			return new SemWeb.Inference.SimpleEntailment().MetaQuery(graph, options, this);
 		}
-		
+
 		public void Query(Statement[] graph, SemWeb.Query.QueryOptions options, SemWeb.Query.QueryResultSink sink) {
 			// If reasoning is applied, delegate this call to the last reasoner
 			// and pass it a clone of this store but with itself removed.
@@ -601,6 +601,20 @@ namespace SemWeb {
 			return (SemWeb.Query.GraphMatch.QueryPart[])chunks.ToArray(typeof(SemWeb.Query.GraphMatch.QueryPart));
 		}
 
+		public
+		#if !DOTNET2
+		ICollection
+		#else
+		ICollection<SemWeb.Query.VariableBindings>
+		#endif
+		Query(Statement[] graph) {
+			SemWeb.Query.QueryOptions options = new SemWeb.Query.QueryOptions();
+			options.Limit = 1;
+			SemWeb.Query.QueryResultBufferSink sink = new SemWeb.Query.QueryResultBufferSink();
+			Query(graph, options, sink);
+			return sink.Bindings;
+		}
+		
 		// StaticSource
 		
 		public int StatementCount {

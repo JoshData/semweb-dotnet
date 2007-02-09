@@ -87,12 +87,12 @@ namespace SemWeb.Inference {
 			}
 			
 			// Prepare the bindings array.
-			SemWeb.Query.VariableBinding[] bindings = new SemWeb.Query.VariableBinding[vars.Count];
+			Variable[] varOrder = new Variable[vars.Count];
 			foreach (Variable v in vars.Keys)
-				bindings[(int)vars[v]] = new SemWeb.Query.VariableBinding(v, null);
+				varOrder[(int)vars[v]] = v;
 			
 			// Initialize the sink.
-			sink.Init(bindings, false, false);
+			sink.Init(varOrder, false, false);
 			
 			// Send a binding set for each piece of evidence.
 			foreach (EvidenceItem ei in evidence) {
@@ -100,10 +100,11 @@ namespace SemWeb.Inference {
 				sink.AddComments(ei.ToProof().ToString());
 			
 				// Create the binding array and send it on
+				Resource[] variableBindings = new Resource[varOrder.Length];
 				foreach (Variable v in vars.Keys)
 					if (ei.env.ContainsKey(v))
-						bindings[(int)vars[v]].Target = (Resource)ei.env[v];
-				sink.Add(bindings);
+						variableBindings[(int)vars[v]] = (Resource)ei.env[v];
+				sink.Add(new SemWeb.Query.VariableBindings(varOrder, variableBindings));
 			}
 			
 			// Close the sink.

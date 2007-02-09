@@ -22,7 +22,7 @@ using LitFilterMap = System.Collections.Hashtable;
 using LitFilterMap2 = System.Collections.IDictionary;
 #else
 using VariableList = System.Collections.Generic.List<SemWeb.Variable>;
-using BindingList = System.Collections.Generic.List<SemWeb.Query.VariableBinding[]>;
+using BindingList = System.Collections.Generic.List<SemWeb.Query.VariableBindings>;
 using VarKnownValuesType = System.Collections.Generic.Dictionary<SemWeb.Variable,System.Collections.Generic.ICollection<SemWeb.Resource>>;
 using VarKnownValuesType2 = System.Collections.Generic.IDictionary<SemWeb.Variable,System.Collections.Generic.ICollection<SemWeb.Resource>>;
 using LitFilterList = System.Collections.Generic.List<SemWeb.LiteralFilter>;
@@ -144,7 +144,7 @@ namespace SemWeb.Query {
 		}
 		
 		struct BindingSet {
-			public VariableList Variables;
+			public Variable[] Variables;
 			public BindingList Rows;
 		}
 		
@@ -154,7 +154,7 @@ namespace SemWeb.Query {
 				QueryResultSink result) {
 				
 			BindingSet bindings = new BindingSet();
-			bindings.Variables = new VariableList();
+			bindings.Variables = new Variable[0];
 			bindings.Rows = new BindingList();
 			bindings.Rows.Add(null); // we need a dummy row for the first intersection
 			
@@ -165,10 +165,10 @@ namespace SemWeb.Query {
 				System.Collections.Hashtable foundValues = new System.Collections.Hashtable();
 				foreach (Variable v in bindings.Variables)
 					foundValues[v] = new ResSet();
-				foreach (VariableBinding[] row in bindings.Rows) {
+				foreach (VariableBindings row in bindings.Rows) {
 					if (row == null) continue; // null in first round
-					foreach (VariableBinding b in row)
-						((ResSet)foundValues[b.Variable]).Add(b.Target);
+					for (int i = 0; i < row.Count; i++)
+						((ResSet)foundValues[row.Variables[i]]).Add(row.Values[i]);
 				}
 				foreach (Variable v in bindings.Variables)
 					foundValues[v] = ((ResSet)foundValues[v]).ToArray();
@@ -177,7 +177,7 @@ namespace SemWeb.Query {
 				BindingList matches;
 
 				// vars holds an ordered list of variables found in this part of the query
-				VariableList vars;
+				Variable[] vars;
 				
 				// A QueryPart can either be:
 				//	A single statement to match against one or more SelectableSources
@@ -187,7 +187,7 @@ namespace SemWeb.Query {
 					Statement s = part.Graph[0];
 					
 					matches = new BindingList();
-					vars = new VariableList();
+					VariableList varCollector = new VariableList();
 					
 					// get a list of variables in this part
 					// the filter will have null components for variables, except
@@ -199,8 +199,8 @@ namespace SemWeb.Query {
 						if (r is Variable) {
 							Variable v = (Variable)r;
 							
-							if (!vars.Contains(v))
-								vars.Add(v);
+							if (!varCollector.Contains(v))
+								varCollector.Add(v);
 							
 							Resource[] values = (Resource[])foundValues[v];
 							if (values == null && knownValues[v] != null)
@@ -228,6 +228,9 @@ namespace SemWeb.Query {
 					#else
 						f.LiteralFilters = ((LitFilterList)litFilters[(Variable)s.Object]).ToArray();
 					#endif
+					
+					vars = new Variable[varCollector.Count];
+					varCollector.CopyTo(vars, 0);
 
 					// get the matching statements; but if a variable was used twice in s,
 					// filter out matching statements that don't respect that (since that info
@@ -262,7 +265,9 @@ namespace SemWeb.Query {
 					QueryResultBufferSink partsink = new QueryResultBufferSink();
 					((QueryableSource)part.Sources[0]).Query(part.Graph, opts, partsink);
 					
-					vars = partsink.Variables;
+					vars = new Variable[partsink.Variables.Count];
+					partsink.Variables.CopyTo(vars, 0);
+					
 					matches = partsink.Bindings;
 					
 					string qs = "";
@@ -279,47 +284,46 @@ namespace SemWeb.Query {
 				int nCommonVars = commonVars.Length/2; // because Length is number of elements, in both dimensions
 				
 				BindingSet newbindings = new BindingSet();
-				newbindings.Variables = new VariableList();
-				newbindings.Variables.AddRange(bindings.Variables);
-				foreach (Variable v in vars)
-					if (!newbindings.Variables.Contains(v))
-						newbindings.Variables.Add(v);
+				
+				newbindings.Variables = new Variable[bindings.Variables.Length + vars.Length - nCommonVars];
+				bindings.Variables.CopyTo(newbindings.Variables, 0);
+				int ctr = newbindings.Variables.Length;
+				int[] newindexes = new int[vars.Length];
+				for (int i = 0; i < vars.Length; i++) {
+					if (Array.IndexOf(newbindings.Variables, vars[i]) == -1) {
+						newbindings.Variables[ctr] = vars[i];
+						newindexes[i] = ctr;
+						ctr++;
+					} else {
+						newindexes[i] = -1;
+					}
+				}
 				newbindings.Rows = new BindingList();
 
 				if (nCommonVars == 0) {
 					// no variables in common, make a cartesian product of the bindings
-					
-					foreach (VariableBinding[] left in bindings.Rows) {
+					foreach (VariableBindings left in bindings.Rows) {
 						for (int i = 0; i < matches.Count; i++) {
-							VariableBinding[] right = (VariableBinding[])matches[i];
+							VariableBindings right = (VariableBindings)matches[i];
 							
-							VariableBinding[] row = new VariableBinding[newbindings.Variables.Count];
-							if (left != null) left.CopyTo(row, 0); // null on first intersection
-							right.CopyTo(row, bindings.Variables.Count);
-							newbindings.Rows.Add(row);
+							Resource[] newValues = new Resource[newbindings.Variables.Length];
+							if (left != null) // null on first intersection
+								left.Values.CopyTo(newValues, 0);
+							right.Values.CopyTo(newValues, bindings.Variables.Length);
+							newbindings.Rows.Add(new VariableBindings(newbindings.Variables, newValues));
 						}
 					}
 				
 				} else {
-					// map the new variables in the right side to indexes in new bindings
-					int[] newindexes = new int[vars.Count];
-					int newvarindex = bindings.Variables.Count;
-					for (int i = 0; i < vars.Count; i++) {
-						if (bindings.Variables.Contains(vars[i]))
-							newindexes[i] = -1;
-						else
-							newindexes[i] = newvarindex++;
-					}
-				
 					// index the new matches by those variables
 				
 					System.Collections.Hashtable indexedMatches = new System.Collections.Hashtable();
-					foreach (VariableBinding[] right in matches) {
+					foreach (VariableBindings right in matches) {
 						// traverse down the list of common variables making a tree
 						// structure indexing the matches by their variable values
 						System.Collections.Hashtable hash = indexedMatches;
 						for (int i = 0; i < nCommonVars; i++) {
-							Resource value = right[commonVars[i, 1]].Target;
+							Resource value = right.Values[commonVars[i, 1]];
 							if (i < nCommonVars - 1) {
 								if (hash[value] == null)
 									hash[value] = new System.Collections.Hashtable();
@@ -335,12 +339,12 @@ namespace SemWeb.Query {
 					
 					// for each existing binding, find all of the new matches
 					// that match the common variables, by traversing the index tree
-					foreach (VariableBinding[] left in bindings.Rows) {
+					foreach (VariableBindings left in bindings.Rows) {
 						System.Collections.Hashtable hash = indexedMatches;
 						BindingList list = null;
 						
 						for (int i = 0; i < nCommonVars; i++) {
-							Resource value = left[commonVars[i, 0]].Target;
+							Resource value = left.Values[commonVars[i, 0]];
 							if (hash[value] == null) break;
 							if (i < nCommonVars - 1)
 								hash = (System.Collections.Hashtable)hash[value];
@@ -353,15 +357,15 @@ namespace SemWeb.Query {
 						if (list == null) continue;
 					
 						for (int i = 0; i < list.Count; i++) {
-							VariableBinding[] right = (VariableBinding[])list[i];
+							VariableBindings right = (VariableBindings)list[i];
 							
-							VariableBinding[] row = new VariableBinding[newbindings.Variables.Count];
-							left.CopyTo(row, 0);
+							Resource[] newValues = new Resource[newbindings.Variables.Length];
+							left.Values.CopyTo(newValues, 0);
 							for (int j = 0; j < newindexes.Length; j++)
 								if (newindexes[j] != -1)
-									row[newindexes[j]] = right[j];
+									newValues[newindexes[j]] = right.Values[j];
 
-							newbindings.Rows.Add(row);
+							newbindings.Rows.Add(new VariableBindings(newbindings.Variables, newValues));
 						}
 					}
 					
@@ -370,14 +374,10 @@ namespace SemWeb.Query {
 				bindings = newbindings;
 			}
 			
-			VariableBinding[] initrow = new VariableBinding[bindings.Variables.Count];
-			for (int i = 0; i < bindings.Variables.Count; i++)
-				initrow[i] = new VariableBinding((Variable)bindings.Variables[i], null);
-			
-			result.Init(initrow, false, false);
+			result.Init(bindings.Variables, false, false);
 			
 			int counter = 0;
-			foreach (VariableBinding[] row in bindings.Rows) {
+			foreach (VariableBindings row in bindings.Rows) {
 				counter++;
 				if (returnStart > 0 && counter < returnStart) continue;
 				
@@ -402,9 +402,9 @@ namespace SemWeb.Query {
 		class Filter : StatementSink {
 			BindingList matches;
 			Statement filter;
-			VariableList vars;
+			Variable[] vars;
 			
-			public Filter(BindingList matches, Statement filter, VariableList vars) { this.matches = matches; this.filter = filter; this.vars = vars; }
+			public Filter(BindingList matches, Statement filter, Variable[] vars) { this.matches = matches; this.filter = filter; this.vars = vars; }
 			public bool Add(Statement s) {
 				if (filter.Subject == filter.Predicate && s.Subject != s.Predicate) return true;
 				if (filter.Subject == filter.Object && s.Subject != s.Object) return true;
@@ -413,29 +413,28 @@ namespace SemWeb.Query {
 				if (filter.Predicate == filter.Meta && s.Predicate != s.Meta) return true;
 				if (filter.Object == filter.Meta && s.Object != s.Meta) return true;
 				
-				VariableBinding[] row = new VariableBinding[vars.Count];
-				for (int i = 0; i < vars.Count; i++) {
-					row[i] = new VariableBinding((Variable)vars[i], null);
-					if ((object)vars[i] == (object)filter.Subject) row[i].Target = s.Subject;
-					else if ((object)vars[i] == (object)filter.Predicate) row[i].Target = s.Predicate;
-					else if ((object)vars[i] == (object)filter.Object) row[i].Target = s.Object;
-					else if ((object)vars[i] == (object)filter.Meta) row[i].Target = s.Meta;
+				Resource[] vals = new Resource[vars.Length];
+				for (int i = 0; i < vars.Length; i++) {
+					if ((object)vars[i] == (object)filter.Subject) vals[i] = s.Subject;
+					else if ((object)vars[i] == (object)filter.Predicate) vals[i] = s.Predicate;
+					else if ((object)vars[i] == (object)filter.Object) vals[i] = s.Object;
+					else if ((object)vars[i] == (object)filter.Meta) vals[i] = s.Meta;
 				}
-				matches.Add(row);
+				matches.Add(new VariableBindings(vars, vals));
 				return true;
 			}
 		}
 		
-		static int[,] IntersectVariables(VariableList leftVars, VariableList rightVars) {
+		static int[,] IntersectVariables(Variable[] leftVars, Variable[] rightVars) {
 			VariableList commonVars = new VariableList();
 			foreach (Variable v in leftVars)
-				if (rightVars.Contains(v))
+				if (Array.IndexOf(rightVars, v) != -1)
 					commonVars.Add(v);
 			
 			int[,] ret = new int[commonVars.Count, 2];
 			for (int i = 0; i < commonVars.Count; i++) {
-				ret[i,0] = leftVars.IndexOf(commonVars[i]);
-				ret[i,1] = rightVars.IndexOf(commonVars[i]);
+				ret[i,0] = Array.IndexOf(leftVars, commonVars[i]);
+				ret[i,1] = Array.IndexOf(rightVars, commonVars[i]);
 			}
 			
 			return ret;

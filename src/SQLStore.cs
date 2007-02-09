@@ -1257,7 +1257,7 @@ namespace SemWeb.Stores {
 			if (graph.Length == 0) throw new ArgumentException("graph array must have at least one element");
 			
 			// Order the variables mentioned in the graph.
-			SemWeb.Query.VariableBinding[] bindings;
+			Variable[] varOrder;
 			ResSet distinguishedVars = null;
 			{
 				if (options.DistinguishedVariables != null)
@@ -1285,15 +1285,15 @@ namespace SemWeb.Stores {
 					}
 				}
 				
-				bindings = new SemWeb.Query.VariableBinding[seenvars.Count];
+				varOrder = new Variable[seenvars.Count];
 				int ctr = 0;
 				foreach (Variable v in seenvars.Keys)
-					bindings[ctr++] = new SemWeb.Query.VariableBinding(v, null);
+					varOrder[ctr++] = v;
 			}
 			
 			// Set the initial bindings to the result sink
 
-			sink.Init(bindings, false, false);
+			sink.Init(varOrder, false, false);
 			
 			Hashtable varLitFilters = new Hashtable();
 			
@@ -1413,9 +1413,7 @@ namespace SemWeb.Stores {
 			
 			// Add literal filters to the WHERE clause
 
-			foreach (SemWeb.Query.VariableBinding binding in bindings) {
-				Variable v = binding.Variable;
-				
+			foreach (Variable v in varOrder) {
 				if (options.VariableLiteralFilters == null) continue;
 				if (options.VariableLiteralFilters[v] == null) continue;
 				
@@ -1433,14 +1431,14 @@ namespace SemWeb.Stores {
 			StringBuilder cmd = new StringBuilder();
 			cmd.Append("SELECT ");
 			
-			for (int i = 0; i < bindings.Length; i++) {
+			for (int i = 0; i < varOrder.Length; i++) {
 				if (i > 0) cmd.Append(',');
-				cmd.Append((string)varRef[bindings[i].Variable]);
-				cmd.Append(", vent" + (int)varRef2[bindings[i].Variable] + ".value");
-				if ((bool)varSelectedLiteral[bindings[i].Variable]) {
-					cmd.Append(", vlit" + (int)varRef2[bindings[i].Variable] + ".value");
-					cmd.Append(", vlit" + (int)varRef2[bindings[i].Variable] + ".language");
-					cmd.Append(", vlit" + (int)varRef2[bindings[i].Variable] + ".datatype");
+				cmd.Append((string)varRef[varOrder[i]]);
+				cmd.Append(", vent" + (int)varRef2[varOrder[i]] + ".value");
+				if ((bool)varSelectedLiteral[varOrder[i]]) {
+					cmd.Append(", vlit" + (int)varRef2[varOrder[i]] + ".value");
+					cmd.Append(", vlit" + (int)varRef2[varOrder[i]] + ".language");
+					cmd.Append(", vlit" + (int)varRef2[varOrder[i]] + ".datatype");
 				}
 			}
 			
@@ -1470,14 +1468,16 @@ namespace SemWeb.Stores {
 			
 			using (IDataReader reader = RunReader(cmd.ToString())) {
 				while (reader.Read()) {
+					Resource[] variableBindings = new Resource[varOrder.Length];
+				
 					int col = 0;
-					for (int i = 0; i < bindings.Length; i++) {
+					for (int i = 0; i < varOrder.Length; i++) {
 						int id = reader.GetInt32(col++);
 						string uri = AsString(reader[col++]);
 						
 						string litvalue = null, litlanguage = null, litdatatype = null;
 
-						if ((bool)varSelectedLiteral[bindings[i].Variable]) {
+						if ((bool)varSelectedLiteral[varOrder[i]]) {
 							litvalue = AsString(reader[col++]);
 							litlanguage = AsString(reader[col++]);
 							litdatatype = AsString(reader[col++]);
@@ -1485,18 +1485,18 @@ namespace SemWeb.Stores {
 						
 						if (litvalue != null) {
 							Literal lit = new Literal(litvalue, litlanguage, litdatatype);
-							bindings[i].Target = lit;
+							variableBindings[i] = lit;
 							
-							ArrayList litFilters = (ArrayList)varLitFilters[bindings[i].Variable];
+							ArrayList litFilters = (ArrayList)varLitFilters[varOrder[i]];
 							if (litFilters != null && !LiteralFilter.MatchesFilters(lit, (LiteralFilter[])litFilters.ToArray(typeof(LiteralFilter)), this))
 								continue;
 							
 						} else {
-							bindings[i].Target = MakeEntity(id, uri, entityCache);
+							variableBindings[i] = MakeEntity(id, uri, entityCache);
 						}
 					}
 					
-					if (!sink.Add(bindings)) return;
+					if (!sink.Add(new SemWeb.Query.VariableBindings(varOrder, variableBindings))) return;
 				}
 			}
 			

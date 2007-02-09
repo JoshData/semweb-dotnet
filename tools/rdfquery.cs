@@ -39,8 +39,6 @@ public class RDFQuery {
 		QueryResultSink qs;
 		if (opts.format == "simple")
 			qs = new PrintQuerySink();
-		else if (opts.format == "sql")
-			qs = new SQLQuerySink(Console.Out, "rdf");
 		else if (opts.format == "html")
 			qs = new HTMLQuerySink(Console.Out);
 		else if (opts.format == "xml")
@@ -75,7 +73,7 @@ public class RDFQuery {
 			// applicable.
 			try {
 				//query = ((Sparql)query).ToGraphMatch();
-			} catch (NotSupportedException e) {
+			} catch (NotSupportedException) {
 			}
 		} else {
 			throw new Exception("Invalid query format: " + opts.type);
@@ -120,10 +118,10 @@ public class RDFQuery {
 
 
 public class PrintQuerySink : QueryResultSink {
-	public override bool Add(VariableBinding[] result) {
-		foreach (VariableBinding var in result)
-			if (var.Name != null && var.Target != null)
-				Console.WriteLine(var.Name + " ==> " + var.Target.ToString());
+	public override bool Add(VariableBindings result) {
+		foreach (Variable var in result.Variables)
+			if (var.LocalName != null && result[var] != null)
+				Console.WriteLine(var.LocalName + " ==> " + result[var].ToString());
 		Console.WriteLine();
 		return true;
 	}
@@ -134,12 +132,12 @@ public class HTMLQuerySink : QueryResultSink {
 	
 	public HTMLQuerySink(TextWriter output) { this.output = output; }
 
-	public override void Init(VariableBinding[] variables, bool distinct, bool ordered) {
+	public override void Init(Variable[] variables, bool distinct, bool ordered) {
 		output.WriteLine("<table>");
 		output.WriteLine("<tr>");
-		foreach (VariableBinding var in variables) {
-			if (var.Name == null) continue;
-			output.WriteLine("<th>" + var.Name + "</th>");
+		foreach (Variable var in variables) {
+			if (var.LocalName == null) continue;
+			output.WriteLine("<th>" + var.LocalName + "</th>");
 		}
 		output.WriteLine("</tr>");
 	}
@@ -148,12 +146,13 @@ public class HTMLQuerySink : QueryResultSink {
 		output.WriteLine("</table>");
 	}
 	
-	public override bool Add(VariableBinding[] result) {
+	public override bool Add(VariableBindings result) {
 		output.WriteLine("<tr>");
-		foreach (VariableBinding var in result) {
-			if (var.Name == null) continue;
-			string t = var.Target.ToString();
-			if (var.Target is Literal) t = ((Literal)var.Target).Value;
+		foreach (Variable var in result.Variables) {
+			if (var.LocalName == null) continue;
+			Resource varTarget = result[var];
+			string t = varTarget.ToString();
+			if (varTarget is Literal) t = ((Literal)varTarget).Value;
 			output.WriteLine("<td>" + t + "</td>");
 		}
 		output.WriteLine("</tr>");			
@@ -161,149 +160,16 @@ public class HTMLQuerySink : QueryResultSink {
 	}
 }
 
-public class SQLQuerySink : QueryResultSink {
-	TextWriter output;
-	string table;
-	
-	public SQLQuerySink(TextWriter output, string table) { this.output = output; this.table = table; }
-	
-	public override void Finished() { }
-
-	private string GetFieldType(string datatype) {
-		switch (datatype) {
-			case "http://www.w3.org/2001/XMLSchema#string":
-			case "http://www.w3.org/2001/XMLSchema#normalizedString":
-				return "TEXT";
-
-			case "http://www.w3.org/2001/XMLSchema#float":
-				return "FLOAT";
-			
-			case "http://www.w3.org/2001/XMLSchema#double":
-				return "DOUBLE PRECISION";
-			
-			case "http://www.w3.org/2001/XMLSchema#decimal":
-				return "DECIMAL";
-			
-			case "http://www.w3.org/2001/XMLSchema#integer":
-			case "http://www.w3.org/2001/XMLSchema#nonPositiveInteger":
-			case "http://www.w3.org/2001/XMLSchema#negativeInteger":
-			case "http://www.w3.org/2001/XMLSchema#int":
-			case "http://www.w3.org/2001/XMLSchema#short":
-				return "INT";
-			
-			case "http://www.w3.org/2001/XMLSchema#long":
-				return "BIGINT";
-			
-			
-			case "http://www.w3.org/2001/XMLSchema#boolean":
-			case "http://www.w3.org/2001/XMLSchema#byte":
-			case "http://www.w3.org/2001/XMLSchema#unsignedByte":
-				return "SMALLINT";
-			
-			case "http://www.w3.org/2001/XMLSchema#nonNegativeInteger":
-			case "http://www.w3.org/2001/XMLSchema#unsignedInt":
-			case "http://www.w3.org/2001/XMLSchema#unsignedShort":
-			case "http://www.w3.org/2001/XMLSchema#positiveInteger":
-				return "UNSIGNED INT";
-			
-			case "http://www.w3.org/2001/XMLSchema#unsignedLong":
-				return "UNSIGNED BIGINT";
-				
-			case "http://www.w3.org/2001/XMLSchema#dateTime":
-				return "DATETIME";
-				
-			case "http://www.w3.org/2001/XMLSchema#date":
-				return "DATE";
-			
-			case "http://www.w3.org/2001/XMLSchema#time":
-			case "http://www.w3.org/2001/XMLSchema#duration":
-				return "TIME";
-
-			case "http://www.w3.org/2001/XMLSchema#base64Binary":
-				return "BLOB";
-
-			case "http://www.w3.org/2001/XMLSchema#anyURI":
-				// shouldn't be case-insensitive, but using BLOB
-				// instead seems to make things too complex.
-				return "TEXT";
-		}
-		
-		return "TEXT";
-	}
-	
-	public override void Init(VariableBinding[] variables, bool distinct, bool ordered) {
-		output.Write("CREATE TABLE " + table + " (");
-		
-		bool f = true;
-		foreach (VariableBinding var in variables) {
-			if (var.Name == null) continue;
-			
-			string type = "BLOB";
-			//if (var.Target is Literal && ((Literal)var.Target).DataType != null)
-			//	type = GetFieldType(((Literal)var.Target).DataType);
-
-			if (!f)  { output.Write(", "); } f = false; 
-			output.Write(var.Name + " " + type);
-		}
-		
-		output.WriteLine(");");
-	}
-	
-	public override bool Add(VariableBinding[] result) {
-		output.Write("INSERT INTO " + table + " VALUES (");
-		bool firstx = true;
-		foreach (VariableBinding var in result) {
-			if (var.Name == null) continue;
-			
-			if (!firstx)  { output.Write(", "); } firstx = false;
-			if (var.Target == null)
-				output.Write("NULL");
-			else if (var.Target is Literal)
-				output.Write(Escape(((Literal)var.Target).Value));
-			else if (var.Target.Uri != null)
-				output.Write("\"" + var.Target.Uri + "\"");
-			else
-				output.Write("\"\"");
-		}
-		output.WriteLine(");");
-		
-		return true;
-	}
-	
-	private string Escape(string str) {
-		if (str == null) return "NULL";
-		return "\"" + EscapeUnquoted(str) + "\"";
-	}
-	
-	StringBuilder EscapeUnquotedBuffer = new StringBuilder();
-	private string EscapeUnquoted(string str) {
-		StringBuilder b = EscapeUnquotedBuffer;
-		b.Length = 0;
-		b.Append(str);
-		Escape(b);
-		return b.ToString();
-	}
-	
-	internal static void Escape(StringBuilder b) {
-		b.Replace("\\", "\\\\");
-		b.Replace("\"", "\\\"");
-		b.Replace("\n", "\\n");
-		b.Replace("%", "\\%");
-		b.Replace("*", "\\*");
-	}
-
-}
-
 internal class LUBMReferenceAnswerOutputQuerySink : QueryResultSink {
 	int[] varorder;
 
-	public override void Init(VariableBinding[] variables, bool distinct, bool ordered) {
+	public override void Init(Variable[] variables, bool distinct, bool ordered) {
 		varorder = new int[variables.Length];
 		string[] varnames = new string[variables.Length];
 		
 		for (int i = 0; i < variables.Length; i++) {
 			varorder[i] = i;
-			varnames[i] = variables[i].Name.ToUpper();
+			varnames[i] = variables[i].LocalName.ToUpper();
 		}
 		
 		Array.Sort(varnames, varorder);
@@ -312,18 +178,17 @@ internal class LUBMReferenceAnswerOutputQuerySink : QueryResultSink {
 			Console.Write(varnames[i] + " ");
 		Console.WriteLine();
 	}
-	public override bool Add(VariableBinding[] result) {
+	public override bool Add(VariableBindings result) {
 		foreach (int idx in varorder) {
-			VariableBinding var = result[idx];
-			if (var.Name != null && var.Target != null) {
-				if (var.Target.Uri != null)
-					Console.Write(var.Target.Uri + " ");
-				else if (var.Target is Literal)
-					Console.Write(((Literal)var.Target).Value + " ");
-				else if (var.Target is BNode)
+			if (result.Variables[idx].LocalName != null && result.Values[idx] != null) {
+				if (result.Values[idx].Uri != null)
+					Console.Write(result.Values[idx].Uri + " ");
+				else if (result.Values[idx] is Literal)
+					Console.Write(((Literal)result.Values[idx]).Value + " ");
+				else if (result.Values[idx] is BNode)
 					Console.Write("(bnode) ");
 				else
-					Console.Write(var.Target + " ");
+					Console.Write(result.Values[idx] + " ");
 			}
 		}
 		Console.WriteLine();

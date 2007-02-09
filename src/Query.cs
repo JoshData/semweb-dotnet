@@ -104,10 +104,10 @@ namespace SemWeb.Query {
 	}
 
 	public abstract class QueryResultSink {
-		public virtual void Init(VariableBinding[] variables, bool distinct, bool ordered) {
+		public virtual void Init(Variable[] variables, bool distinct, bool ordered) {
 		}
 		
-		public abstract bool Add(VariableBinding[] result);
+		public abstract bool Add(VariableBindings result);
 
 		public virtual void Finished() {
 		}
@@ -122,52 +122,66 @@ namespace SemWeb.Query {
 		public ArrayList Bindings = new ArrayList();
 		#else
 		public List<Variable> Variables = new List<Variable>();
-		public List<VariableBinding[]> Bindings = new List<VariableBinding[]>();
+		public List<VariableBindings> Bindings = new List<VariableBindings>();
 		#endif
 
-		public override void Init(VariableBinding[] variables, bool distinct, bool ordered) {
-			foreach (VariableBinding b in variables)
-				Variables.Add(b.Variable);
+		public override void Init(Variable[] variables, bool distinct, bool ordered) {
+			foreach (Variable b in variables)
+				Variables.Add(b);
 		}
 
-		public override bool Add(VariableBinding[] result) {
-			VariableBinding[] clone = new VariableBinding[result.Length];
-			result.CopyTo(clone, 0);
-			Bindings.Add(clone);
+		public override bool Add(VariableBindings result) {
+			Bindings.Add(result);
 			return true;
 		}
 	}
+	
+	public class VariableBindings {
+		Variable[] vars;
+		Resource[] vals;
 
-	public struct VariableBinding {
-		Variable v;
-		Resource t;
-		
-		public VariableBinding(Variable variable, Resource target) {
-			v = variable;
-			t = target;
+		public VariableBindings(Variable[] vars, Resource[] vals) {
+			this.vars = vars;
+			this.vals = vals;
+			if (vars.Length != vals.Length) throw new ArgumentException("Arrays do not have the same length.");
 		}
 		
-		public Variable Variable { get { return v; } set { v = value; } }
-		public string Name { get { return v.LocalName; } }
-		public Resource Target { get { return t; } set { t = value; } }
-
-		public static Statement Substitute(VariableBinding[] variables, Statement template) {
+		public int Count { get { return vars.Length; } }
+		
+		#if !DOTNET2
+		public Variable[] Variables { get { return vars; } }
+		public Resource[] Values { get { return vals; } }
+		#else
+		public IList<Variable> Variables { get { return vars; } }
+		public IList<Resource> Values { get { return vals; } }
+		#endif
+		
+		public Resource this[Variable variable] {
+			get {
+				for (int i = 0; i < vars.Length; i++)
+					if (vars[i] == variable)
+						return vals[i];
+				throw new ArgumentException();
+			}
+		}
+		
+		public Statement Substitute(Statement template) {
 			// This may throw an InvalidCastException if a variable binds
 			// to a literal but was used as the subject, predicate, or meta
 			// of the template.
-			foreach (VariableBinding v in variables) {
-				if (v.Variable == template.Subject) template = new Statement((Entity)v.Target, template.Predicate, template.Object, template.Meta);
-				if (v.Variable == template.Predicate) template = new Statement(template.Subject, (Entity)v.Target, template.Object, template.Meta);
-				if (v.Variable == template.Object) template = new Statement(template.Subject, template.Predicate, v.Target, template.Meta);
-				if (v.Variable == template.Meta) template = new Statement(template.Subject, template.Predicate, template.Object, (Entity)v.Target);
+			for (int i = 0; i < vars.Length; i++) {
+				if (vars[i] == template.Subject) template = new Statement((Entity)vals[i], template.Predicate, template.Object, template.Meta);
+				if (vars[i] == template.Predicate) template = new Statement(template.Subject, (Entity)vals[i], template.Object, template.Meta);
+				if (vars[i] == template.Object) template = new Statement(template.Subject, template.Predicate, vals[i], template.Meta);
+				if (vars[i] == template.Meta) template = new Statement(template.Subject, template.Predicate, template.Object, (Entity)vals[i]);
 			}
 			return template;
 		}
 		
-		internal static string ToString(VariableBinding[] bindings) {
+		public override string ToString() {
 			String ret = "";
-			foreach (VariableBinding b in bindings) {
-				ret += b.Variable + "=>" + b.Target + "; ";
+			for (int i = 0; i < vars.Length; i++) {
+				ret += vars[i] + "=>" + vals[i] + "; ";
 			}
 			return ret;
 		}
