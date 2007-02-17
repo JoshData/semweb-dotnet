@@ -72,11 +72,7 @@ public class RDFQuery {
 			throw new Exception("Invalid query format: " + opts.type);
 		}
 
-		SelectableSource model;
-
-		StatementSource source = Store.Create(opts.RemainingArguments[0]);
-		if (source is SelectableSource) model = (SelectableSource)source;
-		else model = new MemoryStore(source);
+		Store model = Store.Create(opts.RemainingArguments[0]);
 		
 		if (opts.limit > 0)
 			query.ReturnLimit = opts.limit;
@@ -99,7 +95,7 @@ public class RDFQuery {
 				}
 			}
 			
-			((QueryableSource)model).Query(queryModel.ToArray(), qopts, qs);
+			model.Query(queryModel.ToArray(), qopts, qs);
 		} else {
 			query.Run(model, qs);
 		}

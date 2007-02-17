@@ -100,6 +100,11 @@ namespace SemWeb.Inference {
 					q.AddLiteralFilter(ent.Key, filter);
 			#endif
 			}
+			
+			if (options.DistinguishedVariables != null) {
+				foreach (Variable v in options.DistinguishedVariables)
+					q.SetDistinguishedVariable(v);
+			}
 
 			q.Run(targetModel, result);
 		}

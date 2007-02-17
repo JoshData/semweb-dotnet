@@ -764,8 +764,6 @@ namespace SemWeb.Query {
 		    	java.util.Collection defaultDatasets, java.util.Collection namedDatasets,
 		    	java.util.Map knownValues, java.util.Map knownFilters) {
 		    	
-		    	if (tripleConstraints.size() <= 1) return null; // no need to optimize
-		    	
 		    	RdfSourceWrapper s = (RdfSourceWrapper)source;
 		    	
 		    	if (s.source is QueryableSource) {
@@ -789,11 +787,6 @@ namespace SemWeb.Query {
 		    			graph[i].Object = ToRes(triple.getObjectExpression(), knownValues, false, varMap1, varMap2, s, opts);
 		    			graph[i].Meta = new Variable(); // TODO
 		    			if (graph[i].AnyNull) return new RdfBindingSetImpl();
-		    			
-		    			// Don't distinguish the meta variable for now.
-		    			if (graph[i].Subject is Variable) ((VariableList)opts.DistinguishedVariables).Add((Variable)graph[i].Subject);
-		    			if (graph[i].Predicate is Variable) ((VariableList)opts.DistinguishedVariables).Add((Variable)graph[i].Predicate);
-		    			if (graph[i].Object is Variable) ((VariableList)opts.DistinguishedVariables).Add((Variable)graph[i].Object);
 		    		}
 
                     opts.VariableLiteralFilters = new LitFilterMap();
@@ -859,20 +852,22 @@ namespace SemWeb.Query {
 		    			v = new Variable(expr.ToString());
 		    			varMap1[expr] = v;
 		    			varMap2[v] = expr;
-		    		}
 		    		
-		    		if (knownValues != null && knownValues.get(expr) != null) {
-			    		java.util.Set values = (java.util.Set)knownValues.get(expr);
-                        VarKnownValuesList values2 = new VarKnownValuesList();
-			    		for (java.util.Iterator iter = values.iterator(); iter.hasNext(); ) {
-			    			Resource r = src.ToResource((org.openrdf.model.Value)iter.next());
-			    			if (r != null)
-			    				values2.Add(r);
-			    		}
-			    		
-			    		opts.VariableKnownValues[v] = values2;
+			    		if (knownValues != null && knownValues.get(expr) != null) {
+				    		java.util.Set values = (java.util.Set)knownValues.get(expr);
+	                        VarKnownValuesList values2 = new VarKnownValuesList();
+				    		for (java.util.Iterator iter = values.iterator(); iter.hasNext(); ) {
+				    			Resource r = src.ToResource((org.openrdf.model.Value)iter.next());
+				    			if (r != null)
+				    				values2.Add(r);
+				    		}
+				    		
+				    		opts.VariableKnownValues[v] = values2;
+				    	}
+				    	
+				    	if (!(expr is org.openrdf.model.BNode))
+				    		((VariableList)opts.DistinguishedVariables).Add(v);
 			    	}
-			    	
 		    		return v;
 		    	}
 		    	

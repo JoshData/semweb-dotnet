@@ -6,7 +6,7 @@
 	* Euler: Slight public API change.  All of the cwm math:
 	  special predicates are implemented.
 	* Store: Corrected NullRefExceptions in default Query() impl.
-	* Added a euler.exe command-line program.
+	* euler.exe: Added this new command-line program.
 
 2007-01-21 Version 0.82 -- 1st Release Candidate for version 1.0
 

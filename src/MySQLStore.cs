@@ -14,6 +14,7 @@ namespace SemWeb.Stores {
 	public class MySQLStore : SQLStore {
 		MySqlConnection connection;
 		string connectionString;
+		Version version;
 		
 		static bool Debug = System.Environment.GetEnvironmentVariable("SEMWEB_DEBUG_MYSQL") != null;
 		
@@ -26,6 +27,7 @@ namespace SemWeb.Stores {
 		protected override string InsertIgnoreCommand { get { return "IGNORE"; } }
 		protected override bool SupportsInsertCombined { get { return true; } }
 		protected override bool SupportsSubquery { get { return true; } }
+		protected override bool SupportsViews { get { return version >= new Version(5,0,1,0); } }
 		
 		protected override void CreateNullTest(string column, System.Text.StringBuilder command) {
 			command.Append("ISNULL(");
@@ -53,6 +55,11 @@ namespace SemWeb.Stores {
 			MySqlConnection c = new MySqlConnection(connectionString);
 			c.Open();
 			connection = c; // only set field if open was successful
+			
+			using (IDataReader reader = RunReader("show variables like \"version\"")) {
+				reader.Read();
+				version = new Version(reader.GetString(1));
+			}
 		}
 		
 		protected override void RunCommand(string sql) {

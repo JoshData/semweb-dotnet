@@ -41,7 +41,7 @@ namespace SemWeb.Util {
 		#if !DOTNET2
 		public void AddRange(ICollection items) {
 		#else
-		public void AddRange(System.Collections.Generic.ICollection<Resource> items) {
+		public void AddRange<T>(System.Collections.Generic.ICollection<T> items) where T : Resource {
 		#endif
 			if (items == null) return;
 			foreach (Resource r in items)

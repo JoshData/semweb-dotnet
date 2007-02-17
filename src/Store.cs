@@ -313,7 +313,7 @@ namespace SemWeb {
 			
 			ret.nextStore = new Store();
 			if (sources == null) {
-				ret.nextStore.unnamedgraphs = unnamedgraphs;
+				ret.nextStore.unnamedgraphs = unnamedgraphs; // careful...
 				ret.nextStore.namedgraphs = namedgraphs;
 				ret.nextStore.allsources = allsources;
 			} else {
@@ -489,15 +489,14 @@ namespace SemWeb {
 			// Chunk the query graph as best we can.
 			SemWeb.Query.GraphMatch.QueryPart[] chunks = ChunkQuery(graph, options);
 			
-			// If we couldn't chunk the graph, or we got degenerate/useless chunking
-			// (i.e. one chunk per statement), then just use the default GraphMatch implementation.
-			if (chunks == null || chunks.Length == graph.Length) {
+			// If we couldn't chunk the graph, then just use the default GraphMatch implementation.
+			if (chunks == null) {
 				new SemWeb.Inference.SimpleEntailment().Query(graph, options, this, sink);
 				return;
 			}
 			
-			SemWeb.Query.GraphMatch.RunGeneralQuery(chunks, options.VariableKnownValues, options.VariableLiteralFilters,
-				0, options.Limit, sink);
+			SemWeb.Query.GraphMatch.RunGeneralQuery(chunks, options.VariableKnownValues, options.VariableLiteralFilters, options.DistinguishedVariables,
+				0, options.Limit, true, sink);
 		}
 		
 		private SemWeb.Query.GraphMatch.QueryPart[] ChunkQuery(Statement[] query, SemWeb.Query.QueryOptions options) {
