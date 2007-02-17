@@ -83,7 +83,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
 +
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/common/impl/RdfBindingSetImpl.java work-copy/src/main/name/levering/ryan/sparql/common/impl/RdfBindingSetImpl.java
 --- upstream/src/main/name/levering/ryan/sparql/common/impl/RdfBindingSetImpl.java	2006-08-20 20:00:59.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/common/impl/RdfBindingSetImpl.java	2006-12-02 11:00:47.000000000 -0500
++++ work-copy/src/main/name/levering/ryan/sparql/common/impl/RdfBindingSetImpl.java	2007-02-17 11:09:33.000000000 -0500
 @@ -98,6 +98,8 @@
  		for (Iterator oldRows = oldSet.iterator(); oldRows.hasNext();) {
  			this.addRow((RdfBindingRow) oldRows.next());
@@ -109,18 +109,9 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
  	}
  
  	/**
-@@ -371,7 +372,7 @@
- 
- 			int columnIndex = RdfBindingSetImpl.this.getIndex(variable);
- 			if (columnIndex == -1) {
--				throw new IllegalArgumentException("Variable " + variable + " is not bound in this row");
-+				throw new IllegalArgumentException("Variable " + variable + " is not bound in this row (available variables are " + RdfBindingSetImpl.this.variables + ")");
- 			}
- 			Value[] rowValues = ((Value[]) RdfBindingSetImpl.this.values.get(this.row));
- 			return rowValues[columnIndex];
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/extensions/fpredicates/FunctionalPredicateLogic.java work-copy/src/main/name/levering/ryan/sparql/extensions/fpredicates/FunctionalPredicateLogic.java
 --- upstream/src/main/name/levering/ryan/sparql/extensions/fpredicates/FunctionalPredicateLogic.java	2006-08-20 20:00:59.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/extensions/fpredicates/FunctionalPredicateLogic.java	2006-12-02 11:00:47.000000000 -0500
++++ work-copy/src/main/name/levering/ryan/sparql/extensions/fpredicates/FunctionalPredicateLogic.java	2007-02-17 11:12:40.000000000 -0500
 @@ -1,6 +1,7 @@
  package name.levering.ryan.sparql.extensions.fpredicates;
  
@@ -188,7 +179,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
  		};
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/extensions/with/DefaultWithConstraintLogic.java work-copy/src/main/name/levering/ryan/sparql/extensions/with/DefaultWithConstraintLogic.java
 --- upstream/src/main/name/levering/ryan/sparql/extensions/with/DefaultWithConstraintLogic.java	2006-08-20 20:00:59.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/extensions/with/DefaultWithConstraintLogic.java	2006-12-02 11:00:47.000000000 -0500
++++ work-copy/src/main/name/levering/ryan/sparql/extensions/with/DefaultWithConstraintLogic.java	2007-02-10 09:06:34.000000000 -0500
 @@ -1,6 +1,7 @@
  package name.levering.ryan.sparql.extensions.with;
  
@@ -222,7 +213,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
  }
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/logic/BNodeRenamingConstructQueryLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/BNodeRenamingConstructQueryLogic.java
 --- upstream/src/main/name/levering/ryan/sparql/logic/BNodeRenamingConstructQueryLogic.java	2006-08-20 20:01:01.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/logic/BNodeRenamingConstructQueryLogic.java	2006-12-02 11:00:49.000000000 -0500
++++ work-copy/src/main/name/levering/ryan/sparql/logic/BNodeRenamingConstructQueryLogic.java	2007-02-10 09:06:34.000000000 -0500
 @@ -94,7 +94,7 @@
  		int offset = this.data.getOffset();
  
@@ -259,7 +250,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
  	public ConstructQueryLogic getConstructQueryLogic(ExtendedConstructQueryData data, SPARQLValueFactory valueFactory) {
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/logic/debug/FilterConstraintDebug.java work-copy/src/main/name/levering/ryan/sparql/logic/debug/FilterConstraintDebug.java
 --- upstream/src/main/name/levering/ryan/sparql/logic/debug/FilterConstraintDebug.java	2006-08-20 20:01:00.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/logic/debug/FilterConstraintDebug.java	2006-12-02 11:00:48.000000000 -0500
++++ work-copy/src/main/name/levering/ryan/sparql/logic/debug/FilterConstraintDebug.java	2007-02-10 09:06:34.000000000 -0500
 @@ -1,6 +1,7 @@
  package name.levering.ryan.sparql.logic.debug;
  
@@ -283,7 +274,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
          return returnSet;
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/logic/debug/GraphConstraintDebug.java work-copy/src/main/name/levering/ryan/sparql/logic/debug/GraphConstraintDebug.java
 --- upstream/src/main/name/levering/ryan/sparql/logic/debug/GraphConstraintDebug.java	2006-08-20 20:01:00.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/logic/debug/GraphConstraintDebug.java	2006-12-02 11:00:48.000000000 -0500
++++ work-copy/src/main/name/levering/ryan/sparql/logic/debug/GraphConstraintDebug.java	2007-02-10 09:06:34.000000000 -0500
 @@ -1,6 +1,7 @@
  package name.levering.ryan.sparql.logic.debug;
  
@@ -307,7 +298,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
          return returnSet;
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/logic/debug/GroupConstraintDebug.java work-copy/src/main/name/levering/ryan/sparql/logic/debug/GroupConstraintDebug.java
 --- upstream/src/main/name/levering/ryan/sparql/logic/debug/GroupConstraintDebug.java	2006-08-20 20:01:00.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/logic/debug/GroupConstraintDebug.java	2006-12-02 11:00:48.000000000 -0500
++++ work-copy/src/main/name/levering/ryan/sparql/logic/debug/GroupConstraintDebug.java	2007-02-10 09:06:34.000000000 -0500
 @@ -1,6 +1,7 @@
  package name.levering.ryan.sparql.logic.debug;
  
@@ -331,7 +322,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
          return returnSet;
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/logic/debug/OptionalConstraintDebug.java work-copy/src/main/name/levering/ryan/sparql/logic/debug/OptionalConstraintDebug.java
 --- upstream/src/main/name/levering/ryan/sparql/logic/debug/OptionalConstraintDebug.java	2006-08-20 20:01:00.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/logic/debug/OptionalConstraintDebug.java	2006-12-02 11:00:48.000000000 -0500
++++ work-copy/src/main/name/levering/ryan/sparql/logic/debug/OptionalConstraintDebug.java	2007-02-10 09:06:34.000000000 -0500
 @@ -1,6 +1,7 @@
  package name.levering.ryan.sparql.logic.debug;
  
@@ -355,7 +346,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
          return returnSet;
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/logic/debug/TripleConstraintDebug.java work-copy/src/main/name/levering/ryan/sparql/logic/debug/TripleConstraintDebug.java
 --- upstream/src/main/name/levering/ryan/sparql/logic/debug/TripleConstraintDebug.java	2006-08-20 20:01:00.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/logic/debug/TripleConstraintDebug.java	2006-12-02 11:00:48.000000000 -0500
++++ work-copy/src/main/name/levering/ryan/sparql/logic/debug/TripleConstraintDebug.java	2007-02-10 09:06:34.000000000 -0500
 @@ -6,6 +6,7 @@
  package name.levering.ryan.sparql.logic.debug;
  
@@ -379,7 +370,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
          return returnSet;
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/logic/debug/UnionConstraintDebug.java work-copy/src/main/name/levering/ryan/sparql/logic/debug/UnionConstraintDebug.java
 --- upstream/src/main/name/levering/ryan/sparql/logic/debug/UnionConstraintDebug.java	2006-08-20 20:01:00.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/logic/debug/UnionConstraintDebug.java	2006-12-02 11:00:48.000000000 -0500
++++ work-copy/src/main/name/levering/ryan/sparql/logic/debug/UnionConstraintDebug.java	2007-02-10 09:06:34.000000000 -0500
 @@ -1,6 +1,7 @@
  package name.levering.ryan.sparql.logic.debug;
  
@@ -403,7 +394,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
          return returnSet;
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/logic/DefaultAskQueryLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/DefaultAskQueryLogic.java
 --- upstream/src/main/name/levering/ryan/sparql/logic/DefaultAskQueryLogic.java	2006-08-20 20:01:01.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/logic/DefaultAskQueryLogic.java	2006-12-02 11:01:18.000000000 -0500
++++ work-copy/src/main/name/levering/ryan/sparql/logic/DefaultAskQueryLogic.java	2007-02-10 09:06:34.000000000 -0500
 @@ -55,7 +55,7 @@
  
          // First bind the result table
@@ -415,7 +406,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
          return results.iterator().hasNext();
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/logic/DefaultConstructQueryLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/DefaultConstructQueryLogic.java
 --- upstream/src/main/name/levering/ryan/sparql/logic/DefaultConstructQueryLogic.java	2006-08-20 20:01:01.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/logic/DefaultConstructQueryLogic.java	2006-12-02 11:33:27.000000000 -0500
++++ work-copy/src/main/name/levering/ryan/sparql/logic/DefaultConstructQueryLogic.java	2007-02-10 09:06:34.000000000 -0500
 @@ -30,6 +30,7 @@
  import org.openrdf.model.BNode;
  import org.openrdf.model.URI;
@@ -444,7 +435,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
  
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/logic/DefaultDescribeQueryLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/DefaultDescribeQueryLogic.java
 --- upstream/src/main/name/levering/ryan/sparql/logic/DefaultDescribeQueryLogic.java	2006-08-20 20:01:01.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/logic/DefaultDescribeQueryLogic.java	2006-12-02 11:01:18.000000000 -0500
++++ work-copy/src/main/name/levering/ryan/sparql/logic/DefaultDescribeQueryLogic.java	2007-02-10 09:06:34.000000000 -0500
 @@ -93,7 +93,9 @@
  		int offset = this.data.getOffset();
  
@@ -476,7 +467,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
  	}
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/logic/DefaultSelectQueryLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/DefaultSelectQueryLogic.java
 --- upstream/src/main/name/levering/ryan/sparql/logic/DefaultSelectQueryLogic.java	2006-08-20 20:01:01.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/logic/DefaultSelectQueryLogic.java	2006-12-02 11:01:18.000000000 -0500
++++ work-copy/src/main/name/levering/ryan/sparql/logic/DefaultSelectQueryLogic.java	2007-02-10 09:06:34.000000000 -0500
 @@ -86,7 +86,7 @@
  
          // First bind the result table
@@ -631,7 +622,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
      /**
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/logic/ExtendedConstructQueryLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/ExtendedConstructQueryLogic.java
 --- upstream/src/main/name/levering/ryan/sparql/logic/ExtendedConstructQueryLogic.java	2006-08-20 20:01:01.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/logic/ExtendedConstructQueryLogic.java	2006-12-02 11:20:57.000000000 -0500
++++ work-copy/src/main/name/levering/ryan/sparql/logic/ExtendedConstructQueryLogic.java	2007-02-10 09:06:34.000000000 -0500
 @@ -98,7 +98,7 @@
  		boolean distinct = this.data.isDistinct();
  
@@ -1188,7 +1179,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
  	 * Evaluates the argument to the function and does simplistic conversion to
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/logic/naive/DefaultFilterConstraintLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/naive/DefaultFilterConstraintLogic.java
 --- upstream/src/main/name/levering/ryan/sparql/logic/naive/DefaultFilterConstraintLogic.java	2006-08-20 20:01:01.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/logic/naive/DefaultFilterConstraintLogic.java	2006-12-02 11:01:18.000000000 -0500
++++ work-copy/src/main/name/levering/ryan/sparql/logic/naive/DefaultFilterConstraintLogic.java	2007-02-10 09:06:34.000000000 -0500
 @@ -8,6 +8,7 @@
  import java.util.Collection;
  import java.util.Collections;
@@ -1208,7 +1199,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
  
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/logic/naive/DefaultGroupConstraintLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/naive/DefaultGroupConstraintLogic.java
 --- upstream/src/main/name/levering/ryan/sparql/logic/naive/DefaultGroupConstraintLogic.java	2006-08-20 20:01:01.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/logic/naive/DefaultGroupConstraintLogic.java	2006-12-02 11:01:18.000000000 -0500
++++ work-copy/src/main/name/levering/ryan/sparql/logic/naive/DefaultGroupConstraintLogic.java	2007-02-10 09:06:34.000000000 -0500
 @@ -9,6 +9,7 @@
  import java.util.Iterator;
  import java.util.LinkedList;
@@ -1270,7 +1261,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
  	}
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/logic/naive/DefaultOptionalConstraintLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/naive/DefaultOptionalConstraintLogic.java
 --- upstream/src/main/name/levering/ryan/sparql/logic/naive/DefaultOptionalConstraintLogic.java	2006-08-20 20:01:01.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/logic/naive/DefaultOptionalConstraintLogic.java	2006-12-02 11:01:18.000000000 -0500
++++ work-copy/src/main/name/levering/ryan/sparql/logic/naive/DefaultOptionalConstraintLogic.java	2007-02-10 09:06:34.000000000 -0500
 @@ -9,6 +9,7 @@
  import java.util.Iterator;
  import java.util.LinkedList;
@@ -2102,6 +2093,22 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
              }
          }
          return fullSet;
+diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/logic/streamed/StreamedSetProjectionLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/streamed/StreamedSetProjectionLogic.java
+--- upstream/src/main/name/levering/ryan/sparql/logic/streamed/StreamedSetProjectionLogic.java	2006-08-20 20:01:01.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/logic/streamed/StreamedSetProjectionLogic.java	2007-02-09 07:54:16.000000000 -0500
+@@ -130,8 +130,10 @@
+ 			}
+ 
+ 			public Value getValue(Variable variable) {
+-				return ((ExpressionLogic) RdfBindingProjection.this.variableExpressions.get(variable))
+-						.evaluate(this.row);
++				ExpressionLogic expr = (ExpressionLogic) RdfBindingProjection.this.variableExpressions.get(variable);
++				if (expr == null)
++					throw new IllegalArgumentException("Variable " + variable + " is not bound in this row.");
++				return expr.evaluate(this.row);
+ 			}
+ 
+ 			public List getVariables() {
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/logic/streamed/StreamedTripleConstraintLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/streamed/StreamedTripleConstraintLogic.java
 --- upstream/src/main/name/levering/ryan/sparql/logic/streamed/StreamedTripleConstraintLogic.java	2006-08-20 20:01:01.000000000 -0400
 +++ work-copy/src/main/name/levering/ryan/sparql/logic/streamed/StreamedTripleConstraintLogic.java	2006-12-02 11:01:18.000000000 -0500
@@ -2488,7 +2495,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
  	/**
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/model/logic/ConstraintLogic.java work-copy/src/main/name/levering/ryan/sparql/model/logic/ConstraintLogic.java
 --- upstream/src/main/name/levering/ryan/sparql/model/logic/ConstraintLogic.java	2006-08-20 20:00:59.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/model/logic/ConstraintLogic.java	2006-12-02 11:00:47.000000000 -0500
++++ work-copy/src/main/name/levering/ryan/sparql/model/logic/ConstraintLogic.java	2007-02-10 09:06:34.000000000 -0500
 @@ -6,6 +6,7 @@
  package name.levering.ryan.sparql.model.logic;
  
