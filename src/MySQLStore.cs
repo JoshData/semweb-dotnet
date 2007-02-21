@@ -1,3 +1,5 @@
+//#define CATCHEXCEPTIONS
+
 using System;
 using System.Collections;
 
@@ -62,6 +64,8 @@ namespace SemWeb.Stores {
 			}
 		}
 		
+		#if !CATCHEXCEPTIONS
+		
 		protected override void RunCommand(string sql) {
 			Open();
 			if (Debug) Console.Error.WriteLine(sql);
@@ -90,16 +94,68 @@ namespace SemWeb.Stores {
 				return cmd.ExecuteReader();
 			}
 		}
+		
+		#else
+
+		protected override void RunCommand(string sql) {
+			Open();
+			try {
+				if (Debug) Console.Error.WriteLine(sql);
+				using (MySqlCommand cmd = new MySqlCommand(sql, connection))
+					cmd.ExecuteNonQuery();
+			} catch (Exception e) {
+				Console.WriteLine(sql);
+				throw e;
+			}
+		}
+		
+		protected override object RunScalar(string sql) {
+			Open();
+			try {
+				using (MySqlCommand cmd = new MySqlCommand(sql, connection)) {
+					object ret = null;
+					using (IDataReader reader = cmd.ExecuteReader()) {
+						if (reader.Read()) {
+							ret = reader[0];
+						}
+					}
+					if (Debug) Console.Error.WriteLine(sql + " => " + ret);
+					return ret;
+				}
+			} catch (Exception e) {
+				Console.WriteLine(sql);
+				throw e;
+			}
+		}
+
+		protected override IDataReader RunReader(string sql) {
+			Open();
+			try {
+				if (Debug) Console.Error.WriteLine(sql);
+				using (MySqlCommand cmd = new MySqlCommand(sql, connection)) {
+					return cmd.ExecuteReader();
+				}
+			} catch (Exception e) {
+				Console.WriteLine(sql);
+				throw e;
+			}
+		}
+		
+		#endif
 
 		protected override void BeginTransaction() {
 			//RunCommand("BEGIN");
 			//RunCommand("LOCK TABLES " + TableName + "_statements WRITE, " + TableName + "_literals WRITE, " + TableName + "_entities WRITE");
 			RunCommand("ALTER TABLE " + TableName + "_statements DISABLE KEYS");
+			//RunCommand("ALTER TABLE " + TableName + "_entities DELAY_KEY_WRITE=1");
+			//RunCommand("ALTER TABLE " + TableName + "_literals DELAY_KEY_WRITE=1");
 		}
 		
 		protected override void EndTransaction() {
 			//RunCommand("COMMIT");
 			//RunCommand("UNLOCK TABLES");
+			//RunCommand("ALTER TABLE " + TableName + "_entities DELAY_KEY_WRITE=0");
+			//RunCommand("ALTER TABLE " + TableName + "_literals DELAY_KEY_WRITE=0");
 			RunCommand("ALTER TABLE " + TableName + "_statements ENABLE KEYS");
 			RunCommand("ANALYZE TABLE " + TableName + "_entities");
 			RunCommand("ANALYZE TABLE " + TableName + "_literals");
