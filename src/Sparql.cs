@@ -128,7 +128,7 @@ namespace SemWeb.Query {
 			w.WriteEndElement();
 			w.WriteEndElement();
 			w.WriteEndElement();
-			w.Close();
+			w.Flush();
 		}
 	
 		public void Construct(SelectableSource source, StatementSink sink) {
@@ -787,6 +787,8 @@ namespace SemWeb.Query {
 		    			graph[i].Object = ToRes(triple.getObjectExpression(), knownValues, false, varMap1, varMap2, s, opts);
 		    			graph[i].Meta = new Variable(); // TODO
 		    			if (graph[i].AnyNull) return new RdfBindingSetImpl();
+		    			if (!(graph[i].Subject is Variable) && !(graph[i].Predicate is Variable) && !(graph[i].Object is Variable))
+		    				return null; // we could use Contains(), but we'll just abandon the Query() path altogether
 		    		}
 
                     opts.VariableLiteralFilters = new LitFilterMap();

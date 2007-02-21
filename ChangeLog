@@ -1,8 +1,12 @@
-2007-02-21  Joshua Tauberer <> 
+2007-02-21   <> 
 
-	MySQLStore: Just some non-active debugging/experimental stuff.
+	Sparql.cs: In ASK, don't close the target stream via XmlWriter after writing; just flush the XmlWriter; Don't attempt to use the Query fast path if there's a statement with no variables in it (as in an ASK).
 
 	* N3Reader: Reading of "(...)" lists was not working right.
+	* Sparql.cs: In ASK, don't close the target stream via XmlWriter
+	  after writing; just flush the XmlWriter.
+	  Don't attempt to use the Query fast path if there's a statement
+	  with no variables in it (as in an ASK).
 	* Resource.cs: BNodes without LocalName and variables without
 	  names would ToString() with their hash code, but negative
 	  hash codes look funny, so it outputs the abs(hashcode) now.
