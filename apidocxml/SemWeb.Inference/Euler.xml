@@ -42,14 +42,12 @@
   </Members>
   <Docs>
     <summary>Implements a backward-chaining reasoner with Euler path detection based on the Euler library by Jos de Roo.</summary>
-    <remarks><para>This class is based on the JavaScript version of the Euler library at http://www.agfa.com/w3c/euler/.</para>
-
-<para>This class is an instance of the <see cref="T:SemWeb.Inference.Reasoner" /> class. To use a Reasoner, you add it to a Store with <see cref="M:SemWeb.Store.AddReasoner(SemWeb.Inference.Reasoner)" />. Subsequently, calls to Select and Query on the Store will be processed by the reasoner, and so will provide the entailments given by the reasoner directly.</para>
-
-<para>The following example shows how to use this class to reason about transitive relations.</para>
-
-<example>
-  <code lang="C#">
+    <remarks>
+      <para>This class is based on the JavaScript version of the Euler library at http://www.agfa.com/w3c/euler/.</para>
+      <para>This class is an instance of the <see cref="T:SemWeb.Inference.Reasoner" /> class. To use a Reasoner, you add it to a Store with <see cref="M:SemWeb.Store.AddReasoner(SemWeb.Inference.Reasoner)" />. Subsequently, calls to Select and Query on the Store will be processed by the reasoner, and so will provide the entailments given by the reasoner directly.</para>
+      <para>The following example shows how to use this class to reason about transitive relations.</para>
+      <example>
+        <code lang="C#">
 // This example demonstrates general reasoning with
 // the Euler engine based on Jos De Roo's Euler proof
 // mechanism.  The example is based on the "graph"
@@ -129,6 +127,7 @@ public class EulerTest {
 		
 	}
 }</code>
-</example></remarks>
+      </example>
+    </remarks>
   </Docs>
 </Type>

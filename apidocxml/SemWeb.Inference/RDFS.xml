@@ -62,8 +62,8 @@
   </Members>
   <Docs>
     <summary>A RDFS inferencing engine.</summary>
-    <remarks><para>This class is an instance of the <see cref="T:SemWeb.Inference.Reasoner" /> class. To use a Reasoner, you add it to a Store with <see cref="M:SemWeb.Store.AddReasoner(SemWeb.Inference.Reasoner)" />. Subsequently, calls to Select and Query on the Store will be processed by the reasoner, and so will provide the entailments given by the reasoner directly.</para>
-
+    <remarks>
+      <para>This class is an instance of the <see cref="T:SemWeb.Inference.Reasoner" /> class. To use a Reasoner, you add it to a Store with <see cref="M:SemWeb.Store.AddReasoner(SemWeb.Inference.Reasoner)" />. Subsequently, calls to Select and Query on the Store will be processed by the reasoner, and so will provide the entailments given by the reasoner directly.</para>
       <para>The RDFS class loads in a schema and scans for rdf:subClassOf, rdf:subPropertyOf, rdf:domain, and rdf:range relations in the schema to establish the class and property hierarchies.</para>
       <para>Entailments are queried by calls to Select on the Store that you have added the reasoner to.</para>
       <para>Normally a reasoning engine is applied to a <see cref="T:SemWeb.Store" /> using <see cref="M:SemWeb.Store.AddReasoner(SemWeb.Inference.Reasoner)" />.</para>
@@ -75,11 +75,9 @@
       <para>Asking for all entities with a given type using Select(<see langword="null" /> rdf:type Y) returns all entities marked as being typed as Y or any of its subclasses.  Domains and ranges of properties are not used in this case because it would require selecting for all occurrences of all properties with domains and ranges, which isn't scalable.  (This will probably be enable-able in the future.)  When the type of an entity is requested with a call to Select(X rdf:type <see langword="null" />), the type found for X in the underlying data source is returned and all of its superclasses, and if X is found in the domain or range of any predicates whose domain or range is given in the schema, the domain or range is returned as well.</para>
       <para>For queries Select(X P Y), where X and Y may be null, statements of the form U P V are returned if there is a statement U Q V in the underlying data source where Q is a subproperty of P.  (If X is not <see langword="null" />, U=X; similarly for Y and V.)  Note that the returned statements all contain P as the predicate, the property actually queried on, and not the subproperties which were found in the underlying data source.</para>
       <para>For all other calls, the arguments are passed down to the underlying Select method of the data source without any RDFS processing.</para>
-    
-
-<para>Below is an example of using this class.</para>
-<example>
-  <code lang="C#">
+      <para>Below is an example of using this class.</para>
+      <example>
+        <code lang="C#">
 // This example demonstrates basic RDFS reasoning.
 
 using System;
@@ -135,6 +133,7 @@ public class EulerTest {
 
 }
   </code>
-</example></remarks>
+      </example>
+    </remarks>
   </Docs>
 </Type>
