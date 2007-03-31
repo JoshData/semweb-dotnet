@@ -18,22 +18,6 @@
         <remarks>None.</remarks>
       </Docs>
     </Member>
-    <Member MemberName="Add">
-      <MemberSignature Language="C#" Value="public abstract bool Add (SemWeb.Query.VariableBinding[] result);" />
-      <MemberType>Method</MemberType>
-      <ReturnValue>
-        <ReturnType>System.Boolean</ReturnType>
-      </ReturnValue>
-      <Parameters>
-        <Parameter Name="result" Type="SemWeb.Query.VariableBinding[]" />
-      </Parameters>
-      <Docs>
-        <param name="result">An array of variable bindings.</param>
-        <summary>This method is called by a Query object to add a new binding result.</summary>
-        <returns>Return <see langword="true" /> to continue processing the query.</returns>
-        <remarks>The VariableBinding array object may be reused between calls.</remarks>
-      </Docs>
-    </Member>
     <Member MemberName="Finished">
       <MemberSignature Language="C#" Value="public virtual void Finished ();" />
       <MemberType>Method</MemberType>
@@ -61,23 +45,39 @@
         <remarks>This method may be called at any time, before, during, and after all bindings have been written.</remarks>
       </Docs>
     </Member>
+    <Member MemberName="Add">
+      <MemberSignature Language="C#" Value="public abstract bool Add (SemWeb.Query.VariableBindings result);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Boolean</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="result" Type="SemWeb.Query.VariableBindings" />
+      </Parameters>
+      <Docs>
+        <param name="result">The variable bindings to values in this row.</param>
+        <summary>Called to add a new result row.</summary>
+        <returns>Return <see langword="true" /> to have the caller continue streaming results, otherwise the caller will abort the query.</returns>
+        <remarks>None.</remarks>
+      </Docs>
+    </Member>
     <Member MemberName="Init">
-      <MemberSignature Language="C#" Value="public virtual void Init (SemWeb.Query.VariableBinding[] variables, bool distinct, bool ordered);" />
+      <MemberSignature Language="C#" Value="public virtual void Init (SemWeb.Variable[] variables, bool distinct, bool ordered);" />
       <MemberType>Method</MemberType>
       <ReturnValue>
         <ReturnType>System.Void</ReturnType>
       </ReturnValue>
       <Parameters>
-        <Parameter Name="variables" Type="SemWeb.Query.VariableBinding[]" />
+        <Parameter Name="variables" Type="SemWeb.Variable[]" />
         <Parameter Name="distinct" Type="System.Boolean" />
         <Parameter Name="ordered" Type="System.Boolean" />
       </Parameters>
       <Docs>
-        <param name="variables">To be added.</param>
-        <param name="distinct">To be added.</param>
-        <param name="ordered">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
+        <param name="variables">An array of variables whose bindings will be reported. The order of the variables here will match that in the bindings provided in Add.</param>
+        <param name="distinct">Indicates whether the bindings provided are distinct.</param>
+        <param name="ordered">Indicates whether the bindings provided have been ordered.</param>
+        <summary>Called by the Query to initialize the result sink.</summary>
+        <remarks>None.</remarks>
       </Docs>
     </Member>
   </Members>

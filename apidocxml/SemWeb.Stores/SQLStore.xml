@@ -1,5 +1,5 @@
 <Type Name="SQLStore" FullName="SemWeb.Stores.SQLStore">
-  <TypeSignature Language="C#" Value="public abstract class SQLStore : SemWeb.ModifiableSource, SemWeb.QueryableSource, SemWeb.StaticSource" />
+  <TypeSignature Language="C#" Value="public abstract class SQLStore : IDisposable, SemWeb.ModifiableSource, SemWeb.QueryableSource, SemWeb.StaticSource" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
     <AssemblyVersion>0.8.1.1</AssemblyVersion>
@@ -16,6 +16,9 @@
     </Interface>
     <Interface>
       <InterfaceName>SemWeb.StaticSource</InterfaceName>
+    </Interface>
+    <Interface>
+      <InterfaceName>System.IDisposable</InterfaceName>
     </Interface>
   </Interfaces>
   <Members>
@@ -632,6 +635,18 @@
       <MemberType>Property</MemberType>
       <ReturnValue>
         <ReturnType>System.Int32</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+        <value>To be added.</value>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="SupportsViews">
+      <MemberSignature Language="C#" Value="protected virtual bool SupportsViews { get; };" />
+      <MemberType>Property</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Boolean</ReturnType>
       </ReturnValue>
       <Docs>
         <summary>To be added.</summary>

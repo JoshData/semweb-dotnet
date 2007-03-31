@@ -44,7 +44,7 @@
     </Member>
   </Members>
   <Docs>
-    <summary>To be added.</summary>
-    <remarks>To be added.</remarks>
+    <summary>This structure is used by <see cref="M:SemWeb.QueryableSource.MetaQuery(SemWeb.Statement[],SemWeb.Query.QueryOptions)" /> when asking for the querying capabilities of a data source.</summary>
+    <remarks>See the fields of this structure for more information.</remarks>
   </Docs>
 </Type>

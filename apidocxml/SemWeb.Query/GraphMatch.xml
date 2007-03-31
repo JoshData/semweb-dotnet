@@ -65,9 +65,9 @@ new GraphMatch(queryGraph).Run(targetData, Console.Out);  </code>
         <Parameter Name="statement" Type="SemWeb.Statement" />
       </Parameters>
       <Docs>
-        <param name="statement">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
+        <param name="statement">A statement.</param>
+        <summary>Adds a statement to the graph pattern (the query).</summary>
+        <remarks>Keep in mind that distinct instances of the <see cref="T:SemWeb.Variable" /> class are treated as separate variables, even if they have the same name.</remarks>
       </Docs>
     </Member>
     <Member MemberName="AddLiteralFilter">
@@ -81,10 +81,10 @@ new GraphMatch(queryGraph).Run(targetData, Console.Out);  </code>
         <Parameter Name="filter" Type="SemWeb.LiteralFilter" />
       </Parameters>
       <Docs>
-        <param name="variable">To be added.</param>
-        <param name="filter">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
+        <param name="variable">The variable to apply the filter to.</param>
+        <param name="filter">A filter.</param>
+        <summary>Adds a filter to be applied to literal values that match against a given variable.</summary>
+        <remarks>None.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SetVariableRange">
@@ -98,10 +98,25 @@ new GraphMatch(queryGraph).Run(targetData, Console.Out);  </code>
         <Parameter Name="range" Type="System.Collections.Generic.ICollection&lt;SemWeb.Resource&gt;" />
       </Parameters>
       <Docs>
-        <param name="variable">To be added.</param>
-        <param name="range">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
+        <param name="variable">A variable in the query.</param>
+        <param name="range">A collection of Resources.</param>
+        <summary>Sets the range of values that the variable's bindings must be drawn from.</summary>
+        <remarks>All bindings for this variable will be in the provided set of resources.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="SetDistinguishedVariable">
+      <MemberSignature Language="C#" Value="public void SetDistinguishedVariable (SemWeb.Variable variable);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="variable" Type="SemWeb.Variable" />
+      </Parameters>
+      <Docs>
+        <param name="variable">A variable in the query.</param>
+        <summary>Marks a variable as distinguished.</summary>
+        <remarks>If this method is never called, all variables in the query are returned in the variable bindings. However, once this method is called, only variables distinguished by this method will be included the resulting bindings. This is useful to avoid getting distinct answers on variables that the user does not care about.</remarks>
       </Docs>
     </Member>
   </Members>

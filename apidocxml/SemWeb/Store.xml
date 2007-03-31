@@ -31,7 +31,7 @@
       <Parameters />
       <Docs>
         <summary>Clears the contents of the store.</summary>
-        <remarks>An <see cref="T:System.InvalidOperationException" /> is thrown if more than one data source has been added to the Store with AddSource or if the data source added is not a <see cref="T:SemWeb.ModifiableSource" />.  The underlying data source is cleared with <see cref="M:SemWeb.ModifiableSource.Clear()" />.</remarks>
+        <remarks>An <see cref="T:System.InvalidOperationException" /> is thrown if more than one data source has been added to the Store with AddSource (in which case SemWeb would not want to clear them all) or if the data source added is not a <see cref="T:SemWeb.ModifiableSource" />.  The underlying data source is cleared with <see cref="M:SemWeb.ModifiableSource.Clear()" />.</remarks>
       </Docs>
     </Member>
     <Member MemberName="GetEntitiesOfType">
@@ -64,7 +64,7 @@
         <summary>Adds a statement to the store.</summary>
         <remarks>
           <para>The Subject, Predicate, Object, and Meta fields of the statement must not be <see langword="null" /> or an <see cref="T:System.ArgumentNullException" /> is thrown.</para>
-          <para>An <see cref="T:System.InvalidOperationException" /> is thrown if more than one data source has been added to the Store with AddSource or if the data source added is not a <see cref="T:SemWeb.ModifiableSource" />.</para>
+          <para>An <see cref="T:System.InvalidOperationException" /> is thrown if more than one data source has been added to the Store with AddSource (in which case SemWeb would not know which data source to add the statement to) or if the data source added is not a <see cref="T:SemWeb.ModifiableSource" />.</para>
         </remarks>
       </Docs>
     </Member>
@@ -93,8 +93,8 @@
         <Parameter Name="source" Type="SemWeb.StatementSource" />
       </Parameters>
       <Docs>
-        <param name="source">The source whose statements will be added into the store.</param>
-        <summary>Batch loads the contents of a StatementSource into the store.</summary>
+        <param name="source">The source whose statements will be copied into the store.</param>
+        <summary>Batch copies the contents of a StatementSource into the ModifyableSource contained in the store.</summary>
         <remarks>
           <para>An <see cref="T:System.InvalidOperationException" /> is thrown if more than one data source has been added to the Store with AddSource or if the data source added is not a <see cref="T:SemWeb.ModifiableSource" />.</para>
           <para>See <see cref="M:SemWeb.ModifiableSource.Import(SemWeb.StatementSource)" />.</para>
@@ -595,9 +595,9 @@ For Sqlite, MySQL, and PostgreSQL-based stores, use the spec string described in
       <Docs>
         <param name="graph">The graph to be matched in a call to Query.</param>
         <param name="options">The options to be passed to the call to Query.</param>
-        <summary>To be added.</summary>
+        <summary>Tests the querying capabilities of the store.</summary>
         <returns>A <see cref="T:SemWeb.Query.MetaQueryResult" /> indicating how the query will be executed.</returns>
-        <remarks>See <see cref="T:SemWeb.QueryableSource" /> for more information.  The default implementation of this method returns a <see cref="T:SemWeb.Query.MetaQueryResult" /> structure with the <see cref="F:SemWeb.Query.MetaQueryResult.QuerySupported" /> and <see cref="F:SemWeb.Query.MetaQueryResult.IsDefaultImplementation" /> flags set to true.  In addition, the <see cref="F:SemWeb.Query.MetaQueryResult.NoData" /> field is initialized by checking that the resources mentioned in the query are present in the store (with <see cref="M:SemWeb.Store.Contains(SemWeb.Resource)" />).</remarks>
+        <remarks>See <see cref="T:SemWeb.QueryableSource" /> for more information.  The default implementation of this method returns a <see cref="T:SemWeb.Query.MetaQueryResult" /> structure with the <see cref="F:SemWeb.Query.MetaQueryResult.QuerySupported" /> flag set to true.  In addition, the <see cref="F:SemWeb.Query.MetaQueryResult.NoData" /> field is initialized by checking that the resources mentioned in the query are present in the store (with <see cref="M:SemWeb.Store.Contains(SemWeb.Resource)" />).</remarks>
       </Docs>
     </Member>
     <Member MemberName="Query">
@@ -794,9 +794,25 @@ n3:file1.n3|n3:file2.n3|...  (loads each of the files into memory and returns a 
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
+    <Member MemberName="Query">
+      <MemberSignature Language="C#" Value="public System.Collections.Generic.ICollection&lt;SemWeb.Query.VariableBindings&gt; Query (SemWeb.Statement[] graph);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Collections.Generic.ICollection&lt;SemWeb.Query.VariableBindings&gt;</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="graph" Type="SemWeb.Statement[]" />
+      </Parameters>
+      <Docs>
+        <param name="graph">A graph pattern, which is an array of Statements, to match against the store.</param>
+        <summary>Queries the data sources in the Store and returns the resulting variable bindings.</summary>
+        <returns>The variable bindings as a collection over <see cref="T:SemWeb.Query.VariableBindings" /> instances.</returns>
+        <remarks>See <see cref="M:SemWeb.Store.Query(SemWeb.Statement[],SemWeb.Query.QueryOptions,SemWeb.Query.QueryResultSink)" /> for details.</remarks>
+      </Docs>
+    </Member>
   </Members>
   <Docs>
     <summary>The store class is used to group data sources and to provide inferencing capabilities over data sources.</summary>
-    <remarks>The <see cref="T:SemWeb.MemoryStore" /> is a special subclass of Store which maintains an in-memory array of statements.</remarks>
+    <remarks>The <see cref="T:SemWeb.MemoryStore" /> is a special subclass of Store which maintains an in-memory array of statements. Although the MemoryStore inherits from Store, it is illegal to call AddSource on a MemoryStore.</remarks>
   </Docs>
 </Type>

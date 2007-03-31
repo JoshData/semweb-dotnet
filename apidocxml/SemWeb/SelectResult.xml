@@ -84,6 +84,6 @@
   </Members>
   <Docs>
     <summary>This class is used to hold the results of a call to Select.</summary>
-    <remarks>See <see cref="M:SemWeb.Store.Select(SemWeb.Statement)" /> and <see cref="M:SemWeb.Store.Select(SemWeb.Statement[])" /> for examples.</remarks>
+    <remarks>See <see cref="M:SemWeb.Store.Select(SemWeb.Statement)" /> and <see cref="M:SemWeb.Store.Select(SemWeb.SelectFilter)" /> for examples.</remarks>
   </Docs>
 </Type>

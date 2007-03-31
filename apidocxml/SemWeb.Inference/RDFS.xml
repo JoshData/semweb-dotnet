@@ -62,15 +62,10 @@
   </Members>
   <Docs>
     <summary>A RDFS inferencing engine.</summary>
-    <remarks>
+    <remarks><para>This class is an instance of the <see cref="T:SemWeb.Inference.Reasoner" /> class. To use a Reasoner, you add it to a Store with <see cref="M:SemWeb.Store.AddReasoner(SemWeb.Inference.Reasoner)" />. Subsequently, calls to Select and Query on the Store will be processed by the reasoner, and so will provide the entailments given by the reasoner directly.</para>
+
       <para>The RDFS class loads in a schema and scans for rdf:subClassOf, rdf:subPropertyOf, rdf:domain, and rdf:range relations in the schema to establish the class and property hierarchies.</para>
-      <para>Entailments are queried by calls to Select.</para>
-      <example>
-        <para>This example creates a RDFS class that provides RDFS reasoning over another data source.  It then returns all entities that are <c>owl:FunctionalProperty</c>s, either because it was directly asserted, or indirectly because the entity was asserted to be a type that is a <c>rdfs:subClassOf</c><c>owl:FunctionalProperty</c>, following the transitive closure of <c>rdfs:subClassOf</c>.</para>
-        <code lang="C#">RDFS rdfs = new RDFS(schemaSource);
-using (N3Writer writer = new N3Writer(Console.Out))
-    rdfs.Select(new Statement(null, "http://www.w3.org/1999/02/22-rdf-syntax-ns#type", "http://www.w3.org/2002/07/owl#FunctionalProperty"), dataSource, writer);  </code>
-      </example>
+      <para>Entailments are queried by calls to Select on the Store that you have added the reasoner to.</para>
       <para>Normally a reasoning engine is applied to a <see cref="T:SemWeb.Store" /> using <see cref="M:SemWeb.Store.AddReasoner(SemWeb.Inference.Reasoner)" />.</para>
       <para>When all of the fields in the statement are non-<see langword="null" />, the  following reasoning is applied:</para>
       <para>Calling Select(X rdf:type Y), i.e. asking whether X is typed Y, sends the statement back if the entity is marked as being a type of any subclass of Y, or if X is found in the domain or range of a predicate whose domain or range type is Y.</para>
@@ -80,6 +75,66 @@ using (N3Writer writer = new N3Writer(Console.Out))
       <para>Asking for all entities with a given type using Select(<see langword="null" /> rdf:type Y) returns all entities marked as being typed as Y or any of its subclasses.  Domains and ranges of properties are not used in this case because it would require selecting for all occurrences of all properties with domains and ranges, which isn't scalable.  (This will probably be enable-able in the future.)  When the type of an entity is requested with a call to Select(X rdf:type <see langword="null" />), the type found for X in the underlying data source is returned and all of its superclasses, and if X is found in the domain or range of any predicates whose domain or range is given in the schema, the domain or range is returned as well.</para>
       <para>For queries Select(X P Y), where X and Y may be null, statements of the form U P V are returned if there is a statement U Q V in the underlying data source where Q is a subproperty of P.  (If X is not <see langword="null" />, U=X; similarly for Y and V.)  Note that the returned statements all contain P as the predicate, the property actually queried on, and not the subproperties which were found in the underlying data source.</para>
       <para>For all other calls, the arguments are passed down to the underlying Select method of the data source without any RDFS processing.</para>
-    </remarks>
+    
+
+<para>Below is an example of using this class.</para>
+<example>
+  <code lang="C#">
+// This example demonstrates basic RDFS reasoning.
+
+using System;
+using System.IO;
+
+using SemWeb;
+using SemWeb.Inference;
+
+public class EulerTest {
+
+	public static void Main() {
+		// Create the instance data
+		
+		MemoryStore dataModel = new MemoryStore();
+		
+		BNode me = new BNode("me");
+		BNode you = new BNode("you");
+		
+		Entity rdfType = "http://www.w3.org/1999/02/22-rdf-syntax-ns#type";
+		Entity rdfsLabel= "http://www.w3.org/2000/01/rdf-schema#label";
+		Entity foafPerson = "http://xmlns.com/foaf/0.1/Person";
+		Entity foafAgent = "http://xmlns.com/foaf/0.1/Agent";
+		Entity foafName = "http://xmlns.com/foaf/0.1/name";
+		
+		dataModel.Add(new Statement(me, rdfType, foafPerson));
+		dataModel.Add(new Statement(you, rdfType, foafPerson));
+		dataModel.Add(new Statement(me, foafName, (Literal)"John Doe"));
+		dataModel.Add(new Statement(you, foafName, (Literal)"Sam Smith"));
+		
+		// Create the RDFS engine and apply it to the data model.
+		
+		RDFS engine = new RDFS();
+		engine.LoadSchema(RdfReader.LoadFromUri(new Uri("http://xmlns.com/foaf/0.1/index.rdf")));
+		
+		dataModel.AddReasoner(engine);
+		
+		// Query the data model
+		
+		// Ask for who are typed as Agents.  Note that the people are
+		// typed as foaf:Person, and the schema asserts that foaf:Person
+		// is a subclass of foaf:Agent.
+		Console.WriteLine("Who are Agents?");
+		foreach (Entity r in dataModel.SelectSubjects(rdfType, foafAgent))
+			Console.WriteLine("\t" + r);
+		
+		// Ask for the rdfs:labels of everyone.  Note that the data model
+		// has foaf:names for the people, and the schema asserts that
+		// foaf:name is a subproperty of rdfs:label.
+		Console.WriteLine("People's labels:");
+		foreach (Statement s in dataModel.Select(new Statement(null, rdfsLabel, null)))
+			Console.WriteLine("\t" + s);
+	}
+
+}
+  </code>
+</example></remarks>
   </Docs>
 </Type>
