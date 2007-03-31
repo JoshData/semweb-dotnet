@@ -7,7 +7,7 @@ ANT=~/dev/apache-ant-1.6.5/bin/ant
 
 all:
 	cd $(SPARQL); $(ANT) jar;
-	mono $(IKVM) -out:sparql-core.dll \
+	mono $(IKVM) -out:sparql-core.dll -nostacktraceinfo \
 		$(SPARQL)/lib/sparql-core.jar $(SPARQL)/lib/openrdf-util.jar \
 		$(SPARQL)/lib/openrdf-model.jar
 	#mono --aot -O=all sparql-core.dll

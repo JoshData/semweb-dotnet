@@ -1587,8 +1587,8 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
  
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/logic/streamed/AdvancedGroupConstraintLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/streamed/AdvancedGroupConstraintLogic.java
 --- upstream/src/main/name/levering/ryan/sparql/logic/streamed/AdvancedGroupConstraintLogic.java	1969-12-31 19:00:00.000000000 -0500
-+++ work-copy/src/main/name/levering/ryan/sparql/logic/streamed/AdvancedGroupConstraintLogic.java	2007-02-21 07:43:36.000000000 -0500
-@@ -0,0 +1,568 @@
++++ work-copy/src/main/name/levering/ryan/sparql/logic/streamed/AdvancedGroupConstraintLogic.java	2007-02-22 12:52:12.000000000 -0500
+@@ -0,0 +1,569 @@
 +/*
 + * SPARQL Engine
 + * Copyright (C) 2005 Ryan Levering, All rights reserved.
@@ -2057,11 +2057,12 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
 +		// Properties in RDF tend to be many-to-few.  That is, lots of people
 +		// may have a particular foaf:name, and one person has very few foaf:names.
 +		// Thus, we give a penalty when a new variable occurs in subject position.
-+		// Furthermore, we give an even bigger penality for variables in predicate position.
++		// Predicate variables have a *low* penality because all things being equal,
++		// we would prefer a variable in predicate position than in the other positions.
 +		
-+		float subjComplexity = getComplexity2(subject, variablesKnown, cheapVariables, knownFilters, 3);
-+		float predComplexity = getComplexity2(predicate, variablesKnown, cheapVariables, knownFilters, 4);
-+		float objComplexity = getComplexity2(object, variablesKnown, cheapVariables, knownFilters, 2);
++		float subjComplexity = getComplexity2(subject, variablesKnown, cheapVariables, knownFilters, 4);
++		float predComplexity = getComplexity2(predicate, variablesKnown, cheapVariables, knownFilters, 2);
++		float objComplexity = getComplexity2(object, variablesKnown, cheapVariables, knownFilters, 3);
 +
 +		// If this is a functional or inverse functional statement, then we reduce the
 +		// complexity of the object because we know it is in a 1-to-1 relation with
@@ -2071,8 +2072,8 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
 +		// subject and object, so *modifications to the getComplexity2 function and
 +		// the penalities should be reflected here.
 +		
-+		if (isFunctional) objComplexity /= (6 - subjComplexity);
-+		if (isInverseFunctional) subjComplexity /= (5 - objComplexity);
++		if (isFunctional) objComplexity /= (7 - subjComplexity);
++		if (isInverseFunctional) subjComplexity /= (6 - objComplexity);
 +		// If both functional and inverse functional, then does this make sense?
 +		
 +		return subjComplexity + predComplexity + objComplexity;
