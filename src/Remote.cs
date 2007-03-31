@@ -1,13 +1,21 @@
 using System;
 using System.Collections;
+#if DOTNET2
+using System.Collections.Generic;
+#endif
 using System.IO;
 using System.Text;
 using System.Web;
 using System.Xml;
  
+using SemWeb;
+using SemWeb.Query;
+using SemWeb.Util;
+ 
 namespace SemWeb.Remote {
 
-	public class SparqlHttpSource : SelectableSource {
+	public class SparqlHttpSource : QueryableSource {
+		static bool Debug = System.Environment.GetEnvironmentVariable("SEMWEB_DEBUG_HTTP") != null;
 	
 		string url;
 		
@@ -66,19 +74,18 @@ namespace SemWeb.Remote {
 				nonull = true;
 			} else {
 				if (ask)
-					query = "ASK";
+					query = "ASK { ";
 				else
-					query = "SELECT *";
-				query += " WHERE { ";
+					query = "SELECT * WHERE ";
 				query += S(subjects, "subject");
 				query += " ";
 				query += S(predicates, "predicate");
 				query += " ";
 				query += S(objects, "object");
 				query += " . ";
-				query += SL(subjects, "subject");
-				query += SL(predicates, "predicate");
-				query += SL(objects, "object");
+				query += SL(subjects, "subject", false);
+				query += SL(predicates, "predicate", false);
+				query += SL(objects, "object", false);
 				query += " }";
 				
 				// TODO: Pass literal filters to server.
@@ -136,8 +143,8 @@ namespace SemWeb.Remote {
 			if (r == null || r.Length != 1) return "?" + v;
 			return S(r[0], null);
 		}
-		string SL(Resource[] r, string v) {
-			if (r == null || r.Length <= 1) return "";
+		string SL(Resource[] r, string v, bool includeIfJustOne) {
+			if (r == null || (r.Length <= 1 && !includeIfJustOne)) return "";
 			StringBuilder ret = new StringBuilder();
 			ret.Append("FILTER(");
 			bool first = true;
@@ -151,13 +158,22 @@ namespace SemWeb.Remote {
 					ret.Append(r[i].Uri);
 				ret.Append('>');
 			}
-			ret.Append(").");
+			ret.Append(").\n");
 			if (first) return "";
 			return ret.ToString();
 		}
+		#if !DOTNET2
+		string SL(object r, string v, bool includeIfJustOne) {
+			return SL((Resource[])new ArrayList((ICollection)r).ToArray(typeof(Resource)), v, includeIfJustOne);
+		}
+		#else
+		string SL(ICollection<Resource> r, string v, bool includeIfJustOne) {
+			return SL(new List<Resource>(r).ToArray(), v, includeIfJustOne);
+		}
+		#endif
 		
 		string S(Resource r, string v) {
-			if (r == null) {
+			if (r == null || r is Variable) {
 				return v;
 			} else if (r is Literal) {
 				return r.ToString();
@@ -201,11 +217,17 @@ namespace SemWeb.Remote {
 			
 			System.Net.WebRequest rq;
 			
+			if (Debug) {
+				Console.Error.WriteLine("> " + url);
+				Console.Error.WriteLine(query);
+				Console.Error.WriteLine();
+			}
+			
 			if (method == "GET") {
 				string qurl = url + "?" + qstr;
 				rq = System.Net.WebRequest.Create(qurl);
 			} else {
-				ASCIIEncoding encoding = new ASCIIEncoding(); // ?
+				Encoding encoding = new UTF8Encoding(); // ?
 				byte[] data = encoding.GetBytes(qstr);
 
 				rq = System.Net.WebRequest.Create(url);
@@ -231,26 +253,106 @@ namespace SemWeb.Remote {
 						
 			if (ret.DocumentElement.Name != "sparql")
 				throw new ApplicationException("Invalid server response: Not a sparql results document.");
+
+			if (Debug) {
+				XmlTextWriter w = new XmlTextWriter(Console.Error);
+				ret.WriteTo(w);
+				w.Flush();
+			}
 			
 			return ret;
 		}
 		
-		public Entity[] FindEntities(Statement[] graph) {
-			string query = "SELECT ?entity WHERE { ";
+		public MetaQueryResult MetaQuery(Statement[] graph, QueryOptions options) {
+			MetaQueryResult ret = new MetaQueryResult();
+			ret.QuerySupported = true;
+			return ret;
+		}
+
+		public void Query(Statement[] graph, QueryOptions options, QueryResultSink sink) {
+			StringBuilder query = new StringBuilder();
 			
+			query.Append("SELECT ");
+
+			// Get a list of variables and map them to fresh names
+			#if !DOTNET2
+			Hashtable variableNames = new Hashtable();
+			#else
+			Dictionary<Variable,string> variableNames = new Dictionary<Variable,string>();
+			#endif
 			foreach (Statement s in graph) {
-				query += S(s.Subject, "?entity");
-				query += " ";
-				query += S(s.Predicate, "?entity");
-				query += " ";
-				query += S(s.Object, "?entity");
-				query += " . ";
-				if (s.Meta != Statement.DefaultMeta) return new Entity[0];
+				for (int j = 0; j < 4; j++) {
+					Variable v = s.GetComponent(j) as Variable;
+					if (v == null) continue;
+					if (variableNames.ContainsKey(v)) continue;
+					variableNames[v] = "?v" + variableNames.Count;
+				}
 			}
 			
-			query += "}";
+			// What variables will we select on?
+			ArrayList selectedVars = new ArrayList();
+			foreach (Variable v in
+				options.DistinguishedVariables != null
+					? options.DistinguishedVariables
+					: variableNames.Keys) {
+				if (!variableNames.ContainsKey(v)) continue; // in case distinguished variables list
+															 // has more than what actually appears in query
+				query.Append(variableNames[v]);
+				query.Append(' ');
+				selectedVars.Add(v);
+			}
 			
-			XmlDocument result = Load(query);
+			// Initialize the sink
+			Variable[] varArray = (Variable[])selectedVars.ToArray(typeof(Variable));
+			sink.Init(varArray, false, false);
+
+			// Bnodes are not allowed here -- we can't query on them.
+			foreach (Statement s in graph) {
+				for (int j = 0; j < 4; j++) {
+					if (s.GetComponent(j) is BNode) {
+						sink.Finished();
+						return;
+					}
+				}
+			}
+			
+			// Build the graph pattern.
+			query.Append("WHERE {\n");
+			
+			ResSet firstVarUse = new ResSet();
+			foreach (Statement s in graph) {
+				for (int j = 0; j < 4; j++) {
+					Resource r = s.GetComponent(j);
+					query.Append(S(r, r is Variable && variableNames.ContainsKey((Variable)r) ? (string)variableNames[(Variable)r] : null));
+					query.Append(" ");
+				}
+				query.Append(" . \n");
+				if (options.VariableKnownValues != null) {
+					for (int j = 0; j < 4; j++) {
+						Resource r = s.GetComponent(j);
+						if (firstVarUse.Contains(r)) continue;
+						firstVarUse.Add(r);
+						if (r is Variable && variableNames.ContainsKey((Variable)r) &&
+						#if !DOTNET2
+						options.VariableKnownValues.Contains(r)
+						#else
+						options.VariableKnownValues.ContainsKey((Variable)r)
+						#endif
+						)
+							query.Append(SL(options.VariableKnownValues[(Variable)r], (string)variableNames[(Variable)r], true));
+					}
+				}
+				// And what about meta...?
+			}
+			
+			query.Append("}");
+			
+			if (options.Limit > 0) {
+				query.Append(" LIMIT ");
+				query.Append(options.Limit);
+			}
+			
+			XmlDocument result = Load(query.ToString());
 			
 			XmlElement bindings = null;
 			foreach (XmlElement e in result.DocumentElement)
@@ -263,13 +365,14 @@ namespace SemWeb.Remote {
 			ArrayList ret = new ArrayList();
 			
 			foreach (XmlElement binding in bindings) {
-				Entity e = (Entity)GetBinding(binding, "entity", null, bnodes);
-				ret.Add(e);
+				Resource[] values = new Resource[varArray.Length];
+				for (int i = 0; i < varArray.Length; i++)
+					values[i] = GetBinding(binding, (string)variableNames[varArray[i]], null, bnodes);
+				sink.Add(new VariableBindings(varArray, values));
 			}
 			
-			return (Entity[])ret.ToArray(typeof(Entity));
+			sink.Finished();
 		}
-
 	}
 }
 
