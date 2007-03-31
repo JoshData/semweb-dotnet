@@ -1,7 +1,6 @@
-2007-02-21   <> 
+2007-03-31 Version 0.85 -- Major Refactoring Release
 
-	Sparql.cs: In ASK, don't close the target stream via XmlWriter after writing; just flush the XmlWriter; Don't attempt to use the Query fast path if there's a statement with no variables in it (as in an ASK).
-
+	Bugs fixed and other minor things:
 	* N3Reader: Reading of "(...)" lists was not working right.
 	* Sparql.cs: In ASK, don't close the target stream via XmlWriter
 	  after writing; just flush the XmlWriter.
@@ -15,6 +14,29 @@
 	  special predicates are implemented.
 	* Store: Corrected NullRefExceptions in default Query() impl.
 	* euler.exe: Added this new command-line program.
+	* When building with make: .NET 1.1 binaries are put in "bin"
+	  and .NET 2.0 binaries are put in "bin_generics." Both are
+	  build by default now. Also, the SQL database adapters are now
+	  only build if the required libraries are present.
+	* Documentation: Now tracks the generics version of the library.
+	* SparqlHttpSource: Now supports QueryableSource interface.
+	
+	Major changes:
+	* Store and MultiStore: Completely rewritten and merged. The
+	  Store is now the MultiStore. The old Store class is gone,
+	  and SQLStore no longer inherits from it. But, to get the same
+	  functionality back, just add a SQLStore object into a Store
+	  object.
+	* MemoryStore: Inherits from the new Store class as a special
+	  case. Your use of MemoryStore shouldn't change, though.
+	* Reasoner: New class that is the base class of RDFS (no longer
+	  SelectableSource) and Euler (no longer QueryableSource).
+	* Query results: When getting the results of a Query via
+	  QueryableSource, the use of VariableBinding[] arrays is
+	  replaced with a new VariableBindings class.
+	* SQLStore: Now uses SQL VIEWs where supported to speed up
+	  queries (through QueryableSource.Query) that ask for fewer
+	  variables than are mentioned in the graph.
 
 2007-01-21 Version 0.82 -- 1st Release Candidate for version 1.0
 
