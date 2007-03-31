@@ -678,7 +678,7 @@ namespace SemWeb.Stores {
 				// experimental change in buffer size, keep the change.
 				if (importAddBufferRotation != 0
 					&& duration.TotalSeconds/thresh < importAddBufferTime.TotalSeconds/importAddBufferSize
-					&& thresh >= 200 && thresh <= 4000)
+					&& thresh >= 200 && thresh <= 10000)
 					importAddBufferSize = thresh;
 				importAddBufferTime = duration;
 				importAddBufferRotation++;
@@ -1539,6 +1539,7 @@ namespace SemWeb.Stores {
 				cmd = outercmd;
 			}
 			
+			try {
 			using (IDataReader reader = RunReader(cmd.ToString())) {
 				while (reader.Read()) {
 					Resource[] variableBindings = new Resource[varOrder.Length];
@@ -1572,12 +1573,13 @@ namespace SemWeb.Stores {
 					if (!sink.Add(new SemWeb.Query.VariableBindings(varOrder, variableBindings))) return;
 				}
 			}
-			
-			if (useView)
-				RunCommand("DROP VIEW " + viewname);
+			} finally {
+				if (useView)
+					RunCommand("DROP VIEW " + viewname);
+
+				sink.Finished();
+			}
 				
-			sink.Finished();
-			
 			} // lock
 		}
 		
@@ -1854,7 +1856,7 @@ namespace SemWeb.Stores {
 		internal static string[] GetCreateIndexCommands(string table) {
 			return new string[] {
 				"CREATE UNIQUE INDEX subject_full_index ON " + table + "_statements(subject, predicate, object, meta, objecttype);",
-				"CREATE INDEX predicate_index ON " + table + "_statements(predicate);",
+				"CREATE INDEX predicate_index ON " + table + "_statements(predicate, object);",
 				"CREATE INDEX object_index ON " + table + "_statements(object);",
 				"CREATE INDEX meta_index ON " + table + "_statements(meta);",
 			
