@@ -1,8 +1,14 @@
-	* Renamed Sparql class to SparqlEngine.
-	* Renamed SparqlProtocol class to SparqlProtocolServerHandler.
+	* Renamed: Sparql class to SparqlEngine.
+	* Renamed: SparqlProtocol class to SparqlProtocolServerHandler.
 	* SparqlXmlQuerySink: The spec changed a year ago and unbound
 	  variables no longer show an <unbound/> node, instead are just
 	  omitted from the document.
+	* SparqlHttpSource: fixed bugs, now exposes ability to make
+	  direct SPARQL-formatted queries on the end point through
+	  new interface SparqlSource. (File Remote.cs also renamed to
+	  SparqlClient.cs.)
+	* RdfReader: Create method accepts more MIME types, new
+	  Create(string,TextReader) method added.
 
 2007-03-31 Version 0.85 -- Major Refactoring Release
 

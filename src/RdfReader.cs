@@ -79,15 +79,40 @@ namespace SemWeb {
 			switch (type) {
 				case "xml":
 				case "text/xml":
+				case "application/xml":
+				case "application/rdf+xml":
 					return new RdfXmlReader(source);
+
 				case "n3":
 				case "text/n3":
+				case "application/n3":
+				case "application/turtle":
+				case "application/x-turtle":
 					return new N3Reader(source);
 				default:
-					throw new ArgumentException("Unknown parser type: " + type);
+					throw new ArgumentException("Unknown parser or MIME type: " + type);
 			}
 		}
 		
+		public static RdfReader Create(string type, TextReader source) {
+			switch (type) {
+				case "xml":
+				case "text/xml":
+				case "application/xml":
+				case "application/rdf+xml":
+					return new RdfXmlReader(source);
+
+				case "n3":
+				case "text/n3":
+				case "application/n3":
+				case "application/turtle":
+				case "application/x-turtle":
+					return new N3Reader(source);
+				default:
+					throw new ArgumentException("Unknown parser or MIME type: " + type);
+			}
+		}
+
 		public static RdfReader LoadFromUri(Uri webresource) {
 			// TODO: Add Accept header for HTTP resources.
 			
