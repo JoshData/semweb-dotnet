@@ -67,7 +67,7 @@ public class RDFQuery {
 			query = new GraphMatch(queryModel);
 		} else if (opts.type == "sparql") {
 			string querystring = Console.In.ReadToEnd();
-			query = new Sparql(querystring);
+			query = new SparqlEngine(querystring);
 		} else {
 			throw new Exception("Invalid query format: " + opts.type);
 		}
@@ -79,8 +79,8 @@ public class RDFQuery {
 
 		//Console.Error.WriteLine(query.GetExplanation());
 		
-		if (query is Sparql && ((Sparql)query).Type != Sparql.QueryType.Select) {
-			Sparql sparql = (Sparql)query;
+		if (query is SparqlEngine && ((SparqlEngine)query).Type != SparqlEngine.QueryType.Select) {
+			SparqlEngine sparql = (SparqlEngine)query;
 			sparql.Run(model, Console.Out);
 		} else if (model is QueryableSource && queryModel != null) {
 			SemWeb.Query.QueryOptions qopts = new SemWeb.Query.QueryOptions();
