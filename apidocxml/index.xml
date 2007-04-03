@@ -40,16 +40,16 @@
       <Type Name="QueryResultSink" />
       <Type Name="SparqlXmlQuerySink" />
       <Type Name="GraphMatch" />
-      <Type Name="Sparql" />
       <Type Name="Query" />
-      <Type Name="Sparql+QueryType" />
       <Type Name="QueryFormatException" />
       <Type Name="QueryExecutionException" />
-      <Type Name="SparqlProtocol" />
       <Type Name="RdfFunction" />
       <Type Name="QueryOptions" />
       <Type Name="MetaQueryResult" />
       <Type Name="VariableBindings" />
+      <Type Name="SparqlEngine" />
+      <Type Name="SparqlEngine+QueryType" />
+      <Type Name="SparqlProtocolServerHandler" />
     </Namespace>
     <Namespace Name="SemWeb.Stores">
       <Type Name="SQLStore" />
@@ -96,7 +96,7 @@
     </Namespace>
   </Types>
   <Assemblies>
-    <Assembly Name="SemWeb" Version="0.8.2.0">
+    <Assembly Name="SemWeb" Version="0.8.5.0">
       <Attributes>
         <Attribute>
           <AttributeName>System.Runtime.CompilerServices.RuntimeCompatibility(WrapNonExceptionThrows=true)</AttributeName>

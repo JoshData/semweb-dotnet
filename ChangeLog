@@ -1,3 +1,6 @@
+	* Renamed Sparql class to SparqlEngine.
+	* Renamed SparqlProtocol class to SparqlProtocolServerHandler.
+
 2007-03-31 Version 0.85 -- Major Refactoring Release
 
 	Bugs fixed and other minor things:

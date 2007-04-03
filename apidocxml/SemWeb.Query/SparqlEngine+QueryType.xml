@@ -1,5 +1,5 @@
-<Type Name="Sparql+QueryType" FullName="SemWeb.Query.Sparql+QueryType">
-  <TypeSignature Language="C#" Value="public enum Sparql.QueryType" />
+<Type Name="SparqlEngine+QueryType" FullName="SemWeb.Query.SparqlEngine+QueryType">
+  <TypeSignature Language="C#" Value="public enum SparqlEngine.QueryType" />
   <AssemblyInfo>
     <AssemblyName>SemWeb.Sparql</AssemblyName>
     <AssemblyVersion>0.0.0.0</AssemblyVersion>
@@ -12,7 +12,7 @@
       <MemberSignature Language="C#" Value="Select" />
       <MemberType>Field</MemberType>
       <ReturnValue>
-        <ReturnType>SemWeb.Query.Sparql+QueryType</ReturnType>
+        <ReturnType>SemWeb.Query.SparqlEngine+QueryType</ReturnType>
       </ReturnValue>
       <Docs>
         <summary>Represents a SELECT query.</summary>
@@ -22,7 +22,7 @@
       <MemberSignature Language="C#" Value="Describe" />
       <MemberType>Field</MemberType>
       <ReturnValue>
-        <ReturnType>SemWeb.Query.Sparql+QueryType</ReturnType>
+        <ReturnType>SemWeb.Query.SparqlEngine+QueryType</ReturnType>
       </ReturnValue>
       <Docs>
         <summary>Represents a DESCRIBE query.</summary>
@@ -32,7 +32,7 @@
       <MemberSignature Language="C#" Value="Ask" />
       <MemberType>Field</MemberType>
       <ReturnValue>
-        <ReturnType>SemWeb.Query.Sparql+QueryType</ReturnType>
+        <ReturnType>SemWeb.Query.SparqlEngine+QueryType</ReturnType>
       </ReturnValue>
       <Docs>
         <summary>Represents an ASK query.</summary>
@@ -42,7 +42,7 @@
       <MemberSignature Language="C#" Value="Construct" />
       <MemberType>Field</MemberType>
       <ReturnValue>
-        <ReturnType>SemWeb.Query.Sparql+QueryType</ReturnType>
+        <ReturnType>SemWeb.Query.SparqlEngine+QueryType</ReturnType>
       </ReturnValue>
       <Docs>
         <summary>Represents a CONSTRUCT query.</summary>

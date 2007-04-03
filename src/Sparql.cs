@@ -34,7 +34,7 @@ using LitFilterMap = System.Collections.Generic.Dictionary<SemWeb.Variable,Syste
 
 namespace SemWeb.Query {
 
-	public class Sparql : SemWeb.Query.Query {
+	public class SparqlEngine : SemWeb.Query.Query {
 	
 		private const string BNodePersistUri = "tag:taubz.for.net,2005:bnode_persist_uri/";
 
@@ -51,11 +51,11 @@ namespace SemWeb.Query {
 			Select
 		}
 		
-		public Sparql(TextReader query)
+		public SparqlEngine(TextReader query)
 			: this(query.ReadToEnd()) {
 		}
 	
-		public Sparql(string query) {
+		public SparqlEngine(string query) {
 			queryString = query;
 			try {
 				this.query = SPARQLParser.parse(new java.io.StringReader(query));
@@ -298,11 +298,11 @@ namespace SemWeb.Query {
 			public readonly SelectableSource source;
 			Hashtable bnodes = new Hashtable();
 			Entity QueryMeta;
-			Sparql sparql;
+			SparqlEngine sparql;
 			
 			System.Text.StringBuilder log = new System.Text.StringBuilder();
 			
-			public RdfSourceWrapper(SelectableSource source, Entity meta, Sparql sparql) {
+			public RdfSourceWrapper(SelectableSource source, Entity meta, SparqlEngine sparql) {
 				this.source = source;
 				QueryMeta = meta;
 				this.sparql = sparql;
@@ -566,11 +566,11 @@ namespace SemWeb.Query {
 			public Resource Depersist(Resource r) {
 				if (r.Uri == null || !sparql.AllowPersistBNodes) return r;
 				if (!(source is StaticSource)) return r;
-				if (!r.Uri.StartsWith(Sparql.BNodePersistUri)) return r;
+				if (!r.Uri.StartsWith(SparqlEngine.BNodePersistUri)) return r;
 				
 				StaticSource spb = (StaticSource)source;
 				string uri = r.Uri;
-				string id = uri.Substring(Sparql.BNodePersistUri.Length);
+				string id = uri.Substring(SparqlEngine.BNodePersistUri.Length);
 				BNode node = spb.GetBNodeFromPersistentId(id);
 				if (node != null)
 					return node;
@@ -584,7 +584,7 @@ namespace SemWeb.Query {
 				StaticSource spb = (StaticSource)source;
 				string id = spb.GetPersistentBNodeId((BNode)r);
 				if (id == null) return r;
-				return new Entity(Sparql.BNodePersistUri + ":" + id);
+				return new Entity(SparqlEngine.BNodePersistUri + ":" + id);
 			}
 			
 			public static org.openrdf.model.Value Wrap(Resource res) {

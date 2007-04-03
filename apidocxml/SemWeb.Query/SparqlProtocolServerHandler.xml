@@ -1,5 +1,5 @@
-<Type Name="SparqlProtocol" FullName="SemWeb.Query.SparqlProtocol">
-  <TypeSignature Language="C#" Value="public class SparqlProtocol : System.Web.IHttpHandler" />
+<Type Name="SparqlProtocolServerHandler" FullName="SemWeb.Query.SparqlProtocolServerHandler">
+  <TypeSignature Language="C#" Value="public class SparqlProtocolServerHandler : System.Web.IHttpHandler" />
   <AssemblyInfo>
     <AssemblyName>SemWeb.Sparql</AssemblyName>
     <AssemblyVersion>0.0.0.0</AssemblyVersion>
@@ -14,7 +14,7 @@
   </Interfaces>
   <Members>
     <Member MemberName=".ctor">
-      <MemberSignature Language="C#" Value="public SparqlProtocol ();" />
+      <MemberSignature Language="C#" Value="public SparqlProtocolServerHandler ();" />
       <MemberType>Constructor</MemberType>
       <Parameters />
       <Docs>

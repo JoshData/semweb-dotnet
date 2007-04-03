@@ -7,7 +7,7 @@ using SemWeb.Stores;
 
 namespace SemWeb.Query {
 
-	public class SparqlProtocol : System.Web.IHttpHandler {
+	public class SparqlProtocolServerHandler : System.Web.IHttpHandler {
 		public int MaximumLimit = -1;
 		public string MimeType = "application/sparql-results+xml";
 		
@@ -37,7 +37,7 @@ namespace SemWeb.Query {
 					RunQuery(sparql, source, writer);
 					writer.Flush();
 
-					if (sparql is Sparql && (((Sparql)sparql).Type == Sparql.QueryType.Construct || ((Sparql)sparql).Type == Sparql.QueryType.Describe))
+					if (sparql is SparqlEngine && (((SparqlEngine)sparql).Type == SparqlEngine.QueryType.Construct || ((SparqlEngine)sparql).Type == SparqlEngine.QueryType.Describe))
 						overrideMimeType = "text/n3";
 				} finally {
 					if (closeAfterQuery && source is IDisposable)
@@ -102,7 +102,7 @@ namespace SemWeb.Query {
 		}
 		
 		protected virtual Query CreateQuery(string query) {
-			Query sparql = new Sparql(query);
+			Query sparql = new SparqlEngine(query);
 			if (MaximumLimit != -1 && (sparql.ReturnLimit == -1 || sparql.ReturnLimit > MaximumLimit)) sparql.ReturnLimit = MaximumLimit;
 			return sparql;
 		}

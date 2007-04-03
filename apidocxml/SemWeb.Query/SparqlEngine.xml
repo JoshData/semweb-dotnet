@@ -1,5 +1,5 @@
-<Type Name="Sparql" FullName="SemWeb.Query.Sparql">
-  <TypeSignature Language="C#" Value="public class Sparql : SemWeb.Query.Query" />
+<Type Name="SparqlEngine" FullName="SemWeb.Query.SparqlEngine">
+  <TypeSignature Language="C#" Value="public class SparqlEngine : SemWeb.Query.Query" />
   <AssemblyInfo>
     <AssemblyName>SemWeb.Sparql</AssemblyName>
     <AssemblyVersion>0.0.0.0</AssemblyVersion>
@@ -10,7 +10,7 @@
   <Interfaces />
   <Members>
     <Member MemberName=".ctor">
-      <MemberSignature Language="C#" Value="public Sparql (string query);" />
+      <MemberSignature Language="C#" Value="public SparqlEngine (string query);" />
       <MemberType>Constructor</MemberType>
       <Parameters>
         <Parameter Name="query" Type="System.String" />
@@ -22,7 +22,7 @@
       </Docs>
     </Member>
     <Member MemberName=".ctor">
-      <MemberSignature Language="C#" Value="public Sparql (System.IO.TextReader query);" />
+      <MemberSignature Language="C#" Value="public SparqlEngine (System.IO.TextReader query);" />
       <MemberType>Constructor</MemberType>
       <Parameters>
         <Parameter Name="query" Type="System.IO.TextReader" />
@@ -169,10 +169,10 @@
       </Docs>
     </Member>
     <Member MemberName="Type">
-      <MemberSignature Language="C#" Value="public SemWeb.Query.Sparql.QueryType Type { get; };" />
+      <MemberSignature Language="C#" Value="public SemWeb.Query.SparqlEngine.QueryType Type { get; };" />
       <MemberType>Property</MemberType>
       <ReturnValue>
-        <ReturnType>SemWeb.Query.Sparql+QueryType</ReturnType>
+        <ReturnType>SemWeb.Query.SparqlEngine+QueryType</ReturnType>
       </ReturnValue>
       <Docs>
         <summary>Gets the type of the query.</summary>
