@@ -1,5 +1,8 @@
 	* Renamed Sparql class to SparqlEngine.
 	* Renamed SparqlProtocol class to SparqlProtocolServerHandler.
+	* SparqlXmlQuerySink: The spec changed a year ago and unbound
+	  variables no longer show an <unbound/> node, instead are just
+	  omitted from the document.
 
 2007-03-31 Version 0.85 -- Major Refactoring Release
 

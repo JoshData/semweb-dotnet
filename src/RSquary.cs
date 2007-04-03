@@ -58,13 +58,12 @@ namespace SemWeb.Query {
 				Resource val = result.Values[i];
 				
 				if (var.LocalName == null) continue;
+				if (val == null) continue;
 				
 				output.WriteStartElement("binding");
 				output.WriteAttributeString("name", var.LocalName);
-				if (val == null) {
-					output.WriteStartElement("unbound");
-					output.WriteEndElement();
-				} else if (val.Uri != null) {
+				
+				if (val.Uri != null) {
 					output.WriteElementString("uri", val.Uri);
 				} else if (val is Literal) {
 					output.WriteStartElement("literal");
