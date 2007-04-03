@@ -13,7 +13,6 @@
       <CodeGeneration compiler="Csc" warninglevel="4" optimize="True" unsafecodeallowed="False" generateoverflowchecks="True" mainclass="" definesymbols="DOTNET2" generatexmldocumentation="False" ctype="CSharpCompilerParameters" />
     </Configuration>
   </Configurations>
-  <DeployTargets />
   <Contents>
     <File name="./AssemblyInfo.cs" subtype="Code" buildaction="Compile" />
     <File name="./MemoryStore.cs" subtype="Code" buildaction="Compile" />
@@ -29,7 +28,7 @@
     <File name="./UriMap.cs" subtype="Code" buildaction="Compile" />
     <File name="./Util.cs" subtype="Code" buildaction="Compile" />
     <File name="./Algos.cs" subtype="Code" buildaction="Compile" />
-    <File name="./Remote.cs" subtype="Code" buildaction="Compile" />
+    <File name="./SparqlClient.cs" subtype="Code" buildaction="Compile" />
     <File name="./LiteralFilters.cs" subtype="Code" buildaction="Compile" />
     <File name="./Euler.cs" subtype="Code" buildaction="Compile" />
     <File name="./RDFS.cs" subtype="Code" buildaction="Compile" />

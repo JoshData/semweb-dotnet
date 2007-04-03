@@ -50,7 +50,7 @@ MAIN_SOURCES = \
 	src/RdfWriter.cs src/RdfXmlWriter.cs src/N3Writer.cs \
 	src/Query.cs src/GraphMatch.cs src/LiteralFilters.cs src/RSquary.cs \
 	src/Inference.cs src/RDFS.cs src/Euler.cs src/SpecialRelations.cs \
-	src/Algos.cs src/Remote.cs
+	src/Algos.cs src/SparqlClient.cs
 
 $(BIN)/SemWeb.dll: $(MAIN_SOURCES) Makefile
 	$(MCS) -debug $(MAIN_SOURCES) -out:$(BIN)/SemWeb.dll -t:library \
