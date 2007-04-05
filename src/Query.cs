@@ -172,6 +172,15 @@ namespace SemWeb.Query {
 				throw new ArgumentException();
 			}
 		}
+
+		public Resource this[string variableName] {
+			get {
+				for (int i = 0; i < vars.Length; i++)
+					if (vars[i].LocalName != null && vars[i].LocalName == variableName)
+						return vals[i];
+				throw new ArgumentException();
+			}
+		}
 		
 		public Statement Substitute(Statement template) {
 			// This may throw an InvalidCastException if a variable binds
