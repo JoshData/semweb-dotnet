@@ -547,9 +547,13 @@ namespace SemWeb.Remote {
 			}
 			
 			public override bool Add(VariableBindings result) {
+				#if !DOTNET2
+				return sink.Add(new VariableBindings(vars, result.Values));
+				#else
 				Resource[] vals = new Resource[result.Values.Count];
 				result.Values.CopyTo(vals, 0);
 				return sink.Add(new VariableBindings(vars, vals));
+				#endif
 			}
 
 			public override void Finished() {

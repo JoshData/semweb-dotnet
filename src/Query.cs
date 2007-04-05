@@ -116,24 +116,32 @@ namespace SemWeb.Query {
 		}
 	}
 	
-	internal class QueryResultBufferSink : QueryResultSink {
+	public class QueryResultBuffer : QueryResultSink {
+		Variable[] variables;
+
 		#if !DOTNET2
-		public ArrayList Variables = new ArrayList();
-		public ArrayList Bindings = new ArrayList();
+		ArrayList bindings = new ArrayList();
 		#else
-		public List<Variable> Variables = new List<Variable>();
-		public List<VariableBindings> Bindings = new List<VariableBindings>();
+		List<VariableBindings> bindings = new List<VariableBindings>();
 		#endif
 
 		public override void Init(Variable[] variables, bool distinct, bool ordered) {
-			foreach (Variable b in variables)
-				Variables.Add(b);
+			this.variables = new Variable[variables.Length];
+			variables.CopyTo(this.variables, 0);
 		}
 
 		public override bool Add(VariableBindings result) {
-			Bindings.Add(result);
+			bindings.Add(result);
 			return true;
 		}
+		
+		public Variable[] Variables { get { return variables; } }
+
+		#if !DOTNET2
+		public IList Bindings { get { return bindings; } }
+		#else
+		public List<VariableBindings> Bindings { get { return bindings; } }
+		#endif
 	}
 	
 	public class VariableBindings {
