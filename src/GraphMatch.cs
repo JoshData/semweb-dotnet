@@ -330,12 +330,16 @@ namespace SemWeb.Query {
 					vars = null;
 					matches = null;
 					foreach (QueryableSource source in part.Sources) {
-						QueryResultBufferSink partsink = new QueryResultBufferSink();
+						QueryResultBuffer partsink = new QueryResultBuffer();
 						source.Query(part.Graph, opts, partsink);
 						if (vars == null) {
-							vars = new Variable[partsink.Variables.Count];
+							vars = new Variable[partsink.Variables.Length];
 							partsink.Variables.CopyTo(vars, 0);	
+							#if !DOTNET2
+							matches = new BindingList(partsink.Bindings);
+							#else
 							matches = partsink.Bindings;
+							#endif
 						} else {
 							// add in the bindings from this query, but the variables might
 							// be in a different order this time

@@ -609,7 +609,7 @@ namespace SemWeb {
 		Query(Statement[] graph) {
 			SemWeb.Query.QueryOptions options = new SemWeb.Query.QueryOptions();
 			options.Limit = 1;
-			SemWeb.Query.QueryResultBufferSink sink = new SemWeb.Query.QueryResultBufferSink();
+			SemWeb.Query.QueryResultBuffer sink = new SemWeb.Query.QueryResultBuffer();
 			Query(graph, options, sink);
 			return sink.Bindings;
 		}

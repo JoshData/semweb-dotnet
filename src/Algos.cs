@@ -145,7 +145,7 @@ namespace SemWeb.Algos {
 				// The GraphMatch will treat all blank nodes in
 				// msg as variables.
 				GraphMatch match = new GraphMatch(msg);
-				QueryResultBufferSink sink = new QueryResultBufferSink();
+				QueryResultBuffer sink = new QueryResultBuffer();
 				match.Run(new SubtractionSource(store, msg), sink);
 				if (sink.Bindings.Count > 0) {
 					// This MSG can be removed.

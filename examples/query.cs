@@ -27,17 +27,34 @@ public class Example {
 		} else {
 			// Create a SPARQL query by reading the file's
 			// contents.
-			query = new Sparql(new StreamReader(queryfile));
+			query = new SparqlEngine(new StreamReader(queryfile));
 		}
 	
 		// Load the data file from disk
 		MemoryStore data = new MemoryStore();
 		data.Import(new N3Reader(datafile));
 		
+		// First, print results in SPARQL XML Results format...
+		
 		// Create a result sink where results are written to.
 		QueryResultSink sink = new SparqlXmlQuerySink(Console.Out);
 		
 		// Run the query.
 		query.Run(data, sink);
+		
+		// Second, print the results via our own custom QueryResultSink...
+		query.Run(data, new PrintQuerySink());
+	}
+
+	public class PrintQuerySink : QueryResultSink {
+		public override bool Add(VariableBindings result) {
+			foreach (Variable var in result.Variables) {
+				if (var.LocalName != null && result[var] != null) {
+					Console.WriteLine(var.LocalName + " ==> " + result[var].ToString());
+				}
+				Console.WriteLine();
+			}
+			return true;
+		}
 	}
 }
