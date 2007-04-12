@@ -116,7 +116,13 @@ namespace SemWeb.Query {
 		}
 	}
 	
-	public class QueryResultBuffer : QueryResultSink {
+	public class QueryResultBuffer : QueryResultSink
+	#if !DOTNET2
+	, IEnumerable
+	#else
+	, IEnumerable<VariableBindings>
+	#endif
+	{
 		Variable[] variables;
 
 		#if !DOTNET2
@@ -141,6 +147,15 @@ namespace SemWeb.Query {
 		public IList Bindings { get { return bindings; } }
 		#else
 		public List<VariableBindings> Bindings { get { return bindings; } }
+		#endif
+		
+		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() {
+			return Bindings.GetEnumerator();
+		}
+		#if DOTNET2
+		IEnumerator<VariableBindings> IEnumerable<VariableBindings>.GetEnumerator() {
+			return Bindings.GetEnumerator();
+		}
 		#endif
 	}
 	
