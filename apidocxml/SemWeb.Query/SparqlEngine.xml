@@ -233,7 +233,7 @@ string sparqlQuery = "PREFIX rdf: &lt;http://www.w3.org/1999/02/22-rdf-syntax-ns
                            + "SELECT * WHERE { ?person rdf:type foaf:Agent . \n"
                            + "?person foaf:name ?name . }";
 
-Sparql query = new Sparql(sparqlQuery);
+SparqlEngine query = new SparqlEngine(sparqlQuery);
 query.Run(datamodel, Console.Out).  </code>
       </example>
       <para>Although this example sends the results to a stream, the results can be processed programmatically by passing a <see cref="T:SemWeb.Query.QueryResultSink" /> instead of a TextWriter.</para>

@@ -21,7 +21,6 @@
     <File name="./Query.cs" subtype="Code" buildaction="Compile" />
     <File name="./RdfWriter.cs" subtype="Code" buildaction="Compile" />
     <File name="./Resource.cs" subtype="Code" buildaction="Compile" />
-    <File name="./RSquary.cs" subtype="Code" buildaction="Compile" />
     <File name="./SQLStore.cs" subtype="Code" buildaction="Compile" />
     <File name="./Statement.cs" subtype="Code" buildaction="Compile" />
     <File name="./Store.cs" subtype="Code" buildaction="Compile" />

@@ -89,7 +89,7 @@
     </Member>
   </Members>
   <Docs>
-    <summary>To be added.</summary>
-    <remarks>To be added.</remarks>
+    <summary>A structure specifying options for carrying out a query.</summary>
+    <remarks>It is usually sufficient to pass <c>new QueryOptions()</c>  to the options parameter of MetaQuery and Query methods of QueryableSources.</remarks>
   </Docs>
 </Type>

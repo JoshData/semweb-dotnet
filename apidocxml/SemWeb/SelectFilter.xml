@@ -156,6 +156,9 @@
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
       </Docs>
+      <ImplementsInterfaceMethods>
+        <InterfaceImpl Type="System.Collections.IEnumerable" Member="GetEnumerator" cref="M:System.Collections.IEnumerable.GetEnumerator" />
+      </ImplementsInterfaceMethods>
     </Member>
     <Member MemberName="op_Equality">
       <MemberSignature Language="C#" Value="public static bool op_Equality (SemWeb.SelectFilter a, SemWeb.SelectFilter b);" />

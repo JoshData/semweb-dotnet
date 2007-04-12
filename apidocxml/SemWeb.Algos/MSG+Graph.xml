@@ -56,6 +56,9 @@
         <summary>To be added.</summary>
         <remarks>To be added.</remarks>
       </Docs>
+      <ImplementsInterfaceMethods>
+        <InterfaceImpl Type="SemWeb.StatementSource" Member="Select" cref="M:SemWeb.StatementSource.Select(SemWeb.StatementSink)" />
+      </ImplementsInterfaceMethods>
     </Member>
     <Member MemberName="LoadGraphs">
       <MemberSignature Language="C#" Value="public static void LoadGraphs (SemWeb.Algos.MSG.Graph[] graphs);" />
@@ -83,6 +86,9 @@
         <value>To be added.</value>
         <remarks>To be added.</remarks>
       </Docs>
+      <ImplementsInterfaceMethods>
+        <InterfaceImpl Type="SemWeb.StatementSource" Member="Distinct" cref="P:SemWeb.StatementSource.Distinct" />
+      </ImplementsInterfaceMethods>
     </Member>
   </Members>
   <Docs>

@@ -36,6 +36,9 @@
         <summary>Disposes the reader.</summary>
         <remarks>The resources associated with the reader are freed.</remarks>
       </Docs>
+      <ImplementsInterfaceMethods>
+        <InterfaceImpl Type="System.IDisposable" Member="Dispose" cref="M:System.IDisposable.Dispose" />
+      </ImplementsInterfaceMethods>
     </Member>
     <Member MemberName="Create">
       <MemberSignature Language="C#" Value="public static SemWeb.RdfReader Create (string type, string source);" />
@@ -50,7 +53,7 @@
       <Docs>
         <param name="type">The stream type.</param>
         <param name="source">The name of the source stream, as a file name, or "-" for standard input.</param>
-        <summary>Creates a reader in the factory paradigm.</summary>
+        <summary>Creates a RdfReader in the factory paradigm for the given file.</summary>
         <returns>
           <para>The type of reader returned is given in the following table.</para>
           <list type="table">
@@ -61,13 +64,13 @@
               <description>Reader</description>
             </listheader>
             <item>
-              <term>"xml" or "text/xml"</term>
+              <term>"xml", "text/xml", "application/xml", "application/rdf+xml"</term>
               <description>
                 <see cref="T:SemWeb.RdfXmlReader" />
               </description>
             </item>
             <item>
-              <term>"n3" or "text/n3"</term>
+              <term>"n3", "text/n3", "application/n3", "application/turtle", "application/x-turtle"</term>
               <description>
                 <see cref="T:SemWeb.N3Reader" />
               </description>
@@ -145,6 +148,9 @@
         <summary>Reads the stream into the statement sink.</summary>
         <remarks>User code should call <see cref="M:SemWeb.Store.Import(SemWeb.StatementSource)" /> rather than calling this method directly.</remarks>
       </Docs>
+      <ImplementsInterfaceMethods>
+        <InterfaceImpl Type="SemWeb.StatementSource" Member="Select" cref="M:SemWeb.StatementSource.Select(SemWeb.StatementSink)" />
+      </ImplementsInterfaceMethods>
     </Member>
     <Member MemberName="ReuseEntities">
       <MemberSignature Language="C#" Value="public bool ReuseEntities { set; get; };" />
@@ -215,6 +221,46 @@
         <param name="variable">A variable.</param>
         <summary>Adds a Variable to the Variables collection.</summary>
         <remarks>Used by RdfReader implementations to add a variable into the Variables collection.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Create">
+      <MemberSignature Language="C#" Value="public static SemWeb.RdfReader Create (string type, System.IO.Stream source);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>SemWeb.RdfReader</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="type" Type="System.String" />
+        <Parameter Name="source" Type="System.IO.Stream" />
+      </Parameters>
+      <Docs>
+        <param name="type">The stream type.</param>
+        <param name="source">A stream to read from.</param>
+        <summary>Creates a RdfReader in the factory paradigm for the given Stream.</summary>
+        <returns>
+          <para>The type of reader returned is given in the following table.</para>
+          <list type="table">
+            <listheader>
+              <term>
+                <paramref name="type" />
+              </term>
+              <description>Reader</description>
+            </listheader>
+            <item>
+              <term>"xml", "text/xml", "application/xml", "application/rdf+xml"</term>
+              <description>
+                <see cref="T:SemWeb.RdfXmlReader" />
+              </description>
+            </item>
+            <item>
+              <term>"n3", "text/n3", "application/n3", "application/turtle", "application/x-turtle"</term>
+              <description>
+                <see cref="T:SemWeb.N3Reader" />
+              </description>
+            </item>
+          </list>
+        </returns>
+        <remarks>None.</remarks>
       </Docs>
     </Member>
   </Members>

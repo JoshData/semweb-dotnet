@@ -50,6 +50,7 @@
       <Type Name="SparqlEngine" />
       <Type Name="SparqlEngine+QueryType" />
       <Type Name="SparqlProtocolServerHandler" />
+      <Type Name="QueryResultBuffer" />
     </Namespace>
     <Namespace Name="SemWeb.Stores">
       <Type Name="SQLStore" />
@@ -71,6 +72,7 @@
     </Namespace>
     <Namespace Name="SemWeb.Remote">
       <Type Name="SparqlHttpSource" />
+      <Type Name="SparqlSource" />
     </Namespace>
     <Namespace Name="SemWeb.Util.Bind">
       <Type Name="Any" />

@@ -42,6 +42,9 @@
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
       </Docs>
+      <ImplementsInterfaceMethods>
+        <InterfaceImpl Type="SemWeb.StatementSink" Member="Add" cref="M:SemWeb.StatementSink.Add(SemWeb.Statement)" />
+      </ImplementsInterfaceMethods>
     </Member>
   </Members>
   <Docs>

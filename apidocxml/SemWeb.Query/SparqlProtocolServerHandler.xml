@@ -58,6 +58,9 @@
         <summary>Processes an HTTP request from the ASP.NET subsystem.</summary>
         <remarks>This method is not meant to be called from user code.</remarks>
       </Docs>
+      <ImplementsInterfaceMethods>
+        <InterfaceImpl Type="System.Web.IHttpHandler" Member="ProcessRequest" cref="M:System.Web.IHttpHandler.ProcessRequest(System.Web.HttpContext)" />
+      </ImplementsInterfaceMethods>
     </Member>
     <Member MemberName="CreateQuery">
       <MemberSignature Language="C#" Value="protected virtual SemWeb.Query.Query CreateQuery (string query);" />
@@ -131,7 +134,7 @@
           &lt;httpHandlers&gt;
                &lt;!-- This line associates the SPARQL Protocol implementation with a path on your
                     website. With this, you get a SPARQL server at http://yourdomain.com/sparql.  --&gt;
-               &lt;add verb="*" path="sparql" type="SemWeb.Query.SparqlProtocol, SemWeb.Sparql" /&gt;
+               &lt;add verb="*" path="sparql" type="SemWeb.Query.SparqlProtocolServerHandler, SemWeb.Sparql" /&gt;
           &lt;/httpHandlers&gt;
      &lt;/system.web&gt;
 

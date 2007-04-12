@@ -258,6 +258,9 @@
         <returns>0 if the two statements are equal, -1 if this statement should be ordered before <paramref name="s" />, otherwise 1 if <paramref name="s" /> should be ordered before this statement.</returns>
         <remarks>Statements are ordered first by subject, then by predicate, then object, then meta.  For each of those fields, this statement comes first if its field is null or if the resource in the field would be ordered first compared to the corresponding resource in <paramref name="s" />, according to the ordering defined in the Resource class.</remarks>
       </Docs>
+      <ImplementsInterfaceMethods>
+        <InterfaceImpl Type="System.IComparable&lt;SemWeb.Statement&gt;" Member="CompareTo" cref="M:System.IComparable`1.CompareTo(SemWeb.Statement)" />
+      </ImplementsInterfaceMethods>
     </Member>
   </Members>
   <Docs>

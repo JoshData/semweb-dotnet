@@ -1,0 +1,82 @@
+<Type Name="SparqlSource" FullName="SemWeb.Remote.SparqlSource">
+  <TypeSignature Language="C#" Value="public interface SparqlSource" />
+  <AssemblyInfo>
+    <AssemblyName>SemWeb</AssemblyName>
+    <AssemblyVersion>0.8.5.0</AssemblyVersion>
+  </AssemblyInfo>
+  <Interfaces />
+  <Members>
+    <Member MemberName="RunSparqlQuery">
+      <MemberSignature Language="C#" Value="public void RunSparqlQuery (string sparqlQuery, SemWeb.Query.QueryResultSink selectResults);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="sparqlQuery" Type="System.String" />
+        <Parameter Name="selectResults" Type="SemWeb.Query.QueryResultSink" />
+      </Parameters>
+      <Docs>
+        <param name="sparqlQuery">A SPARQL query.</param>
+        <param name="selectResults">A QueryResultSink into which the resulting variable bindings are streamed.</param>
+        <summary>Runs a SPARQL SELECT query and returns the results into a QueryResultSink.</summary>
+        <remarks>Any exception may be thrown by this method depending on the implementation.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="RunSparqlQuery">
+      <MemberSignature Language="C#" Value="public void RunSparqlQuery (string sparqlQuery, SemWeb.StatementSink statementResults);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="sparqlQuery" Type="System.String" />
+        <Parameter Name="statementResults" Type="SemWeb.StatementSink" />
+      </Parameters>
+      <Docs>
+        <param name="sparqlQuery">A SPARQL query.</param>
+        <param name="statementResults">A StatementSink into which the statements that result from the query are streamed.</param>
+        <summary>Runs a SPARQL CONSTRUCT or DESCRIBE query and returns the resulting statements into a StatementSink.</summary>
+        <remarks>Any exception may be thrown by this method depending on the implementation.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="RunSparqlQuery">
+      <MemberSignature Language="C#" Value="public void RunSparqlQuery (string sparqlQuery, System.IO.TextWriter output);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="sparqlQuery" Type="System.String" />
+        <Parameter Name="output" Type="System.IO.TextWriter" />
+      </Parameters>
+      <Docs>
+        <param name="sparqlQuery">A SPARQL query.</param>
+        <param name="output">A TextWriter to which the result of the query is written.</param>
+        <summary>Runs a SPARQL query of any type and sends the output into a TextWriter.</summary>
+        <remarks>Any exception may be thrown by this method depending on the implementation.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="RunSparqlQuery">
+      <MemberSignature Language="C#" Value="public void RunSparqlQuery (string sparqlQuery, out bool askResult);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="sparqlQuery" Type="System.String" />
+        <Parameter Name="askResult" Type="System.Boolean&amp;" RefType="out" />
+      </Parameters>
+      <Docs>
+        <param name="sparqlQuery">A SPARQL query.</param>
+        <param name="askResult">The result of the query is set into this <see langword="out" /> parameter on completion of the method.</param>
+        <summary>Runs a SPARQL ASK query and returns the boolean result.</summary>
+        <remarks>Any exception may be thrown by this method depending on the implementation.</remarks>
+      </Docs>
+    </Member>
+  </Members>
+  <Docs>
+    <summary>An interface representing a SPARQL endpoint.</summary>
+    <remarks>This interface is implemented by classes that support methods for accessing a SPARQL endpoint.</remarks>
+  </Docs>
+</Type>

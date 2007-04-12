@@ -30,6 +30,9 @@
         <summary>Streams the result of this Select call to a StatementSink.</summary>
         <remarks>If the statements have not yet been loaded into memory, this call will stream the result of the Select call to the sink without loading all of the statements into memory at once.</remarks>
       </Docs>
+      <ImplementsInterfaceMethods>
+        <InterfaceImpl Type="SemWeb.StatementSource" Member="Select" cref="M:SemWeb.StatementSource.Select(SemWeb.StatementSink)" />
+      </ImplementsInterfaceMethods>
     </Member>
     <Member MemberName="Load">
       <MemberSignature Language="C#" Value="public SemWeb.MemoryStore Load ();" />
@@ -80,6 +83,9 @@
         <value>True if any call to Select and its overloads yields only distinct statements (i.e. no duplicates).</value>
         <remarks>None.</remarks>
       </Docs>
+      <ImplementsInterfaceMethods>
+        <InterfaceImpl Type="SemWeb.StatementSource" Member="Distinct" cref="P:SemWeb.StatementSource.Distinct" />
+      </ImplementsInterfaceMethods>
     </Member>
   </Members>
   <Docs>

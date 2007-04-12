@@ -122,6 +122,9 @@
         <returns>An enumerator over the statements in the array.</returns>
         <remarks>None.</remarks>
       </Docs>
+      <ImplementsInterfaceMethods>
+        <InterfaceImpl Type="System.Collections.IEnumerable" Member="GetEnumerator" cref="M:System.Collections.IEnumerable.GetEnumerator" />
+      </ImplementsInterfaceMethods>
     </Member>
     <Member MemberName="CopyTo">
       <MemberSignature Language="C#" Value="public void CopyTo (Array dest, int start);" />
@@ -139,6 +142,9 @@
         <summary>Copies this array into another array.</summary>
         <remarks>None.</remarks>
       </Docs>
+      <ImplementsInterfaceMethods>
+        <InterfaceImpl Type="System.Collections.ICollection" Member="CopyTo" cref="M:System.Collections.ICollection.CopyTo(System.Array,System.Int32)" />
+      </ImplementsInterfaceMethods>
     </Member>
     <Member MemberName="Count">
       <MemberSignature Language="C#" Value="public int Count { get; };" />
@@ -151,6 +157,9 @@
         <value>The number of statements in the list.</value>
         <remarks>None.</remarks>
       </Docs>
+      <ImplementsInterfaceMethods>
+        <InterfaceImpl Type="System.Collections.ICollection" Member="Count" cref="P:System.Collections.ICollection.Count" />
+      </ImplementsInterfaceMethods>
     </Member>
     <Member MemberName="SyncRoot">
       <MemberSignature Language="C#" Value="public object SyncRoot { get; };" />
@@ -163,6 +172,9 @@
         <value>Null.</value>
         <remarks>None.</remarks>
       </Docs>
+      <ImplementsInterfaceMethods>
+        <InterfaceImpl Type="System.Collections.ICollection" Member="SyncRoot" cref="P:System.Collections.ICollection.SyncRoot" />
+      </ImplementsInterfaceMethods>
     </Member>
     <Member MemberName="IsSynchronized">
       <MemberSignature Language="C#" Value="public bool IsSynchronized { get; };" />
@@ -175,6 +187,9 @@
         <value>False.</value>
         <remarks>None.</remarks>
       </Docs>
+      <ImplementsInterfaceMethods>
+        <InterfaceImpl Type="System.Collections.ICollection" Member="IsSynchronized" cref="P:System.Collections.ICollection.IsSynchronized" />
+      </ImplementsInterfaceMethods>
     </Member>
     <Member MemberName="Item">
       <MemberSignature Language="C#" Value="public SemWeb.Statement this[int index] { set; get; };" />

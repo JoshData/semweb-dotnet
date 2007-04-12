@@ -50,14 +50,12 @@
     <Compile Include="RdfWriter.cs" />
     <Compile Include="RdfXmlReader.cs" />
     <Compile Include="RdfXmlWriter.cs" />
-    <Compile Include="Remote.cs" />
+    <Compile Include="SparqlClient.cs" />
     <Compile Include="Resource.cs" />
-    <Compile Include="RSquary.cs" />
     <Compile Include="Statement.cs" />
     <Compile Include="Store.cs" />
     <Compile Include="UriMap.cs" />
     <Compile Include="Util.cs" />
-    <Compile Include="XPathSemWebNavigator.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="IKVM.GNU.Classpath, Version=0.28.0.0, Culture=neutral, PublicKeyToken=13235d27fcbfff58">

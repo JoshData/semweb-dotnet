@@ -1,5 +1,5 @@
 <Type Name="SparqlHttpSource" FullName="SemWeb.Remote.SparqlHttpSource">
-  <TypeSignature Language="C#" Value="public class SparqlHttpSource : SemWeb.QueryableSource" />
+  <TypeSignature Language="C#" Value="public class SparqlHttpSource : SemWeb.QueryableSource, SemWeb.Remote.SparqlSource" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
     <AssemblyVersion>0.8.1.1</AssemblyVersion>
@@ -10,6 +10,9 @@
   <Interfaces>
     <Interface>
       <InterfaceName>SemWeb.QueryableSource</InterfaceName>
+    </Interface>
+    <Interface>
+      <InterfaceName>SemWeb.Remote.SparqlSource</InterfaceName>
     </Interface>
   </Interfaces>
   <Members>
@@ -40,6 +43,9 @@
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
       </Docs>
+      <ImplementsInterfaceMethods>
+        <InterfaceImpl Type="SemWeb.SelectableSource" Member="Contains" cref="M:SemWeb.SelectableSource.Contains(SemWeb.Statement)" />
+      </ImplementsInterfaceMethods>
     </Member>
     <Member MemberName="Select">
       <MemberSignature Language="C#" Value="public void Select (SemWeb.StatementSink sink);" />
@@ -55,6 +61,9 @@
         <summary>To be added.</summary>
         <remarks>To be added.</remarks>
       </Docs>
+      <ImplementsInterfaceMethods>
+        <InterfaceImpl Type="SemWeb.StatementSource" Member="Select" cref="M:SemWeb.StatementSource.Select(SemWeb.StatementSink)" />
+      </ImplementsInterfaceMethods>
     </Member>
     <Member MemberName="Select">
       <MemberSignature Language="C#" Value="public void Select (SemWeb.Statement template, SemWeb.StatementSink sink);" />
@@ -72,6 +81,9 @@
         <summary>To be added.</summary>
         <remarks>To be added.</remarks>
       </Docs>
+      <ImplementsInterfaceMethods>
+        <InterfaceImpl Type="SemWeb.SelectableSource" Member="Select" cref="M:SemWeb.SelectableSource.Select(SemWeb.Statement,SemWeb.StatementSink)" />
+      </ImplementsInterfaceMethods>
     </Member>
     <Member MemberName="Select">
       <MemberSignature Language="C#" Value="public void Select (SemWeb.SelectFilter filter, SemWeb.StatementSink sink);" />
@@ -89,6 +101,9 @@
         <summary>To be added.</summary>
         <remarks>To be added.</remarks>
       </Docs>
+      <ImplementsInterfaceMethods>
+        <InterfaceImpl Type="SemWeb.SelectableSource" Member="Select" cref="M:SemWeb.SelectableSource.Select(SemWeb.SelectFilter,SemWeb.StatementSink)" />
+      </ImplementsInterfaceMethods>
     </Member>
     <Member MemberName="Distinct">
       <MemberSignature Language="C#" Value="public bool Distinct { get; };" />
@@ -101,6 +116,9 @@
         <value>To be added.</value>
         <remarks>To be added.</remarks>
       </Docs>
+      <ImplementsInterfaceMethods>
+        <InterfaceImpl Type="SemWeb.StatementSource" Member="Distinct" cref="P:SemWeb.StatementSource.Distinct" />
+      </ImplementsInterfaceMethods>
     </Member>
     <Member MemberName="Contains">
       <MemberSignature Language="C#" Value="public bool Contains (SemWeb.Resource resource);" />
@@ -117,6 +135,9 @@
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
       </Docs>
+      <ImplementsInterfaceMethods>
+        <InterfaceImpl Type="SemWeb.SelectableSource" Member="Contains" cref="M:SemWeb.SelectableSource.Contains(SemWeb.Resource)" />
+      </ImplementsInterfaceMethods>
     </Member>
     <Member MemberName="MetaQuery">
       <MemberSignature Language="C#" Value="public SemWeb.Query.MetaQueryResult MetaQuery (SemWeb.Statement[] graph, SemWeb.Query.QueryOptions options);" />
@@ -135,6 +156,9 @@
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
       </Docs>
+      <ImplementsInterfaceMethods>
+        <InterfaceImpl Type="SemWeb.QueryableSource" Member="MetaQuery" cref="M:SemWeb.QueryableSource.MetaQuery(SemWeb.Statement[],SemWeb.Query.QueryOptions)" />
+      </ImplementsInterfaceMethods>
     </Member>
     <Member MemberName="Query">
       <MemberSignature Language="C#" Value="public void Query (SemWeb.Statement[] graph, SemWeb.Query.QueryOptions options, SemWeb.Query.QueryResultSink sink);" />
@@ -154,6 +178,123 @@
         <summary>To be added.</summary>
         <remarks>To be added.</remarks>
       </Docs>
+      <ImplementsInterfaceMethods>
+        <InterfaceImpl Type="SemWeb.QueryableSource" Member="Query" cref="M:SemWeb.QueryableSource.Query(SemWeb.Statement[],SemWeb.Query.QueryOptions,SemWeb.Query.QueryResultSink)" />
+      </ImplementsInterfaceMethods>
+    </Member>
+    <Member MemberName="RunSparqlQuery">
+      <MemberSignature Language="C#" Value="public void RunSparqlQuery (string sparqlQuery, SemWeb.Query.QueryResultSink selectResults);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="sparqlQuery" Type="System.String" />
+        <Parameter Name="selectResults" Type="SemWeb.Query.QueryResultSink" />
+      </Parameters>
+      <Docs>
+        <param name="sparqlQuery">To be added.</param>
+        <param name="selectResults">To be added.</param>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+      <ImplementsInterfaceMethods>
+        <InterfaceImpl Type="SemWeb.Remote.SparqlSource" Member="RunSparqlQuery" cref="M:SemWeb.Remote.SparqlSource.RunSparqlQuery(System.String,SemWeb.Query.QueryResultSink)" />
+      </ImplementsInterfaceMethods>
+    </Member>
+    <Member MemberName="RunSparqlQuery">
+      <MemberSignature Language="C#" Value="public void RunSparqlQuery (string sparqlQuery, SemWeb.StatementSink statementResults);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="sparqlQuery" Type="System.String" />
+        <Parameter Name="statementResults" Type="SemWeb.StatementSink" />
+      </Parameters>
+      <Docs>
+        <param name="sparqlQuery">To be added.</param>
+        <param name="statementResults">To be added.</param>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+      <ImplementsInterfaceMethods>
+        <InterfaceImpl Type="SemWeb.Remote.SparqlSource" Member="RunSparqlQuery" cref="M:SemWeb.Remote.SparqlSource.RunSparqlQuery(System.String,SemWeb.StatementSink)" />
+      </ImplementsInterfaceMethods>
+    </Member>
+    <Member MemberName="RunSparqlQuery">
+      <MemberSignature Language="C#" Value="public void RunSparqlQuery (string sparqlQuery, System.IO.TextWriter output);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="sparqlQuery" Type="System.String" />
+        <Parameter Name="output" Type="System.IO.TextWriter" />
+      </Parameters>
+      <Docs>
+        <param name="sparqlQuery">To be added.</param>
+        <param name="output">To be added.</param>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+      <ImplementsInterfaceMethods>
+        <InterfaceImpl Type="SemWeb.Remote.SparqlSource" Member="RunSparqlQuery" cref="M:SemWeb.Remote.SparqlSource.RunSparqlQuery(System.String,System.IO.TextWriter)" />
+      </ImplementsInterfaceMethods>
+    </Member>
+    <Member MemberName="ParseSparqlResponse">
+      <MemberSignature Language="C#" Value="public static void ParseSparqlResponse (System.IO.Stream sparqlResponse, SemWeb.Query.QueryResultSink queryResults);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="sparqlResponse" Type="System.IO.Stream" />
+        <Parameter Name="queryResults" Type="SemWeb.Query.QueryResultSink" />
+      </Parameters>
+      <Docs>
+        <param name="sparqlResponse">To be added.</param>
+        <param name="queryResults">To be added.</param>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="ParseSparqlResponse">
+      <MemberSignature Language="C#" Value="public static void ParseSparqlResponse (System.IO.Stream sparqlResponse, out bool askResult);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="sparqlResponse" Type="System.IO.Stream" />
+        <Parameter Name="askResult" Type="System.Boolean&amp;" RefType="out" />
+      </Parameters>
+      <Docs>
+        <param name="sparqlResponse">To be added.</param>
+        <param name="askResult">To be added.</param>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="RunSparqlQuery">
+      <MemberSignature Language="C#" Value="public void RunSparqlQuery (string sparqlQuery, out bool askResult);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="sparqlQuery" Type="System.String" />
+        <Parameter Name="askResult" Type="System.Boolean&amp;" RefType="out" />
+      </Parameters>
+      <Docs>
+        <param name="sparqlQuery">To be added.</param>
+        <param name="askResult">To be added.</param>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+      <ImplementsInterfaceMethods>
+        <InterfaceImpl Type="SemWeb.Remote.SparqlSource" Member="RunSparqlQuery" cref="M:SemWeb.Remote.SparqlSource.RunSparqlQuery(System.String,System.Boolean@)" />
+      </ImplementsInterfaceMethods>
     </Member>
   </Members>
   <Docs>

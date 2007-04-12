@@ -48,7 +48,7 @@ MAIN_SOURCES = \
 	src/Store.cs src/MemoryStore.cs src/SQLStore.cs \
 	src/RdfReader.cs src/RdfXmlReader.cs src/N3Reader.cs \
 	src/RdfWriter.cs src/RdfXmlWriter.cs src/N3Writer.cs \
-	src/Query.cs src/GraphMatch.cs src/LiteralFilters.cs src/RSquary.cs \
+	src/Query.cs src/GraphMatch.cs src/LiteralFilters.cs \
 	src/Inference.cs src/RDFS.cs src/Euler.cs src/SpecialRelations.cs \
 	src/Algos.cs src/SparqlClient.cs
 
@@ -58,8 +58,8 @@ $(BIN)/SemWeb.dll: $(MAIN_SOURCES) Makefile
 
 # Auxiliary Assemblies
 
-$(BIN)/SemWeb.Sparql.dll: src/Sparql.cs src/SparqlProtocol.cs
-	$(MCS) -debug src/Sparql.cs src/SparqlProtocol.cs -out:$(BIN)/SemWeb.Sparql.dll \
+$(BIN)/SemWeb.Sparql.dll: src/SparqlEngine.cs src/SparqlProtocol.cs
+	$(MCS) -debug src/SparqlEngine.cs src/SparqlProtocol.cs -out:$(BIN)/SemWeb.Sparql.dll \
 		-t:library -r:$(BIN)/SemWeb.dll -r:$(BIN)/sparql-core.dll -r:$(BIN)/IKVM.GNU.Classpath.dll \
 		-r:System.Web
 
@@ -119,7 +119,7 @@ package: all
 	rm -rf package-workspace
 	mkdir -p package-workspace/semweb-$(VERSION)
 	cp -R bin bin_generics src tools apidocs doc \
-		ChangeLog Makefile README.txt semweb.mds \
+		ChangeLog Makefile README.txt semweb.mds semweb.sln src/*.mdp src/*.csproj \
 		package-workspace/semweb-$(VERSION)
 	mkdir package-workspace/semweb-$(VERSION)/examples
 	cp examples/*.cs examples/Makefile examples/README.txt examples/getsomedata.sh \

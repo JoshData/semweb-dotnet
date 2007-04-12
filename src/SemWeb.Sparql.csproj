@@ -46,7 +46,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Sparql.cs" />
+    <Compile Include="SparqlEngine.cs" />
     <Compile Include="SparqlProtocol.cs" />
   </ItemGroup>
   <ItemGroup>

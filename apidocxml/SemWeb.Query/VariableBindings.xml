@@ -1,0 +1,120 @@
+<Type Name="VariableBindings" FullName="SemWeb.Query.VariableBindings">
+  <TypeSignature Language="C#" Value="public class VariableBindings" />
+  <AssemblyInfo>
+    <AssemblyName>SemWeb</AssemblyName>
+    <AssemblyVersion>0.8.2.0</AssemblyVersion>
+  </AssemblyInfo>
+  <Base>
+    <BaseTypeName>System.Object</BaseTypeName>
+  </Base>
+  <Interfaces />
+  <Attributes>
+    <Attribute>
+      <AttributeName>System.Reflection.DefaultMember("Item")</AttributeName>
+    </Attribute>
+  </Attributes>
+  <Members>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public VariableBindings (SemWeb.Variable[] vars, SemWeb.Resource[] vals);" />
+      <MemberType>Constructor</MemberType>
+      <Parameters>
+        <Parameter Name="vars" Type="SemWeb.Variable[]" />
+        <Parameter Name="vals" Type="SemWeb.Resource[]" />
+      </Parameters>
+      <Docs>
+        <param name="vars">The variables.</param>
+        <param name="vals">Their corresponding values (in the same order). Values may be <see langword="null" /> to indicate an unbound variable.</param>
+        <summary>Constructs a VariableBindings instance.</summary>
+        <remarks>None.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Count">
+      <MemberSignature Language="C#" Value="public int Count { get; };" />
+      <MemberType>Property</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Int32</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>The number of variables represented by this row.</summary>
+        <value>The number of variables in the row.</value>
+        <remarks>None.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Item">
+      <MemberSignature Language="C#" Value="public SemWeb.Resource this[SemWeb.Variable variable] { get; };" />
+      <MemberType>Property</MemberType>
+      <ReturnValue>
+        <ReturnType>SemWeb.Resource</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="variable" Type="SemWeb.Variable" />
+      </Parameters>
+      <Docs>
+        <param name="variable">A variable mentioned in this row.</param>
+        <summary>Gets the resource bound by a variable.</summary>
+        <value>The value of the variable, or <see langword="null" /> if the variable is unbound in this row.</value>
+        <remarks>None.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Substitute">
+      <MemberSignature Language="C#" Value="public SemWeb.Statement Substitute (SemWeb.Statement template);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>SemWeb.Statement</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="template" Type="SemWeb.Statement" />
+      </Parameters>
+      <Docs>
+        <param name="template">A statement template (a statement with possibly null fields).</param>
+        <summary>Performs a substitution on a statement.</summary>
+        <returns>A new statement will all occurrences of variables in this row of bindings replaced by their values.</returns>
+        <remarks>If a variable in the Subject, Predicate, or Meta fields is bound by a Literal value, a <see cref="T:System.InvalidCastException" /> is thrown.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Values">
+      <MemberSignature Language="C#" Value="public System.Collections.Generic.IList&lt;SemWeb.Resource&gt; Values { get; };" />
+      <MemberType>Property</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Collections.Generic.IList&lt;SemWeb.Resource&gt;</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>The values bound by the variables in this row.</summary>
+        <value>The values of the variables, in the same order as the variables are in the Variables property.</value>
+        <remarks>A value may be <see langword="null" /> to indicate an unbound variable.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Variables">
+      <MemberSignature Language="C#" Value="public System.Collections.Generic.IList&lt;SemWeb.Variable&gt; Variables { get; };" />
+      <MemberType>Property</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Collections.Generic.IList&lt;SemWeb.Variable&gt;</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>The variables bound in this row.</summary>
+        <value>The variables bound in this row.</value>
+        <remarks>None.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Item">
+      <MemberSignature Language="C#" Value="public SemWeb.Resource this[string variableName] { get; };" />
+      <MemberType>Property</MemberType>
+      <ReturnValue>
+        <ReturnType>SemWeb.Resource</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="variableName" Type="System.String" />
+      </Parameters>
+      <Docs>
+        <param name="variableName">The name of a variable in the binding set.</param>
+        <summary>Gets the resource bound by a variable of the given name.</summary>
+        <value>The resource that is bound by the variable in this row of results, or <see langword="null" /> if the variable is not bound.</value>
+        <remarks>If more than one variable (distinct Variable instance) has the same name in this row, the result of this function is unspecified. Use the other overload of this method instead.</remarks>
+      </Docs>
+    </Member>
+  </Members>
+  <Docs>
+    <summary>Represents a row of results from a query.</summary>
+    <remarks>This class maps variables to their target values in a single row of query results.</remarks>
+  </Docs>
+</Type>

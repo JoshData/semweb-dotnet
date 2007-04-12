@@ -82,6 +82,9 @@
         <returns>0 if the resources are equal, -1 if this resource should be ordered before <paramref name="other" />, or 1 if <paramref name="other" /> should be ordered first.</returns>
         <remarks>The ordering used by this method is as follows: Entities sorted by URI, then BNodes sorted by HashCode, and finally Literals sorted by their Value.</remarks>
       </Docs>
+      <ImplementsInterfaceMethods>
+        <InterfaceImpl Type="System.IComparable&lt;SemWeb.Resource&gt;" Member="CompareTo" cref="M:System.IComparable`1.CompareTo(SemWeb.Resource)" />
+      </ImplementsInterfaceMethods>
     </Member>
     <Member MemberName="GetResourceKey">
       <MemberSignature Language="C#" Value="public object GetResourceKey (object key);" />

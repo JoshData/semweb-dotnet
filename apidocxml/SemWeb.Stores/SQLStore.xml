@@ -337,6 +337,9 @@
         <summary>To be added.</summary>
         <remarks>To be added.</remarks>
       </Docs>
+      <ImplementsInterfaceMethods>
+        <InterfaceImpl Type="SemWeb.ModifiableSource" Member="Clear" cref="M:SemWeb.ModifiableSource.Clear" />
+      </ImplementsInterfaceMethods>
     </Member>
     <Member MemberName="Close">
       <MemberSignature Language="C#" Value="public virtual void Close ();" />
@@ -365,6 +368,9 @@
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
       </Docs>
+      <ImplementsInterfaceMethods>
+        <InterfaceImpl Type="SemWeb.SelectableSource" Member="Contains" cref="M:SemWeb.SelectableSource.Contains(SemWeb.Resource)" />
+      </ImplementsInterfaceMethods>
     </Member>
     <Member MemberName="Contains">
       <MemberSignature Language="C#" Value="public bool Contains (SemWeb.Statement template);" />
@@ -381,6 +387,9 @@
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
       </Docs>
+      <ImplementsInterfaceMethods>
+        <InterfaceImpl Type="SemWeb.SelectableSource" Member="Contains" cref="M:SemWeb.SelectableSource.Contains(SemWeb.Statement)" />
+      </ImplementsInterfaceMethods>
     </Member>
     <Member MemberName="Distinct">
       <MemberSignature Language="C#" Value="public bool Distinct { get; };" />
@@ -393,6 +402,9 @@
         <value>To be added.</value>
         <remarks>To be added.</remarks>
       </Docs>
+      <ImplementsInterfaceMethods>
+        <InterfaceImpl Type="SemWeb.StatementSource" Member="Distinct" cref="P:SemWeb.StatementSource.Distinct" />
+      </ImplementsInterfaceMethods>
     </Member>
     <Member MemberName="GetBNodeFromPersistentId">
       <MemberSignature Language="C#" Value="public SemWeb.BNode GetBNodeFromPersistentId (string persistentId);" />
@@ -409,6 +421,9 @@
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
       </Docs>
+      <ImplementsInterfaceMethods>
+        <InterfaceImpl Type="SemWeb.StaticSource" Member="GetBNodeFromPersistentId" cref="M:SemWeb.StaticSource.GetBNodeFromPersistentId(System.String)" />
+      </ImplementsInterfaceMethods>
     </Member>
     <Member MemberName="GetEntities">
       <MemberSignature Language="C#" Value="public SemWeb.Entity[] GetEntities ();" />
@@ -422,6 +437,9 @@
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
       </Docs>
+      <ImplementsInterfaceMethods>
+        <InterfaceImpl Type="SemWeb.StaticSource" Member="GetEntities" cref="M:SemWeb.StaticSource.GetEntities" />
+      </ImplementsInterfaceMethods>
     </Member>
     <Member MemberName="GetMetas">
       <MemberSignature Language="C#" Value="public SemWeb.Entity[] GetMetas ();" />
@@ -435,6 +453,9 @@
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
       </Docs>
+      <ImplementsInterfaceMethods>
+        <InterfaceImpl Type="SemWeb.StaticSource" Member="GetMetas" cref="M:SemWeb.StaticSource.GetMetas" />
+      </ImplementsInterfaceMethods>
     </Member>
     <Member MemberName="GetPersistentBNodeId">
       <MemberSignature Language="C#" Value="public string GetPersistentBNodeId (SemWeb.BNode node);" />
@@ -451,6 +472,9 @@
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
       </Docs>
+      <ImplementsInterfaceMethods>
+        <InterfaceImpl Type="SemWeb.StaticSource" Member="GetPersistentBNodeId" cref="M:SemWeb.StaticSource.GetPersistentBNodeId(SemWeb.BNode)" />
+      </ImplementsInterfaceMethods>
     </Member>
     <Member MemberName="GetPredicates">
       <MemberSignature Language="C#" Value="public SemWeb.Entity[] GetPredicates ();" />
@@ -464,6 +488,9 @@
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
       </Docs>
+      <ImplementsInterfaceMethods>
+        <InterfaceImpl Type="SemWeb.StaticSource" Member="GetPredicates" cref="M:SemWeb.StaticSource.GetPredicates" />
+      </ImplementsInterfaceMethods>
     </Member>
     <Member MemberName="Import">
       <MemberSignature Language="C#" Value="public void Import (SemWeb.StatementSource source);" />
@@ -479,6 +506,9 @@
         <summary>To be added.</summary>
         <remarks>To be added.</remarks>
       </Docs>
+      <ImplementsInterfaceMethods>
+        <InterfaceImpl Type="SemWeb.ModifiableSource" Member="Import" cref="M:SemWeb.ModifiableSource.Import(SemWeb.StatementSource)" />
+      </ImplementsInterfaceMethods>
     </Member>
     <Member MemberName="MetaQuery">
       <MemberSignature Language="C#" Value="public SemWeb.Query.MetaQueryResult MetaQuery (SemWeb.Statement[] graph, SemWeb.Query.QueryOptions options);" />
@@ -497,6 +527,9 @@
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
       </Docs>
+      <ImplementsInterfaceMethods>
+        <InterfaceImpl Type="SemWeb.QueryableSource" Member="MetaQuery" cref="M:SemWeb.QueryableSource.MetaQuery(SemWeb.Statement[],SemWeb.Query.QueryOptions)" />
+      </ImplementsInterfaceMethods>
     </Member>
     <Member MemberName="Query">
       <MemberSignature Language="C#" Value="public void Query (SemWeb.Statement[] graph, SemWeb.Query.QueryOptions options, SemWeb.Query.QueryResultSink sink);" />
@@ -516,6 +549,9 @@
         <summary>To be added.</summary>
         <remarks>To be added.</remarks>
       </Docs>
+      <ImplementsInterfaceMethods>
+        <InterfaceImpl Type="SemWeb.QueryableSource" Member="Query" cref="M:SemWeb.QueryableSource.Query(SemWeb.Statement[],SemWeb.Query.QueryOptions,SemWeb.Query.QueryResultSink)" />
+      </ImplementsInterfaceMethods>
     </Member>
     <Member MemberName="Remove">
       <MemberSignature Language="C#" Value="public void Remove (SemWeb.Statement template);" />
@@ -531,6 +567,9 @@
         <summary>To be added.</summary>
         <remarks>To be added.</remarks>
       </Docs>
+      <ImplementsInterfaceMethods>
+        <InterfaceImpl Type="SemWeb.ModifiableSource" Member="Remove" cref="M:SemWeb.ModifiableSource.Remove(SemWeb.Statement)" />
+      </ImplementsInterfaceMethods>
     </Member>
     <Member MemberName="RemoveAll">
       <MemberSignature Language="C#" Value="public void RemoveAll (SemWeb.Statement[] templates);" />
@@ -546,6 +585,9 @@
         <summary>To be added.</summary>
         <remarks>To be added.</remarks>
       </Docs>
+      <ImplementsInterfaceMethods>
+        <InterfaceImpl Type="SemWeb.ModifiableSource" Member="RemoveAll" cref="M:SemWeb.ModifiableSource.RemoveAll(SemWeb.Statement[])" />
+      </ImplementsInterfaceMethods>
     </Member>
     <Member MemberName="Replace">
       <MemberSignature Language="C#" Value="public void Replace (SemWeb.Entity a, SemWeb.Entity b);" />
@@ -563,6 +605,9 @@
         <summary>To be added.</summary>
         <remarks>To be added.</remarks>
       </Docs>
+      <ImplementsInterfaceMethods>
+        <InterfaceImpl Type="SemWeb.ModifiableSource" Member="Replace" cref="M:SemWeb.ModifiableSource.Replace(SemWeb.Entity,SemWeb.Entity)" />
+      </ImplementsInterfaceMethods>
     </Member>
     <Member MemberName="Replace">
       <MemberSignature Language="C#" Value="public void Replace (SemWeb.Statement find, SemWeb.Statement replacement);" />
@@ -580,6 +625,9 @@
         <summary>To be added.</summary>
         <remarks>To be added.</remarks>
       </Docs>
+      <ImplementsInterfaceMethods>
+        <InterfaceImpl Type="SemWeb.ModifiableSource" Member="Replace" cref="M:SemWeb.ModifiableSource.Replace(SemWeb.Statement,SemWeb.Statement)" />
+      </ImplementsInterfaceMethods>
     </Member>
     <Member MemberName="Select">
       <MemberSignature Language="C#" Value="public void Select (SemWeb.SelectFilter filter, SemWeb.StatementSink result);" />
@@ -597,6 +645,9 @@
         <summary>To be added.</summary>
         <remarks>To be added.</remarks>
       </Docs>
+      <ImplementsInterfaceMethods>
+        <InterfaceImpl Type="SemWeb.SelectableSource" Member="Select" cref="M:SemWeb.SelectableSource.Select(SemWeb.SelectFilter,SemWeb.StatementSink)" />
+      </ImplementsInterfaceMethods>
     </Member>
     <Member MemberName="Select">
       <MemberSignature Language="C#" Value="public void Select (SemWeb.Statement template, SemWeb.StatementSink result);" />
@@ -614,6 +665,9 @@
         <summary>To be added.</summary>
         <remarks>To be added.</remarks>
       </Docs>
+      <ImplementsInterfaceMethods>
+        <InterfaceImpl Type="SemWeb.SelectableSource" Member="Select" cref="M:SemWeb.SelectableSource.Select(SemWeb.Statement,SemWeb.StatementSink)" />
+      </ImplementsInterfaceMethods>
     </Member>
     <Member MemberName="Select">
       <MemberSignature Language="C#" Value="public void Select (SemWeb.StatementSink result);" />
@@ -629,6 +683,9 @@
         <summary>To be added.</summary>
         <remarks>To be added.</remarks>
       </Docs>
+      <ImplementsInterfaceMethods>
+        <InterfaceImpl Type="SemWeb.StatementSource" Member="Select" cref="M:SemWeb.StatementSource.Select(SemWeb.StatementSink)" />
+      </ImplementsInterfaceMethods>
     </Member>
     <Member MemberName="StatementCount">
       <MemberSignature Language="C#" Value="public int StatementCount { get; };" />
@@ -641,6 +698,9 @@
         <value>To be added.</value>
         <remarks>To be added.</remarks>
       </Docs>
+      <ImplementsInterfaceMethods>
+        <InterfaceImpl Type="SemWeb.StaticSource" Member="StatementCount" cref="P:SemWeb.StaticSource.StatementCount" />
+      </ImplementsInterfaceMethods>
     </Member>
     <Member MemberName="SupportsViews">
       <MemberSignature Language="C#" Value="protected virtual bool SupportsViews { get; };" />

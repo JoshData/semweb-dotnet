@@ -33,6 +33,9 @@
         <summary>Clears the contents of the store.</summary>
         <remarks>An <see cref="T:System.InvalidOperationException" /> is thrown if more than one data source has been added to the Store with AddSource (in which case SemWeb would not want to clear them all) or if the data source added is not a <see cref="T:SemWeb.ModifiableSource" />.  The underlying data source is cleared with <see cref="M:SemWeb.ModifiableSource.Clear()" />.</remarks>
       </Docs>
+      <ImplementsInterfaceMethods>
+        <InterfaceImpl Type="SemWeb.ModifiableSource" Member="Clear" cref="M:SemWeb.ModifiableSource.Clear" />
+      </ImplementsInterfaceMethods>
     </Member>
     <Member MemberName="GetEntitiesOfType">
       <MemberSignature Language="C#" Value="public SemWeb.Entity[] GetEntitiesOfType (SemWeb.Entity type);" />
@@ -82,6 +85,9 @@
         <summary>Removes statements from the store.</summary>
         <remarks>Every matching statement from all of the data sources included in this store is removed from the store that contains it. An <see cref="T:System.InvalidOperationException" /> is thrown if any data source added to the Store with AddSource is not a <see cref="T:SemWeb.ModifiableSource" />.</remarks>
       </Docs>
+      <ImplementsInterfaceMethods>
+        <InterfaceImpl Type="SemWeb.ModifiableSource" Member="Remove" cref="M:SemWeb.ModifiableSource.Remove(SemWeb.Statement)" />
+      </ImplementsInterfaceMethods>
     </Member>
     <Member MemberName="Import">
       <MemberSignature Language="C#" Value="public void Import (SemWeb.StatementSource source);" />
@@ -100,6 +106,9 @@
           <para>See <see cref="M:SemWeb.ModifiableSource.Import(SemWeb.StatementSource)" />.</para>
         </remarks>
       </Docs>
+      <ImplementsInterfaceMethods>
+        <InterfaceImpl Type="SemWeb.ModifiableSource" Member="Import" cref="M:SemWeb.ModifiableSource.Import(SemWeb.StatementSource)" />
+      </ImplementsInterfaceMethods>
     </Member>
     <Member MemberName="Contains">
       <MemberSignature Language="C#" Value="public bool Contains (SemWeb.Statement template);" />
@@ -119,6 +128,9 @@ statement that matches the template.</summary>
 any statement matching the template.</returns>
         <remarks>See <see cref="M:SemWeb.SelectableSource.Contains(SemWeb.Statement)" />.</remarks>
       </Docs>
+      <ImplementsInterfaceMethods>
+        <InterfaceImpl Type="SemWeb.SelectableSource" Member="Contains" cref="M:SemWeb.SelectableSource.Contains(SemWeb.Statement)" />
+      </ImplementsInterfaceMethods>
     </Member>
     <Member MemberName="Select">
       <MemberSignature Language="C#" Value="public void Select (SemWeb.Statement template, SemWeb.StatementSink result);" />
@@ -136,6 +148,9 @@ any statement matching the template.</returns>
         <summary>Queries the story for matching statements, and writes the statements to a <see cref="T:SemWeb.StatementSink" />.</summary>
         <remarks>See <see cref="M:SemWeb.SelectableSource.Select(SemWeb.Statement,SemWeb.StatementSink)" />.</remarks>
       </Docs>
+      <ImplementsInterfaceMethods>
+        <InterfaceImpl Type="SemWeb.SelectableSource" Member="Select" cref="M:SemWeb.SelectableSource.Select(SemWeb.Statement,SemWeb.StatementSink)" />
+      </ImplementsInterfaceMethods>
     </Member>
     <Member MemberName="SelectObjects">
       <MemberSignature Language="C#" Value="public SemWeb.Resource[] SelectObjects (SemWeb.Entity subject, SemWeb.Entity predicate);" />
@@ -194,6 +209,9 @@ any statement matching the template.</returns>
           <para>An <see cref="T:System.InvalidOperationException" /> is thrown if any data source added to the Store with AddSource is not a <see cref="T:SemWeb.StaticSource" />.</para>
         </remarks>
       </Docs>
+      <ImplementsInterfaceMethods>
+        <InterfaceImpl Type="SemWeb.StaticSource" Member="StatementCount" cref="P:SemWeb.StaticSource.StatementCount" />
+      </ImplementsInterfaceMethods>
     </Member>
     <Member MemberName="Write">
       <MemberSignature Language="C#" Value="public void Write (System.IO.TextWriter writer);" />
@@ -222,6 +240,9 @@ any statement matching the template.</returns>
         <returns>An array of all entities mentioned in the store.</returns>
         <remarks>None.</remarks>
       </Docs>
+      <ImplementsInterfaceMethods>
+        <InterfaceImpl Type="SemWeb.StaticSource" Member="GetEntities" cref="M:SemWeb.StaticSource.GetEntities" />
+      </ImplementsInterfaceMethods>
     </Member>
     <Member MemberName="GetPredicates">
       <MemberSignature Language="C#" Value="public SemWeb.Entity[] GetPredicates ();" />
@@ -235,6 +256,9 @@ any statement matching the template.</returns>
         <returns>An array of all predicates mentioned in the store.</returns>
         <remarks>None.</remarks>
       </Docs>
+      <ImplementsInterfaceMethods>
+        <InterfaceImpl Type="SemWeb.StaticSource" Member="GetPredicates" cref="M:SemWeb.StaticSource.GetPredicates" />
+      </ImplementsInterfaceMethods>
     </Member>
     <Member MemberName="Replace">
       <MemberSignature Language="C#" Value="public void Replace (SemWeb.Entity find, SemWeb.Entity replacement);" />
@@ -255,6 +279,9 @@ any statement matching the template.</returns>
           <para>An <see cref="T:System.InvalidOperationException" /> is thrown if any data source added to the Store with AddSource does not implement <see cref="T:SemWeb.ModifiableSource" />.</para>
         </remarks>
       </Docs>
+      <ImplementsInterfaceMethods>
+        <InterfaceImpl Type="SemWeb.ModifiableSource" Member="Replace" cref="M:SemWeb.ModifiableSource.Replace(SemWeb.Entity,SemWeb.Entity)" />
+      </ImplementsInterfaceMethods>
     </Member>
     <Member MemberName=".ctor">
       <MemberSignature Language="C#" Value="public Store ();" />
@@ -422,6 +449,9 @@ For Sqlite, MySQL, and PostgreSQL-based stores, use the spec string described in
         <summary>Streams all statements in this store into a StatementSink.</summary>
         <remarks>The <see cref="M:SemWeb.StatementSink.Add(SemWeb.Statement)" /> method is called on <paramref name="result" /> for each statement in this store.</remarks>
       </Docs>
+      <ImplementsInterfaceMethods>
+        <InterfaceImpl Type="SemWeb.StatementSource" Member="Select" cref="M:SemWeb.StatementSource.Select(SemWeb.StatementSink)" />
+      </ImplementsInterfaceMethods>
     </Member>
     <Member MemberName="Replace">
       <MemberSignature Language="C#" Value="public void Replace (SemWeb.Statement find, SemWeb.Statement replacement);" />
@@ -442,6 +472,9 @@ For Sqlite, MySQL, and PostgreSQL-based stores, use the spec string described in
           <para>An <see cref="T:System.InvalidOperationException" /> is thrown if any data source added to the Store with AddSource does not implement <see cref="T:SemWeb.ModifiableSource" />.</para>
         </remarks>
       </Docs>
+      <ImplementsInterfaceMethods>
+        <InterfaceImpl Type="SemWeb.ModifiableSource" Member="Replace" cref="M:SemWeb.ModifiableSource.Replace(SemWeb.Statement,SemWeb.Statement)" />
+      </ImplementsInterfaceMethods>
     </Member>
     <Member MemberName="GetMetas">
       <MemberSignature Language="C#" Value="public SemWeb.Entity[] GetMetas ();" />
@@ -455,6 +488,9 @@ For Sqlite, MySQL, and PostgreSQL-based stores, use the spec string described in
         <returns>An array of entities used in the Meta field of statements in the store.</returns>
         <remarks>None.</remarks>
       </Docs>
+      <ImplementsInterfaceMethods>
+        <InterfaceImpl Type="SemWeb.StaticSource" Member="GetMetas" cref="M:SemWeb.StaticSource.GetMetas" />
+      </ImplementsInterfaceMethods>
     </Member>
     <Member MemberName="RemoveAll">
       <MemberSignature Language="C#" Value="public void RemoveAll (SemWeb.Statement[] templates);" />
@@ -470,6 +506,9 @@ For Sqlite, MySQL, and PostgreSQL-based stores, use the spec string described in
         <summary>Removes all statements matching an array of templates.</summary>
         <remarks>An <see cref="T:System.InvalidOperationException" /> is thrown if any data source added to the Store with AddSource does not implement <see cref="T:SemWeb.ModifiableSource" />.</remarks>
       </Docs>
+      <ImplementsInterfaceMethods>
+        <InterfaceImpl Type="SemWeb.ModifiableSource" Member="RemoveAll" cref="M:SemWeb.ModifiableSource.RemoveAll(SemWeb.Statement[])" />
+      </ImplementsInterfaceMethods>
     </Member>
     <Member MemberName="Dispose">
       <MemberSignature Language="C#" Value="public void Dispose ();" />
@@ -483,6 +522,9 @@ For Sqlite, MySQL, and PostgreSQL-based stores, use the spec string described in
         <remarks>Calls <see cref="M:System.IDisposable.Dispose()" /> on any data sources added to the Store with the AddSource method that implement <see cref="T:System.IDisposable" />. Stores may release external resources or close remote connections through Dispose, so
         users of the Store class should Dispose stores when they are finished being used.</remarks>
       </Docs>
+      <ImplementsInterfaceMethods>
+        <InterfaceImpl Type="System.IDisposable" Member="Dispose" cref="M:System.IDisposable.Dispose" />
+      </ImplementsInterfaceMethods>
     </Member>
     <Member MemberName="DefaultContains">
       <MemberSignature Language="C#" Value="public static bool DefaultContains (SemWeb.SelectableSource source, SemWeb.Statement template);" />
@@ -513,6 +555,9 @@ For Sqlite, MySQL, and PostgreSQL-based stores, use the spec string described in
         <value>True if any call to Select and its overloads yields only distinct statements (i.e. no duplicates).</value>
         <remarks>When this property returns false, callers of Select may want to ensure the resulting statements have no duplicates.  It this property returns true, such a check is unnecessary.</remarks>
       </Docs>
+      <ImplementsInterfaceMethods>
+        <InterfaceImpl Type="SemWeb.StatementSource" Member="Distinct" cref="P:SemWeb.StatementSource.Distinct" />
+      </ImplementsInterfaceMethods>
     </Member>
     <Member MemberName="Select">
       <MemberSignature Language="C#" Value="public void Select (SemWeb.SelectFilter filter, SemWeb.StatementSink result);" />
@@ -530,6 +575,9 @@ For Sqlite, MySQL, and PostgreSQL-based stores, use the spec string described in
         <summary>Queries the story for matching statements, with advanced options, and writes the statements to a <see cref="T:SemWeb.StatementSink" />.</summary>
         <remarks>See <see cref="M:SemWeb.SelectableSource.Select(SemWeb.SelectFilter,SemWeb.StatementSink)" />.</remarks>
       </Docs>
+      <ImplementsInterfaceMethods>
+        <InterfaceImpl Type="SemWeb.SelectableSource" Member="Select" cref="M:SemWeb.SelectableSource.Select(SemWeb.SelectFilter,SemWeb.StatementSink)" />
+      </ImplementsInterfaceMethods>
     </Member>
     <Member MemberName="Select">
       <MemberSignature Language="C#" Value="public SemWeb.SelectResult Select (SemWeb.SelectFilter filter);" />
@@ -581,6 +629,9 @@ For Sqlite, MySQL, and PostgreSQL-based stores, use the spec string described in
         <returns>A boolean value indicating whether the Store contains any statements mentioning the resource.</returns>
         <remarks>None.</remarks>
       </Docs>
+      <ImplementsInterfaceMethods>
+        <InterfaceImpl Type="SemWeb.SelectableSource" Member="Contains" cref="M:SemWeb.SelectableSource.Contains(SemWeb.Resource)" />
+      </ImplementsInterfaceMethods>
     </Member>
     <Member MemberName="MetaQuery">
       <MemberSignature Language="C#" Value="public SemWeb.Query.MetaQueryResult MetaQuery (SemWeb.Statement[] graph, SemWeb.Query.QueryOptions options);" />
@@ -599,6 +650,9 @@ For Sqlite, MySQL, and PostgreSQL-based stores, use the spec string described in
         <returns>A <see cref="T:SemWeb.Query.MetaQueryResult" /> indicating how the query will be executed.</returns>
         <remarks>See <see cref="T:SemWeb.QueryableSource" /> for more information.  The default implementation of this method returns a <see cref="T:SemWeb.Query.MetaQueryResult" /> structure with the <see cref="F:SemWeb.Query.MetaQueryResult.QuerySupported" /> flag set to true.  In addition, the <see cref="F:SemWeb.Query.MetaQueryResult.NoData" /> field is initialized by checking that the resources mentioned in the query are present in the store (with <see cref="M:SemWeb.Store.Contains(SemWeb.Resource)" />).</remarks>
       </Docs>
+      <ImplementsInterfaceMethods>
+        <InterfaceImpl Type="SemWeb.QueryableSource" Member="MetaQuery" cref="M:SemWeb.QueryableSource.MetaQuery(SemWeb.Statement[],SemWeb.Query.QueryOptions)" />
+      </ImplementsInterfaceMethods>
     </Member>
     <Member MemberName="Query">
       <MemberSignature Language="C#" Value="public void Query (SemWeb.Statement[] graph, SemWeb.Query.QueryOptions options, SemWeb.Query.QueryResultSink sink);" />
@@ -618,6 +672,9 @@ For Sqlite, MySQL, and PostgreSQL-based stores, use the spec string described in
         <summary>Queries the store with a simple graph match query.</summary>
         <remarks>See <see cref="T:SemWeb.QueryableSource" /> for more information.  The default implementation of this method uses the <see cref="T:SemWeb.Query.GraphMatch" /> class to answer the query.</remarks>
       </Docs>
+      <ImplementsInterfaceMethods>
+        <InterfaceImpl Type="SemWeb.QueryableSource" Member="Query" cref="M:SemWeb.QueryableSource.Query(SemWeb.Statement[],SemWeb.Query.QueryOptions,SemWeb.Query.QueryResultSink)" />
+      </ImplementsInterfaceMethods>
     </Member>
     <Member MemberName=".ctor">
       <MemberSignature Language="C#" Value="public Store (SemWeb.SelectableSource source);" />
@@ -777,6 +834,9 @@ n3:file1.n3|n3:file2.n3|...  (loads each of the files into memory and returns a 
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
       </Docs>
+      <ImplementsInterfaceMethods>
+        <InterfaceImpl Type="SemWeb.StaticSource" Member="GetBNodeFromPersistentId" cref="M:SemWeb.StaticSource.GetBNodeFromPersistentId(System.String)" />
+      </ImplementsInterfaceMethods>
     </Member>
     <Member MemberName="GetPersistentBNodeId">
       <MemberSignature Language="C#" Value="public string GetPersistentBNodeId (SemWeb.BNode node);" />
@@ -793,6 +853,9 @@ n3:file1.n3|n3:file2.n3|...  (loads each of the files into memory and returns a 
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
       </Docs>
+      <ImplementsInterfaceMethods>
+        <InterfaceImpl Type="SemWeb.StaticSource" Member="GetPersistentBNodeId" cref="M:SemWeb.StaticSource.GetPersistentBNodeId(SemWeb.BNode)" />
+      </ImplementsInterfaceMethods>
     </Member>
     <Member MemberName="Query">
       <MemberSignature Language="C#" Value="public System.Collections.Generic.ICollection&lt;SemWeb.Query.VariableBindings&gt; Query (SemWeb.Statement[] graph);" />
