@@ -332,7 +332,11 @@ namespace SemWeb {
 			if (dt == "float") return XmlConvert.ToSingle(Value);
 			if (dt == "double") return XmlConvert.ToDouble(Value);
 			if (dt == "duration") return XmlConvert.ToTimeSpan(Value);
+			#if !DOTNET2
 			if (dt == "dateTime" || dt == "time" || dt == "date") return XmlConvert.ToDateTime(Value);
+			#else
+			if (dt == "dateTime" || dt == "time" || dt == "date") return XmlConvert.ToDateTime(Value, XmlDateTimeSerializationMode.Utc);
+			#endif
 			if (dt == "long") return XmlConvert.ToInt64(Value);
 			if (dt == "int") return XmlConvert.ToInt32(Value);
 			if (dt == "short") return XmlConvert.ToInt16(Value);
