@@ -7,6 +7,8 @@
 	  direct SPARQL-formatted queries on the end point through
 	  new interface SparqlSource. (File Remote.cs also renamed to
 	  SparqlClient.cs.)
+	* Added a new example in examples/sparql1.cs for using
+	  the SparqlHttpSource for making SPARQL queries in various ways.
 	* RdfReader: Create method accepts more MIME types, new
 	  Create(string,Stream) method added.
 	* New class: QueryResultBuffer.
