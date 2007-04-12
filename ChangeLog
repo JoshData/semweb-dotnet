@@ -1,3 +1,5 @@
+2007-04-12 Version 0.86 -- New SPARQL methods and code clean-up
+
 	* Renamed: Sparql class to SparqlEngine.
 	* Renamed: SparqlProtocol class to SparqlProtocolServerHandler.
 	* SparqlXmlQuerySink: The spec changed a year ago and unbound
@@ -13,6 +15,8 @@
 	  Create(string,Stream) method added.
 	* New class: QueryResultBuffer.
 	* VariableBindings: New this[string] method.
+	* VisualStudio project files actually included in the deployment
+	  package now (oops).
 
 2007-03-31 Version 0.85 -- Major Refactoring Release
 
