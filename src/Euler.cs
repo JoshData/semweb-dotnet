@@ -45,6 +45,8 @@ namespace SemWeb.Inference {
 			if (filter.Subjects == null) filter.Subjects = new Entity[] { new Variable("subject") };
 			if (filter.Predicates == null) filter.Predicates = new Entity[] { new Variable("predicate") };
 			if (filter.Objects == null) filter.Objects = new Entity[] { new Variable("object") };
+
+			if (filter.Metas == null) filter.Metas = new Entity[] { Statement.DefaultMeta };
 			
 			foreach (Statement s in filter) { // until we can operate on filter directly
 				ArrayList evidence = prove(rules, targetModel, new Statement[] { s }, -1);
@@ -63,7 +65,18 @@ namespace SemWeb.Inference {
 			}
 		}
 		
+		private void QueryCheckArg(Statement[] graph) {
+			if (graph == null) throw new ArgumentNullException("graph");
+			foreach (Statement s in graph) {
+				if (s.Subject == null || s.Predicate == null || s.Object == null)
+					throw new ArgumentNullException("Graph statements cannot contain a null subject, predicate, or object. Use a Variable instance instead.");
+				if (s.Meta == null || s.Meta != Statement.DefaultMeta)
+					throw new NotSupportedException("Graph statements' meta fields must be Statement.DefaultMeta. Other values of meta are not currently supported.");
+			}
+		}
+		
 		public override SemWeb.Query.MetaQueryResult MetaQuery(Statement[] graph, SemWeb.Query.QueryOptions options, SelectableSource targetModel) {
+			QueryCheckArg(graph);
 			SemWeb.Query.MetaQueryResult ret = new SemWeb.Query.MetaQueryResult();
 			ret.QuerySupported = true;
 			// TODO: Best to check also whether variables in the query are even known to us.
@@ -71,6 +84,8 @@ namespace SemWeb.Inference {
 		}
 		
 		public override void Query(Statement[] graph, SemWeb.Query.QueryOptions options, SelectableSource targetModel, SemWeb.Query.QueryResultSink sink) {
+			QueryCheckArg(graph);
+
 			// Try to do the inferencing.
 			ArrayList evidence = prove(rules, targetModel, graph, -1);
 			if (evidence == null)
