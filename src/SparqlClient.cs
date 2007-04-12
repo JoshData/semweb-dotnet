@@ -16,7 +16,7 @@ namespace SemWeb.Remote {
 
 	public interface SparqlSource {
 		void RunSparqlQuery(string sparqlQuery, TextWriter output);
-		bool AskSparqlQuery(string sparqlQuery);
+		void RunSparqlQuery(string sparqlQuery, out bool askResult);
 		void RunSparqlQuery(string sparqlQuery, StatementSink statementResults);
 		void RunSparqlQuery(string sparqlQuery, QueryResultSink selectResults);
 	}
@@ -36,10 +36,10 @@ namespace SemWeb.Remote {
 			Load(sparqlQuery, output);
 		}
 		
-		public bool AskSparqlQuery(string sparqlQuery) {
+		public void RunSparqlQuery(string sparqlQuery, out bool askResult) {
 			BooleanWrap bw = new BooleanWrap();
 			Load(sparqlQuery, bw);
-			return bw.value;
+			askResult = bw.value;
 		}
 		
 		public void RunSparqlQuery(string sparqlQuery, StatementSink statementResults) {
@@ -212,7 +212,7 @@ namespace SemWeb.Remote {
 					throw new ArgumentException("Invalid URI: " + r.Uri);
 				return "<" + r.Uri + ">";
 			} else {
-				throw new ArgumentException("Blank node in select not supported.");
+				throw new NotSupportedException("Blank node in select not supported.");
 			}
 		}
 		
@@ -249,15 +249,35 @@ namespace SemWeb.Remote {
 					stream.Write(data, 0, data.Length);
 			}
 			
-			System.Net.WebResponse resp = rq.GetResponse();
-			
-			string mimetype = resp.ContentType;
-			if (mimetype.IndexOf(';') > -1)
-				mimetype = mimetype.Substring(0, mimetype.IndexOf(';'));
-				
+			System.Net.HttpWebResponse resp = (System.Net.HttpWebResponse)rq.GetResponse();
+			try {
+				string mimetype = resp.ContentType;
+				if (mimetype.IndexOf(';') > -1)
+					mimetype = mimetype.Substring(0, mimetype.IndexOf(';'));
+					
+				ProcessResponse(mimetype, resp.GetResponseStream(), outputObj);
+			} finally {
+				resp.Close();
+			}
+		}
+		
+		public static void ParseSparqlResponse(Stream sparqlResponse, QueryResultSink queryResults) {
+			ProcessResponse(null, sparqlResponse, queryResults);
+		}
+		
+		public static void ParseSparqlResponse(Stream sparqlResponse, out bool askResult) {
+			BooleanWrap bw = new BooleanWrap();
+			ProcessResponse(null, sparqlResponse, bw);
+			askResult = bw.value;
+		}
+
+		private static void ProcessResponse(string mimetype, Stream stream, object outputObj) {
+		
+			// If the user wants the output sent to a TextWriter, copy the response from
+			// the response stream to the TextWriter. TODO: Get encoding from HTTP header.
 			if (outputObj is TextWriter) {
 				TextWriter tw = (TextWriter)outputObj;
-				using (StreamReader reader = new StreamReader(resp.GetResponseStream(), System.Text.Encoding.UTF8)) {
+				using (StreamReader reader = new StreamReader(stream, System.Text.Encoding.UTF8)) {
 					char[] buffer = new char[512];
 					while (true) {
 						int len = reader.Read(buffer, 0, buffer.Length);
@@ -268,16 +288,17 @@ namespace SemWeb.Remote {
 				tw.Flush();
 				return;
 			}
-				
+			
+			// If the user wants a boolean out of this, then we're expecting a
+			// SPARQL XML Results document with a boolean response element.
 			if (outputObj is BooleanWrap) {
 				BooleanWrap bw = (BooleanWrap)outputObj;
 				
-				if (mimetype != "application/sparql-results+xml")
+				if (mimetype != null && mimetype != "application/sparql-results+xml" && mimetype != "text/xml")
 					throw new ApplicationException("The result of the query was not a SPARQL Results document.");
 					
-				using (StreamReader reader = new StreamReader(resp.GetResponseStream(), System.Text.Encoding.UTF8)) {
-					XmlReader xmldoc = new XmlTextReader(reader);
-
+				XmlReader xmldoc = new XmlTextReader(stream);
+				{
 					// Move to the document element
 					while (xmldoc.Read())
 						if (xmldoc.NodeType == XmlNodeType.Element) break;
@@ -308,20 +329,21 @@ namespace SemWeb.Remote {
 				return;
 			}
 			
+			// If the user wants statements out of the response, read it with an RDFReader.
 			if (outputObj is StatementSink) {
 				// If the mime type is application/sparql-results+xml, just try to
 				// read it as if it were an RDF/XML MIME type.
-				if (mimetype == "application/sparql-results+xml") mimetype = "text/xml";
-				using (StreamReader stream = new StreamReader(resp.GetResponseStream(), System.Text.Encoding.UTF8))
-					using (RdfReader reader = RdfReader.Create(mimetype, stream))
-						reader.Select((StatementSink)outputObj);
+				if (mimetype != null && mimetype == "application/sparql-results+xml") mimetype = "text/xml";
+				using (RdfReader reader = RdfReader.Create(mimetype, stream))
+					reader.Select((StatementSink)outputObj);
 				return;
 			}
 			
+			// If the user wants query result bindings, read the response XML.
 			if (outputObj is QueryResultSink) {
 				QueryResultSink sink = (QueryResultSink)outputObj;
 			
-				if (mimetype != "application/sparql-results+xml")
+				if (mimetype != null && mimetype != "application/sparql-results+xml" && mimetype != "text/xml")
 					throw new ApplicationException("The result of the query was not a SPARQL Results document.");
 					
 				ArrayList variableNames = new ArrayList();
@@ -329,9 +351,8 @@ namespace SemWeb.Remote {
 				Variable[] variablesArray = null;
 				Hashtable bnodes = new Hashtable();
 
-				using (StreamReader reader = new StreamReader(resp.GetResponseStream(), System.Text.Encoding.UTF8)) {
-					XmlReader xmldoc = new XmlTextReader(reader);
-
+				XmlReader xmldoc = new XmlTextReader(stream);
+				{
 					// Move to the document element
 					while (xmldoc.Read())
 						if (xmldoc.NodeType == XmlNodeType.Element) break;
@@ -567,3 +588,98 @@ namespace SemWeb.Remote {
 	}
 }
 
+namespace SemWeb.Query {
+	public class SparqlXmlQuerySink : QueryResultSink {
+		System.Xml.XmlWriter output;
+		
+		int blankNodeCounter = 0;
+		Hashtable blankNodes = new Hashtable();
+		
+		private static System.Xml.XmlWriter GetWriter(System.IO.TextWriter writer) {
+			System.Xml.XmlTextWriter w = new System.Xml.XmlTextWriter(writer);
+			w.Formatting = System.Xml.Formatting.Indented;
+			return w;
+		}
+		
+		public SparqlXmlQuerySink(TextWriter output)
+		 : this(GetWriter(output)) {
+		}
+
+		public SparqlXmlQuerySink(System.Xml.XmlWriter output) {
+			this.output = output;
+		}
+		
+		public override void AddComments(string comments) {
+			if (comments != null && comments.Length > 0)
+				output.WriteComment(comments);
+		}
+		
+		public override void Init(Variable[] variables, bool distinct, bool ordered) {
+			output.WriteStartElement("sparql");
+			output.WriteAttributeString("xmlns", "http://www.w3.org/2005/sparql-results#");
+			output.WriteStartElement("head");
+			foreach (Variable var in variables) {
+				if (var.LocalName == null) continue;
+				output.WriteStartElement("variable");
+				output.WriteAttributeString("name", var.LocalName);
+				output.WriteEndElement();
+			}
+			output.WriteEndElement(); // head
+			output.WriteStartElement("results");
+			output.WriteAttributeString("ordered", ordered ? "true" : "false");
+			output.WriteAttributeString("distinct", distinct ? "true" : "false");
+			
+			// instead of <results>, we might want <boolean>true</boolean>
+		}
+		
+		public override bool Add(VariableBindings result) {
+			output.WriteStartElement("result");
+			for (int i = 0; i < result.Count; i++) {
+				Variable var = result.Variables[i];
+				Resource val = result.Values[i];
+				
+				if (var.LocalName == null) continue;
+				if (val == null) continue;
+				
+				output.WriteStartElement("binding");
+				output.WriteAttributeString("name", var.LocalName);
+				
+				if (val.Uri != null) {
+					output.WriteElementString("uri", val.Uri);
+				} else if (val is Literal) {
+					output.WriteStartElement("literal");
+					Literal literal = (Literal)val;
+					if (literal.DataType != null)
+						output.WriteAttributeString("datatype", literal.DataType);
+					if (literal.Language != null)
+						output.WriteAttributeString("xml", "lang", null, literal.Language);
+					output.WriteString(literal.Value);
+					output.WriteEndElement();				
+				} else {
+					string id;
+					if (blankNodes.ContainsKey(val))
+						id = (string)blankNodes[val];
+					else {
+						id = "r" + (++blankNodeCounter);
+						blankNodes[val] = id;
+					}
+					output.WriteStartElement("bnode");
+					output.WriteString(id);
+					output.WriteEndElement();
+				}
+				
+				output.WriteEndElement();
+			}
+			output.WriteEndElement();
+			
+			return true;
+		}
+		
+		public override void Finished() {
+			output.WriteEndElement(); // results
+			output.WriteEndElement(); // sparql
+			output.Flush();
+		}
+	}
+
+}	
