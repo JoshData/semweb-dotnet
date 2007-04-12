@@ -94,7 +94,7 @@ namespace SemWeb {
 			}
 		}
 		
-		public static RdfReader Create(string type, TextReader source) {
+		public static RdfReader Create(string type, Stream source) {
 			switch (type) {
 				case "xml":
 				case "text/xml":
@@ -107,7 +107,7 @@ namespace SemWeb {
 				case "application/n3":
 				case "application/turtle":
 				case "application/x-turtle":
-					return new N3Reader(source);
+					return new N3Reader(new StreamReader(source, System.Text.Encoding.UTF8));
 				default:
 					throw new ArgumentException("Unknown parser or MIME type: " + type);
 			}

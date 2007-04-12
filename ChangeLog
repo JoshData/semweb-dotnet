@@ -8,9 +8,9 @@
 	  new interface SparqlSource. (File Remote.cs also renamed to
 	  SparqlClient.cs.)
 	* RdfReader: Create method accepts more MIME types, new
-	  Create(string,TextReader) method added.
-	* New class QueryResultBuffer.
-	* VariableBindings has new this[string] method.
+	  Create(string,Stream) method added.
+	* New class: QueryResultBuffer.
+	* VariableBindings: New this[string] method.
 
 2007-03-31 Version 0.85 -- Major Refactoring Release
 
