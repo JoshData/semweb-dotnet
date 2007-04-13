@@ -182,6 +182,7 @@ namespace SemWeb.Stores {
 		protected abstract bool SupportsInsertCombined { get; }
 		protected abstract bool SupportsSubquery { get; }
 		protected virtual bool SupportsViews { get { return false; } }
+		protected virtual int MaximumUriLength { get { return -1; } }
 		
 		protected abstract void CreateNullTest(string column, System.Text.StringBuilder command);
 		protected abstract void CreateLikeTest(string column, string prefix, int method, System.Text.StringBuilder command);
@@ -460,8 +461,8 @@ namespace SemWeb.Stores {
 			
 			// If we got here, no such resource exists and create is true.
 			
-			if (uri.Length > 255)
-				throw new NotSupportedException("URIs must be a maximum of 255 characters for this store due to indexing constraints (before MySQL 4.1.2).");
+			if (MaximumUriLength != -1 && uri.Length > MaximumUriLength)
+				throw new NotSupportedException("URI exceeds maximum length supported by data store.");
 
 			id = NextId();
 			

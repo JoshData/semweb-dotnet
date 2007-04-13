@@ -1,3 +1,6 @@
+	* SQLStore/MySQLStore: Moved 255 character limit on URIs
+	  to MySQLStore for MySQL < 4.1.2.
+
 2007-04-12 Version 0.86 -- New SPARQL methods and code clean-up
 
 	* Renamed: Sparql class to SparqlEngine.

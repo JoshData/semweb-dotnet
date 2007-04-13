@@ -30,6 +30,7 @@ namespace SemWeb.Stores {
 		protected override bool SupportsInsertCombined { get { return true; } }
 		protected override bool SupportsSubquery { get { return true; } }
 		protected override bool SupportsViews { get { return version >= new Version(5,0,1,0); } }
+		protected override int MaximumUriLength { get { return version >= new Version(4,1,2) ? -1 : 255; } }
 		
 		protected override void CreateNullTest(string column, System.Text.StringBuilder command) {
 			command.Append("ISNULL(");
