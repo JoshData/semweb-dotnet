@@ -119,7 +119,7 @@ package: all
 	rm -rf package-workspace
 	mkdir -p package-workspace/semweb-$(VERSION)
 	cp -R bin bin_generics src tools apidocs doc \
-		ChangeLog Makefile README.txt semweb.mds semweb.sln src/*.mdp src/*.csproj \
+		ChangeLog Makefile README.txt semweb.mds semweb.sln \
 		package-workspace/semweb-$(VERSION)
 	mkdir package-workspace/semweb-$(VERSION)/examples
 	cp examples/*.cs examples/Makefile examples/README.txt examples/getsomedata.sh \
