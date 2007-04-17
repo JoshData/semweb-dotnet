@@ -231,7 +231,7 @@ namespace SemWeb {
 		public Literal(string value, string language, string dataType) {
 		  if (value == null)
 			  throw new ArgumentNullException("value");
-		  this.value = string.Intern(value);
+		  this.value = value;
 		  this.lang = language;
 		  this.type = dataType;
 		  
