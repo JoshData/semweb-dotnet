@@ -180,7 +180,21 @@ namespace SemWeb {
 		public Store(SelectableSource source) {
 			AddSource(source);
 		}
-
+		
+		#if !DOTNET2
+		public IList DataSources {
+			get {
+				return ArrayList.ReadOnly(allsources);
+			}
+		}
+		#else
+		public IList<SelectableSource> DataSources {
+			get {
+				return new List<SelectableSource>(allsources);
+			}
+		}
+		#endif
+				
 		public virtual void AddSource(SelectableSource source) {
 			if (source is MemoryStore) source = ((MemoryStore)source).impl;
 			unnamedgraphs.Add(source);
