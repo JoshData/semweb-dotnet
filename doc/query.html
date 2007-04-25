@@ -170,7 +170,8 @@ $ mono rdfstorage.exe --out "sqlite:rdf:Uri=file:congress.sqlite;version=3" peop
 
 <h2>SPARQL Queries</h2>
 
-<p>SemWeb uses the <a href="http://sourceforge.net/projects/sparql/">SPARQL query engine by Ryan Levering</a>.  The library is written in Java, but for SemWeb I convert it to a .NET assembly using <a href="http://www.ikvm.net/">IKVM</a>.</p>
+<p>For executing SPARQL queries over data sources that don't support SPARQL themselves (i.e. the MemoryStore, SQLStore, etc.),
+SemWeb uses the <a href="http://sourceforge.net/projects/sparql/">SPARQL query engine by Ryan Levering</a>.  The library is written in Java, but for SemWeb I convert it to a .NET assembly using <a href="http://www.ikvm.net/">IKVM</a>.</p>
 
 <p>The advantage of SPARQL over RSquary is that it supports much more complex queries, including
 optional statements, disjunctions/unions, and special filters.</p>
@@ -199,7 +200,12 @@ $ mono rdfquery.exe -type sparql n3:congress.n3 < congress_query.sparql
 
 <p>This has the same output as above.</p>
 
+<p>You can also use the <tt>rdfquery</tt> tool to query a remote SPARQL end point. Invoke it like this:</p>
 
+<pre class="code">
+echo "DESCRIBE <tag:govshare.info,2005:data/us>" | \
+	mono bin/rdfquery.exe -type sparql sparql-http:http://www.govtrack.us/sparql
+</pre>
 
 <h2>Running Queries Programmatically</h2>
 

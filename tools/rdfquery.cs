@@ -59,12 +59,18 @@ public class RDFQuery {
 		System.Collections.Generic.ICollection<Variable> queryModelVars = null;
 		#endif
 		
+		Store model = Store.Create(opts.RemainingArguments[0]);
+		
 		if (opts.type == "rsquary") {
 			RdfReader queryparser = RdfReader.Create("n3", "-");
 			queryparser.BaseUri = baseuri;
 			queryModel = new MemoryStore(queryparser);
 			queryModelVars = queryparser.Variables;
 			query = new GraphMatch(queryModel);
+		} else if (opts.type == "sparql" && model.DataSources.Count == 1 && model.DataSources[0] is SemWeb.Remote.SparqlSource) {
+			string querystring = Console.In.ReadToEnd();
+			((SemWeb.Remote.SparqlSource)model.DataSources[0]).RunSparqlQuery(querystring, Console.Out);
+			return;
 		} else if (opts.type == "sparql") {
 			string querystring = Console.In.ReadToEnd();
 			query = new SparqlEngine(querystring);
@@ -72,8 +78,6 @@ public class RDFQuery {
 			throw new Exception("Invalid query format: " + opts.type);
 		}
 
-		Store model = Store.Create(opts.RemainingArguments[0]);
-		
 		if (opts.limit > 0)
 			query.ReturnLimit = opts.limit;
 
