@@ -1,6 +1,7 @@
 	* SQLStore/MySQLStore: Moved 255 character limit on URIs
 	  to MySQLStore for MySQL < 4.1.2.
 	* Literal: Don't Intern() values. Causes memory bloat.
+	* SparqlEngine: Added some caches to hopefully speed things up.
 
 2007-04-12 Version 0.86 -- New SPARQL methods and code clean-up
 

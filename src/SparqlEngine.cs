@@ -587,6 +587,14 @@ namespace SemWeb.Query {
 				return new Entity(SparqlEngine.BNodePersistUri + ":" + id);
 			}
 			
+			public static org.openrdf.model.Value Wrap(Resource res, Hashtable cache) {
+				if (cache.ContainsKey(res))
+					return (org.openrdf.model.Value)cache[res];
+				org.openrdf.model.Value value = Wrap(res);
+				cache[res] = value;
+				return value;
+			}
+
 			public static org.openrdf.model.Value Wrap(Resource res) {
 				if (res is Literal)
 					return new LiteralWrapper((Literal)res);
@@ -616,10 +624,12 @@ namespace SemWeb.Query {
 			SelectFilter filter;
 			RdfSourceWrapper wrapper;
 			bool wantMetas;
-		
+
 			Statement[] statements;
 			int curindex = -1;
 			
+			Hashtable cache = new Hashtable();
+		
 			public StatementIterator(SelectableSource source, SelectFilter filter, RdfSourceWrapper wrapper, bool wantMetas) {
 				this.source = source;
 				this.filter = filter;
@@ -649,7 +659,7 @@ namespace SemWeb.Query {
 			
 			public object next() {
 				curindex++;
-				return new GraphStatementWrapper(statements[curindex]);
+				return new GraphStatementWrapper(statements[curindex], cache);
 			}
 			
 			public void remove() {
@@ -659,27 +669,28 @@ namespace SemWeb.Query {
 		
 		class GraphStatementWrapper : GraphStatement {
 			public readonly Statement s;
-			public GraphStatementWrapper(Statement statement) {
+			org.openrdf.model.Value S;
+			org.openrdf.model.URI P;
+			org.openrdf.model.Value O;
+			org.openrdf.model.URI G;
+			
+			public GraphStatementWrapper(Statement statement, Hashtable cache) {
 				s = statement;
-			}
-			
-			public org.openrdf.model.URI getGraphName() {
-				return new URIWrapper(s.Meta);
-			}
-			
-			public org.openrdf.model.Value getSubject() {
-				return RdfSourceWrapper.Wrap(s.Subject);
-			}
-	
-			public org.openrdf.model.URI getPredicate() {
+				S = RdfSourceWrapper.Wrap(s.Subject, cache);
 				if (s.Predicate.Uri == null)
 					throw new QueryExecutionException("Statement's predicate is a blank node.");
-				return new URIWrapper(s.Predicate);
+				P = RdfSourceWrapper.Wrap(s.Predicate, cache) as org.openrdf.model.URI;
+				O = RdfSourceWrapper.Wrap(s.Object, cache);
+				G = RdfSourceWrapper.Wrap(s.Meta, cache) as org.openrdf.model.URI;
 			}
+			
+			public org.openrdf.model.URI getGraphName() { return G; }
+			
+			public org.openrdf.model.Value getSubject() { return S; }
 	
-			public org.openrdf.model.Value getObject() {
-				return RdfSourceWrapper.Wrap(s.Object);
-			}
+			public org.openrdf.model.URI getPredicate() { return P; }
+				
+			public org.openrdf.model.Value getObject() { return O; }
 		}
 		
 		class BNodeWrapper : java.lang.Object, org.openrdf.model.BNode {
@@ -695,7 +706,8 @@ namespace SemWeb.Query {
 	
 		class URIWrapper : java.lang.Object, org.openrdf.model.URI {
 			public Entity r;
-			public URIWrapper(Entity res) { r = res; }
+			int hc;
+			public URIWrapper(Entity res) { r = res; hc = java.lang.String.instancehelper_hashCode(r.Uri); }
 			public string getLocalName() { return ""; }
 			public string getNamespace() { return r.Uri; }
 			string org.openrdf.model.URI.toString() { return r.Uri; }
@@ -708,12 +720,13 @@ namespace SemWeb.Query {
 				else
 					return false;
 			}
-			public override int hashCode() { return java.lang.String.instancehelper_hashCode(r.Uri); }
+			public override int hashCode() { return hc; }
 		}
 	
 		class LiteralWrapper : java.lang.Object, org.openrdf.model.Literal {
 			public Literal r;
-			public LiteralWrapper(Literal res) { r = res; }
+			int hc;
+			public LiteralWrapper(Literal res) { r = res; hc = java.lang.String.instancehelper_hashCode(r.Value); }
 			public org.openrdf.model.URI getDatatype() { if (r.DataType == null) return null; return new URIWrapper(r.DataType); }
 			public string getLabel() { return r.Value; }
 			public string getLanguage() { return r.Language; }
@@ -724,7 +737,7 @@ namespace SemWeb.Query {
 					return r.Equals(GetLiteral((org.openrdf.model.Literal)other));
 				return false;
 			}
-			public override int hashCode() { return java.lang.String.instancehelper_hashCode(r.Value); }
+			public override int hashCode() { return hc; }
 			static Literal GetLiteral(org.openrdf.model.Literal literal) {
 				return new Literal(literal.getLabel(), literal.getLanguage(),
 					literal.getDatatype() == null ? null
