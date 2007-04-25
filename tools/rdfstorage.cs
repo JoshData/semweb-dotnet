@@ -82,6 +82,15 @@ public class RDFStorage {
 			}
 		}
 		
+		if (opts.@in == "xml") {
+			// Use file extension to override default parser type.
+			foreach (string file in opts.RemainingArguments) {
+				if (file.EndsWith(".nt") || file.EndsWith(".n3") || file.EndsWith(".ttl"))
+					opts.@in = "n3";
+				break;
+			}
+		}
+		
 		MultiRdfParser multiparser = new MultiRdfParser(opts.RemainingArguments, opts.@in, meta, opts.baseuri, !opts.stats);
 		
 		if (storage is ModifiableSource) {
