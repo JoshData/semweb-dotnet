@@ -37,6 +37,20 @@ namespace SemWeb.Query {
 		public IDictionary<Variable,ICollection<LiteralFilter>> VariableLiteralFilters;
 		#endif
 		
+		public void AddDistinguishedVariable(Variable variable) {
+			if (DistinguishedVariables == null)
+				#if !DOTNET2
+				DistinguishedVariables = new ArrayList();
+				#else
+				DistinguishedVariables = new List<Variable>();
+				#endif
+			#if !DOTNET2
+			((IList)DistinguishedVariables).Add(variable);
+			#else
+			((IList<Variable>)DistinguishedVariables).Add(variable);
+			#endif
+		}
+		
 		public void SetVariableKnownValues(Variable variable, ResList knownValues) {
 			if (VariableKnownValues == null)
 			#if !DOTNET2
@@ -57,6 +71,41 @@ namespace SemWeb.Query {
 				VariableLiteralFilters[variable] = list;
 			}
 			list.Add(filter);
+		}
+		
+		internal QueryOptions Clone() {
+			QueryOptions ret = new QueryOptions();
+			ret.Limit = Limit;
+
+			#if !DOTNET2
+			if (DistinguishedVariables != null)
+				ret.DistinguishedVariables = new ArrayList(DistinguishedVariables);
+			if (VariableKnownValues != null) {
+				ret.VariableKnownValues = new Hashtable();
+				foreach (Variable v in VariableKnownValues.Keys)
+					ret.VariableKnownValues[v] = new ArrayList((ICollection)VariableKnownValues[v]);
+			}
+			if (VariableLiteralFilters != null) {
+				ret.VariableLiteralFilters = new Hashtable();
+				foreach (Variable v in VariableLiteralFilters.Keys)
+					ret.VariableLiteralFilters[v] = new ArrayList((ICollection)VariableLiteralFilters[v]);
+			}
+			#else
+			if (DistinguishedVariables != null)
+				ret.DistinguishedVariables = new List<Variable>(DistinguishedVariables);
+			if (VariableKnownValues != null) {
+				ret.VariableKnownValues = new Dictionary<Variable,ICollection<Resource>>();
+				foreach (Variable v in VariableKnownValues.Keys)
+					ret.VariableKnownValues[v] = new List<Resource>(VariableKnownValues[v]);
+			}
+			if (VariableLiteralFilters != null) {
+				ret.VariableLiteralFilters = new Dictionary<Variable,ICollection<LiteralFilter>>();
+				foreach (Variable v in VariableLiteralFilters.Keys)
+					ret.VariableLiteralFilters[v] = new List<LiteralFilter>(VariableLiteralFilters[v]);
+			}
+			#endif
+			
+			return ret;
 		}
 	}
 	
@@ -127,9 +176,12 @@ namespace SemWeb.Query {
 
 		#if !DOTNET2
 		ArrayList bindings = new ArrayList();
+		ArrayList comments = new ArrayList();
 		#else
 		List<VariableBindings> bindings = new List<VariableBindings>();
+		List<string> comments = new List<string>();
 		#endif
+		
 
 		public override void Init(Variable[] variables, bool distinct, bool ordered) {
 			this.variables = new Variable[variables.Length];
@@ -141,12 +193,18 @@ namespace SemWeb.Query {
 			return true;
 		}
 		
+		public override void AddComments(string comment) {
+			comments.Add(comment);
+		}
+		
 		public Variable[] Variables { get { return variables; } }
 
 		#if !DOTNET2
 		public IList Bindings { get { return bindings; } }
+		public IList Comments { get { return comments; } }
 		#else
 		public List<VariableBindings> Bindings { get { return bindings; } }
+		public List<string> Comments { get { return comments; } }
 		#endif
 		
 		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() {

@@ -5,6 +5,7 @@
 	  to MySQLStore for MySQL < 4.1.2.
 	* Literal: Don't Intern() values. Causes memory bloat.
 	* SparqlEngine: Added some caches to hopefully speed things up.
+	* QueryOptions: Added helper method AddDistinguishedVariable.
 	* rdfquery.exe: When running a query on a sparql-http (i.e.
 	  SparqlHttpSource), don't use SparqlEngine; send the SPARQL
 	  query directly to the remote end point. See the docs for an
