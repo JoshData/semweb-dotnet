@@ -1102,6 +1102,14 @@ namespace SemWeb.Stores {
 			}
 		}
 		
+		void CleanMultiRes(MultiRes res) {
+			ArrayList newitems = new ArrayList();
+			foreach (Resource r in res.items)
+				if (GetResourceKey(r) != null)
+					newitems.Add(r);
+			res.items = (Resource[])newitems.ToArray(typeof(Resource));
+		}
+		
 		void CacheMultiObjects(Hashtable entMap, Resource obj) {
 			if (!(obj is MultiRes)) return;
 			foreach (Resource r in ((MultiRes)obj).items)
@@ -1119,6 +1127,72 @@ namespace SemWeb.Stores {
 					return true;
 			}
 			return false;
+		}
+		
+		void PrefetchResourceIds(IList resources) {
+			StringBuilder cmd_e = new StringBuilder();
+			cmd_e.Append("SELECT id, value FROM ");
+			cmd_e.Append(table);
+			cmd_e.Append("_entities WHERE value IN (");
+			Hashtable seen_e = new Hashtable();
+			bool hasEnts = false;
+
+			StringBuilder cmd_l = new StringBuilder();
+			cmd_l.Append("SELECT id, hash FROM ");
+			cmd_l.Append(table);
+			cmd_l.Append("_literals WHERE hash IN (");
+			bool hasLiterals = false;
+			Hashtable seen_l = new Hashtable();
+
+			foreach (Resource r in resources) {
+				if (GetResourceKey(r) != null) // no need to prefetch
+					continue;
+			
+				if (r.Uri != null) {
+					if (seen_e.ContainsKey(r.Uri)) continue;
+					if (hasEnts)
+						cmd_e.Append(" , ");
+					EscapedAppend(cmd_e, r.Uri);
+					hasEnts = true;
+					seen_e[r.Uri] = r;
+				}
+
+				Literal lit = r as Literal;
+				if (lit != null) {
+					string hash = GetLiteralHash(lit);
+					if (seen_l.ContainsKey(hash)) continue;
+					
+					if (hasLiterals)
+						cmd_l.Append(" , ");
+					cmd_l.Append(quote);
+					cmd_l.Append(hash);
+					cmd_l.Append(quote);
+					hasLiterals = true;
+					seen_l[hash] = lit;
+				}
+			}
+			if (hasEnts) {
+				cmd_e.Append(");");
+				if (Debug) Console.Error.WriteLine(cmd_e.ToString());
+				using (IDataReader reader = RunReader(cmd_e.ToString())) {
+					while (reader.Read()) {
+						int id = reader.GetInt32(0);
+						string uri = AsString(reader[1]);
+						SetResourceKey((Entity)seen_e[uri], new ResourceKey(id));
+					}
+				}
+			}
+				
+			if (hasLiterals) {
+				cmd_l.Append(");");
+				using (IDataReader reader = RunReader(cmd_l.ToString())) {
+					while (reader.Read()) {
+						int id = reader.GetInt32(0);
+						string hash = AsString(reader[1]);
+						SetResourceKey((Literal)seen_l[hash], new ResourceKey(id));
+					}
+				}
+			}
 		}
 		
 		public void Select(Statement template, StatementSink result) {
@@ -1163,6 +1237,16 @@ namespace SemWeb.Stores {
 			// Have to select something
 			if (!columns.SubjectId && !columns.PredicateId && !columns.ObjectId && !columns.MetaId)
 				columns.SubjectId = true;
+				
+			// Pre-cache the IDs of resources in a MultiRes. TODO: Pool these into one array.
+			foreach (Resource r in new Resource[] { templateSubject, templatePredicate, templateObject, templateMeta }) {
+				MultiRes mr = r as MultiRes;
+				if (mr == null) continue;
+				PrefetchResourceIds(mr.items);
+				CleanMultiRes(mr);
+				if (mr.items.Length == 0) // no possible values
+					return;
+			}
 				
 			// SQLite has a problem with LEFT JOIN: When a condition is made on the
 			// first table in the ON clause (q.objecttype=0/1), when it fails,
@@ -1257,6 +1341,8 @@ namespace SemWeb.Stores {
 		
 		public void Query(Statement[] graph, SemWeb.Query.QueryOptions options, SemWeb.Query.QueryResultSink sink) {
 			if (graph.Length == 0) throw new ArgumentException("graph array must have at least one element");
+
+			options = options.Clone(); // because we modify the knownvalues array
 			
 			// Order the variables mentioned in the graph.
 			Variable[] varOrder;
@@ -1309,6 +1395,62 @@ namespace SemWeb.Stores {
 			sink.Init(varOrder, false, false);
 			
 			Hashtable varLitFilters = new Hashtable();
+			
+			// Prefetch the IDs of all resources mentioned in the graph and in variable known values.
+			// For Resources in the graph that are not in the store, the query immediately fails.
+			{
+				ArrayList graphResources = new ArrayList();
+				foreach (Statement s in graph) {
+					for (int i = 0; i < 4; i++) {
+						Resource r = s.GetComponent(i);
+						if (!(r is BNode)) // definitely exclude variables, but bnodes are useless too
+							graphResources.Add(r);
+					}
+				}
+				if (options.VariableKnownValues != null)
+					foreach (ICollection values in options.VariableKnownValues.Values)
+						graphResources.AddRange(values);
+
+				PrefetchResourceIds(graphResources);
+				
+				// Check resources in graph and fail fast if any is not in the store.
+				foreach (Statement s in graph) {
+					for (int i = 0; i < 4; i++) {
+						Resource r = s.GetComponent(i);
+						if (r is Variable) continue;
+						if (GetResourceKey(r) == null) {
+							sink.AddComments("Resource " + r + " is not contained in the data model.");
+							sink.Finished();
+							return;
+						}
+					}
+				}
+				
+				// Check variable known values and remove any values not in the store.
+				// Don't do any fail-fasting here because there might be entries in this
+				// dictionary that aren't even used in this query (yes, poor design).
+				// We check later anyway.
+				if (options.VariableKnownValues != null) {
+					#if !DOTNET2
+					foreach (Variable v in new ArrayList(options.VariableKnownValues.Keys)) {
+					#else
+					foreach (Variable v in new System.Collections.Generic.List<Variable>(options.VariableKnownValues.Keys)) {
+					#endif
+						#if !DOTNET2
+						ArrayList newvalues = new ArrayList();
+						#else
+						System.Collections.Generic.List<Resource> newvalues = new System.Collections.Generic.List<Resource>();
+						#endif
+						
+						foreach (Resource r in (ICollection)options.VariableKnownValues[v]) {
+							if (GetResourceKey(r) != null)
+								newvalues.Add(r);
+						}
+
+						options.VariableKnownValues[v] = newvalues;
+					}
+				}
+			}
 			
 			// Helpers
 			
@@ -1403,8 +1545,10 @@ namespace SemWeb.Stores {
 								#endif
 									values = (ICollection)options.VariableKnownValues[v];
 								if (values != null) {
-									if (values.Count == 0)
+									if (values.Count == 0) {
+										sink.Finished();
 										return;
+									}
 									Resource r = ToMultiRes((Resource[])new ArrayList(values).ToArray(typeof(Resource)));
 									if (!WhereItem(myRef, r, whereClause, whereClause.Length != 0)) {
 										// We know at this point that the query cannot return any results.

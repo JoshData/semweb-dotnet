@@ -1,6 +1,9 @@
 	* RdfXmlWriter: Fixed another bug where empty Description
 	  nodes inside predicates seemed to vanish (which may actually be 
 	  compliant, but looked weird).
+	* SQLStore: Always pre-fetch the database IDs of resources being
+	  Select'ed/Query'd on en mass so we don't send individual
+	  SELECTs per resource to get their IDs later.
 	* SQLStore/MySQLStore: Moved 255 character limit on URIs
 	  to MySQLStore for MySQL < 4.1.2.
 	* Literal: Don't Intern() values. Causes memory bloat.
