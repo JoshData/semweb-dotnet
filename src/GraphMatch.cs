@@ -269,10 +269,10 @@ namespace SemWeb.Query {
 					}
 					
 					#if !DOTNET2
-					if (s.Object is Variable && litFilters[(Variable)s.Object] != null)
+					if (litFilters != null && s.Object is Variable && litFilters[(Variable)s.Object] != null)
 						f.LiteralFilters = (LiteralFilter[])((LitFilterList)litFilters[(Variable)s.Object]).ToArray(typeof(LiteralFilter));
 					#else
-					if (s.Object is Variable && litFilters.ContainsKey((Variable)s.Object))
+					if (litFilters != null && s.Object is Variable && litFilters.ContainsKey((Variable)s.Object))
 						f.LiteralFilters = ((LitFilterList)litFilters[(Variable)s.Object]).ToArray();
 					#endif
 					
@@ -304,10 +304,11 @@ namespace SemWeb.Query {
 					foreach (Variable v in foundValues.Keys)
 						if (foundValues[v] != null)
 							opts.SetVariableKnownValues(v, (Resource[])foundValues[v]);
-					foreach (Variable v in litFilters.Keys)
-						if (litFilters[v] != null)
-							foreach (LiteralFilter f in (System.Collections.ICollection)litFilters[v]) 
-								opts.AddLiteralFilter(v, f);
+					if (litFilters != null)
+						foreach (Variable v in litFilters.Keys)
+							if (litFilters[v] != null)
+								foreach (LiteralFilter f in (System.Collections.ICollection)litFilters[v]) 
+									opts.AddLiteralFilter(v, f);
 					
 					// The distinguished variables for this part are any that are distinguished for
 					// the query plus any that we need to tie these results to past and future
@@ -332,6 +333,10 @@ namespace SemWeb.Query {
 					foreach (QueryableSource source in part.Sources) {
 						QueryResultBuffer partsink = new QueryResultBuffer();
 						source.Query(part.Graph, opts, partsink);
+
+						foreach (string comment in partsink.Comments)
+							result.AddComments(source.ToString() + ": " + comment);
+							
 						if (vars == null) {
 							vars = new Variable[partsink.Variables.Length];
 							partsink.Variables.CopyTo(vars, 0);	
