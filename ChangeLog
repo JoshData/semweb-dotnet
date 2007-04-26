@@ -1,3 +1,6 @@
+	* RdfXmlWriter: Fixed another bug where empty Description
+	  nodes inside predicates seemed to vanish (which may actually be 
+	  compliant, but looked weird).
 	* SQLStore/MySQLStore: Moved 255 character limit on URIs
 	  to MySQLStore for MySQL < 4.1.2.
 	* Literal: Don't Intern() values. Causes memory bloat.

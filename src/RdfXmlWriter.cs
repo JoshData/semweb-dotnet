@@ -317,7 +317,7 @@ namespace SemWeb {
 
 				} else {
 					// Otherwise, we will reference the object with a
-					// rdf:resource attribute.
+					// rdf:resource or rdf:nodeID attribute.
 					
 					// Create the object node at top-level if a node doesn't exist.
 					if (!nodeMap.ContainsKey(statement.Object))
@@ -372,23 +372,25 @@ namespace SemWeb {
 			}
 		}
 		
-		public override void Close() {
-			Start(); // make sure the document node was written
-
+		void MakeDocumentNice() {
 			// For any node that was referenced by exactly one predicate,
 			// move the node into that predicate, provided the subject
 			// isn't itself!
 			foreach (DictionaryEntry e in nodeReferences) {
-				if (e.Value == null) continue; // referenced by more than one predicate
 				XmlElement node = (XmlElement)e.Key;
 				XmlElement predicate = (XmlElement)e.Value;
+				
+				// Node is already embedded somewhere.
+				if (node.ParentNode != node.OwnerDocument.DocumentElement)
+					continue;
+				
+				// Node is referenced by more than one predicate
+				if (predicate == null) continue;
 
+				// The option to do this for named nodes is turned off.
 				if (!opts.EmbedNamedNodes && node.HasAttribute("about", NS.RDF))
 					continue;
 				
-				// don't move things already embedded
-				if (node.ParentNode != node.OwnerDocument.DocumentElement) continue;
-
 				// we can have circular references between nodes (also
 				// between a node and itself),
 				// which we can't nicely collapse this way.  Make sure
@@ -428,15 +430,17 @@ namespace SemWeb {
 				if (obj.Attributes.Count == 1 && obj.Attributes[0].NamespaceURI+obj.Attributes[0].LocalName != NS.RDF+"about") continue;
 				
 				// See if all its predicates are literal with no attributes.
+				bool hasSimpleLits = false;
 				bool allSimpleLits = true;
 				foreach (XmlElement opred in obj.ChildNodes) {
 					if (opred.FirstChild is XmlElement)
 						allSimpleLits = false;
 					if (opred.Attributes.Count > 0)
 						allSimpleLits = false;
+					hasSimpleLits = true;
 				}
 						
-				if (allSimpleLits && obj.ChildNodes.Count <= 3) {
+				if (hasSimpleLits && allSimpleLits && obj.ChildNodes.Count <= 3) {
 					if (!opts.UsePredicateAttributes) continue;
 				
 					// Condense by moving all of obj's elements to attributes of the predicate,
@@ -459,6 +463,12 @@ namespace SemWeb {
 					SetAttribute(pred, NS.RDF, ns.GetPrefix(NS.RDF), "parseType", "Resource");
 				}
 			}
+		}
+		
+		public override void Close() {
+			Start(); // make sure the document node was written
+			
+			MakeDocumentNice();
 
 			base.Close();
 			
