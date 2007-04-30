@@ -501,7 +501,7 @@ namespace SemWeb {
 			}
 
 			// Chunk the query graph as best we can.
-			SemWeb.Query.GraphMatch.QueryPart[] chunks = ChunkQuery(graph, options);
+			SemWeb.Query.GraphMatch.QueryPart[] chunks = ChunkQuery(graph, options, sink);
 			
 			// If we couldn't chunk the graph, then just use the default GraphMatch implementation.
 			if (chunks == null) {
@@ -513,7 +513,7 @@ namespace SemWeb {
 				0, options.Limit, true, sink);
 		}
 		
-		private SemWeb.Query.GraphMatch.QueryPart[] ChunkQuery(Statement[] query, SemWeb.Query.QueryOptions options) {
+		private SemWeb.Query.GraphMatch.QueryPart[] ChunkQuery(Statement[] query, SemWeb.Query.QueryOptions options, SemWeb.Query.QueryResultSink sink) {
 			// MetaQuery the data sources to get their capabilities.
 			SemWeb.Query.MetaQueryResult[] mq = new SemWeb.Query.MetaQueryResult[allsources.Count];
 			for (int i = 0; i < allsources.Count; i++) {
@@ -535,6 +535,7 @@ namespace SemWeb {
 					// statement in the graph, include this statement in the
 					// current chunk.
 					if (mq[curSource].IsDefinitive != null && mq[curSource].IsDefinitive[j]) {
+						sink.AddComments(allsources[curSource] + " answers definitively: " + query[j]);
 						curStatements.Add(query[j]);
 						continue;
 					}
@@ -570,6 +571,7 @@ namespace SemWeb {
 					if (mq[i].IsDefinitive != null && mq[i].IsDefinitive[j]) {
 						curSource = i;
 						curStatements.Add(query[j]);
+						sink.AddComments(allsources[i] + " answers definitively: " + query[j]);
 						break;
 					}
 				}
@@ -593,6 +595,10 @@ namespace SemWeb {
 					curSource = findSource;
 					curStatements.Add(query[j]);
 					continue;
+				}
+				if (answerables.Count == 0) {
+					sink.AddComments("No data source could answer: " + query[j]);
+					return null;
 				}
 				
 				// More than one source can answer this, so make a one-statement chunk.
