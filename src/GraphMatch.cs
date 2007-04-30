@@ -288,6 +288,8 @@ namespace SemWeb.Query {
 					result.AddComments("SELECT: " + f + " => " + matches.Count);
 				
 				} else {
+					if (part.Sources.Length == 0)
+						throw new InvalidOperationException();
 					
 					// build a query
 					
