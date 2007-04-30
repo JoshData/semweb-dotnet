@@ -14,6 +14,9 @@
 	  SparqlHttpSource), don't use SparqlEngine; send the SPARQL
 	  query directly to the remote end point. See the docs for an
 	  example.
+	* MySQLStore: Allow an environ variable to control how Import()
+	  transactions are wrapped, default changed to a BEGIN/COMMIT
+	  transaction, since it's less prone to issues.
 
 2007-04-12 Version 0.86 -- New SPARQL methods and code clean-up
 

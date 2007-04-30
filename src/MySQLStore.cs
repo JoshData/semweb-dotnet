@@ -19,6 +19,20 @@ namespace SemWeb.Stores {
 		Version version;
 		
 		static bool Debug = System.Environment.GetEnvironmentVariable("SEMWEB_DEBUG_MYSQL") != null;
+		static string ImportMode;
+		static bool DoAnalyze;
+		
+		static MySQLStore() {
+			string mode = System.Environment.GetEnvironmentVariable("SEMWEB_MYSQL_IMPORT_MODE");
+			if (mode != null) {
+				string[] modeinfo = mode.Split(',');
+				ImportMode = modeinfo[0];
+				if (modeinfo.Length == 2)
+					DoAnalyze = !(modeinfo[1] == "NOANALYZE");
+			}
+			if (ImportMode == null)
+				ImportMode = "TRANSACTION";
+		}
 		
 		public MySQLStore(string connectionString, string table)
 			: base(table) {
@@ -145,19 +159,28 @@ namespace SemWeb.Stores {
 		#endif
 
 		protected override void BeginTransaction() {
-			//RunCommand("BEGIN");
-			//RunCommand("LOCK TABLES " + TableName + "_statements WRITE, " + TableName + "_literals WRITE, " + TableName + "_entities WRITE");
-			RunCommand("ALTER TABLE " + TableName + "_statements DISABLE KEYS");
+			if (ImportMode == "DISABLEKEYS")
+				RunCommand("ALTER TABLE " + TableName + "_statements DISABLE KEYS");
+			else if (ImportMode == "TRANSACTION")
+				RunCommand("BEGIN");
+			else if (ImportMode == "LOCK")
+				RunCommand("LOCK TABLES " + TableName + "_statements WRITE, " + TableName + "_literals WRITE, " + TableName + "_entities WRITE");
+				
 			//RunCommand("ALTER TABLE " + TableName + "_entities DELAY_KEY_WRITE=1");
 			//RunCommand("ALTER TABLE " + TableName + "_literals DELAY_KEY_WRITE=1");
 		}
 		
 		protected override void EndTransaction() {
-			//RunCommand("COMMIT");
-			//RunCommand("UNLOCK TABLES");
 			//RunCommand("ALTER TABLE " + TableName + "_entities DELAY_KEY_WRITE=0");
 			//RunCommand("ALTER TABLE " + TableName + "_literals DELAY_KEY_WRITE=0");
-			RunCommand("ALTER TABLE " + TableName + "_statements ENABLE KEYS");
+			
+			if (ImportMode == "DISABLEKEYS")
+				RunCommand("ALTER TABLE " + TableName + "_statements ENABLE KEYS");
+			else if (ImportMode == "TRANSACTION")
+				RunCommand("COMMIT");
+			else if (ImportMode == "LOCK")
+				RunCommand("UNLOCK TABLES");
+				
 			RunCommand("ANALYZE TABLE " + TableName + "_entities");
 			RunCommand("ANALYZE TABLE " + TableName + "_literals");
 			RunCommand("ANALYZE TABLE " + TableName + "_statements");
