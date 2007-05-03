@@ -471,7 +471,7 @@ namespace SemWeb.Query {
 				bindings = newbindings;
 			}
 			
-			result.Init(bindings.Variables, false, false);
+			result.Init(bindings.Variables);
 			
 			int counter = 0;
 			foreach (VariableBindings row in bindings.Rows) {

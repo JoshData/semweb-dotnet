@@ -1392,7 +1392,7 @@ namespace SemWeb.Stores {
 			
 			// Set the initial bindings to the result sink
 
-			sink.Init(varOrder, false, false);
+			sink.Init(varOrder);
 			
 			Hashtable varLitFilters = new Hashtable();
 			

@@ -107,7 +107,7 @@ namespace SemWeb.Inference {
 				varOrder[(int)vars[v]] = v;
 			
 			// Initialize the sink.
-			sink.Init(varOrder, false, false);
+			sink.Init(varOrder);
 			
 			// Send a binding set for each piece of evidence.
 			foreach (EvidenceItem ei in evidence) {

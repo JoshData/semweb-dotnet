@@ -125,7 +125,7 @@ public class HTMLQuerySink : QueryResultSink {
 	
 	public HTMLQuerySink(TextWriter output) { this.output = output; }
 
-	public override void Init(Variable[] variables, bool distinct, bool ordered) {
+	public override void Init(Variable[] variables) {
 		output.WriteLine("<table>");
 		output.WriteLine("<tr>");
 		foreach (Variable var in variables) {
@@ -156,7 +156,7 @@ public class HTMLQuerySink : QueryResultSink {
 internal class LUBMReferenceAnswerOutputQuerySink : QueryResultSink {
 	int[] varorder;
 
-	public override void Init(Variable[] variables, bool distinct, bool ordered) {
+	public override void Init(Variable[] variables) {
 		varorder = new int[variables.Length];
 		string[] varnames = new string[variables.Length];
 		

@@ -150,7 +150,7 @@ namespace SemWeb.Remote {
 				this.d = d;
 			}
 			
-			public override void Init(Variable[] variables, bool distinct, bool ordered) {
+			public override void Init(Variable[] variables) {
 				for (int i = 0; i < variables.Length; i++) {
 					if (variables[i].LocalName == "subject") si = i;
 					if (variables[i].LocalName == "predicate") pi = i;
@@ -389,9 +389,7 @@ namespace SemWeb.Remote {
 						throw new ApplicationException("Invalid server response: Missing results element.");
 					
 					variablesArray = (Variable[])variables.ToArray(typeof(Variable));
-					sink.Init(variablesArray,
-						xmldoc.GetAttribute("distinct") != null && xmldoc.GetAttribute("distinct") == "true",
-						xmldoc.GetAttribute("ordered") != null && xmldoc.GetAttribute("ordered") == "true");
+					sink.Init(variablesArray);
 					
 					// Read the results
 					
@@ -504,7 +502,7 @@ namespace SemWeb.Remote {
 				for (int j = 0; j < 3; j++) {
 					if (s.GetComponent(j) is BNode && !(s.GetComponent(j) is Variable)) {
 						Variable[] varArray = (Variable[])selectedVars.ToArray(typeof(Variable));
-						sink.Init(varArray, false, false);
+						sink.Init(varArray);
 						sink.Finished();
 						return;
 					}
@@ -560,11 +558,11 @@ namespace SemWeb.Remote {
 				this.variableNames = variableNames;
 			}
 			
-			public override void Init(Variable[] variables, bool distinct, bool ordered) {
+			public override void Init(Variable[] variables) {
 				vars = new Variable[variables.Length];
 				for (int i = 0; i < variables.Length; i++)
 					vars[i] = (Variable)variableNames[variables[i].LocalName];
-				sink.Init(vars, distinct, ordered);
+				sink.Init(vars);
 			}
 			
 			public override bool Add(VariableBindings result) {
@@ -614,7 +612,7 @@ namespace SemWeb.Query {
 				output.WriteComment(comments);
 		}
 		
-		public override void Init(Variable[] variables, bool distinct, bool ordered) {
+		public override void Init(Variable[] variables) {
 			output.WriteStartElement("sparql");
 			output.WriteAttributeString("xmlns", "http://www.w3.org/2005/sparql-results#");
 			output.WriteStartElement("head");
@@ -626,8 +624,6 @@ namespace SemWeb.Query {
 			}
 			output.WriteEndElement(); // head
 			output.WriteStartElement("results");
-			output.WriteAttributeString("ordered", ordered ? "true" : "false");
-			output.WriteAttributeString("distinct", distinct ? "true" : "false");
 			
 			// instead of <results>, we might want <boolean>true</boolean>
 		}

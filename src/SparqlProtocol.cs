@@ -123,7 +123,7 @@ namespace SemWeb.Query {
 			
 			public HTMLQuerySink(TextWriter output) { this.output = output; }
 
-			public override void Init(Variable[] variables, bool distinct, bool ordered) {
+			public override void Init(Variable[] variables) {
 				output.WriteLine("<table>");
 				output.WriteLine("<tr>");
 				foreach (Variable var in variables) {

@@ -244,7 +244,7 @@ namespace SemWeb.Query {
 			}
 			
 			// Initialize the result sink
-			resultsink.Init(vars2, false, false); // set distinct and ordered
+			resultsink.Init(vars2); // set distinct and ordered
 			
 			// Set the comments
 			resultsink.AddComments(queryString + "\n");
@@ -814,8 +814,9 @@ namespace SemWeb.Query {
 		    			}
 		    		}
 		    		
-		    		if (!qs.MetaQuery(graph, opts).QuerySupported)
-		    			return null; // TODO: We could also check if any part has NoData, we can abandon the query entirely 
+		    		// too expensive to do...
+		    		//if (!qs.MetaQuery(graph, opts).QuerySupported)
+		    		//	return null; // TODO: We could also check if any part has NoData, we can abandon the query entirely 
 		    		
 		    		QueryResultBuilder builder = new QueryResultBuilder();
 		    		builder.varMap = varMap2;
@@ -832,15 +833,13 @@ namespace SemWeb.Query {
 		    	public RdfSourceWrapper source;
 		    	public RdfBindingSetImpl bindings;
 		    	
-				public override void Init(Variable[] variables, bool distinct, bool ordered) {
+				public override void Init(Variable[] variables) {
 					java.util.ArrayList vars = new java.util.ArrayList();
 					foreach (Variable b in variables)
 						if (varMap[b] != null) // because of bad treatment of meta
 							vars.add((SparqlVariable)varMap[b]);
 					
 					bindings = new RdfBindingSetImpl(vars);
-					bindings.setDistinct(distinct);
-					bindings.setOrdered(ordered);
 				}
 				
 				public override bool Add(VariableBindings result) {

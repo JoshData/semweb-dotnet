@@ -153,7 +153,7 @@ namespace SemWeb.Query {
 	}
 
 	public abstract class QueryResultSink {
-		public virtual void Init(Variable[] variables, bool distinct, bool ordered) {
+		public virtual void Init(Variable[] variables) {
 		}
 		
 		public abstract bool Add(VariableBindings result);
@@ -183,7 +183,7 @@ namespace SemWeb.Query {
 		#endif
 		
 
-		public override void Init(Variable[] variables, bool distinct, bool ordered) {
+		public override void Init(Variable[] variables) {
 			this.variables = new Variable[variables.Length];
 			variables.CopyTo(this.variables, 0);
 		}
