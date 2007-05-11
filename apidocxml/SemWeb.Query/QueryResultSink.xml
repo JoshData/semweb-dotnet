@@ -62,20 +62,16 @@
       </Docs>
     </Member>
     <Member MemberName="Init">
-      <MemberSignature Language="C#" Value="public virtual void Init (SemWeb.Variable[] variables, bool distinct, bool ordered);" />
+      <MemberSignature Language="C#" Value="public virtual void Init (SemWeb.Variable[] variables);" />
       <MemberType>Method</MemberType>
       <ReturnValue>
         <ReturnType>System.Void</ReturnType>
       </ReturnValue>
       <Parameters>
         <Parameter Name="variables" Type="SemWeb.Variable[]" />
-        <Parameter Name="distinct" Type="System.Boolean" />
-        <Parameter Name="ordered" Type="System.Boolean" />
       </Parameters>
       <Docs>
         <param name="variables">An array of variables whose bindings will be reported. The order of the variables here will match that in the bindings provided in Add.</param>
-        <param name="distinct">Indicates whether the bindings provided are distinct.</param>
-        <param name="ordered">Indicates whether the bindings provided have been ordered.</param>
         <summary>Called by the Query to initialize the result sink.</summary>
         <remarks>None.</remarks>
       </Docs>

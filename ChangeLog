@@ -1,3 +1,5 @@
+2007-05-11 Version 0.87 -- Bugs and minor improvements
+
 	* RdfXmlWriter: Fixed another bug where empty Description
 	  nodes inside predicates seemed to vanish (which may actually be 
 	  compliant, but looked weird).

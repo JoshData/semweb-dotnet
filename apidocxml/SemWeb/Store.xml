@@ -873,6 +873,18 @@ n3:file1.n3|n3:file2.n3|...  (loads each of the files into memory and returns a 
         <remarks>See <see cref="M:SemWeb.Store.Query(SemWeb.Statement[],SemWeb.Query.QueryOptions,SemWeb.Query.QueryResultSink)" /> for details.</remarks>
       </Docs>
     </Member>
+    <Member MemberName="DataSources">
+      <MemberSignature Language="C#" Value="public System.Collections.Generic.IList&lt;SemWeb.SelectableSource&gt; DataSources { get; };" />
+      <MemberType>Property</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Collections.Generic.IList&lt;SemWeb.SelectableSource&gt;</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+        <value>To be added.</value>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
   </Members>
   <Docs>
     <summary>The store class is used to group data sources and to provide inferencing capabilities over data sources.</summary>
