@@ -203,7 +203,7 @@ $ mono rdfquery.exe -type sparql n3:congress.n3 < congress_query.sparql
 <p>You can also use the <tt>rdfquery</tt> tool to query a remote SPARQL end point. Invoke it like this:</p>
 
 <pre class="code">
-echo "DESCRIBE <tag:govshare.info,2005:data/us>" | \
+echo "DESCRIBE &lt;tag:govshare.info,2005:data/us&gt;" | \
 	mono bin/rdfquery.exe -type sparql sparql-http:http://www.govtrack.us/sparql
 </pre>
 

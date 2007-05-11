@@ -25,26 +25,26 @@
 
 <p>Second, make sure you have the Mono.Data.SqliteClient data adapter <a href="http://mono-project.com/Downloads">from Mono</a>.  If you're using Unix, be sure you have the mono-data-sqlite package installed.  If you're using Windows and don't have the adapter already, you can get it out of the <a href="http://mono.ximian.com/daily/monocharge-latest.tar.gz">latest daily MonoCharge</a> (either put it in the GAC, or put it along side the other SemWeb DLLs).</p>
 
-<p>Last, download the FOAF file we've been using to your hard disk: http://dannyayers.com/misc/foaf/foaf.rdf.</p>
+<p>Last, download a RDF file to your hard disk, such as: http://www.mozilla.org/news.rdf.</p>
 
 <h3>Moving data into a database</h3>
 
 <p>We want to get going quickly, so we'll use SemWeb's <tt>rdfstorage.exe</tt> tool to move some data into a Sqlite database.  Go to a command prompt in the bin directory of the SemWeb package.  Then run:</p>
 
 <pre class="code">
-$ mono rdfstorage.exe foaf.rdf --out "sqlite:rdf:Uri=file:foaf.sqlite;version=3"
+$ mono rdfstorage.exe news.rdf --out "sqlite:rdf:Uri=file:news.sqlite;version=3"
 </pre>
 
 (In Windows, you can leave off the 'mono' to use the Microsoft runtime.)  You'll get the following output (or something like it):
 
 <pre class="code">
-foaf.rdf  0m0s, 162 statements, 2423 st/sec
-Total Time: 0m0s, 162 statements, 1857 st/sec
+news.rdf  0m0s, 81 statements, 597 st/sec
+Total Time: 0m0s, 81 statements, 505 st/sec
 </pre>
 
-<p>This command read the RDF/XML file and created a Sqlite version 3 database named foaf.sqlite.</p>
+<p>This command read the RDF/XML file and created a Sqlite version 3 database named news.sqlite.</p>
 
-<p>The "out" argument is what I call a "spec" string.  It tells SemWeb how to open up a storage mechanism.  This spec string has three parts.  The first part is "sqlite" which tells SemWeb to use the Sqlite storage engine.  The second part is "rdf" which is the prefix for the tables to use in the database.  The third part, "Uri=file:foaf.sqlite;version=3", is a connection string used by Mono.Data.SqliteClient.  (For more info on the connection string, see <a href="http://mono-project.com/SQLite">the Mono website</a>.)</p>
+<p>The "out" argument is what I call a "spec" string.  It tells SemWeb how to open up a storage mechanism.  This spec string has three parts.  The first part is "sqlite" which tells SemWeb to use the Sqlite storage engine.  The second part is "rdf" which is the prefix for the tables to use in the database.  The third part, "Uri=file:news.sqlite;version=3", is a connection string used by Mono.Data.SqliteClient.  (For more info on the connection string, see <a href="http://mono-project.com/SQLite">the Mono website</a>.)</p>
 
 <p>If you omit the "out" argument entirely, the program will dump the file to the console in Turtle format.</p>
 
@@ -55,7 +55,7 @@ Total Time: 0m0s, 162 statements, 1857 st/sec
 <p>Create a store backed by the database using the following method:</p>
 
 <pre class="code">
-Store store = Store.Create("sqlite:rdf:Uri=file:foaf.sqlite;version=3");
+Store store = Store.Create("sqlite:rdf:Uri=file:news.sqlite;version=3");
 </pre>
 
 <p>The argument to <tt>Create</tt> is the same "spec" string as before.  This method can be used to create various types of data sources in the factory design pattern.</p>
