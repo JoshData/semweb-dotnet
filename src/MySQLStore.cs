@@ -84,8 +84,10 @@ namespace SemWeb.Stores {
 		protected override void RunCommand(string sql) {
 			Open();
 			if (Debug) Console.Error.WriteLine(sql);
-			using (MySqlCommand cmd = new MySqlCommand(sql, connection))
+			using (MySqlCommand cmd = new MySqlCommand(sql, connection)) {
+				cmd.CommandTimeout = 0; // things like Clear can take a while
 				cmd.ExecuteNonQuery();
+			}
 		}
 		
 		protected override object RunScalar(string sql) {
