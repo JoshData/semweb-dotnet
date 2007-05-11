@@ -19,7 +19,8 @@
 	  example.
 	* MySQLStore: Allow an environ variable to control how Import()
 	  transactions are wrapped, default changed to a BEGIN/COMMIT
-	  transaction, since it's less prone to issues. Also, turned
+	  transaction, since it's less prone to issues. See the end of
+	  the Using Databases section of the docs for more. Also, turned
 	  off the timeout in RunCommand since Clear() can take a while.
 
 2007-04-12 Version 0.86 -- New SPARQL methods and code clean-up

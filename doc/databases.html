@@ -111,5 +111,17 @@ just replace the &ldquo;spec&rdquo; string ("sqlite:rdf:...") with something lik
 You'll have to consult the MySQL/Connector.Net documentation for more information
 about the connection string.</p>
 
+<p>For the SQL stores, the Import() method is optimized so that statements are
+added to the tables in batch, where possible. Further, the MySQL store can
+wrap the Import SQL statements with SQL commands that make the Import faster.
+By default, the Import is wrapped in a BEGIN/COMMIT transaction. Set the
+SEMWEB_MYSQL_IMPORT_MODE environment variable (or hack the source code) to
+change the behavior. Setting this environment variable to LOCK will use
+LOCK TABLES to create a write lock on the statements, entities, and literals
+tables for the store, which improves performance significantly. Setting
+the environment variable to DISABLEKEYS uses ALTER TABLE DISABLE KEYS
+on the statements table, which improves performance while it adds statements,
+but causes a lengthy rebuilding of the index at the end of the import.</p>
+
 </body>
 </html>
