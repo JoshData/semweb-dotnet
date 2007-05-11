@@ -65,7 +65,11 @@ namespace SemWeb.Query {
 		public void AddLiteralFilter(Variable variable, LiteralFilter filter) {
 			if (VariableLiteralFilters == null)
 				VariableLiteralFilters = new LitFilterMap();
-			LitFilterList list = (LitFilterList)VariableLiteralFilters[variable];
+			LitFilterList list = null;
+			#if DOTNET2
+			if (VariableLiteralFilters.ContainsKey(variable))
+			#endif
+				list = (LitFilterList)VariableLiteralFilters[variable];
 			if (list == null) {
 			 	list  = new LitFilterList();
 				VariableLiteralFilters[variable] = list;
