@@ -18,6 +18,20 @@ namespace SemWeb {
 		
 		StatementSink storage;
 		
+		private const string RDF_RDF = NS.RDF + "RDF";
+		private const string RDF_DESCRIPTION = NS.RDF + "Description";
+		private const string RDF_LI = NS.RDF + "li";
+		private const string RDF_TYPE = NS.RDF + "type";
+		private const string RDF_ABOUTEACH = NS.RDF + "aboutEach";
+		private const string RDF_ABOUTEACHPREFIX = NS.RDF + "aboutEachPrefix";
+		private const string RDF_ID  = NS.RDF + "ID";
+		private const string RDF_ABOUT = NS.RDF + "about";
+		private const string RDF_PARSETYPE = NS.RDF + "parseType";
+		private const string RDF_RESOURCE = NS.RDF + "resource";
+		private const string RDF_NODEID = NS.RDF + "nodeID";
+		private const string RDF_DATATYPE = NS.RDF + "datatype";
+		private const string RDF_BAGID = NS.RDF + "bagID";
+		
 		static readonly Entity
 			rdfType = "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
 			rdfFirst = "http://www.w3.org/1999/02/22-rdf-syntax-ns#first",
@@ -193,11 +207,12 @@ namespace SemWeb {
 			
 			// If the name of the element is not rdf:Description,
 			// then the name gives its type.
-			if (CurNode() != NS.RDF + "Description") {
-				if (IsRestrictedName(CurNode()) || IsDeprecatedName(CurNode()))
+			string curnode = CurNode();
+			if (curnode != RDF_DESCRIPTION) {
+				if (IsRestrictedName(curnode) || IsDeprecatedName(curnode))
 					OnError(xml.Name + " cannot be the type of a resource.");
-				if (CurNode() == NS.RDF + "li") OnError("rdf:li cannot be the type of a resource");
-				storage.Add(new Statement(entity, rdfType, (Entity)CurNode(), Meta));
+				if (curnode == RDF_LI) OnError("rdf:li cannot be the type of a resource");
+				storage.Add(new Statement(entity, rdfType, (Entity)curnode, Meta));
 			}
 			
 			ParsePropertyAttributes(entity);
@@ -220,7 +235,7 @@ namespace SemWeb {
 				
 				// rdf:type is interpreted with an entity object,
 				// not a literal object.
-				if (curnode == NS.RDF + "type") {
+				if (curnode == RDF_TYPE) {
 					storage.Add(new Statement(entity, rdfType, (Entity)xml.Value, Meta));
 					foundAttrs = true;
 					continue;
@@ -234,9 +249,9 @@ namespace SemWeb {
 					OnError(xml.Name + " is deprecated.");
 				
 				// Properties which are invalid as attributes.
-				if (curnode == NS.RDF + "li")
+				if (curnode == RDF_LI)
 					OnError("rdf:li is not a valid attribute");
-				if (curnode == NS.RDF + "aboutEach" || curnode == NS.RDF + "aboutEachPrefix")
+				if (curnode == RDF_ABOUTEACH || curnode == RDF_ABOUTEACHPREFIX)
 					OnError("rdf:aboutEach has been removed from the RDF spec");
 				
 				// Unrecognized attributes in the xml namespace should be ignored.
@@ -299,7 +314,7 @@ namespace SemWeb {
 			string lang = xml.XmlLang != "" ? xml.XmlLang : null;
 
 			string predicate = CurNode();
-			if (predicate == NS.RDF + "li")
+			if (predicate == RDF_LI)
 				predicate = NS.RDF + "_" + (liIndex++);
 
 			if (IsRestrictedName(predicate))
@@ -477,21 +492,21 @@ namespace SemWeb {
 		}
 		
 		private bool IsRestrictedName(string name) {
-			if (name == NS.RDF + "RDF") return true;
-			if (name == NS.RDF + "Description") return true;
-			if (name == NS.RDF + "ID") return true;
-			if (name == NS.RDF + "about") return true;
-			if (name == NS.RDF + "parseType") return true;
-			if (name == NS.RDF + "resource") return true;
-			if (name == NS.RDF + "nodeID") return true;
-			if (name == NS.RDF + "datatype") return true;
+			if (name == RDF_RDF) return true;
+			if (name == RDF_DESCRIPTION) return true;
+			if (name == RDF_ID) return true;
+			if (name == RDF_ABOUT) return true;
+			if (name == RDF_PARSETYPE) return true;
+			if (name == RDF_RESOURCE) return true;
+			if (name == RDF_NODEID) return true;
+			if (name == RDF_DATATYPE) return true;
 			return false;
 		}
 		
 		private bool IsDeprecatedName(string name) {
-			if (name == NS.RDF + "bagID") return true;
-			if (name == NS.RDF + "aboutEach") return true;
-			if (name == NS.RDF + "aboutEachPrefix") return true;
+			if (name == RDF_BAGID) return true;
+			if (name == RDF_ABOUTEACH) return true;
+			if (name == RDF_ABOUTEACHPREFIX) return true;
 			return false;
 		}
 

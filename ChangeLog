@@ -1,6 +1,7 @@
 	* N3Writer: Correct output if a namespace is added after the
 	  first statement has been written.
 	* NamespaceManager: Made AddNamespace virtual.
+	* N3Writer, RdfXmlReader: Micro-optimizations.
 
 2007-05-11 Version 0.87 -- Bugs and minor improvements
 

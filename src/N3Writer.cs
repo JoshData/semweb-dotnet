@@ -66,41 +66,48 @@ namespace SemWeb {
 		}
 		
 		private string URI(Entity entity) {
-			if (entity is Variable && ((Variable)entity).LocalName != null)
-				return "?" + ((Variable)entity).LocalName;
-				
-			if (entity is BNode) {
-				string name = ((BNode)entity).LocalName;
-				if (name != null &&
-					(anonNameMap[name] == null || (BNode)anonNameMap[name] == entity)
-					&& !name.StartsWith("bnode")) {
-					return "_:" + name;
-				} else if (anonNames[entity] != null) {
+			string uri = entity.Uri;
+			if (uri != null) {
+
+				if (Format == Formats.NTriples) return "<" + Escape(uri) + ">";
+				string effectiveBaseUri = BaseUri == null ? "#" : BaseUri;
+				if (effectiveBaseUri != null && uri.StartsWith(effectiveBaseUri)) {
+					int len = effectiveBaseUri.Length;
+					bool ok = true;
+					for (int i = len; i < uri.Length; i++) {
+						if (!char.IsLetterOrDigit(uri[i])) { ok = false; break; }
+					}
+					if (ok)
+						return ":" + uri.Substring(len);
+				}
+			
+				string ret = ns.Normalize(uri);
+				if (ret[0] != '<') return ret;
+			
+				return "<" + Escape(uri) + ">";
+
+			} else {
+				// Must be a bnode
+				if (anonNames[entity] != null) {
 					return (string)anonNames[entity];
 				} else {
-					string id = "_:bnode" + anonNames.Count;
-					anonNames[entity] = id;
-					return id;
+					string name = ((BNode)entity).LocalName;
+
+					if (entity is Variable && name != null)
+						return "?" + name;
+				
+					// Get a local name if it lacks one or has an invalid one
+					if (name == null || name.StartsWith("bnode")) {
+						name = "_:bnode" + anonNames.Count;
+						anonNames[entity] = name;
+					} else {
+						name = "_:" + name;
+					}
+
+					return name;
 				}
 			}
 			
-			string uri = entity.Uri;
-			string effectiveBaseUri = BaseUri == null ? "#" : BaseUri;
-			if (effectiveBaseUri != null && uri.StartsWith(effectiveBaseUri)) {
-				int len = effectiveBaseUri.Length;
-				bool ok = true;
-				for (int i = len; i < uri.Length; i++) {
-					if (!char.IsLetterOrDigit(uri[i])) { ok = false; break; }
-				}
-				if (ok)
-					return ":" + uri.Substring(len);
-			}
-			if (Format == Formats.NTriples) return "<" + Escape(uri) + ">";
-			
-			string ret = ns.Normalize(uri);
-			if (ret[0] != '<') return ret;
-			
-			return "<" + Escape(uri) + ">";
 		}
 		
 		private static char HexDigit(char c, int digit) {
