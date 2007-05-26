@@ -8,7 +8,7 @@ using SemWeb;
 namespace SemWeb {
 	public class N3Writer : RdfWriter {
 		TextWriter writer;
-		NamespaceManager ns = new NamespaceManager();
+		NamespaceManager2 ns = new NamespaceManager2();
 		bool hasWritten = false;
 		bool closed = false;
 		bool closeStream = false;
@@ -95,7 +95,7 @@ namespace SemWeb {
 				if (ok)
 					return ":" + uri.Substring(len);
 			}
-			if (Format == Formats.NTriples || ns == null) return "<" + Escape(uri) + ">";
+			if (Format == Formats.NTriples) return "<" + Escape(uri) + ">";
 			
 			string ret = ns.Normalize(uri);
 			if (ret[0] != '<') return ret;
@@ -164,14 +164,21 @@ namespace SemWeb {
 			closed = false;
 			
 			// Write the prefix directives at the beginning.
-			if (!hasWritten && ns != null && !(Format == Formats.NTriples)) {
-				foreach (string prefix in ns.GetPrefixes()) {
+			if (ns.addedPrefixes.Count > 0 && !(Format == Formats.NTriples)) {
+				if (hasWritten) {
+					writer.Write(".\n");
+					lastSubject = null;
+					lastPredicate = null;
+					hasWritten = false; // really means whether a statement is "open", missing a period
+				}
+				foreach (string prefix in ns.addedPrefixes) {
 					writer.Write("@prefix ");
 					writer.Write(prefix);
 					writer.Write(": <");
 					writer.Write(ns.GetNamespace(prefix));
 					writer.Write("> .\n");
 				}
+				ns.addedPrefixes.Clear();
 			}
 
 			// Repeated subject.
@@ -200,7 +207,7 @@ namespace SemWeb {
 			
 			// Start a new statement.
 			} else {
-				if (hasWritten)
+				if (hasWritten) // finish the last statement
 					writer.Write(".\n");
 					
 				WriteThing(subj);
@@ -217,6 +224,14 @@ namespace SemWeb {
 		private void WriteThing(string text) {
 			writer.Write(text);
 			writer.Write(" ");
+		}
+	
+		private class NamespaceManager2 : NamespaceManager {
+			public ArrayList addedPrefixes = new ArrayList();
+			public override void AddNamespace(string uri, string prefix) {
+				base.AddNamespace(uri, prefix);
+				addedPrefixes.Add(prefix);
+			}
 		}
 	}
 }

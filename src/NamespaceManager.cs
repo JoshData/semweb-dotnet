@@ -29,7 +29,7 @@ namespace SemWeb {
 			this.parent = parent;
 		}
 		
-		public void AddNamespace(string uri, string prefix) {
+		public virtual void AddNamespace(string uri, string prefix) {
 			atob[uri] = prefix;
 			btoa[prefix] = uri;
 		}
