@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.IO;
 using System.Reflection;
+using System.Threading;
 
 using SemWeb;
 //using SemWeb.Algos;
@@ -34,6 +35,9 @@ public class RDFStorage {
 
 		[Mono.GetOptions.Option("Emit status information to STDERR when writing to STDOUT.")]
 		public bool stats = false;
+		
+		[Mono.GetOptions.Option("Read and write on separate threads buffering the given {number} of statements.")]
+		public int buffer = 0;
 
 		/*[Mono.GetOptions.Option("Make the output lean.")]
 		public bool makelean = false;
@@ -44,6 +48,8 @@ public class RDFStorage {
 		[Mono.GetOptions.Option("Write out lean-removed statements.")]
 		public bool leanprogress = false;*/
 	}
+	
+	static long totalStatementsRead = 0;
 	
 	public static void Main(string[] args) {
 		try {
@@ -91,9 +97,16 @@ public class RDFStorage {
 			}
 		}
 		
+		DateTime start_time = DateTime.Now;
+		
 		MultiRdfParser multiparser = new MultiRdfParser(opts.RemainingArguments, opts.@in, meta, opts.baseuri, !opts.stats);
 		
-		if (storage is ModifiableSource) {
+		if (opts.buffer > 0) {
+			CircularStatementBuffer buffer = new CircularStatementBuffer(opts.buffer);
+			buffer.BeginReading(multiparser);
+			buffer.BeginWriting(storage);
+			buffer.Wait();
+		} else if (storage is ModifiableSource) {
 			((ModifiableSource)storage).Import(multiparser);
 		} else {
 			//if (!opts.makelean) {
@@ -118,6 +131,10 @@ public class RDFStorage {
 		}
 		
 		if (storage is IDisposable) ((IDisposable)storage).Dispose();
+
+		TimeSpan alltime = DateTime.Now - start_time;
+		if (opts.stats)
+			Console.Error.WriteLine("Total Time: {0}m{1}s, {2} statements, {3} st/sec", (int)alltime.TotalMinutes, (int)alltime.Seconds, totalStatementsRead, alltime.TotalSeconds == 0 ? "?" : ((int)(totalStatementsRead/alltime.TotalSeconds)).ToString());
 		
 		} catch (Exception exc) {
 			Console.Error.WriteLine(exc);
@@ -140,9 +157,6 @@ public class RDFStorage {
 		}
 		
 		public override void Select(StatementSink storage) {
-			DateTime allstart = DateTime.Now;
-			long stct = 0;
-					
 			foreach (string infile in files) {
 				if (!quiet)
 					Console.Error.Write(infile + " ");
@@ -167,9 +181,11 @@ public class RDFStorage {
 					} else {
 						StatementSource src = Store.Create(infile);
 						src.Select(filter);
+						if (src is IDisposable)
+							((IDisposable)src).Dispose();
 					}
 					
-					stct += filter.StatementCount;
+					totalStatementsRead += filter.StatementCount;
 					
 					TimeSpan time = DateTime.Now - start;
 					
@@ -182,9 +198,6 @@ public class RDFStorage {
 				}
 			}
 			
-			TimeSpan alltime = DateTime.Now - allstart;
-			if (!quiet)
-				Console.Error.WriteLine("Total Time: {0}m{1}s, {2} statements, {3} st/sec", (int)alltime.TotalMinutes, (int)alltime.Seconds, stct, alltime.TotalSeconds == 0 ? "?" : ((int)(stct/alltime.TotalSeconds)).ToString());
 		}
 	}
 }
@@ -204,3 +217,123 @@ internal class StatementFilterSink : StatementSink {
 	}
 }
 
+internal class CircularStatementBuffer : StatementSource, StatementSink {
+	const int SLEEP_DURATION = 0;
+
+	Statement[] buffer;
+	int len;
+	volatile int nextWrite = 0;
+	volatile int nextRead = 0;
+	volatile bool finished = false;
+	volatile bool canceled = false;
+
+	AutoResetEvent hasData = new AutoResetEvent(false);
+	AutoResetEvent hasSpace = new AutoResetEvent(false);
+	
+	StatementSource sourceData;
+	StatementSink targetSink;
+	Thread writer, reader;
+
+	public CircularStatementBuffer(int size) {
+		len = size;
+		buffer = new Statement[size];
+	}
+	
+	public void BeginWriting(StatementSink sink) {
+		targetSink = sink;
+		reader = new Thread(ReaderRunner);
+		reader.Start();
+	}
+	
+	public void BeginReading(StatementSource source) {
+		sourceData = source;
+		writer = new Thread(WriterRunner);
+		writer.Start();
+	}
+	
+	public void Wait() {
+		writer.Join();
+		reader.Join();
+	}
+
+	void WriterRunner() {
+		sourceData.Select(this);
+		finished = true;
+		hasData.Set(); // anything written but not flagged
+	}
+	
+	public bool Add(Statement statement) {
+		// Check that we can advance (i.e. not fill up the buffer
+		// so that our pointers cross).
+		
+		int nw = nextWrite;
+		int next = (nw == len-1) ? 0 : nw+1;
+		
+		while (next == nextRead && !canceled) {
+			if (SLEEP_DURATION > 0)
+				Thread.Sleep(SLEEP_DURATION);
+			else
+				hasSpace.WaitOne();
+		}
+		
+		if (canceled) return false;
+		
+		buffer[nw] = statement;
+		nextWrite = next;
+		
+		if ((nw & 0xFF) == 0)
+			hasData.Set();
+		
+		return true;
+	}
+	
+	void ReaderRunner() {
+		if (targetSink is ModifiableSource)
+			((ModifiableSource)targetSink).Import(this);
+		else
+			ReadLoop(targetSink);
+	}
+	
+	bool StatementSource.Distinct { get { return false; } }
+	
+	void StatementSource.Select(StatementSink sink) {
+		ReadLoop(sink);
+	}
+	
+	void ReadLoop(StatementSink sink) {
+		while (!finished) {
+			int nr = nextRead;
+
+			// Check that we can advance (i.e. not cross the write pointer).
+			while (nr == nextWrite && !finished) {
+				if (SLEEP_DURATION > 0)
+					Thread.Sleep(SLEEP_DURATION);
+				else
+					hasData.WaitOne();
+			}
+
+			if (finished) return;
+			
+			int nw = nextWrite;
+			int addctr = 0;
+		
+			while (nr != nw) {
+				Statement s = buffer[nr];
+				nr = (nr == len-1) ? 0 : nr+1;
+
+				if ((addctr++ & 0xFF) == 0) {
+					nextRead = nr;
+					hasSpace.Set();
+				}
+
+				canceled = !sink.Add(s);
+				if (canceled) break;
+			}
+			
+			nextRead = nr;
+			hasSpace.Set();
+			if (canceled) break;
+		}
+	}
+	
+}

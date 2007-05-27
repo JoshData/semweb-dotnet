@@ -2,6 +2,9 @@
 	  first statement has been written.
 	* NamespaceManager: Made AddNamespace virtual.
 	* N3Writer, RdfXmlReader: Micro-optimizations.
+	* rdfstorage: Added experimental --buffer option which runs
+	  input and output in separate threads, though this doesn't
+	  seeem to improve performance any.
 
 2007-05-11 Version 0.87 -- Bugs and minor improvements
 
