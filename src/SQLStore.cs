@@ -1105,7 +1105,7 @@ namespace SemWeb.Stores {
 		void CleanMultiRes(MultiRes res) {
 			ArrayList newitems = new ArrayList();
 			foreach (Resource r in res.items)
-				if (r == (object)Statement.DefaultMeta || GetResourceKey(r) != null)
+				if ((object)r == (object)Statement.DefaultMeta || GetResourceKey(r) != null)
 					newitems.Add(r);
 			res.items = (Resource[])newitems.ToArray(typeof(Resource));
 		}
@@ -1145,7 +1145,7 @@ namespace SemWeb.Stores {
 			Hashtable seen_l = new Hashtable();
 
 			foreach (Resource r in resources) {
-				if (r == (object)Statement.DefaultMeta || GetResourceKey(r) != null) // no need to prefetch
+				if ((object)r == (object)Statement.DefaultMeta || GetResourceKey(r) != null) // no need to prefetch
 					continue;
 			
 				if (r.Uri != null) {
@@ -1418,7 +1418,7 @@ namespace SemWeb.Stores {
 					for (int i = 0; i < 4; i++) {
 						Resource r = s.GetComponent(i);
 						if (r is Variable) continue;
-						if (r != (object)Statement.DefaultMeta && GetResourceKey(r) == null) {
+						if ((object)r != (object)Statement.DefaultMeta && GetResourceKey(r) == null) {
 							sink.AddComments("Resource " + r + " is not contained in the data model.");
 							sink.Finished();
 							return;
@@ -1443,7 +1443,7 @@ namespace SemWeb.Stores {
 						#endif
 						
 						foreach (Resource r in (ICollection)options.VariableKnownValues[v]) {
-							if (r == (object)Statement.DefaultMeta || GetResourceKey(r) != null)
+							if ((object)r == (object)Statement.DefaultMeta || GetResourceKey(r) != null)
 								newvalues.Add(r);
 						}
 
