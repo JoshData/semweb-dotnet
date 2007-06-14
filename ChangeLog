@@ -1,3 +1,6 @@
+	* sparql/Makefile: Added a step to get the upstream sources
+	  if they're not downloaded yet. [from M. David Peterson]
+
 2007-06-10 Version 1.00 -- "Finally"
 
 	* N3Writer: Correct output if a namespace is added after the

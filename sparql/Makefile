@@ -5,7 +5,14 @@ JAVA_HOME=/usr/java/jdk1.5.0_04
 IKVM=ikvm-0.28.0.0/bin/ikvmc.exe
 ANT=~/dev/apache-ant-1.6.5/bin/ant
 
-all:
+all: get-sources build-sparql
+
+get-sources:
+	if [ \! -e upstream ]; then svn co https://sparql.svn.sourceforge.net/svnroot/sparql/engine/trunk upstream; fi
+	if [ \! -e work-copy ]; then svn export upstream/ work-copy; patch -p0 < local-changes.diff; fi
+	mkdir -p ../bin ../bin_generics
+
+build-sparql:
 	cd $(SPARQL); $(ANT) jar;
 	mono $(IKVM) -out:sparql-core.dll -nostacktraceinfo \
 		$(SPARQL)/lib/sparql-core.jar $(SPARQL)/lib/openrdf-util.jar \
