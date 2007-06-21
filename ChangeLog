@@ -1,3 +1,6 @@
+	* RdfXmlWriter.cs: Collapse rdf:Description nodes with only
+	  an rdf:about attribute into rdf:resource attributes on the
+	  parent predicate node.
 	* sparql/Makefile: Added a step to get the upstream sources
 	  if they're not downloaded yet. [from M. David Peterson]
 

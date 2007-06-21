@@ -453,6 +453,15 @@ namespace SemWeb {
 					
 					if (pred.ChildNodes.Count == 0) pred.IsEmpty = true;
 
+				} else if (obj.ChildNodes.Count == 0 && obj.Attributes.Count == 1) {
+				
+					// Condense by turning a rdf:about into a rdf:resource,
+					// and then remove obj completely.
+					SetAttribute(pred, NS.RDF, ns.GetPrefix(NS.RDF), "resource", obj.Attributes[0].Value);
+					pred.RemoveChild(obj);
+					
+					if (pred.ChildNodes.Count == 0) pred.IsEmpty = true;
+					
 				} else if (obj.Attributes.Count == 0) { // no rdf:about
 					if (!opts.UseParseTypeResource) continue;
 
