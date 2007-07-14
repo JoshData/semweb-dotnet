@@ -15,7 +15,7 @@ namespace SemWeb.Inference {
 	
 	public class Euler : Reasoner {
 	
-		static bool Debug = false;
+		static bool Debug = System.Environment.GetEnvironmentVariable("SEMWEB_DEBUG_EULER") != null;
 
 		Hashtable rules;
 		
@@ -27,8 +27,9 @@ namespace SemWeb.Inference {
 				new SemWeb.Inference.Relations.MathNegationRelation(), new SemWeb.Inference.Relations.MathRoundedRelation(), new SemWeb.Inference.Relations.MathSinRelation(), new SemWeb.Inference.Relations.MathSinhRelation(), new SemWeb.Inference.Relations.MathTanRelation(), new SemWeb.Inference.Relations.MathTanhRelation(),
 				new SemWeb.Inference.Relations.MathAtan2Relation(), new SemWeb.Inference.Relations.MathDifferenceRelation(), new SemWeb.Inference.Relations.MathExponentiationRelation(), new SemWeb.Inference.Relations.MathIntegerQuotientRelation(),
 				new SemWeb.Inference.Relations.MathQuotientRelation(), new SemWeb.Inference.Relations.MathRemainderRelation(),
-				new SemWeb.Inference.Relations.MathSumRelation(), new SemWeb.Inference.Relations.MathProductRelation() 
-				};
+				new SemWeb.Inference.Relations.MathSumRelation(), new SemWeb.Inference.Relations.MathProductRelation(),
+				new SemWeb.Inference.Relations.MathGreaterThanRelation(), new SemWeb.Inference.Relations.MathLessThanRelation(), new SemWeb.Inference.Relations.MathNotGreaterThanRelation(), new SemWeb.Inference.Relations.MathNotLessThanRelation(), new SemWeb.Inference.Relations.MathNotEqualToRelation()
+			};
 		
 			builtInRelations = new Hashtable();
 			foreach (RdfRelation r in rs)
@@ -302,12 +303,22 @@ namespace SemWeb.Inference {
 					if (c.parent == null) {
 						EvidenceItem ev = new EvidenceItem();
 						ev.head = new Statement[c.rule.body.Length];
-						for (int i = 0; i < c.rule.body.Length; i++)
+						bool canRepresentHead = true;
+						for (int i = 0; i < c.rule.body.Length; i++) {
 							ev.head[i] = evaluate(c.rule.body[i], c.env);
+							if (ev.head[i] == Statement.All) // can't represent it: literal in subject position, for instance
+								canRepresentHead = false;
+						}
+						
 						ev.body = c.ground;
 						ev.env = c.env;
-						evidence.Add(ev);
+
 						if (Debug) Console.Error.WriteLine("Euler: Found Evidence: " + ev);
+						
+						if (!canRepresentHead)
+							continue;
+
+						evidence.Add(ev);
 					
 					// this is a subproof of something; whatever it is a subgroup for can
 					// be incremented
@@ -383,7 +394,9 @@ namespace SemWeb.Inference {
 								if (unifyResult[i] != null)
 									unify(args[i], null, unifyResult[i], newenv, true);
 						
-							g.Add(new Ground(new Sequent(evaluate(t, newenv), new Statement[0], null), new Hashtable()));
+							Statement grnd = evaluate(t, newenv);
+							if (grnd != Statement.All) // sometimes not representable, like if literal as subject
+								g.Add(new Ground(new Sequent(grnd, new Statement[0], null), new Hashtable()));
 
 							QueueItem r = new QueueItem();
 							r.rule = c.rule;
@@ -402,6 +415,12 @@ namespace SemWeb.Inference {
 					// or if t literally exists in the world
 
 					Statement t_resolved = evaluate(t, c.env);
+					
+					// If resolving this statement requires putting a
+					// literal in subject or predicate position, we
+					// can't prove it.
+					if (t_resolved == Statement.All)
+						continue;
 						
 					ArrayList tcases = new ArrayList();
 					
@@ -513,11 +532,17 @@ namespace SemWeb.Inference {
 		}
 		
 		private static Statement evaluate(Statement t, Hashtable env) {
-			return new Statement(
-				(Entity)evaluate(t.Subject, env),
-				(Entity)evaluate(t.Predicate, env),
-				(Resource)evaluate(t.Object, env),
-				t.Meta);
+			Resource s = evaluate(t.Subject, env);
+			Resource p = evaluate(t.Predicate, env);
+			Resource o = evaluate(t.Object, env);
+		
+			// If we can't represent this statement because it requires
+			// putting a literal in subject or predicate position,
+			// return Statement.All (i.e. null S/P/O).
+			if (s is Literal || p is Literal)
+				return Statement.All;
+				
+			return new Statement((Entity)s, (Entity)p, o, t.Meta);
 		}
 		
 		// The next few routines convert a set of axioms from a StatementSource

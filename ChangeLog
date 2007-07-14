@@ -3,6 +3,13 @@
 	  parent predicate node.
 	* sparql/Makefile: Added a step to get the upstream sources
 	  if they're not downloaded yet. [from M. David Peterson]
+	* Implement GT/GE/LT/LE/NE math: relations for Euler engine;
+	  fixed some bugs when literal values ended up in subject
+	  position during inferencing, and when improper xsd literal
+	  values were parsed; made the euler.exe command-line tool
+	  output all found proofs, not just the first. Note that the
+	  math:notLessThan relation's URI differs from the math:
+	  ontology by correcting the "L" to be uppercase
 
 2007-06-10 Version 1.00 -- "Finally"
 

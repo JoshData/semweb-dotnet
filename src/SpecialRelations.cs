@@ -4,7 +4,7 @@ using SemWeb;
 
 namespace SemWeb.Inference {
 	public abstract class RdfRelation : SemWeb.Query.RdfFunction {
-		public sealed override Resource Evaluate (Resource[] args) {
+		public override Resource Evaluate (Resource[] args) {
 			Resource r = null;
 			if (Evaluate(args, ref r))
 				return r;
@@ -23,6 +23,8 @@ namespace SemWeb.Inference {
 				if (args.Length != 1) return false;
 				if (args[0] == null && @object == null) return false;
 				if ((args[0] != null && !(args[0] is Literal)) || (@object != null && !(@object is Literal))) return false;
+
+				try {
 				
 				if (args[0] == null) {
 					Decimal right = (Decimal)Convert.ChangeType( ((Literal)@object).ParseValue() , typeof(Decimal) );
@@ -40,6 +42,10 @@ namespace SemWeb.Inference {
 						Decimal right2 = (Decimal)Convert.ChangeType( ((Literal)@object).ParseValue() , typeof(Decimal) );
 						return right == right2;
 					}
+				}
+				
+				} catch (FormatException fe) {
+					return false;
 				}
 			}
 		}
@@ -102,6 +108,9 @@ namespace SemWeb.Inference {
 				if (args.Length != 2) return false;
 				if (args[0] == null || !(args[0] is Literal)) return false;
 				if (args[1] == null || !(args[1] is Literal)) return false;
+
+				try {
+				
 				Decimal left = (Decimal)Convert.ChangeType( ((Literal)args[0]).ParseValue() , typeof(Decimal) );
 				Decimal right = (Decimal)Convert.ChangeType( ((Literal)args[1]).ParseValue() , typeof(Decimal) );
 				Resource newvalue = Literal.FromValue(Evaluate(left, right));
@@ -110,6 +119,10 @@ namespace SemWeb.Inference {
 					return true;
 				} else {
 					return @object.Equals(newvalue);
+				}
+
+				} catch (FormatException fe) {
+					return false;
 				}
 			}
 		}
@@ -148,8 +161,12 @@ namespace SemWeb.Inference {
 				foreach (Resource r in args) {
 					if (r == null) return false;
 					if (!(r is Literal)) return false;
-					Decimal v = (Decimal)Convert.ChangeType( ((Literal)r).ParseValue() , typeof(Decimal) );
-					sum = Combine(sum, v);
+					try {
+						Decimal v = (Decimal)Convert.ChangeType( ((Literal)r).ParseValue() , typeof(Decimal) );
+						sum = Combine(sum, v);
+					} catch (FormatException fe) {
+						return false;
+					}
 				}
 				Resource newvalue = Literal.FromValue(sum);
 				if (@object == null) {
@@ -172,6 +189,66 @@ namespace SemWeb.Inference {
 			protected override Decimal Combine(Decimal left, Decimal right) { return left * right; }
 		}
 		
+		internal abstract class MathComparisonRelation : RdfRelation {
+			public override Resource Evaluate (Resource[] args) {
+				if (args.Length != 2)
+					throw new InvalidOperationException("This relation takes two arguments.");
+					
+				Resource left = args[0];
+				Resource right = args[1];
+				bool result = Evaluate(new Resource[] { left }, ref right);
+				return Literal.FromValue(result);
+			}
+			
+			public abstract bool Evaluate(Decimal left, Decimal right);
+		
+			public override bool Evaluate(Resource[] args, ref Resource @object) {
+				if (args.Length != 1) return false;
+				if (args[0] == null || @object == null) return false;
+				if (!(args[0] is Literal) || !(@object is Literal)) return false;
+				
+				try {
+					Decimal left = (Decimal)Convert.ChangeType( ((Literal)args[0]).ParseValue() , typeof(Decimal) );
+					Decimal right = (Decimal)Convert.ChangeType( ((Literal)@object).ParseValue() , typeof(Decimal) );
+					return Evaluate(left, right);
+				} catch (FormatException fe) {
+					return false;
+				}				
+			}
+		}
+
+		internal class MathGreaterThanRelation : MathComparisonRelation {
+			public override string Uri { get { return "http://www.w3.org/2000/10/swap/math#greaterThan"; } }
+			public override bool Evaluate(Decimal left, Decimal right) {
+				return left > right;
+			}
+		}
+		internal class MathLessThanRelation : MathComparisonRelation {
+			public override string Uri { get { return "http://www.w3.org/2000/10/swap/math#lessThan"; } }
+			public override bool Evaluate(Decimal left, Decimal right) {
+				return left < right;
+			}
+		}
+		internal class MathNotGreaterThanRelation : MathComparisonRelation {
+			public override string Uri { get { return "http://www.w3.org/2000/10/swap/math#notGreaterThan"; } }
+			public override bool Evaluate(Decimal left, Decimal right) {
+				return !(left > right);
+			}
+		}
+		internal class MathNotLessThanRelation : MathComparisonRelation {
+			// NOTE: The schema lists this as "notlessThan" with a lowercase
+			// L! I've put it in here with a capital L.
+			public override string Uri { get { return "http://www.w3.org/2000/10/swap/math#notLessThan"; } }
+			public override bool Evaluate(Decimal left, Decimal right) {
+				return !(left < right);
+			}
+		}
+		internal class MathNotEqualToRelation : MathComparisonRelation {
+			public override string Uri { get { return "http://www.w3.org/2000/10/swap/math#notEqualTo"; } }
+			public override bool Evaluate(Decimal left, Decimal right) {
+				return !(left == right);
+			}
+		}
 	}
 	
 }

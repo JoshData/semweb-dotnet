@@ -32,7 +32,6 @@ public class EulerTest {
 			
 		foreach (Proof p in proofs) {
 			Console.WriteLine(p.ToString());
-			break; // just show one?
 		}
 		
 	}
