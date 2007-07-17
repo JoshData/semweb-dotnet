@@ -16,6 +16,11 @@ public class Select {
 		Store store = new MemoryStore();
 		store.Import(RdfReader.LoadFromUri(new Uri(example_foaf_file)));
 		
+		// Dump out the data, for fun
+		using (RdfWriter writer = new RdfXmlWriter(Console.Out)) {
+			writer.Write(store);
+		}
+
 		Console.WriteLine("These are the people in the file:");
 		foreach (Statement s in store.Select(new Statement(null, rdftype, foafPerson))) {
 			foreach (Resource r in store.SelectObjects(s.Subject, foafname))
