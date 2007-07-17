@@ -1,3 +1,5 @@
+2007-07-17 Version 1.01
+
 	* RdfXmlWriter.cs: Collapse rdf:Description nodes with only
 	  an rdf:about attribute into rdf:resource attributes on the
 	  parent predicate node.
