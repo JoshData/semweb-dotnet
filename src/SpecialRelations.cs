@@ -44,7 +44,7 @@ namespace SemWeb.Inference {
 					}
 				}
 				
-				} catch (FormatException fe) {
+				} catch (FormatException) {
 					return false;
 				}
 			}
@@ -121,7 +121,7 @@ namespace SemWeb.Inference {
 					return @object.Equals(newvalue);
 				}
 
-				} catch (FormatException fe) {
+				} catch (FormatException) {
 					return false;
 				}
 			}
@@ -164,7 +164,7 @@ namespace SemWeb.Inference {
 					try {
 						Decimal v = (Decimal)Convert.ChangeType( ((Literal)r).ParseValue() , typeof(Decimal) );
 						sum = Combine(sum, v);
-					} catch (FormatException fe) {
+					} catch (FormatException) {
 						return false;
 					}
 				}
@@ -211,7 +211,7 @@ namespace SemWeb.Inference {
 					Decimal left = (Decimal)Convert.ChangeType( ((Literal)args[0]).ParseValue() , typeof(Decimal) );
 					Decimal right = (Decimal)Convert.ChangeType( ((Literal)@object).ParseValue() , typeof(Decimal) );
 					return Evaluate(left, right);
-				} catch (FormatException fe) {
+				} catch (FormatException) {
 					return false;
 				}				
 			}
