@@ -5,6 +5,59 @@ By Joshua Tauberer <http://razor.occams.info>
 
 http://razor.occams.info/code/semweb
 
+USAGE
+-----
+
+SemWeb is a library for use in other C# and .NET applications on either
+Mono or Microsoft's .NET. The library comes as a collection of
+.NET assemblies. There are two directories for the compiled assemblies:
+
+	bin: Binaries compiled for .NET 1.1 (no generics).
+	bin_generics: Binaries compiled for .NET 2.0 (generics).
+	
+Each directory contains the files:
+
+	SemWeb.dll
+		This is the core library.
+
+	SemWeb.MySQLStore.dll, SemWeb.PostgreSQLStore.dll, SemWeb.SqliteStore.dll
+		Assemblies providing SQLStore implementations for
+		those RDBMSs. (details to be entered here later)
+	
+	SemWeb.Sparql.dll
+		An assembly providing the SPARQL engine class. It requires
+		the auxiliary assemblies listed next.
+	
+	IKVM.GNU.Classpath.dll, IKVM.Runtime.dll
+	sparql-core.dll
+		Auxiliary assemblies required for SPARQL.
+
+	rdfstorage.exe
+		A command-line tool for converting files between RDF formats
+		and loading RDF files into databases.
+
+	rdfquery.exe
+		A command-line tool for running SPARQL and simple graph
+		matching (in N3) queries against a data source.
+
+	euler.exe
+		A command-line tool for performing general rule-based
+		reasoning.
+		
+	Mono.GetOptions.dll
+		This library from Mono is a dependency of all of the command-line
+		tools listed above.
+	
+	.mdb files are debugging symbol files for Mono. Running
+	under MS .NET, they are useless. Running under Mono, they
+	are optional unless you want debugging info in stack traces.
+
+	To use any of the .dll assemblies, reference them in your
+	project, and make sure they and any of their dependencies
+	are findable at runtime (which in MS .NET is usually the
+	case if you just reference them).
+	
+
 BUILD INSTRUCTIONS
 ------------------
 
@@ -26,6 +79,7 @@ The sources are set up with a conditional compilation flag "DOTNET2" so
 that the sources can be compiled for both .NET 1.1 and 2.0, taking 
 advantage of generics.
 
+
 IMPORTED FILES FROM OTHER PROJECTS & CREDITS
 --------------------------------------------
 
@@ -41,6 +95,7 @@ engine.  IKVM was written by Jeroen Frijters.  See http://www.ikvm.net.
 
 Euler.cs is adapted from Jos De Roo's JavaScript Euler inferencing
 engine.  See: http://www.agfa.com/w3c/euler/
+
 
 LICENSE
 -------
