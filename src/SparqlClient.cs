@@ -593,6 +593,8 @@ namespace SemWeb.Query {
 		int blankNodeCounter = 0;
 		Hashtable blankNodes = new Hashtable();
 		
+		public const string MimeType = "application/sparql-results+xml";
+		
 		private static System.Xml.XmlWriter GetWriter(System.IO.TextWriter writer) {
 			System.Xml.XmlTextWriter w = new System.Xml.XmlTextWriter(writer);
 			w.Formatting = System.Xml.Formatting.Indented;

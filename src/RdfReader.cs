@@ -75,19 +75,31 @@ namespace SemWeb {
 		public virtual void Dispose() {
 		}
 		
-		public static RdfReader Create(string type, string source) {
+		internal static string NormalizeMimeType(string type) {
 			switch (type) {
-				case "xml":
 				case "text/xml":
 				case "application/xml":
 				case "application/rdf+xml":
-					return new RdfXmlReader(source);
+					return "xml";
 
-				case "n3":
 				case "text/n3":
+				case "text/rdf+n3":
 				case "application/n3":
 				case "application/turtle":
 				case "application/x-turtle":
+					return "n3";
+			}
+			
+			return type;
+		}
+		
+		public static RdfReader Create(string type, string source) {
+			type = NormalizeMimeType(type);
+		
+			switch (type) {
+				case "xml":
+					return new RdfXmlReader(source);
+				case "n3":
 					return new N3Reader(source);
 				default:
 					throw new ArgumentException("Unknown parser or MIME type: " + type);
@@ -95,18 +107,12 @@ namespace SemWeb {
 		}
 		
 		public static RdfReader Create(string type, Stream source) {
+			type = NormalizeMimeType(type);
+
 			switch (type) {
 				case "xml":
-				case "text/xml":
-				case "application/xml":
-				case "application/rdf+xml":
 					return new RdfXmlReader(source);
-
 				case "n3":
-				case "text/n3":
-				case "application/n3":
-				case "application/turtle":
-				case "application/x-turtle":
 					return new N3Reader(new StreamReader(source, System.Text.Encoding.UTF8));
 				default:
 					throw new ArgumentException("Unknown parser or MIME type: " + type);
@@ -122,18 +128,15 @@ namespace SemWeb {
 			string mimetype = resp.ContentType;
 			if (mimetype.IndexOf(';') > -1)
 				mimetype = mimetype.Substring(0, mimetype.IndexOf(';'));
+				
+			mimetype = NormalizeMimeType(mimetype.Trim());
 			
-			switch (mimetype.Trim()) {
-				case "text/xml":
-				case "application/xml":
+			switch (mimetype) {
+				case "xml":
 				case "application/rss+xml":
-				case "application/rdf+xml":
 					return new RdfXmlReader(resp.GetResponseStream());
 					
-				case "text/rdf+n3":
-				case "application/n3":
-				case "application/turtle":
-				case "application/x-turtle":
+				case "n3":
 					return new N3Reader(new StreamReader(resp.GetResponseStream(), System.Text.Encoding.UTF8));
 			}
 			

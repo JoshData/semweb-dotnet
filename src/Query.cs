@@ -147,6 +147,15 @@ namespace SemWeb.Query {
 		
 		public Entity QueryMeta { get { return queryMeta; } set { queryMeta = value; } }
 		
+		public virtual string MimeType {
+			get {
+				return SparqlXmlQuerySink.MimeType;
+			}
+			set {
+				throw new NotSupportedException();
+			}
+		}
+		
 		public virtual void Run(SelectableSource source, TextWriter output) {
 			Run(source, new SparqlXmlQuerySink(output));
 		}

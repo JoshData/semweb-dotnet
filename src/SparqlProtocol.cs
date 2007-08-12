@@ -9,7 +9,6 @@ namespace SemWeb.Query {
 
 	public class SparqlProtocolServerHandler : System.Web.IHttpHandler {
 		public int MaximumLimit = -1;
-		public string MimeType = "application/sparql-results+xml";
 		
 		Hashtable sources = new Hashtable();
 	
@@ -28,30 +27,40 @@ namespace SemWeb.Query {
 				MemoryStream buffer = new MemoryStream();
 
 				bool closeAfterQuery;
-				string overrideMimeType = null;
 				
 				SelectableSource source = GetDataSource(out closeAfterQuery);
 				try {
 					Query sparql = CreateQuery(query);
+					
+					// Try setting the preferred output MIME type based
+					// on the HTTP Accept header, in the order that we
+					// get them from System.Web (?).
+					if (context.Request.AcceptTypes != null)
+					foreach (string acceptType in context.Request.AcceptTypes) {
+						// Setting the MIME type may throw, so we
+						// break on the first successful set.
+						try {
+							sparql.MimeType = acceptType;
+							break;
+						} catch {
+						}
+					}
+					
 					TextWriter writer = new StreamWriter(buffer, System.Text.Encoding.UTF8);
 					RunQuery(sparql, source, writer);
 					writer.Flush();
 
-					if (sparql is SparqlEngine && (((SparqlEngine)sparql).Type == SparqlEngine.QueryType.Construct || ((SparqlEngine)sparql).Type == SparqlEngine.QueryType.Describe))
-						overrideMimeType = "text/n3";
+					if (context.Request["outputMimeType"] == null || context.Request["outputMimeType"].Trim() == "")
+						context.Response.ContentType = sparql.MimeType;
+					else
+						context.Response.ContentType = context.Request["outputMimeType"];
+
+					context.Response.OutputStream.Write(buffer.GetBuffer(), 0, (int)buffer.Length);
+				
 				} finally {
 					if (closeAfterQuery && source is IDisposable)
 						((IDisposable)source).Dispose();
 				}
-				
-				if (overrideMimeType != null)
-					context.Response.ContentType = overrideMimeType;
-				else if (context.Request["outputMimeType"] == null)
-					context.Response.ContentType = MimeType;
-				else
-					context.Response.ContentType = context.Request["outputMimeType"];
-
-				context.Response.OutputStream.Write(buffer.GetBuffer(), 0, (int)buffer.Length);
 				
 			} catch (QueryFormatException e) {
 				context.Response.ContentType = "text/plain";

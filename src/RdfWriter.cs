@@ -51,5 +51,27 @@ namespace SemWeb {
 		void IDisposable.Dispose() {
 			Close();
 		}
+		
+		public static RdfWriter Create(string type, TextWriter output) {
+			switch (RdfReader.NormalizeMimeType(type)) {
+				case "xml":
+					return new RdfXmlWriter(output);
+				case "n3":
+					return new N3Writer(output);
+				default:
+					throw new ArgumentException("Unknown parser or MIME type: " + type);
+			}
+		}
+
+		public static RdfWriter Create(string type, string file) {
+			switch (RdfReader.NormalizeMimeType(type)) {
+				case "xml":
+					return new RdfXmlWriter(file);
+				case "n3":
+					return new N3Writer(file);
+				default:
+					throw new ArgumentException("Unknown parser or MIME type: " + type);
+			}
+		}
 	}
 }

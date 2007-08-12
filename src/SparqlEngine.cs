@@ -44,6 +44,8 @@ namespace SemWeb.Query {
 		
 		public bool AllowPersistBNodes = false;
 		
+		string preferredMimeType = null;
+		
 		public enum QueryType {
 			Ask,
 			Construct,
@@ -86,6 +88,35 @@ namespace SemWeb.Query {
 				if (query is SelectQuery)
 					return QueryType.Select;
 				throw new NotSupportedException("Query is of an unsupported type.");
+			}
+		}
+		
+		public override string MimeType {
+			get {
+				if (preferredMimeType == null) {
+					if (query is AskQuery)
+						return SparqlXmlQuerySink.MimeType;
+					if (query is ConstructQuery)
+						return "application/rdf+xml";
+					if (query is DescribeQuery)
+						return "application/rdf+xml";
+					if (query is SelectQuery)
+						return SparqlXmlQuerySink.MimeType;
+					throw new NotSupportedException("Query is of an unsupported type.");
+				} else {
+					return preferredMimeType;
+				}
+			}
+			set {
+				if ((query is AskQuery || query is SelectQuery) && value != SparqlXmlQuerySink.MimeType)
+					throw new NotSupportedException("That MIME type is not supported for ASK or SELECT queries.");
+				
+				if (query is ConstructQuery || query is DescribeQuery) {
+					// this throws if we don't recognize the type
+					RdfWriter.Create(value, TextWriter.Null);
+				}
+				
+				preferredMimeType = value;
 			}
 		}
 		
@@ -176,7 +207,7 @@ namespace SemWeb.Query {
 		}
 		
 		public void Construct(SelectableSource source, TextWriter output) {
-			using (RdfWriter w = new N3Writer(output))
+			using (RdfWriter w = RdfWriter.Create(MimeType, output))
 				Construct(source, w);
 		}
 
@@ -190,7 +221,7 @@ namespace SemWeb.Query {
 		}
 
 		public void Describe(SelectableSource source, TextWriter output) {
-			using (RdfWriter w = new N3Writer(output))
+			using (RdfWriter w = RdfWriter.Create(MimeType, output))
 				Describe(source, w);
 		}
 

@@ -1,3 +1,10 @@
+	* Query: Added MimeType property to control general
+	  query output. SparqlProtocolHander: Properly treat
+	  mime-types of the different SPARQL types, and allow
+	  for Accept: content-negotiation of output format for
+	  DESCRIBE and CONSTRUCT.
+	* RdfWriter: Added Create factory-style methods.
+
 2007-07-17 Version 1.01
 
 	* RdfXmlWriter.cs: Collapse rdf:Description nodes with only
