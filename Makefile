@@ -22,18 +22,24 @@ ifeq "$(PROFILE)" ""
 all:
 	PROFILE=DOTNET1 make
 	PROFILE=DOTNET2 make
+#	PROFILE=DOTNET3 make
 
 # If we have a PROFILE specified.
 else
 
 ifeq "$(PROFILE)" "DOTNET1"
 BIN=bin
-MCS=mcs
+MCS=mcs -d:DOTNET1
 endif
 
 ifeq "$(PROFILE)" "DOTNET2"
 BIN=bin_generics
 MCS=gmcs -d:DOTNET2
+endif
+
+ifeq "$(PROFILE)" "DOTNET3"
+BIN=bin_linq
+MCS=gmcs -d:DOTNET3 -langversion:linq
 endif
 
 all: $(BIN)/SemWeb.dll $(BIN)/SemWeb.PostgreSQLStore.dll $(BIN)/SemWeb.MySQLStore.dll $(BIN)/SemWeb.SqliteStore.dll $(BIN)/SemWeb.Sparql.dll $(BIN)/rdfstorage.exe $(BIN)/rdfquery.exe $(BIN)/euler.exe
@@ -53,6 +59,7 @@ MAIN_SOURCES = \
 	src/Algos.cs src/SparqlClient.cs
 
 $(BIN)/SemWeb.dll: $(MAIN_SOURCES) Makefile
+	mkdir -p $(BIN)
 	$(MCS) -debug $(MAIN_SOURCES) -out:$(BIN)/SemWeb.dll -t:library \
 		-r:System.Data -r:System.Web
 
