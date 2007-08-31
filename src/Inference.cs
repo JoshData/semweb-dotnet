@@ -38,11 +38,30 @@ namespace SemWeb.Inference {
 			
 			ret.NoData = new bool[graph.Length];
 			for (int i = 0; i < graph.Length; i++) {
+				// Take this statement and replace variables by nulls
+				// to make it a statement template.
+				Statement st = graph[i];
+				for (int j = 0; j < 4; j++) {
+					if (st.GetComponent(j) is Variable)
+						st.SetComponent(j, null);
+				}
+				
+				// See if the store contains this template.
+				if (!source.Contains(st)) {
+					ret.NoData[i] = true;
+					continue;
+				}
+			
+				// Process it further in case we have variables
+				// with known values, in which case if none of the
+				// known values is in the store, we also know this
+				// statement is unanswerable.
 				for (int j = 0; j < 4; j++) {
 					Resource r = graph[i].GetComponent(j);
 					
-					if (r != null && !(r is Variable) && !source.Contains(r))
-						ret.NoData[i] = true;
+					// No need to check the following given the check above.
+					//if (r != null && !(r is Variable) && !source.Contains(r))
+					//	ret.NoData[i] = true;
 					
 					if (r != null && r is Variable && options.VariableKnownValues != null && 
 					#if !DOTNET2

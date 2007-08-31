@@ -4,6 +4,7 @@
 	  for Accept: content-negotiation of output format for
 	  DESCRIBE and CONSTRUCT.
 	* RdfWriter: Added Create factory-style methods.
+	* Inference.cs: Improved distributed queries a bit.
 	* doc/: Added design document and corrected a mistake
 	  reported by Peter Williams (thanks!).
 
