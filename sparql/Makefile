@@ -17,7 +17,7 @@ build-sparql:
 	mono $(IKVM) -out:sparql-core.dll -nostacktraceinfo \
 		$(SPARQL)/lib/sparql-core.jar $(SPARQL)/lib/openrdf-util.jar \
 		$(SPARQL)/lib/openrdf-model.jar
-	#mono --aot -O=all sparql-core.dll
+	mono --aot -O=all sparql-core.dll
 	cp sparql-core.dll* ../bin
 	cp sparql-core.dll* ../bin_generics
 	diff -urN $(SPARQL_RELEASE) $(SPARQL) --exclude=.svn --exclude=.settings --exclude=META-INF > local-changes.diff || true
