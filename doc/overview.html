@@ -1,0 +1,234 @@
+<html>
+	<head>
+		<title>SemWeb: Docs: Library Overview</title>
+		<link rel="stylesheet" type="text/css" href="stylesheet.css"/>
+	</head>
+	
+	<body>
+
+<p><a href="index.html">SemWeb Documentation</a></p>
+<h1>Library Overview</h1>
+
+<p>SemWeb is a .NET library for working with
+Resource Description Framework (RDF) data. It provides
+classes for reading, writing, manipulating, and querying RDF.
+The library does not (yet) provide any special tools for
+OWL ontologies. That is, the library is a general-purpose
+framework for dealing with RDF statements (i.e. triples).</p>
+
+<p>The primary classes in the library are in the <tt>SemWeb</tt>
+namespace. In that namespace, four classes provide the fundamentals
+for all aspects of the library: <tt>Resource</tt>, <tt>Statement</tt>,
+<tt>StatementSource</tt>, and <tt>StatementSink</tt>.</p>
+
+<p>The <tt>MemoryStore</tt> class and the <tt>SelectableSource</tt>
+interface are also discussed below.</p>
+
+<h3>Resources and Statements</h3>
+
+<p><tt>Resource</tt> is the abstract base class of the terms in RDF.
+The RDF formal model has two types of terms, nodes and literal values,
+and likewise <tt>Resource</tt> has two subclasses: <tt>Entity</tt>
+and <tt>Literal</tt>. Nodes, whether they be named (i.e. URIs) or blank
+(i.e. anonymous), are represented by the <tt>Entity</tt> class.
+Named nodes are represented by <tt>Entity</tt> objects directly, while
+blank nodes are represented by the <tt>BNode</tt> class, which is a
+subclass of <tt>Entity</tt>. Literal values are represented by the
+<tt>Literal</tt> class.</p>
+
+<p>A RDF triple is represented by the <tt>Statement</tt> struct.
+This type is a struct, rather than a class, because it is the
+number of statements that an application will have to process
+that is the most likely to be subject to scalability concerns.
+That is, an RDF database can contain billions of triples, but
+usually won't have nearly so many unique resources. The <tt>Statement</tt>
+struct has three main fields: <tt>Subject</tt>, <tt>Predicate</tt>,
+amd <tt>Object</tt>. Following the RDF specification, the subject
+and predicate of a triple cannot contain literal values, and thus
+those fields are typed as <tt>Entity</tt>, while an object can
+be a triple, so the object field is typed as <tt>Resource</tt>.
+It is thus often necessary to cast values when processing statement
+objects to get an Entity or Literal value back from a statement.</p>
+
+<p>To construct a triple, use <tt>Statement</tt>'s three-arg constructor:</p>
+
+<pre class="code">new Statement(
+	new Entity("http://www.example.org/SemWeb"),
+	new Entity("http://www.example.org/hasName"),
+	new Literal("My Semantic Web library!") );</pre>
+
+<p>Note that constructing URI nodes involves calling <tt>Entity</tt>'s
+constructor and passing a string. (Validation that the string is a
+legitimate URI is not performed. That is the responsibility of the caller.)
+To construct blank nodes, you must instantiate the <tt>BNode</tt> class:</p>
+
+<pre class="code">new Statement(
+	new Entity("http://www.example.org/SemWeb"),
+	new Entity("http://www.example.org/relatedTo"),
+	new BNode() );</pre>
+
+<p>When adding statements into a store, no fields of a <tt>Statement</tt>
+may be null.</p>
+
+<p>While all instances of an Entity constructed by passing a URI are
+considered equal so long as their URIs are equal, no two BNode object
+instances are considered equal (mostly). You must create a single
+BNode instance with "new BNode()" and use that instance throughout
+to refer to the same BNode at different times.</p>
+
+<p>It is possible to create literal values with a language tag or
+datatype. To do so, use the three-arg <tt>Literal</tt> constructor:</p>
+
+<pre class="code">new Literal("My Semantic Web library!", "en_US", null);
+new Literal("1234", null, XSDNS + "#integer");</pre>
+
+<p>A literal value may not have both a language and a datatype, following
+the RDF spec.</p>
+
+<p><tt>Statement</tt>s actually have a fourth field, called Meta, which
+may be used for any purpose. It is envisioned to attach context information
+to a statement. The Meta field must be an <tt>Entity</tt>.</p>
+
+<p>The <tt>Resource</tt> class hierarchy has a fourth subclass.
+<tt>Variable</tt> is a subclass of <tt>BNode</tt> and represents
+a variable in a query. It is meant to be used only in queries.</p>
+
+<h3>StatementSource and StatementSink</h3>
+
+<p>Places where you get statements from are <tt>StatementSource</tt>s. 
+This is an interface that has a method called <tt>Select</tt> whose 
+purpose is to stream some statements to an object (a 
+<tt>StatementSink</tt>) that is equipt via a method called <tt>Add</tt> to receive those statements. The approach taken 
+here is an alternative to using the iterator paradigm for scanning 
+through a set of statements. Rather, it is a source/sink type of
+paradigm, if such a thing exists.</p>
+
+<p>Let's start with the <tt>StatementSink</tt>. If you want to process
+a set of statements, you will need to write a class that implements
+this interface, by adding the method:</p>
+
+<pre class="code">public bool Add(Statement statement) {
+	...
+}</pre>
+
+<p>You could create a private nested class to implement the interface,
+for instance. Inside this method, you place your code to process a single
+statement. If you need to see more than one statement at once,
+you could place code in there to put the statement into an ArrayList,
+and then later on process all of the statements in the ArrayList,
+for instance. (Or just use a MemoryStore in the first place: more
+on that later.) Return <tt>true</tt> at the end, or <tt>false</tt>
+to signal the caller to stop sending statements.</p>
+
+<p><tt>StatementSink</tt> is implemented by the file-writing classes,
+including the RDF/XML writer (<tt>RdfXmlWriter</tt>) and N3 writer
+(<tt>N3Writer</tt>).</p>
+
+<p>The <tt>StatementSource</tt>, on the other hand, is the object with 
+the statements that you want to access. File-reading classes like the 
+RDF/XML and N3 readers (<tt>RdfXmlReader</tt> and <tt>N3Reader</tt>) 
+implement this interface. It contains a method <tt>Select</tt> to which 
+you pass your <tt>StatementSink</tt> to begin sending the statements 
+from the source into the sink, with the sink's <tt>Add</tt> method 
+called for each statement. (Select is named after the SQL command of the 
+same name.)</p>
+
+<pre class="code">source.Select(new MySink());</pre>
+
+<h3>MemoryStore</h3>
+
+<p>The <tt>MemoryStore</tt> class is an in-memory storage
+object for statements. At its core, it is just an <tt>ArrayList</tt>
+of statements. This class (and actually all
+<tt>Store</tt> classes) are peculiar from the point of view
+of the class hierarchy discussed so far: It implements
+both <tt>StatementSource</tt> and <tt>StatementSink</tt>.
+Thus you can add statements to it by calling its <tt>Add</tt>
+method. You can also get statements out of it by calling its
+<tt>Select(StatementSink)</tt> method, which will stream statements
+into any <tt>StatementSink</tt> (including another MemoryStore,
+a file-writing class, or one of your own classes, for instance).</p>
+
+<pre class="code">MemoryStore ms1 = new MemoryStore();
+ms1.Add(new Statment(.....);
+MemoryStore ms2 = new MemoryStore();
+ms1.Select(ms2);</pre>
+
+<p>But the <tt>MemoryStore</tt> can also be used as a utility class
+for moving from the source-sink paradigm to an iterator paradigm.
+The class implements <tt>IEnumerable</tt>, and in the .NET 2.0 build
+<tt>IEnumerable&lt;Statement&gt;</tt>, which means you can <i>foreach</i>
+over them to iterate through the statements they contain. You need
+to keep in mind scalability issues here, though. Streaming statements
+into a MemoryStore means you are loading them all into memory, which
+may not be possible for large applications. And when using the .NET 1.1
+build (no generics), using the iterator paradigm requires boxing and
+unboxing the <tt>Statement</tt>s.</p>
+
+<pre class="code">MemoryStore ms = new MemoryStore();
+datasource.Select(ms);
+foreach (Statement stmt in ms)
+	Console.WriteLine(stmt);</pre>
+	
+<p>As an alternative to <i>foreach</i>, mainly for the .NET 1.1 build,
+you can loop as follows, which doesn't require boxing/unboxing:</p>
+
+<pre class="code">for (int i = 0; i < ms.StatementCount; ms++) {
+    Statement stmt = ms[i];
+    Console.WriteLine(stmt);
+}</pre>
+
+<h3>SelectableSource</h3>
+
+<p>The <tt>SelectableSource</tt> is another part of the core
+of the library. This interface extends <tt>StatementSource</tt>
+with two new <tt>Select</tt> methods. Recall the <tt>Select(StatementSink)</tt>
+method already introduced which streams <i>all</i> statements from the source
+into the sink. The <tt>MemoryStore</tt> and other data sources use the
+<tt>SelectableSource</tt> interface to provide a basic filtering
+mechanism on the statements that are streamed back. These methods are:</p>
+
+<pre class="code">void Select(Statement template, StatementSink sink);
+void Select(SelectFilter filter, StatementSink sink);</pre>
+
+<p>In the first method, the caller provides a "statement template".
+Unlike statements added into stores, these statements may have
+null fields for subject, predicate, or object. Those fields are
+then treated as wildcards, and the fields that have values are
+applied as filters. Filtering with <tt>new Statement(x, null, null)</tt>
+will stream to the sink only statements whose subject is <tt>x</tt>.
+While of course you could filter out the statements in your sink,
+this wouldn't scale when the data source has billions of other
+irrelevant triples:</p>
+
+<pre class="code">// streams just statements that have mySubject as the subject
+source.Select(new Statement(mySubject, null, null), new MySink());
+
+// streams just statements that have myPredicate and myObject as the predicate and object
+source.Select(new Statement(null, myPredicate, myObject), new MySink());</pre>
+
+<p>This template paradigm is useful when you want to get the statements
+that match some other statement. It is also used by the <tt>Contains(Statement)</tt> method.</p>
+
+<p>The <tt>SelectableSource</tt> interface's second new Select method
+takes a <tt>SelectFilter</tt> object as its first argument. An object
+of this class provides more control over the statements selected. In
+particular, it allows for statements in which the subject, predicate, or
+object can range over a list of values, rather than just a single value
+as with the template paradigm. Here is an example:</p>
+
+<pre class="code">SelectFilter filter = new SelectFiler();
+filter.Subjects = new Entity[] { entity1, entity2, entity3 };
+filter.Predicates = new Entity[] { dc_title, rdfs_subject };
+
+// streams statements who have any of the listed entities as
+// the subject, and any of the listed predicates as the object
+source.Select(filter, new MySink());</pre>
+
+<p>The primary advantage of this second Select method is that it
+is more efficient to query out-of-memory databases as few times
+as possible, getting as many results in one shot, than repeatedly
+querying the data source for different triples.</p>
+
+	</body>
+</html>

@@ -6,7 +6,7 @@ pre.code {
 }
 
 tt {
-	font-family: Verdana;
 	letter-spacing: 1px;
-	font-style: italic;
+	font-size: 105%;
+	background-color: #FFFFEE;
 }

@@ -256,10 +256,10 @@ public class PrintQuerySink : QueryResultSink {
 query.Run(data, sink);
 </pre>
 
-<p>To create a SPARQL query instead, construct a new <tt>Sparql</tt> object (in the <tt>SemWeb.Query</tt> namespace but in the separate <tt>SemWeb.Sparql.dll</tt> assembly!).</p>
+<p>To create a SPARQL query instead, construct a new <tt>SparqlEngine</tt> object (in the <tt>SemWeb.Query</tt> namespace but in the separate <tt>SemWeb.Sparql.dll</tt> assembly!).</p>
 
 <pre class="code">
-Query query = new Sparql(new StreamReader(queryfile));
+Query query = new SparqlEngine(new StreamReader(queryfile));
 </pre>
 
 <p>Run the query the same as with <tt>GraphMatch</tt>.  There are several types of SPARQL queries, not all of which result a list of variable bindings.  For instance, the DESCRIBE and CONSTRUCT query types return RDF triples.  You can run queries generically and output the results to a <tt>TextWriter</tt> just by passing a <tt>TextWriter</tt> to <tt>Run</tt> instead of a <tt>QueryResultSink</tt>.  Or, see the API documentation on the <tt>Sparql</tt> class for more control over the output of SPARQL queries.</p>

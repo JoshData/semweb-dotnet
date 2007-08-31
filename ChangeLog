@@ -4,6 +4,8 @@
 	  for Accept: content-negotiation of output format for
 	  DESCRIBE and CONSTRUCT.
 	* RdfWriter: Added Create factory-style methods.
+	* doc/: Added design document and corrected a mistake
+	  reported by Peter Williams (thanks!).
 
 2007-07-17 Version 1.01
 
