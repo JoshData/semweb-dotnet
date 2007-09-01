@@ -1373,7 +1373,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
                  Value rawEvaluate = filterExpression.evaluate(row);
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/logic/naive/DefaultGroupConstraintLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/naive/DefaultGroupConstraintLogic.java
 --- upstream/src/main/name/levering/ryan/sparql/logic/naive/DefaultGroupConstraintLogic.java	2006-08-20 20:01:01.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/logic/naive/DefaultGroupConstraintLogic.java	2007-09-01 07:41:09.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/logic/naive/DefaultGroupConstraintLogic.java	2007-09-01 09:07:41.000000000 -0400
 @@ -9,6 +9,7 @@
  import java.util.Iterator;
  import java.util.LinkedList;
@@ -1422,9 +1422,9 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
  			ConstraintLogic c = (ConstraintLogic) graphs.next();
 +			p2.bindings = current;
 +			
-+			// Only when the graph consists of a single triple constraint can
-+			// we pass down the limit.
-+			if (graphQueue.size() != -1)
++			// Only when the graph consists of a single triple constraint and
++			// there are no filters can we pass down a limit.
++			if (graphQueue.size() != -1 || filterQueue.size() > 0)
 +				p2.limit = -1;
 +				
  			if (current == null) {
@@ -1455,7 +1455,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
  	}
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/logic/naive/DefaultOptionalConstraintLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/naive/DefaultOptionalConstraintLogic.java
 --- upstream/src/main/name/levering/ryan/sparql/logic/naive/DefaultOptionalConstraintLogic.java	2006-08-20 20:01:01.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/logic/naive/DefaultOptionalConstraintLogic.java	2007-09-01 07:41:54.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/logic/naive/DefaultOptionalConstraintLogic.java	2007-09-01 09:07:57.000000000 -0400
 @@ -9,6 +9,7 @@
  import java.util.Iterator;
  import java.util.LinkedList;
@@ -1497,9 +1497,9 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
  		for (Iterator graphs = graphQueue.iterator(); graphs.hasNext();) {
  			ConstraintLogic c = (ConstraintLogic) graphs.next();
 +			
-+			// Only when the graph consists of a single triple constraint can
-+			// we pass down the limit.
-+			if (graphQueue.size() != 1)
++			// Only when the graph consists of a single triple constraint and
++			// there are no filters can we pass down a limit.
++			if (graphQueue.size() != -1 || filterQueue.size() > 0)
 +				p2.limit = -1;
 +			
  			if (current == null) {
@@ -1527,6 +1527,149 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
  	}
  
  }
+diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/logic/naive/DefaultOptionalConstraintLogic.java~ work-copy/src/main/name/levering/ryan/sparql/logic/naive/DefaultOptionalConstraintLogic.java~
+--- upstream/src/main/name/levering/ryan/sparql/logic/naive/DefaultOptionalConstraintLogic.java~	1969-12-31 19:00:00.000000000 -0500
++++ work-copy/src/main/name/levering/ryan/sparql/logic/naive/DefaultOptionalConstraintLogic.java~	2007-09-01 07:41:54.000000000 -0400
+@@ -0,0 +1,139 @@
++/*
++ * SPARQL Engine
++ * Copyright (C) 2005 Ryan Levering, All rights reserved.
++ * See LICENSE for full license information
++ */
++package name.levering.ryan.sparql.logic.naive;
++
++import java.util.Collection;
++import java.util.Iterator;
++import java.util.LinkedList;
++import java.util.List;
++import java.util.Map;
++
++import name.levering.ryan.sparql.common.RdfBindingSet;
++import name.levering.ryan.sparql.common.RdfSource;
++import name.levering.ryan.sparql.common.impl.RdfBindingSetImpl;
++import name.levering.ryan.sparql.model.FilterConstraint;
++import name.levering.ryan.sparql.model.GraphConstraint;
++import name.levering.ryan.sparql.model.OptionalConstraint;
++import name.levering.ryan.sparql.model.data.OptionalConstraintData;
++import name.levering.ryan.sparql.model.logic.ConstraintLogic;
++import name.levering.ryan.sparql.model.logic.helper.IntersectOrderLogic;
++import name.levering.ryan.sparql.model.logic.helper.SetIntersectLogic;
++import name.levering.ryan.sparql.model.logic.helper.SetJoinLogic;
++
++/**
++ * The default logic for the OPTIONAL constraint in the SPARQL query language.
++ * This logic appends variable bindings where row values intersect and sets the
++ * other rows to hold null values.
++ * 
++ * @author Ryan Levering
++ * @version 1.0
++ */
++public class DefaultOptionalConstraintLogic implements ConstraintLogic {
++
++	/**
++	 * The data that holds the group constraint to expand the current constraint
++	 * with.
++	 */
++	private final OptionalConstraintData data;
++
++	/**
++	 * The logic to calculate the set join operation.
++	 */
++	private final SetJoinLogic logic;
++
++	private final IntersectOrderLogic orderLogic;
++
++	private final SetIntersectLogic intersectLogic;
++
++	/**
++	 * Creates a new optional constraint logic object that expands a binding set
++	 * with another.
++	 * 
++	 * @param data the data that holds the constraints
++	 * @param logic the logic to calculate the set join operation
++	 */
++	public DefaultOptionalConstraintLogic(OptionalConstraintData data, SetIntersectLogic intersectLogic,
++			IntersectOrderLogic orderLogic, SetJoinLogic logic) {
++		this.data = data;
++		this.logic = logic;
++		this.orderLogic = orderLogic;
++		this.intersectLogic = intersectLogic;
++	}
++
++	/**
++	 * Calculates a new binding set by expanding the passed bindings with the
++	 * bindings from the enclosed constraints.
++	 * 
++	 * @param bindings the current value bindings, used as the base for
++	 *            expansion
++	 * @param source the RDF triple source, passed onto the grouped constraint
++	 * @param defaultDatasets the datasets to query, passed onto the grouped
++	 *            constraint
++	 * @param namedDatasets the named datasets for named queries, passed onto
++	 *            the grouped constraint
++	 */
++	public RdfBindingSet constrain(ConstraintLogic.CallParams p) {
++		List filterQueue = new LinkedList();
++		List optionalQueue = new LinkedList();
++		List graphQueue = new LinkedList();
++
++		RdfBindingSet current = null;
++		
++		ConstraintLogic.CallParams p2 = p.clone();
++		p2.bindings = null;
++
++		// Constrain in order, unless we hit an optional, graph, or value filter
++		// These things all kind of depend on the previous bindings
++		// Graph probably shouldn't technically, but I think in this
++		// implementation it does
++		for (Iterator cons = this.data.getConstraint().getConstraints().iterator(); cons.hasNext();) {
++			ConstraintLogic c = (ConstraintLogic) cons.next();
++			if (c instanceof OptionalConstraint) {
++				optionalQueue.add(c);
++			} else if (c instanceof FilterConstraint) {
++				filterQueue.add(c);
++			} else if (c instanceof GraphConstraint) {
++				graphQueue.add(c);
++			} else {
++				this.orderLogic.addBindingSet(c.constrain(p2));
++			}
++
++		}
++		current = this.orderLogic.removeIntersectedSet();
++
++		// This isn't required by the spec, but it's allowed
++		for (Iterator graphs = graphQueue.iterator(); graphs.hasNext();) {
++			ConstraintLogic c = (ConstraintLogic) graphs.next();
++			
++			// Only when the graph consists of a single triple constraint can
++			// we pass down the limit.
++			if (graphQueue.size() != 1)
++				p2.limit = -1;
++			
++			if (current == null) {
++				current = c.constrain(p2);
++			} else {
++				p2.bindings = current;
++				current = this.intersectLogic.intersect(current, c.constrain(p2));
++			}
++		}
++
++		// At this point, we don't have any constraints so just bring the whole
++		// set in
++		if (current == null) {
++			current = new RdfBindingSetImpl();
++		}
++
++		for (Iterator optionals = optionalQueue.iterator(); optionals.hasNext();) {
++			ConstraintLogic c = (ConstraintLogic) optionals.next();
++			p2.bindings = current;
++			current = c.constrain(p2);
++		}
++		
++		return this.logic.join(p.bindings, current, filterQueue);
++	}
++
++}
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/logic/naive/DefaultTripleConstraintLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/naive/DefaultTripleConstraintLogic.java
 --- upstream/src/main/name/levering/ryan/sparql/logic/naive/DefaultTripleConstraintLogic.java	2006-08-20 20:01:01.000000000 -0400
 +++ work-copy/src/main/name/levering/ryan/sparql/logic/naive/DefaultTripleConstraintLogic.java	2007-02-21 07:48:10.000000000 -0500
@@ -1622,7 +1765,586 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
  
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/logic/streamed/AdvancedGroupConstraintLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/streamed/AdvancedGroupConstraintLogic.java
 --- upstream/src/main/name/levering/ryan/sparql/logic/streamed/AdvancedGroupConstraintLogic.java	1969-12-31 19:00:00.000000000 -0500
-+++ work-copy/src/main/name/levering/ryan/sparql/logic/streamed/AdvancedGroupConstraintLogic.java	2007-09-01 07:41:19.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/logic/streamed/AdvancedGroupConstraintLogic.java	2007-09-01 09:09:03.000000000 -0400
+@@ -0,0 +1,575 @@
++/*
++ * SPARQL Engine
++ * Copyright (C) 2005 Ryan Levering, All rights reserved.
++ * See LICENSE for full license information
++ */
++package name.levering.ryan.sparql.logic;
++
++import java.util.Collection;
++import java.util.HashMap;
++import java.util.HashSet;
++import java.util.Iterator;
++import java.util.LinkedList;
++import java.util.List;
++import java.util.Map;
++import java.util.Set;
++
++import org.openrdf.model.URI;
++import org.openrdf.model.BNode;
++import org.openrdf.model.Literal;
++import org.openrdf.model.Value;
++
++import name.levering.ryan.sparql.common.impl.AbstractRdfBindingRow;
++import name.levering.ryan.sparql.common.RdfBindingSet;
++import name.levering.ryan.sparql.common.RdfBindingRow;
++import name.levering.ryan.sparql.common.RdfSource;
++import name.levering.ryan.sparql.common.Variable;
++import name.levering.ryan.sparql.common.impl.RdfBindingSetImpl;
++import name.levering.ryan.sparql.logic.function.ExternalFunctionLogic;
++import name.levering.ryan.sparql.model.TripleConstraint;
++import name.levering.ryan.sparql.model.data.FilterConstraintData;
++import name.levering.ryan.sparql.model.data.GroupConstraintData;
++import name.levering.ryan.sparql.model.data.OptionalConstraintData;
++import name.levering.ryan.sparql.model.logic.ConstraintLogic;
++import name.levering.ryan.sparql.model.logic.ExpressionLogic;
++import name.levering.ryan.sparql.model.logic.helper.SetIntersectLogic;
++import name.levering.ryan.sparql.parser.model.ASTAndNode;
++import name.levering.ryan.sparql.parser.model.ASTEqualsNode;
++import name.levering.ryan.sparql.parser.model.ASTOrNode;
++import name.levering.ryan.sparql.parser.model.ASTVar;
++import name.levering.ryan.sparql.parser.model.BinaryExpressionNode;
++import name.levering.ryan.sparql.parser.model.DelegatingTripleConstraint;
++import name.levering.ryan.sparql.parser.model.EmptyVisitor;
++import name.levering.ryan.sparql.parser.model.SimpleNode;
++
++/**
++ * This logic is the default logic for the main constraint that is used as an
++ * aggregate of other constraints. TripleConstraints, UnionConstraints, and
++ * GraphConstraints all are intersected with the running binding set. After
++ * that, OptionalConstraints and FilterConstraints modify the set themselves.
++ * 
++ * @author Ryan Levering
++ * @version 1.0
++ */
++public class AdvancedGroupConstraintLogic implements ConstraintLogic {
++
++    /**
++     * The data that holds the constraints that this group constraint
++     * aggregates.
++     */
++    private final GroupConstraintData data;
++
++    /**
++     * This logic that intersects the parts of the graph pattern.
++     */
++    private final SetIntersectLogic logic;
++    
++    private static final Map
++		isFunctional = new HashMap(),
++    	isInverseFunctional = new HashMap();
++    
++    /**
++     * Creates a new default group logic, with the given subconstraints found in
++     * the data.
++     * 
++     * @param data the data holding the subconstraints to bind
++     */
++    public AdvancedGroupConstraintLogic(GroupConstraintData data, SetIntersectLogic logic) {
++        this.logic = logic;
++        this.data = data;
++    }
++
++    /**
++     * Applies each subconstraint in turn, saving filter and optional
++     * constraints for last, as according to specification.
++     * 
++     * @param bindings the current running bindings, ignored here
++     * @param source the source to query RDF triples, passed on to
++     *            subconstraints
++     * @param defaultDatasets the datasets to query by default, passed on to
++     *            subconstraints
++     * @param namedDatasets the named datasets to query in an unbound graph
++     *            query, passed on to subconstraints
++     */
++    public RdfBindingSet constrain(ConstraintLogic.CallParams p) {
++	
++		// Build separate lists for the different constraints that this group may contain.
++
++		List tripleConstraints = new LinkedList();
++        List filterQueue = new LinkedList();
++        List optionalQueue = new LinkedList();
++		List otherQueue = new LinkedList();
++
++		// Clone knownValues and knownFilters so we can freely modify it without affecting the caller.
++		
++		p = p.clone();
++		if (p.knownValues == null)
++			p.knownValues = new HashMap();
++		else
++			p.knownValues = new HashMap(p.knownValues);
++			
++		if (p.knownFilters == null)
++			p.knownFilters = new HashMap();
++		else
++			p.knownFilters = new HashMap(p.knownFilters);
++		
++		// Get a list of variables that have known values, and of those the ones that are really cheap
++		// (i.e. have just a few values).
++		// We'll build these sets in the course of reordering the statements to query most efficiently.
++
++		Set knownVars = new HashSet();
++		Set cheapVars = new HashSet();
++		
++		// Any variables known by groups on top of us are known here, and cheap (I guess).
++		knownVars.addAll(p.knownValues.keySet());
++		cheapVars.addAll(p.knownValues.keySet());
++		
++		// Split out the types of constraints and look for filters that tell us interesting things.
++		
++        for (Iterator cons = data.getConstraints().iterator(); cons.hasNext();) {
++            ConstraintLogic c = (ConstraintLogic) cons.next();
++            if (c instanceof OptionalConstraintData) {
++				optionalQueue.add(c);
++            } else if (c instanceof FilterConstraintData) {
++				filterQueue.add(c);
++				
++				FilterConstraintData f = (FilterConstraintData)c;
++				if (f.getExpression() instanceof BinaryExpressionNode) {
++					// If this filter is of the form FILTER(?var = <uri> || ?var = <uri> || ...)
++					// then this is giving us some known values for the variable.
++					BinaryExpressionNode b = (BinaryExpressionNode)f.getExpression();
++					Variable v = getFilterPrimaryVariable(b);
++					if (v != null) {
++						Set values = new HashSet();
++						getFilterValues(b, values);
++						if (!p.knownValues.containsKey(v)) {
++							p.knownValues.put(v, values);
++							knownVars.add(v);
++							cheapVars.add(v);
++						} else {
++							Set othervalues = (Set)p.knownValues.get(v);
++							othervalues.retainAll(values);
++						}
++					}
++				}
++				
++				// This by default does nothing, but subclassors may decide to do things here.
++				extractLiteralFilters(f.getExpression(), p.knownFilters);
++				
++			} else if (c instanceof TripleConstraint) {
++				tripleConstraints.add(c);
++			} else {
++				otherQueue.add(c);
++			}
++		}
++		
++		// Reorder the triple constraints so that complex constraints are done
++		// after some of their variables have already been evaluated.  This is
++		// a bit N^2-ish in the number of triple constraints, but it can be improved.
++		List constraintOrder = new LinkedList();
++		Set selectedVars = new HashSet();
++		while (tripleConstraints.size() > 0) {
++			TripleConstraint leastConstraint = null;
++			float leastComplexity = -1;
++			
++			if (tripleConstraints.size() == 1) {
++				leastConstraint = (TripleConstraint)tripleConstraints.get(0);
++			} else {
++				//System.err.println(">>>");
++				
++				for (Iterator cons = tripleConstraints.iterator(); cons.hasNext();) {
++					TripleConstraint c = (TripleConstraint) cons.next();
++					float complexity = getComplexity(c, knownVars, cheapVars, p.knownFilters, p.source);
++					//System.err.println(">>> " + complexity + "\t" + c);
++					if (leastConstraint == null || complexity < leastComplexity) {
++						leastComplexity = complexity;
++						leastConstraint = c;
++					}
++				}
++			}
++
++			tripleConstraints.remove(leastConstraint);
++			constraintOrder.add(leastConstraint);
++			
++			// Get the variables mentioned in this triple constraint
++			Set constraintVars = new HashSet();
++			getVariables(leastConstraint, constraintVars);
++			
++			// Keep a list of variables that have been selected on so far
++			selectedVars.addAll(constraintVars);
++			
++			// And all of these variables are now considered 'known' for the purposes of
++			// selecting which statement goes next.  But they're not considered 'cheap'.
++			knownVars.addAll(constraintVars);
++			
++			// Well, if this triple was functional or inverse functional, we *can*
++			// consider the variables mentioned in the triple cheap.
++			if (leastComplexity <= 1)
++				cheapVars.addAll(constraintVars);
++			
++			// Perform any filters that are such that all of the
++			// variables mentioned in the filter have already been selected
++			// on.  The earlier we filter the better.  (We have to know not just
++			// which variables are known so far, because ones that are known from
++			// filters may not yet be actually bound in the binding set.  Rather,
++			// we have to know which ones have actually been selected on in a
++			// triple.  Here, we only know what's been selected on in this group,
++			// and not at a higher level.)
++	        for (Iterator filters = filterQueue.iterator(); filters.hasNext();) {
++	            FilterConstraintData c = (FilterConstraintData) filters.next();
++	            /*boolean allvarsknown = true;
++	            Set filterVars = getFilterVariables((SimpleNode)c);
++	            for (Iterator vars = filterVars.iterator(); vars.hasNext(); ) {
++	            	if (!selectedVars.contains(vars.next())) {
++	            		allvarsknown = false;
++	            		break;
++	            	}
++	            }
++	            if (allvarsknown) {
++	            	constraintOrder.add(c);
++	            	filters.remove();
++	            }*/
++	        }
++        }
++		
++		// Add the otherQueue back in.
++		constraintOrder.addAll(otherQueue);
++
++		// Run the constraints in the new order.
++        RdfBindingSet current = null;
++		
++		// Allow a subclass to take over running the constraints.
++		current = runTripleConstraints(constraintOrder, p.source, p.defaultDatasets, p.namedDatasets, p.knownValues, p.knownFilters, p.limit);
++		if (current != null) {
++			constraintOrder.clear();
++			if (optionalQueue.size() > 0)
++				current = updateKnownVariables(current, p.knownValues);
++		}
++		
++		for (Iterator cons = constraintOrder.iterator(); cons.hasNext();) {
++			ConstraintLogic c = (ConstraintLogic) cons.next();
++			
++			p.bindings = current;
++			
++			// Only when the graph consists of a single triple constraint and
++			// there are no filters can we pass down a limit.
++			if (constraintOrder.size() != 1 || filterQueue.size() > 0)
++				p.limit = -1;
++			
++			if (current == null) {
++				current = c.constrain(p);
++			} else if (c instanceof FilterConstraintData) {
++	            current = c.constrain(p);
++	            filterQueue.remove(c);
++			} else {
++				current = logic.intersect(current, c.constrain(p));
++			}
++
++			if (cons.hasNext() || optionalQueue.size() > 0)
++				current = updateKnownVariables(current, p.knownValues);
++        }
++        
++        // At this point, we're operating on the set, so let's make it an empty one
++        if (current == null) {
++            current = new RdfBindingSetImpl();
++        }
++
++		// Any optionals...
++        for (Iterator optionals = optionalQueue.iterator(); optionals.hasNext();) {
++            ConstraintLogic c = (ConstraintLogic) optionals.next();
++				p.bindings = current;
++				// note that we pass down the limit
++            current = c.constrain(p);
++        }
++		
++		// Any filters that were not moved up in the logic to process them as early as possible.
++        for (Iterator filters = filterQueue.iterator(); filters.hasNext();) {
++            ConstraintLogic c = (ConstraintLogic) filters.next();
++				p.bindings = current;
++            current = c.constrain(p);
++        }
++        return current;
++    }
++
++	protected RdfBindingSet runTripleConstraints(List tripleConstraints, RdfSource source,
++            Collection defaultDatasets, Collection namedDatasets, Map knownValues, Map knownFilters, int limit) {
++		return null;
++	}
++	
++	private RdfBindingSet updateKnownVariables(RdfBindingSet current, Map knownValues) {
++		// If there are more things happening later, update our knownValue
++		// mapping based on what has currently been queried.  We have to
++		// loop through all of the bindings found so far, so we'll put
++		// those bindings into a new set to cache them.
++		
++		current = new RdfBindingSetImpl(current);
++		List variables = current.getVariables();
++		
++		Set hadNewValues = new HashSet();
++		for (Iterator biter = current.iterator(); biter.hasNext(); ) {
++			RdfBindingRow row = (RdfBindingRow)biter.next();
++			List rowvalues = row.getValues();
++			
++			for (int i = 0; i < variables.size(); i++) {
++				Variable var = (Variable) variables.get(i);
++				Value val = (Value) rowvalues.get(i);
++				
++				if (val == null) continue;
++				
++				Set values = (Set)knownValues.get(var);
++				
++				// If knownValues has no mapping for this variable yet,
++				// or if knownValues had a mapping, we want to clear
++				// the mapping and start fresh with the values actually
++				// found.
++				if (values == null || !hadNewValues.contains(var)) { 
++					values = new HashSet();
++					knownValues.put(var, values);
++					hadNewValues.add(var);
++				}
++					
++				values.add(val);
++			}
++		}
++		
++		extractVariableFunctions(knownValues);	
++		
++		return current;
++	}
++	
++    /**
++     * Creates a mapping from variables to a List of filters based on
++	 * the expression.
++     * 
++     * @param node the expression to extract filters from
++	 * @param literalFilters a map from variables to a List of filters (of any type
++	 *                       supported by the underlying AdvancedRdfSource).
++     */
++	protected void extractLiteralFilters(ExpressionLogic node, Map literalFilters) {
++		if (node instanceof ASTAndNode) {
++			extractLiteralFilters(((ASTAndNode)node).getLeftExpression(), literalFilters);
++			extractLiteralFilters(((ASTAndNode)node).getRightExpression(), literalFilters);
++		}
++	}
++	
++	protected void addLiteralFilter(Variable variable, Object filter, Map literalFilters) {
++		List list = (List)literalFilters.get(variable);
++		if (list == null) {
++			list = new java.util.ArrayList();
++			literalFilters.put(variable, list);
++		}
++		list.add(filter);
++	}
++	
++	private void extractVariableFunctions(Map knownValues) {
++        for (Iterator cons = data.getConstraints().iterator(); cons.hasNext();) {
++            ConstraintLogic c = (ConstraintLogic) cons.next();
++            if (c instanceof FilterConstraintData) {
++				FilterConstraintData f = (FilterConstraintData)c;
++				extractVariableFunctions(f.getExpression(), knownValues);
++			}
++		}
++	}
++	
++	private void extractVariableFunctions(ExpressionLogic node, Map knownValues) {
++		if (node instanceof ASTAndNode) {
++			extractVariableFunctions(((ASTAndNode)node).getLeftExpression(), knownValues);
++			extractVariableFunctions(((ASTAndNode)node).getRightExpression(), knownValues);
++		}
++		if (node instanceof ASTOrNode) {
++			Map a = new HashMap();
++			Map b = new HashMap();
++			extractVariableFunctions(((ASTOrNode)node).getLeftExpression(), a);
++			extractVariableFunctions(((ASTOrNode)node).getRightExpression(), b);
++			for (Iterator i = a.keySet().iterator(); i.hasNext(); ) {
++				Variable v = (Variable)i.next();
++				if (b.containsKey(v)) {
++					Set av = (Set)a.get(v);
++					Set bv = (Set)b.get(v);
++					av.addAll(bv);
++					if (knownValues.containsKey(v)) {
++						((Set)knownValues.get(v)).retainAll(av);
++					} else {
++						knownValues.put(v, av);
++					}
++				}
++			}
++		}
++		if (node instanceof ASTEqualsNode) {
++			extractVariableFunctions(((ASTEqualsNode)node).getLeftExpression(), ((ASTEqualsNode)node).getRightExpression(), knownValues);
++			extractVariableFunctions(((ASTEqualsNode)node).getRightExpression(), ((ASTEqualsNode)node).getLeftExpression(), knownValues);
++		}
++	}
++	
++	private void extractVariableFunctions(ExpressionLogic a, ExpressionLogic b, Map knownValues) {
++		if (!(a instanceof Variable)) return;
++		if (knownValues.containsKey(a)) return; // we could intersect with existing values, but be sure not to do this for values we just inserted into the hash
++		
++		if (b instanceof Variable && knownValues.containsKey(b)) {
++			knownValues.put(a, knownValues.get(b));
++		
++		} else if (b instanceof ExternalFunctionLogic) {
++			// if this is a function of one variable, get the values by applying the function
++			// to all of the variables values.  (if it's of more than one variable, we could
++			// permute through the variables...)
++			ExternalFunctionLogic f = (ExternalFunctionLogic)b;
++			Set varargs =  getFilterVariables((SimpleNode)b);
++			
++			if (varargs.size() == 0) { // a constant, ok
++				Value v = f.evaluate(new MyBindingRow(new HashMap()));
++				HashSet vs = new HashSet();
++				vs.add(v);
++				knownValues.put(a, vs);
++				return;
++			}
++			
++			if (varargs.size() > 1) return;
++			
++			for (Iterator i = varargs.iterator(); i.hasNext(); ) {
++				Variable var = (Variable)i.next();
++				if (!knownValues.containsKey(var))
++					return;
++				
++				Set varvalues = (Set)knownValues.get(var);
++				Set newvalues = new HashSet();
++				Map bindings = new HashMap();
++				for (Iterator j = varvalues.iterator(); j.hasNext(); ) {
++					bindings.put(var, j.next());
++					newvalues.add( f.evaluate(new MyBindingRow(bindings)) );
++				}
++				
++				knownValues.put(a, newvalues);
++			}
++		}
++		
++		
++		// TODO: if b is a function whose arguments are all constants or known values, evaluate the function
++	}
++	
++	private class MyBindingRow extends AbstractRdfBindingRow {
++		Map values;
++		public MyBindingRow(Map values) { super(null); this.values = values; }
++		public List getVariables() { return new java.util.ArrayList(values.keySet()); }
++		public Value getValue(Variable v) { return (Value)values.get(v); }
++	}
++	
++    /**
++     * Returns the complexity of the triple constraint, given a set of
++	 * variables that already have known values.  The return value is a
++	 * measure of the number of statements that we expect to match the
++	 * filter, on a nonsensical scale.
++     * 
++     * @param variablesKnown a set of variables whose values are known
++     */
++	private float getComplexity(TripleConstraint triple, Set variablesKnown, Set cheapVariables, Map knownFilters, RdfSource source) {
++		Object subject = triple.getSubjectExpression();
++		Object predicate = triple.getPredicateExpression();
++		Object object = triple.getObjectExpression();
++		
++		boolean isFunctional = predicate instanceof URI && isFunctional((URI)predicate, source, true);
++		boolean isInverseFunctional = predicate instanceof URI && isFunctional((URI)predicate, source, false);
++		
++		// Properties in RDF tend to be many-to-few.  That is, lots of people
++		// may have a particular foaf:name, and one person has very few foaf:names.
++		// Thus, we give a penalty when a new variable occurs in subject position.
++		// Predicate variables have a *low* penality because all things being equal,
++		// we would prefer a variable in predicate position than in the other positions.
++		
++		float subjComplexity = getComplexity2(subject, variablesKnown, cheapVariables, knownFilters, 4);
++		float predComplexity = getComplexity2(predicate, variablesKnown, cheapVariables, knownFilters, 2);
++		float objComplexity = getComplexity2(object, variablesKnown, cheapVariables, knownFilters, 3);
++
++		// If this is a functional or inverse functional statement, then we reduce the
++		// complexity of the object because we know it is in a 1-to-1 relation with
++		// the subject (or the other way around).  (And, in these cases the predicate
++		// isn't a variable, so its complexity is zero anyway.)  Note that these
++		// computations are based on the 1 + maximum possible complexity for the
++		// subject and object, so *modifications to the getComplexity2 function and
++		// the penalities should be reflected here.
++		
++		if (isFunctional) objComplexity /= (7 - subjComplexity);
++		if (isInverseFunctional) subjComplexity /= (6 - objComplexity);
++		// If both functional and inverse functional, then does this make sense?
++		
++		return subjComplexity + predComplexity + objComplexity;
++	}
++	
++	private int getComplexity2(Object thing, Set variablesKnown, Set cheapVariables, Map knownFilters, int penalty) {
++		int ret = 0;
++		if (thing instanceof Variable && !cheapVariables.contains(thing)) {
++			ret++;
++			if (!knownFilters.containsKey(thing)) ret++;
++			if (!variablesKnown.contains(thing)) ret += penalty;
++		}
++		return ret;
++	}
++	
++	private boolean isFunctional(URI predicate, RdfSource source, boolean forward) {
++		Map map = forward ? isFunctional : isInverseFunctional;
++		if (map.containsKey(predicate)) return ((Boolean)map.get(predicate)).booleanValue();
++	
++		URI rdftype = new org.openrdf.model.impl.URIImpl("http://www.w3.org/1999/02/22-rdf-syntax-ns#type");
++		String typeuri = "http://www.w3.org/2002/07/owl#" +
++			( forward ? "FunctionalProperty" : "InverseFunctionalProperty");
++		boolean ret = source.hasDefaultStatement(predicate, rdftype, new org.openrdf.model.impl.URIImpl(typeuri));
++		map.put(predicate, new Boolean(ret));
++		return ret;
++	}
++
++	
++    /**
++     * Adds the variables in the constraint into the set.
++     * 
++     * @param variablesKnown a set of variables whose values are known
++     */
++	private void getVariables(TripleConstraint triple, Set variablesKnown) {
++		if (triple.getSubjectExpression() instanceof Variable) variablesKnown.add(triple.getSubjectExpression());
++		if (triple.getPredicateExpression() instanceof Variable) variablesKnown.add(triple.getPredicateExpression());
++		if (triple.getObjectExpression() instanceof Variable) variablesKnown.add(triple.getObjectExpression());
++	}
++	
++   /**
++     * Gets a variable for the filter.  If the filter is a ASTEqualsNode,
++	 * return the variable on the left hand side.  If the filter is a
++	 * ASTOrNode, return the variable if its the same on both sides,
++	 * or else null.
++     */
++	private Variable getFilterPrimaryVariable(BinaryExpressionNode expr) {
++		if (expr instanceof ASTOrNode
++			&& expr.getLeftExpression() instanceof BinaryExpressionNode
++			&& expr.getRightExpression() instanceof BinaryExpressionNode) {
++			Variable left = getFilterPrimaryVariable((BinaryExpressionNode)expr.getLeftExpression());
++			Variable right = getFilterPrimaryVariable((BinaryExpressionNode)expr.getRightExpression());
++			if (left != null && right != null && left.equals(right)) return left;
++		} else if (expr instanceof ASTEqualsNode
++			&& expr.getLeftExpression() instanceof Variable && (expr.getRightExpression() instanceof URI || expr.getRightExpression() instanceof BNode || expr.getRightExpression() instanceof Literal)) {
++			return (Variable)expr.getLeftExpression(); 
++		}
++		return null;
++	}
++	
++   /**
++     * Gets the values for a filter.  For an ASTEqualsNode, returns
++	 * the right hand side.  For an ASTOrNode, returns the values of its parts.
++     */
++	private void getFilterValues(BinaryExpressionNode expr, Set set) {
++		if (expr instanceof ASTOrNode) {
++			getFilterValues((BinaryExpressionNode)expr.getLeftExpression(), set);
++			getFilterValues((BinaryExpressionNode)expr.getRightExpression(), set);
++		} else if (expr instanceof ASTEqualsNode && (expr.getRightExpression() instanceof URI || expr.getRightExpression() instanceof BNode || expr.getRightExpression() instanceof Literal)) {
++			set.add(expr.getRightExpression());
++		}
++	}
++
++	private Set getFilterVariables(SimpleNode filter) {
++		final HashSet ret = new HashSet();
++		filter.jjtAccept(
++			new EmptyVisitor() {
++				public void visit(ASTVar node) {
++					ret.add(node);
++				}
++			}
++			);
++		return ret;
++	}
++}
+diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/logic/streamed/AdvancedGroupConstraintLogic.java~ work-copy/src/main/name/levering/ryan/sparql/logic/streamed/AdvancedGroupConstraintLogic.java~
+--- upstream/src/main/name/levering/ryan/sparql/logic/streamed/AdvancedGroupConstraintLogic.java~	1969-12-31 19:00:00.000000000 -0500
++++ work-copy/src/main/name/levering/ryan/sparql/logic/streamed/AdvancedGroupConstraintLogic.java~	2007-09-01 07:41:19.000000000 -0400
 @@ -0,0 +1,575 @@
 +/*
 + * SPARQL Engine
