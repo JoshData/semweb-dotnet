@@ -8,6 +8,8 @@
 	  not querying sources that can't match statements better.
 	* GraphMatch: Pass down result limits to the data sources
 	  if no intersection is involved in the query.
+	* SPARQL: Pass down LIMITs as far into the query as possible.
+	  Updated to IKVM 0.34.
 	* doc/: Added design document and corrected a mistake
 	  reported by Peter Williams (thanks!).
 

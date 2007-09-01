@@ -350,17 +350,18 @@ namespace SemWeb.Query {
 				return ret;
 			}
 		
-			private java.util.Iterator GetIterator(Statement statement, bool defaultGraph) {
+			private java.util.Iterator GetIterator(Statement statement, bool defaultGraph, int limit) {
 				return GetIterator(statement.Subject == null ? null : new Entity[] { statement.Subject },
 					statement.Predicate == null ? null : new Entity[] { statement.Predicate },
 					statement.Object == null ? null : new Resource[] { statement.Object },
 					statement.Meta == null ? null : new Entity[] { statement.Meta },
 					null,
-					defaultGraph);
+					defaultGraph,
+					limit);
 			}
 			
-			private java.util.Iterator GetIterator(Entity[] subjects, Entity[] predicates, Resource[] objects, Entity[] metas, object[] litFilters, bool defaultGraph) {
-				if (subjects == null && predicates == null && objects == null)
+			private java.util.Iterator GetIterator(Entity[] subjects, Entity[] predicates, Resource[] objects, Entity[] metas, object[] litFilters, bool defaultGraph, int limit) {
+				if (subjects == null && predicates == null && objects == null && limit == -1)
 					throw new QueryExecutionException("Query would select all statements in the store.");
 				
 				if (subjects != null) Depersist(subjects);
@@ -379,6 +380,10 @@ namespace SemWeb.Query {
 					for (int i = 0; i < litFilters.Length; i++)
 						filter.LiteralFilters[i] = (LiteralFilter)litFilters[i];
 				}
+				if (limit == 0)
+					filter.Limit = 1;
+				else if (limit > 0)
+					filter.Limit = limit;
 
 				return new StatementIterator(source, filter, this, defaultGraph && metas == null);
 			}
@@ -390,11 +395,11 @@ namespace SemWeb.Query {
 		     * that match the remainding parameters will be returned.
      		 */ 
      		public java.util.Iterator getDefaultStatements (org.openrdf.model.Value subject, org.openrdf.model.URI predicate, org.openrdf.model.Value @object) {
-				return GetIterator( new Statement(ToEntity(subject), ToEntity(predicate), ToResource(@object), QueryMeta), true );
+				return GetIterator( new Statement(ToEntity(subject), ToEntity(predicate), ToResource(@object), QueryMeta), true, -1 );
 			}
 
-     		public java.util.Iterator getDefaultStatements (org.openrdf.model.Value[] subject, org.openrdf.model.Value[] predicate, org.openrdf.model.Value[] @object, object[] litFilters) {
-				return GetIterator( ToEntities(subject), ToEntities(predicate), ToResources(@object), QueryMeta == null ? null : new Entity[] { QueryMeta }, litFilters, true );
+     		public java.util.Iterator getDefaultStatements (org.openrdf.model.Value[] subject, org.openrdf.model.Value[] predicate, org.openrdf.model.Value[] @object, object[] litFilters, int limit) {
+				return GetIterator( ToEntities(subject), ToEntities(predicate), ToResources(@object), QueryMeta == null ? null : new Entity[] { QueryMeta }, litFilters, true, limit );
      		}
 			
 		    /**
@@ -409,11 +414,11 @@ namespace SemWeb.Query {
 		     * @return an Iterator over the matching statements
 		     */
      		public java.util.Iterator getStatements (org.openrdf.model.Value subject, org.openrdf.model.URI predicate, org.openrdf.model.Value @object) {
-				return GetIterator(  new Statement(ToEntity(subject), ToEntity(predicate), ToResource(@object), null), false );
+				return GetIterator(  new Statement(ToEntity(subject), ToEntity(predicate), ToResource(@object), null), false, -1 );
 			}
 	
-     		public java.util.Iterator getStatements (org.openrdf.model.Value[] subject, org.openrdf.model.Value[] predicate, org.openrdf.model.Value[] @object, object[] litFilters) {
-				return GetIterator(  ToEntities(subject), ToEntities(predicate), ToResources(@object), null, litFilters, false );
+     		public java.util.Iterator getStatements (org.openrdf.model.Value[] subject, org.openrdf.model.Value[] predicate, org.openrdf.model.Value[] @object, object[] litFilters, int limit) {
+				return GetIterator(  ToEntities(subject), ToEntities(predicate), ToResources(@object), null, litFilters, false, limit );
      		}
      		
 		    /**
@@ -423,11 +428,11 @@ namespace SemWeb.Query {
 		     * that match the remainding parameters will be returned.
 		     */
      		public java.util.Iterator getStatements (org.openrdf.model.Value subject, org.openrdf.model.URI predicate, org.openrdf.model.Value @object, org.openrdf.model.URI graph) {
-				return GetIterator( new Statement(ToEntity(subject), ToEntity(predicate), ToResource(@object), ToEntity(graph)), false );
+				return GetIterator( new Statement(ToEntity(subject), ToEntity(predicate), ToResource(@object), ToEntity(graph)), false, -1 );
 			}
 			
-     		public java.util.Iterator getStatements (org.openrdf.model.Value[] subject, org.openrdf.model.Value[] predicate, org.openrdf.model.Value[] @object, org.openrdf.model.URI[] graph, object[] litFilters) {
-				return GetIterator( ToEntities(subject), ToEntities(predicate), ToResources(@object), ToEntities(graph), litFilters, false );
+     		public java.util.Iterator getStatements (org.openrdf.model.Value[] subject, org.openrdf.model.Value[] predicate, org.openrdf.model.Value[] @object, org.openrdf.model.URI[] graph, object[] litFilters, int limit) {
+				return GetIterator( ToEntities(subject), ToEntities(predicate), ToResources(@object), ToEntities(graph), litFilters, false, limit );
      		}
      		
 			public org.openrdf.model.ValueFactory getValueFactory() {
@@ -806,13 +811,19 @@ namespace SemWeb.Query {
 		    
 		    protected override RdfBindingSet runTripleConstraints(java.util.List tripleConstraints, RdfSource source,
 		    	java.util.Collection defaultDatasets, java.util.Collection namedDatasets,
-		    	java.util.Map knownValues, java.util.Map knownFilters) {
+		    	java.util.Map knownValues, java.util.Map knownFilters, int limit) {
 		    	
 		    	RdfSourceWrapper s = (RdfSourceWrapper)source;
 		    	
 		    	if (s.source is QueryableSource) {
 		    		QueryableSource qs = (QueryableSource)s.source;
 		    		QueryOptions opts = new QueryOptions();
+		    		
+		    		opts.Limit = 0;
+		    		if (limit == 0)
+		    			opts.Limit = 1;
+		    		else if (limit > 0)
+		    			opts.Limit = limit;
 		    		
 		    		opts.DistinguishedVariables = new VariableList();
 

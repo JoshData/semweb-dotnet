@@ -53,7 +53,7 @@ Binary files upstream/lib/sparql-tests.jar and work-copy/lib/sparql-tests.jar di
 Binary files upstream/sparql-0.8.zip and work-copy/sparql-0.8.zip differ
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/common/AdvancedRdfSource.java work-copy/src/main/name/levering/ryan/sparql/common/AdvancedRdfSource.java
 --- upstream/src/main/name/levering/ryan/sparql/common/AdvancedRdfSource.java	1969-12-31 19:00:00.000000000 -0500
-+++ work-copy/src/main/name/levering/ryan/sparql/common/AdvancedRdfSource.java	2006-12-02 11:00:47.000000000 -0500
++++ work-copy/src/main/name/levering/ryan/sparql/common/AdvancedRdfSource.java	2007-09-01 07:47:50.000000000 -0400
 @@ -0,0 +1,26 @@
 +/*
 + * SPARQL Engine
@@ -76,9 +76,9 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
 + * @version 1.0
 + */
 +public interface AdvancedRdfSource extends RdfSource {
-+    public Iterator getStatements(Value[] subj, Value[] pred, Value[] obj, URI[] graph, Object[] litFilters);
-+    public Iterator getDefaultStatements(Value[] subj, Value[] pred, Value[] obj, Object[] litFilters);
-+    public Iterator getStatements(Value[] subj, Value[] pred, Value[] obj, Object[] litFilters);
++    public Iterator getStatements(Value[] subj, Value[] pred, Value[] obj, URI[] graph, Object[] litFilters, int limit);
++    public Iterator getDefaultStatements(Value[] subj, Value[] pred, Value[] obj, Object[] litFilters, int limit);
++    public Iterator getStatements(Value[] subj, Value[] pred, Value[] obj, Object[] litFilters, int limit);
 +}
 +
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/common/impl/RdfBindingSetImpl.java work-copy/src/main/name/levering/ryan/sparql/common/impl/RdfBindingSetImpl.java
@@ -432,7 +432,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
          return returnSet;
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/logic/DefaultAskQueryLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/DefaultAskQueryLogic.java
 --- upstream/src/main/name/levering/ryan/sparql/logic/DefaultAskQueryLogic.java	2006-08-20 20:01:01.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/logic/DefaultAskQueryLogic.java	2007-02-21 07:51:29.000000000 -0500
++++ work-copy/src/main/name/levering/ryan/sparql/logic/DefaultAskQueryLogic.java	2007-09-01 07:24:55.000000000 -0400
 @@ -13,6 +13,7 @@
  import name.levering.ryan.sparql.model.GroupConstraint;
  import name.levering.ryan.sparql.model.data.AskQueryData;
@@ -441,7 +441,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
  
  /**
   * This is the simplest query logic in SPARQL, as it doesn't have to deal with
-@@ -48,14 +49,17 @@
+@@ -48,14 +49,18 @@
       * @return true if the delegated query data binds any value rows
       */
      public boolean execute(RdfSource source) {
@@ -456,6 +456,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
 -        Collection namedDatasets = this.data.getNamedDatasets();
 +        p.defaultDatasets = this.data.getDefaultDatasets();
 +        p.namedDatasets = this.data.getNamedDatasets();
++        p.limit = 1;
  
          // First bind the result table
 -        RdfBindingSet results = constraint.constrain(new RdfBindingSetImpl(),
@@ -466,7 +467,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
          return results.iterator().hasNext();
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/logic/DefaultConstructQueryLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/DefaultConstructQueryLogic.java
 --- upstream/src/main/name/levering/ryan/sparql/logic/DefaultConstructQueryLogic.java	2006-08-20 20:01:01.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/logic/DefaultConstructQueryLogic.java	2007-02-21 07:51:22.000000000 -0500
++++ work-copy/src/main/name/levering/ryan/sparql/logic/DefaultConstructQueryLogic.java	2007-09-01 07:28:25.000000000 -0400
 @@ -22,6 +22,7 @@
  import name.levering.ryan.sparql.model.GroupConstraint;
  import name.levering.ryan.sparql.model.TripleConstraint;
@@ -483,7 +484,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
  
  /**
   * This query logic constructs an RDF graph by applying an RDF template to a set
-@@ -79,17 +81,20 @@
+@@ -79,17 +81,23 @@
       * @return an RDF graph containing the formed triples
       */
      public RdfGraph execute(RdfSource source) {
@@ -500,6 +501,9 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
          List orderExpressions = this.data.getOrderExpressions();
          int limit = this.data.getLimit();
          int offset = this.data.getOffset();
++		  
++		  if (limit >= 0 && orderExpressions.size() == 0)
++			  p.limit = limit;
  
          // First bind the result table
 -        RdfBindingSet results = constraint.constrain(new RdfBindingSetImpl(),
@@ -508,7 +512,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
  
          // Now apply ordering in reverse order to give priority to the first
          // variable
-@@ -105,7 +110,7 @@
+@@ -105,7 +113,7 @@
          if (offset >= 0) {
              results = this.rangeLogic.offset(results, offset);
          }
@@ -519,7 +523,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
  
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/logic/DefaultDescribeQueryLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/DefaultDescribeQueryLogic.java
 --- upstream/src/main/name/levering/ryan/sparql/logic/DefaultDescribeQueryLogic.java	2006-08-20 20:01:01.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/logic/DefaultDescribeQueryLogic.java	2007-02-21 07:51:39.000000000 -0500
++++ work-copy/src/main/name/levering/ryan/sparql/logic/DefaultDescribeQueryLogic.java	2007-09-01 07:30:06.000000000 -0400
 @@ -22,6 +22,7 @@
  import name.levering.ryan.sparql.common.impl.RdfGraphImpl;
  import name.levering.ryan.sparql.model.GroupConstraint;
@@ -528,7 +532,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
  import name.levering.ryan.sparql.model.logic.DescribeQueryLogic;
  import name.levering.ryan.sparql.model.logic.OrderExpressionLogic;
  import name.levering.ryan.sparql.model.logic.helper.SetProjectionLogic;
-@@ -83,17 +84,23 @@
+@@ -83,17 +84,26 @@
  	 * @return an RDF graph containing the formed triples
  	 */
  	public RdfGraph execute(RdfSource source) {
@@ -547,6 +551,9 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
  		int limit = this.data.getLimit();
  		int offset = this.data.getOffset();
  
++	  if (limit >= 0 && orderExpressions.size() == 0)
++		  p.limit = limit;
++		  
  		// First bind the result table
 -		RdfBindingSet results = constraint.constrain(new RdfBindingSetImpl(), source, defaultDatasets, namedDatasets);
 +		RdfBindingSet results = new RdfBindingSetImpl();
@@ -555,7 +562,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
  
  		// Now project to the solution set
  		List variables = new ArrayList();
-@@ -106,7 +113,7 @@
+@@ -106,7 +116,7 @@
  		results = this.logic.project(results, variables);
  
  		// Now apply ordering in reverse order
@@ -564,7 +571,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
  			OrderExpressionLogic orderer = (OrderExpressionLogic) orderExpressions.get(i);
  			orderer.order(results);
  		}
-@@ -182,7 +189,7 @@
+@@ -182,7 +192,7 @@
  					descriptions.addAll(describe(statement.getObject(), source, alreadyDescribed));
  				}
  			}
@@ -575,7 +582,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
  	}
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/logic/DefaultSelectQueryLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/DefaultSelectQueryLogic.java
 --- upstream/src/main/name/levering/ryan/sparql/logic/DefaultSelectQueryLogic.java	2006-08-20 20:01:01.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/logic/DefaultSelectQueryLogic.java	2007-02-21 07:51:46.000000000 -0500
++++ work-copy/src/main/name/levering/ryan/sparql/logic/DefaultSelectQueryLogic.java	2007-09-01 07:31:00.000000000 -0400
 @@ -12,6 +12,7 @@
  import name.levering.ryan.sparql.common.RdfSource;
  import name.levering.ryan.sparql.model.GroupConstraint;
@@ -584,7 +591,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
  import name.levering.ryan.sparql.model.logic.OrderExpressionLogic;
  import name.levering.ryan.sparql.model.logic.SelectQueryLogic;
  import name.levering.ryan.sparql.model.logic.helper.SetDistinctionLogic;
-@@ -74,10 +75,13 @@
+@@ -74,19 +75,24 @@
       * @return an RDF graph containing the formed triples
       */
      public RdfBindingSet execute(RdfSource source) {
@@ -600,8 +607,11 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
          List orderExpressions = this.data.getOrderExpressions();
          List queryExpressions = this.data.getQueryVariables();
          int limit = this.data.getLimit();
-@@ -85,8 +89,7 @@
+         int offset = this.data.getOffset();
          boolean distinct = this.data.getDistinct();
++		  
++		  if (limit >= 0 && orderExpressions.size() == 0)
++			  p.limit = limit;
  
          // First bind the result table
 -        RdfBindingSet results = constraint.constrain(null,
@@ -755,8 +765,8 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
      /**
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/logic/ExtendedConstructQueryLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/ExtendedConstructQueryLogic.java
 --- upstream/src/main/name/levering/ryan/sparql/logic/ExtendedConstructQueryLogic.java	2006-08-20 20:01:01.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/logic/ExtendedConstructQueryLogic.java	2007-02-21 07:45:27.000000000 -0500
-@@ -88,17 +88,21 @@
++++ work-copy/src/main/name/levering/ryan/sparql/logic/ExtendedConstructQueryLogic.java	2007-09-01 07:32:09.000000000 -0400
+@@ -88,17 +88,24 @@
  	 * @return an RDF graph containing the formed triples
  	 */
  	public RdfGraph execute(RdfSource source) {
@@ -775,6 +785,9 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
  		int offset = this.data.getOffset();
  		boolean distinct = this.data.isDistinct();
  
++		if (limit >= 0 && orderExpressions.size() == 0)
++			p.limit = limit;
++		  
  		// First bind the result table
 -		RdfBindingSet results = constraint.constrain(new RdfBindingSetImpl(), source, defaultDatasets, namedDatasets);
 +		RdfBindingSet results = constraint.constrain(p);
@@ -1360,7 +1373,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
                  Value rawEvaluate = filterExpression.evaluate(row);
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/logic/naive/DefaultGroupConstraintLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/naive/DefaultGroupConstraintLogic.java
 --- upstream/src/main/name/levering/ryan/sparql/logic/naive/DefaultGroupConstraintLogic.java	2006-08-20 20:01:01.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/logic/naive/DefaultGroupConstraintLogic.java	2007-02-21 07:16:02.000000000 -0500
++++ work-copy/src/main/name/levering/ryan/sparql/logic/naive/DefaultGroupConstraintLogic.java	2007-09-01 07:41:09.000000000 -0400
 @@ -9,6 +9,7 @@
  import java.util.Iterator;
  import java.util.LinkedList;
@@ -1403,11 +1416,17 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
  			}
  
  		}
-@@ -108,10 +110,11 @@
+@@ -108,10 +110,17 @@
  		// This scoped graphing isn't required by the spec, but it's allowed
  		for (Iterator graphs = graphQueue.iterator(); graphs.hasNext();) {
  			ConstraintLogic c = (ConstraintLogic) graphs.next();
 +			p2.bindings = current;
++			
++			// Only when the graph consists of a single triple constraint can
++			// we pass down the limit.
++			if (graphQueue.size() != -1)
++				p2.limit = -1;
++				
  			if (current == null) {
 -				current = c.constrain(null, source, defaultDatasets, namedDatasets);
 +				current = c.constrain(p2);
@@ -1417,12 +1436,13 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
  			}
  		}
  
-@@ -123,11 +126,13 @@
+@@ -123,11 +132,14 @@
  
  		for (Iterator optionals = optionalQueue.iterator(); optionals.hasNext();) {
  			ConstraintLogic c = (ConstraintLogic) optionals.next();
 -			current = c.constrain(current, source, defaultDatasets, namedDatasets);
 +			p2.bindings = current;
++			// note that we pass down the limit
 +			current = c.constrain(p2);
  		}
  		for (Iterator filters = filterQueue.iterator(); filters.hasNext();) {
@@ -1435,7 +1455,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
  	}
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/logic/naive/DefaultOptionalConstraintLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/naive/DefaultOptionalConstraintLogic.java
 --- upstream/src/main/name/levering/ryan/sparql/logic/naive/DefaultOptionalConstraintLogic.java	2006-08-20 20:01:01.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/logic/naive/DefaultOptionalConstraintLogic.java	2007-02-21 07:48:26.000000000 -0500
++++ work-copy/src/main/name/levering/ryan/sparql/logic/naive/DefaultOptionalConstraintLogic.java	2007-09-01 07:41:54.000000000 -0400
 @@ -9,6 +9,7 @@
  import java.util.Iterator;
  import java.util.LinkedList;
@@ -1472,9 +1492,16 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
  			}
  
  		}
-@@ -104,10 +108,10 @@
+@@ -103,11 +107,17 @@
+ 		// This isn't required by the spec, but it's allowed
  		for (Iterator graphs = graphQueue.iterator(); graphs.hasNext();) {
  			ConstraintLogic c = (ConstraintLogic) graphs.next();
++			
++			// Only when the graph consists of a single triple constraint can
++			// we pass down the limit.
++			if (graphQueue.size() != 1)
++				p2.limit = -1;
++			
  			if (current == null) {
 -				current = c.constrain(null, source, defaultDatasets, namedDatasets);
 +				current = c.constrain(p2);
@@ -1486,7 +1513,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
  			}
  		}
  
-@@ -119,10 +123,11 @@
+@@ -119,10 +129,11 @@
  
  		for (Iterator optionals = optionalQueue.iterator(); optionals.hasNext();) {
  			ConstraintLogic c = (ConstraintLogic) optionals.next();
@@ -1555,7 +1582,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
                      }
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/logic/naive/DefaultUnionConstraintLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/naive/DefaultUnionConstraintLogic.java
 --- upstream/src/main/name/levering/ryan/sparql/logic/naive/DefaultUnionConstraintLogic.java	2006-08-20 20:01:01.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/logic/naive/DefaultUnionConstraintLogic.java	2007-02-21 07:30:41.000000000 -0500
++++ work-copy/src/main/name/levering/ryan/sparql/logic/naive/DefaultUnionConstraintLogic.java	2007-09-01 07:47:18.000000000 -0400
 @@ -7,6 +7,7 @@
  
  import java.util.Collection;
@@ -1564,7 +1591,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
  
  import name.levering.ryan.sparql.common.RdfBindingSet;
  import name.levering.ryan.sparql.common.RdfSource;
-@@ -62,15 +63,16 @@
+@@ -62,15 +63,24 @@
  	 * @return a set containing the union of all the bound values of all the sub
  	 *         constraints
  	 */
@@ -1581,14 +1608,22 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
 +				current = group.constrain(p2);
  			} else {
 -				current = this.logic.union(current, group.constrain(current, source, defaultDatasets, namedDatasets));
++				// If a limit is provided, subtract from the limit the number
++				// of rows found already, and if we don't need any more, stop.
++				if (p.limit >= 0) {
++					p2.limit = p.limit - current.size();
++					if (p2.limit <= 0)
++						break;
++				}
++				
 +				current = this.logic.union(current, group.constrain(p2));
  			}
  		}
  
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/logic/streamed/AdvancedGroupConstraintLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/streamed/AdvancedGroupConstraintLogic.java
 --- upstream/src/main/name/levering/ryan/sparql/logic/streamed/AdvancedGroupConstraintLogic.java	1969-12-31 19:00:00.000000000 -0500
-+++ work-copy/src/main/name/levering/ryan/sparql/logic/streamed/AdvancedGroupConstraintLogic.java	2007-02-22 12:52:12.000000000 -0500
-@@ -0,0 +1,569 @@
++++ work-copy/src/main/name/levering/ryan/sparql/logic/streamed/AdvancedGroupConstraintLogic.java	2007-09-01 07:41:19.000000000 -0400
+@@ -0,0 +1,575 @@
 +/*
 + * SPARQL Engine
 + * Copyright (C) 2005 Ryan Levering, All rights reserved.
@@ -1830,7 +1865,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
 +        RdfBindingSet current = null;
 +		
 +		// Allow a subclass to take over running the constraints.
-+		current = runTripleConstraints(constraintOrder, p.source, p.defaultDatasets, p.namedDatasets, p.knownValues, p.knownFilters);
++		current = runTripleConstraints(constraintOrder, p.source, p.defaultDatasets, p.namedDatasets, p.knownValues, p.knownFilters, p.limit);
 +		if (current != null) {
 +			constraintOrder.clear();
 +			if (optionalQueue.size() > 0)
@@ -1841,6 +1876,11 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
 +			ConstraintLogic c = (ConstraintLogic) cons.next();
 +			
 +			p.bindings = current;
++			
++			// We can preserve the limit just if no intersection of multiple
++			// triple constraints is going to take place.
++			if (constraintOrder.size() != 1)
++				p.limit = -1;
 +			
 +			if (current == null) {
 +				current = c.constrain(p);
@@ -1864,6 +1904,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
 +        for (Iterator optionals = optionalQueue.iterator(); optionals.hasNext();) {
 +            ConstraintLogic c = (ConstraintLogic) optionals.next();
 +				p.bindings = current;
++				// note that we pass down the limit
 +            current = c.constrain(p);
 +        }
 +		
@@ -1877,7 +1918,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
 +    }
 +
 +	protected RdfBindingSet runTripleConstraints(List tripleConstraints, RdfSource source,
-+            Collection defaultDatasets, Collection namedDatasets, Map knownValues, Map knownFilters) {
++            Collection defaultDatasets, Collection namedDatasets, Map knownValues, Map knownFilters, int limit) {
 +		return null;
 +	}
 +	
@@ -2385,7 +2426,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
  			public List getVariables() {
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/logic/streamed/StreamedTripleConstraintLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/streamed/StreamedTripleConstraintLogic.java
 --- upstream/src/main/name/levering/ryan/sparql/logic/streamed/StreamedTripleConstraintLogic.java	2006-08-20 20:01:01.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/logic/streamed/StreamedTripleConstraintLogic.java	2007-02-21 07:42:10.000000000 -0500
++++ work-copy/src/main/name/levering/ryan/sparql/logic/streamed/StreamedTripleConstraintLogic.java	2007-09-01 07:44:35.000000000 -0400
 @@ -10,11 +10,14 @@
  import java.util.Iterator;
  import java.util.List;
@@ -2441,7 +2482,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
  		} else {
  			verb = (URI) predExpr;
  		}
-@@ -100,46 +102,57 @@
+@@ -100,46 +102,58 @@
  		Value object = null;
  		if (objExpr instanceof Variable && flags[2] == 0) {
  			variables.add(objExpr);
@@ -2457,6 +2498,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
 +		query.flags = flags;
 +		query.knownValues = p.knownValues;
 +		query.knownFilters = p.knownFilters;
++		query.limit = p.limit;
 +
 +		if (p.defaultDatasets == null) {
 +			query.includeSource = true;
@@ -2511,7 +2553,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
  						bindingSet.addIterator(new StatementImpl(subject, verb, object, (URI) i.next()));
  					}
  				}
-@@ -147,43 +160,67 @@
+@@ -147,43 +161,73 @@
  			}
  		}
  	}
@@ -2569,6 +2611,12 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
 -		final boolean includeSource;
 +		Map knownFilters;
 +		
++		/**
++		 * -1 if no limit, otherwise the most number of statements to return (but
++		 * may be ignored).
++		 */
++		int limit;
++		
 +		public TripleQueryOptions clone() {
 +			try {
 +				return (TripleQueryOptions)super.clone();
@@ -2598,7 +2646,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
  
  		/**
  		 * Creates a new binding set that queries a particular RdfSource,
-@@ -195,11 +232,8 @@
+@@ -195,11 +239,8 @@
  		 * @param flags indicates the presence of variable equivalency
  		 * @param includeSource whether to bind the graph name as well
  		 */
@@ -2612,7 +2660,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
  		}
  
  		void addIterator(GraphStatement statementIterator) {
-@@ -211,8 +245,8 @@
+@@ -211,8 +252,8 @@
  		}
  
  		public List getVariables() {
@@ -2623,7 +2671,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
  				extVariables.add(StreamedGraphConstraintLogic.CONTEXT_VARIABLE);
  			}
  			return extVariables;
-@@ -273,24 +307,70 @@
+@@ -273,24 +314,70 @@
  				// We should only get here if there was never a chance
  				return null;
  			}
@@ -2665,16 +2713,16 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
 -						return StatementBindingSet.this.source.getStatements(statement.getSubject(), statement
 -								.getPredicate(), statement.getObject());
 +					if (StatementBindingSet.this.query.includeSource) {
-+						return source.getStatements(s, p, o, litFilters);
++						return source.getStatements(s, p, o, litFilters, StatementBindingSet.this.query.limit);
  					} else {
 -						return StatementBindingSet.this.source.getDefaultStatements(statement.getSubject(), statement
 -								.getPredicate(), statement.getObject());
-+						return source.getDefaultStatements(s, p, o, litFilters);
++						return source.getDefaultStatements(s, p, o, litFilters, StatementBindingSet.this.query.limit);
  					}
  				} else {
 -					return StatementBindingSet.this.source.getStatements(statement.getSubject(), statement
 -							.getPredicate(), statement.getObject(), statement.getGraphName());
-+					return source.getStatements(s, p, o, new URI[] { statement.getGraphName() }, litFilters);
++					return source.getStatements(s, p, o, new URI[] { statement.getGraphName() }, litFilters, StatementBindingSet.this.query.limit);
  				}
  			}
 +			
@@ -2703,7 +2751,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
  
  				if (localFlags[0] != 0 && localFlags[0] == localFlags[2]) {
  					if (!statement.getSubject().equals(statement.getObject())) {
-@@ -338,14 +418,14 @@
+@@ -338,14 +425,14 @@
  
  				public Value getValue(Variable variable) {
  					// Special case for the source
@@ -2720,7 +2768,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
  					if (index == 2) {
  						// If the variable is in the last spot, it's got to be
  						// the object
-@@ -375,7 +455,7 @@
+@@ -375,7 +462,7 @@
  
  				private int getIndex(Variable variable) {
  					int index = 0;
@@ -2729,7 +2777,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
  						Variable var = (Variable) vars.next();
  						if (variable.equals(var)) {
  							return index;
-@@ -405,22 +485,18 @@
+@@ -405,22 +492,18 @@
  
  	private class StreamedTripleBindingSet extends VirtualRdfBindingSet {
  
@@ -2789,7 +2837,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
  	/**
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/model/logic/ConstraintLogic.java work-copy/src/main/name/levering/ryan/sparql/model/logic/ConstraintLogic.java
 --- upstream/src/main/name/levering/ryan/sparql/model/logic/ConstraintLogic.java	2006-08-20 20:00:59.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/model/logic/ConstraintLogic.java	2007-02-21 07:49:30.000000000 -0500
++++ work-copy/src/main/name/levering/ryan/sparql/model/logic/ConstraintLogic.java	2007-09-01 07:34:35.000000000 -0400
 @@ -6,6 +6,7 @@
  package name.levering.ryan.sparql.model.logic;
  
@@ -2798,7 +2846,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
  
  import name.levering.ryan.sparql.common.RdfBindingSet;
  import name.levering.ryan.sparql.common.RdfSource;
-@@ -27,16 +28,51 @@
+@@ -27,16 +28,58 @@
       * Constrains the value bindings by either constraining the current value
       * bindings or returning a set that will be constrained via intersection
       * with the current set.
@@ -2848,6 +2896,12 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
 +		  */
 +		 public Map knownFilters;
 +		 
++		 /**
++		  * The most number of binding rows that is being requested, or -1
++		  * if all rows are requested. Can be freely ignored by the callee.
++		  */
++		 public int limit = -1;
++		 
 +		 public CallParams clone() {
 +			 CallParams p = new CallParams();
 +			 p.bindings = bindings;
@@ -2856,6 +2910,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
 +			 p.namedDatasets = namedDatasets == null ? null : new java.util.ArrayList(namedDatasets);
 +			 p.knownValues = knownValues == null ? null : new java.util.HashMap(knownValues);
 +			 p.knownFilters = knownFilters == null ? null : new java.util.HashMap(knownFilters);
++			 p.limit = limit;
 +			 return p;
 +		 }
 +	 }

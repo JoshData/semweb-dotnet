@@ -1,8 +1,9 @@
 SPARQL=work-copy
 SPARQL_RELEASE=upstream
 
-JAVA_HOME=/usr/java/jdk1.5.0_04
-IKVM=ikvm-0.28.0.0/bin/ikvmc.exe
+JAVA_HOME=/usr/java/jdk1.6.0_01/
+IKVM_BIN=ikvm-0.34.0.2/bin
+IKVM=$(IKVM_BIN)/ikvmc.exe
 ANT=~/dev/apache-ant-1.6.5/bin/ant
 
 all: get-sources build-sparql
@@ -17,7 +18,7 @@ build-sparql:
 	mono $(IKVM) -out:sparql-core.dll -nostacktraceinfo \
 		$(SPARQL)/lib/sparql-core.jar $(SPARQL)/lib/openrdf-util.jar \
 		$(SPARQL)/lib/openrdf-model.jar
-	mono --aot -O=all sparql-core.dll
+	MONO_PATH=.:$(IKVM_BIN) mono --aot -O=all sparql-core.dll
 	cp sparql-core.dll* ../bin
 	cp sparql-core.dll* ../bin_generics
 	diff -urN $(SPARQL_RELEASE) $(SPARQL) --exclude=.svn --exclude=.settings --exclude=META-INF > local-changes.diff || true
