@@ -282,8 +282,16 @@ namespace SemWeb.Query {
 					// get the matching statements; but if a variable was used twice in s,
 					// filter out matching statements that don't respect that (since that info
 					// was lost in the SelectFilter).
-					foreach (SelectableSource source in part.Sources)
+					foreach (SelectableSource source in part.Sources) {
+						// If the query has just one part, then we can
+						// enforce any limit specified.
+						if (queryParts.Length == 1 && returnLimit > 0) {
+							f.Limit = returnLimit - matches.Count;
+							if (f.Limit <= 0)
+								break;
+						}
 						source.Select(f, new Filter(matches, s, vars));
+					}
 						
 					result.AddComments("SELECT: " + f + " => " + matches.Count);
 				
@@ -333,6 +341,14 @@ namespace SemWeb.Query {
 					vars = null;
 					matches = null;
 					foreach (QueryableSource source in part.Sources) {
+						// If the query has just one part, then we can
+						// enforce any limit specified.
+						if (queryParts.Length == 1 && returnLimit > 0) {
+							opts.Limit = returnLimit - (matches == null ? 0 : matches.Count);
+							if (opts.Limit <= 0)
+								break;
+						}
+
 						QueryResultBuffer partsink = new QueryResultBuffer();
 						source.Query(part.Graph, opts, partsink);
 

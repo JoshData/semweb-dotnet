@@ -4,7 +4,10 @@
 	  for Accept: content-negotiation of output format for
 	  DESCRIBE and CONSTRUCT.
 	* RdfWriter: Added Create factory-style methods.
-	* Inference.cs: Improved distributed queries a bit.
+	* Inference.cs: Improved distributed queries a bit by
+	  not querying sources that can't match statements better.
+	* GraphMatch: Pass down result limits to the data sources
+	  if no intersection is involved in the query.
 	* doc/: Added design document and corrected a mistake
 	  reported by Peter Williams (thanks!).
 
