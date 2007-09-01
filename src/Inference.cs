@@ -47,7 +47,7 @@ namespace SemWeb.Inference {
 				}
 				
 				// See if the store contains this template.
-				if (!source.Contains(st)) {
+				if (st != Statement.All && !source.Contains(st)) {
 					ret.NoData[i] = true;
 					continue;
 				}
