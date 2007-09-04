@@ -131,22 +131,26 @@ namespace SemWeb {
 				
 			mimetype = NormalizeMimeType(mimetype.Trim());
 			
-			switch (mimetype) {
-				case "xml":
-				case "application/rss+xml":
-					return new RdfXmlReader(resp.GetResponseStream());
+			RdfReader reader;
+			
+			if (mimetype == "xml" || mimetype == "application/rss+xml")
+				reader = new RdfXmlReader(resp.GetResponseStream());
 					
-				case "n3":
-					return new N3Reader(new StreamReader(resp.GetResponseStream(), System.Text.Encoding.UTF8));
-			}
+			else if (mimetype == "n3")
+				reader = new N3Reader(new StreamReader(resp.GetResponseStream(), System.Text.Encoding.UTF8));
 			
-			if (webresource.LocalPath.EndsWith(".rdf") || webresource.LocalPath.EndsWith(".xml") || webresource.LocalPath.EndsWith(".rss"))
-				return new RdfXmlReader(resp.GetResponseStream());
+			else if (webresource.LocalPath.EndsWith(".rdf") || webresource.LocalPath.EndsWith(".xml") || webresource.LocalPath.EndsWith(".rss"))
+				reader = new RdfXmlReader(resp.GetResponseStream());
 			
-			if (webresource.LocalPath.EndsWith(".n3") || webresource.LocalPath.EndsWith(".ttl") || webresource.LocalPath.EndsWith(".nt"))
-				return new N3Reader(new StreamReader(resp.GetResponseStream(), System.Text.Encoding.UTF8));
+			else if (webresource.LocalPath.EndsWith(".n3") || webresource.LocalPath.EndsWith(".ttl") || webresource.LocalPath.EndsWith(".nt"))
+				reader = new N3Reader(new StreamReader(resp.GetResponseStream(), System.Text.Encoding.UTF8));
 
-			throw new InvalidOperationException("Could not determine the RDF format of the resource.");
+			else
+				throw new InvalidOperationException("Could not determine the RDF format of the resource.");
+				
+			reader.BaseUri = resp.ResponseUri.ToString();
+			
+			return reader;
 		}
 		
 		internal static TextReader GetReader(string file) {
