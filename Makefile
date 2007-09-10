@@ -70,7 +70,7 @@ $(BIN)/SemWeb.Sparql.dll: src/SparqlEngine.cs src/SparqlProtocol.cs
 		-t:library -r:$(BIN)/SemWeb.dll -r:$(BIN)/sparql-core.dll -r:$(BIN)/IKVM.GNU.Classpath.dll \
 		-r:System.Web
 
-$(BIN)/SemWeb.PostgreSQLStore.dll: src/PostgreSQLStore.cs $(BIN)/SemWeb.dll
+$(BIN)/SemWeb.PostgreSQLStore.dll: src/PostgreSQLStore.cs
 ifneq "$(npgsql_available)" "0"
 	$(MCS) -debug src/PostgreSQLStore.cs -out:$(BIN)/SemWeb.PostgreSQLStore.dll -t:library \
 		-r:$(BIN)/SemWeb.dll -r:System.Data -r:Npgsql
@@ -78,7 +78,7 @@ else
 	@echo "SKIPPING compilation of SemWeb.PosgreSQLStore.dll because Npgsql assembly seems to be not available in the GAC.";
 endif
 
-$(BIN)/SemWeb.SqliteStore.dll: src/SQLiteStore.cs $(BIN)/SemWeb.dll
+$(BIN)/SemWeb.SqliteStore.dll: src/SQLiteStore.cs
 ifneq "$(sqlite_available)" "0"
 	$(MCS) -debug src/SQLiteStore.cs -out:$(BIN)/SemWeb.SqliteStore.dll -t:library \
 		-r:$(BIN)/SemWeb.dll -r:System.Data -r:Mono.Data.SqliteClient
@@ -86,7 +86,7 @@ else
 	@echo "SKIPPING compilation of SemWeb.SqliteStore.dll because Mono.Data.SqliteClient assembly seems to be not available in the GAC.";
 endif
 	
-$(BIN)/SemWeb.MySQLStore.dll: src/MySQLStore.cs $(BIN)/SemWeb.dll
+$(BIN)/SemWeb.MySQLStore.dll: src/MySQLStore.cs
 ifneq "$(mysql_available)" "0"
 	$(MCS) -debug src/MySQLStore.cs -out:$(BIN)/SemWeb.MySQLStore.dll -t:library\
 		 -r:$(BIN)/SemWeb.dll -r:System.Data -r:MySql.Data -d:CONNECTOR -lib:lib
@@ -98,13 +98,13 @@ endif
 
 # Utility programs
 
-$(BIN)/rdfstorage.exe: tools/rdfstorage.cs $(BIN)/SemWeb.dll
+$(BIN)/rdfstorage.exe: tools/rdfstorage.cs
 	$(MCS) -debug tools/rdfstorage.cs -out:$(BIN)/rdfstorage.exe -r:$(BIN)/SemWeb.dll -r:Mono.GetOptions
 	
-$(BIN)/rdfquery.exe: tools/rdfquery.cs $(BIN)/SemWeb.dll
+$(BIN)/rdfquery.exe: tools/rdfquery.cs
 	$(MCS) -debug tools/rdfquery.cs -out:$(BIN)/rdfquery.exe -r:$(BIN)/SemWeb.dll -r:$(BIN)/SemWeb.Sparql.dll -r:Mono.GetOptions	
 
-$(BIN)/euler.exe: tools/euler.cs $(BIN)/SemWeb.dll
+$(BIN)/euler.exe: tools/euler.cs
 	$(MCS) -debug tools/euler.cs -out:$(BIN)/euler.exe -r:$(BIN)/SemWeb.dll
 
 endif
