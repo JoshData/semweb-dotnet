@@ -164,7 +164,38 @@ namespace SemWeb.Query {
 				bool allowQueryableSource,
 				QueryResultSink result) {
 				
-			BindingSet bindings = new BindingSet();
+			BindingSet bindings;
+			
+			// We use a sort of adaptive limiting technique in
+			// queries involving intersection. If a limit on
+			// A & B is specified, it is obviously incorrect to
+			// limit A and B separately, since the parts that
+			// intersect may be not at the beginning of either
+			// of A and B. However, in many cases such a limit
+			// is possible, and so we try the limits. But if
+			// that limit doesn't yield enough results, we back
+			// off and use a much larger limit the next time.
+			// Note that when the query involves no intersection,
+			// it *is* correct to pass the limit down, and so
+			// we never need to do a back-off in that case.
+			
+			int adaptiveLimitMultiplier = 1;
+			
+			// If intersection is involved in this query, then
+			// it's likely there will be some holes in the data
+			// and we should query more than the final limit
+			// from each source to start with. But if there's just
+			// one query part, we keep the multiplier at 1 because
+			// we want to pass it down.
+			if (queryParts.Length > 1)
+				adaptiveLimitMultiplier = 2;
+			
+			while (true) {
+			
+			bool adaptiveLimitDidLimit = false;
+			int localLimit = returnLimit * adaptiveLimitMultiplier;
+			
+			bindings = new BindingSet();
 			bindings.Variables = new Variable[0];
 			bindings.Rows = new BindingList();
 			bindings.Rows.Add(null); // we need a dummy row for the first intersection
@@ -283,10 +314,8 @@ namespace SemWeb.Query {
 					// filter out matching statements that don't respect that (since that info
 					// was lost in the SelectFilter).
 					foreach (SelectableSource source in part.Sources) {
-						// If the query has just one part, then we can
-						// enforce any limit specified.
-						if (queryParts.Length == 1 && returnLimit > 0) {
-							f.Limit = returnLimit - matches.Count;
+						if (localLimit > 0) {
+							f.Limit = localLimit - matches.Count;
 							if (f.Limit <= 0)
 								break;
 						}
@@ -341,10 +370,8 @@ namespace SemWeb.Query {
 					vars = null;
 					matches = null;
 					foreach (QueryableSource source in part.Sources) {
-						// If the query has just one part, then we can
-						// enforce any limit specified.
-						if (queryParts.Length == 1 && returnLimit > 0) {
-							opts.Limit = returnLimit - (matches == null ? 0 : matches.Count);
+						if (localLimit > 0) {
+							opts.Limit = localLimit - (matches == null ? 0 : matches.Count);
 							if (opts.Limit <= 0)
 								break;
 						}
@@ -381,6 +408,12 @@ namespace SemWeb.Query {
 						qs += "\n\t" + s;
 
 					result.AddComments("QUERY: " + qs + "  => " + matches.Count);
+					
+					// If we got back at least as many rows as our local (adaptive) limit,
+					// then we know that the limiting (possibly) had an effect and we may
+					// need to loop again to get all of the rows.
+					if (matches.Count >= localLimit)
+						adaptiveLimitDidLimit = true;
 				}
 				
 				// Intersect the existing bindings with the new matches.
@@ -486,6 +519,25 @@ namespace SemWeb.Query {
 				
 				bindings = newbindings;
 			}
+			
+			// If there's no limit specified, then we aren't doing adaptive limiting.
+			if (returnLimit == 0) break;
+			
+			// If this query has just one part (no intersection), then we aren't doing adaptive limiting.
+			if (queryParts.Length == 1) break;
+			
+			// If we found enough rows, then adaptive limiting worked.
+			if (bindings.Rows.Count >= returnLimit) break;
+			
+			// If the adaptive limit didn't actually limit: that is, we know
+			// that there are no more results than the limit for any part
+			// of the query, then no larger limit will help.
+			if (!adaptiveLimitDidLimit) break;
+			
+			// Increase the adaptive limit multiplier for next time.
+			adaptiveLimitMultiplier *= 3;
+			
+			} // end of adaptive limiting
 			
 			result.Init(bindings.Variables);
 			

@@ -11,6 +11,8 @@
 	  not querying sources that can't match statements better.
 	* GraphMatch: Pass down result limits to the data sources
 	  if no intersection is involved in the query.
+	  Implemented a sort of adaptive technique to pass down
+	  limits to the data sources even in an intersective query.
 	* SPARQL: Pass down LIMITs as far into the query as possible.
 	  Updated to IKVM 0.34.
 	* doc/: Added design document, corrected a mistake
