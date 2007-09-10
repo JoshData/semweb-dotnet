@@ -13,8 +13,9 @@
 	  if no intersection is involved in the query.
 	* SPARQL: Pass down LIMITs as far into the query as possible.
 	  Updated to IKVM 0.34.
-	* doc/: Added design document and corrected a mistake
-	  reported by Peter Williams (thanks!).
+	* doc/: Added design document, corrected a mistake
+	  reported by Peter Williams (thanks!), and added something
+	  on SparqlHttpSource to doc/query.html.
 
 2007-07-17 Version 1.01
 

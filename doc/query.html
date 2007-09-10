@@ -10,10 +10,12 @@
 <h1>Querying: Simple Entailment and SPARQL</h1>
 
 <p>This page provides an example for running queries against RDF data
-using SemWeb.  Two query methods are supported.  The first is the
+using SemWeb.  Three query methods are supported.  The first is the
 GraphMatch engine which does simple entailment, matching a simple graph
-with no disjunctions or optional edges against target data.  The second method is
-SPARQL queries.</p>
+with no disjunctions or optional edges against target data.  The second method
+runs SPARQL queries against any data source supported by SemWeb using
+a SPARQL query engine. The third method passes SPARQL queries to a remote
+SPARQL endpoint over HTTP.</p>
 
 <h2>Getting the data</h2>
 
@@ -327,6 +329,52 @@ public class Example {
     }
 }
 </pre>
+
+<h2>Querying Remote SPARQL Endpoints</h2>
+
+<p>It is also possible to run SPARQL queries directly against remote
+HTTP endpoints. The <tt>rdfquery.exe</tt> command-line program can be
+used to run queries directly. Take the following query in the file
+"dbp.q" to query the <a href="http://dbpedia.org">DBpedia</a> database (a semantified Wikipedia)
+for all statements that use the literal "John McCain":</p>
+
+<pre class="code">SELECT * WHERE { ?s ?p "John McCain" . }</pre>
+
+<p>Run this against the remote SPARQL endpoint at <tt>http://DBpedia.org/sparql</tt>
+using:</p>
+
+<pre class="code">mono bin/rdfquery.exe sparql-http:http://DBpedia.org/sparql -type sparql < dbp.q</pre>
+
+<p>The output is given below:</p>
+
+<pre class="code">&lt;sparql>
+  &lt;head>
+    &lt;variable name="s"/>
+    &lt;variable name="p"/>
+  &lt;/head>
+  &lt;results distinct="false" ordered="true">
+    &lt;result>
+      &lt;binding name="s">&lt;uri>http://dbpedia.org/resource/John_McCain&lt;/uri>&lt;/binding>
+      &lt;binding name="p">&lt;uri>rdfs:label&lt;/uri>&lt;/binding>
+    &lt;/result>
+    &lt;result>
+      &lt;binding name="s">&lt;uri>http://dbpedia.org/resource/John_McCain&lt;/uri>&lt;/binding>
+      &lt;binding name="p">&lt;uri>http://dbpedia.org/property/name&lt;/uri>&lt;/binding>
+    &lt;/result>
+  &lt;/results>
+&lt;/sparql></pre>
+
+<p>It is also possible to query remote endpoints programmatically using
+the <tt>SemWeb.Remote.SparqlHttpSource</tt> class. For example:</p>
+
+<pre class="code">SparqlHttpSource source = new SparqlHttpSource("http://DBpedia.org/sparql");
+source.RunSparqlQuery("SELECT * WHERE { ?s ?p \"John McCain\" . }", Console.Out);
+   (or)
+source.RunSparqlQuery("SELECT * WHERE { ?s ?p \"John McCain\" . }", new SparqlXmlQuerySink(Console.Out));</pre>
+
+<p>There are other overloads of <tt>RunSparqlQuery</tt> that provide better access
+to the results than dumping the output to a TextWriter. See the API documentation
+for details.</p>
 
 	</body>
 </html>
