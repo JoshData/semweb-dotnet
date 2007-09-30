@@ -1002,7 +1002,7 @@ namespace SemWeb.Query {
 		class TestFunction : RdfFunction {
 			public override string Uri { get { return "http://taubz.for.net/code/semweb/test/function"; } }
 			public override Resource Evaluate(Resource[] args) {
-				return Literal.Create(args.Length == 2 && args[0].Equals(args[1]));
+				return Literal.FromValue(args.Length == 2 && args[0].Equals(args[1]));
 			}
 		}
 		class LCFunction : RdfFunction {

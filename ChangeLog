@@ -1,8 +1,10 @@
+	* Literal: Removed static Create(bool) method, which was
+	  a strange duplicate of FromValue(bool).
 	* Query: Added MimeType property to control general
-	  query output. SparqlProtocolHander: Properly treat
-	  mime-types of the different SPARQL types, and allow
-	  for Accept: content-negotiation of output format for
-	  DESCRIBE and CONSTRUCT.
+	  query output.
+	* SparqlProtocolHander: Properly treat mime-types of
+	  the different SPARQL types, and allow for Accept:
+	  content-negotiation of output format for DESCRIBE and CONSTRUCT.
 	* RdfWriter: Added Create factory-style methods.
 	* RdfReader: LoadFromUri now passes the URI of the resource
 	  it got to the reader as BaseUri so it can resolve

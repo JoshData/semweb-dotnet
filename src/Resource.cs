@@ -354,10 +354,6 @@ namespace SemWeb {
 			return new Literal(ParseValue().ToString(), Language, DataType);
 		}
 		
-		public static Literal Create(bool value) {
-			return new Literal(value ? "true" : "false", null, NS.XMLSCHEMA + "boolean");
-		}
-		
 		public static Literal FromValue(float value) {
 			return new Literal(value.ToString(), null, NS.XMLSCHEMA + "float");
 		}
