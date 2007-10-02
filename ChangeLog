@@ -9,6 +9,9 @@
 	* RdfReader: LoadFromUri now passes the URI of the resource
 	  it got to the reader as BaseUri so it can resolve
 	  relative URIs in the document.
+	* N3Reader: Added @base directive as per latest N3/Turtle specs,
+	  and properly raise an error if the three @-directives are
+	  used where they shouldn't be.
 	* Inference.cs: Improved distributed queries a bit by
 	  not querying sources that can't match statements better.
 	* GraphMatch: Pass down result limits to the data sources

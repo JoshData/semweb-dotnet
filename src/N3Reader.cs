@@ -11,6 +11,7 @@ namespace SemWeb {
 	public class N3Reader : RdfReader {
 		Resource PrefixResource = new Literal("@prefix");
 		Resource KeywordsResource = new Literal("@keywords");
+		Resource BaseResource = new Literal("@base");
 		
 		TextReader sourcestream;
 		NamespaceManager namespaces = new NamespaceManager();
@@ -65,7 +66,7 @@ namespace SemWeb {
 			Location loc = context.Location;
 			
 			bool reverse;
-			Resource subject = ReadResource(context, out reverse);
+			Resource subject = ReadResource(context, true, out reverse);
 			if (subject == null) return false;
 			if (reverse) OnError("is...of not allowed on a subject", loc);
 			
@@ -75,7 +76,7 @@ namespace SemWeb {
 				if (qname == null || !qname.EndsWith(":")) OnError("When using @prefix, the prefix identifier must end with a colon", loc);
 				
 				loc = context.Location;
-				Resource uri = ReadResource(context, out reverse);
+				Resource uri = ReadResource(context, false, out reverse);
 				if (uri == null) OnError("Expecting a URI", loc);
 				if (reverse) OnError("is...of not allowed here", loc);
 				namespaces.AddNamespace(uri.Uri, qname.Substring(0, qname.Length-1));
@@ -107,6 +108,20 @@ namespace SemWeb {
 				return true;
 			}
 			
+			if ((object)subject == (object)BaseResource) {
+				loc = context.Location;
+				Resource uri = ReadResource(context, false, out reverse);
+				if (uri == null || uri.Uri == null) OnError("Expecting a URI", loc);
+				if (reverse) OnError("is...of not allowed here", loc);
+				BaseUri = uri.Uri;
+				
+				loc = context.Location;
+				char punc = ReadPunc(context.source);
+				if (punc != '.')
+					OnError("Expected a period but found '" + punc + "'", loc);
+				return true;
+			}
+
 			// It's possible to just assert the presence of an entity
 			// by following the entity with a period, or a } to end
 			// a reified context.
@@ -148,7 +163,7 @@ namespace SemWeb {
 		private char ReadPredicate(Resource subject, ParseContext context) {
 			bool reverse;
 			Location loc = context.Location;
-			Resource predicate = ReadResource(context, out reverse);
+			Resource predicate = ReadResource(context, false, out reverse);
 			if (predicate == null) OnError("Expecting a predicate", loc);
 			if (predicate is Literal) OnError("Predicates cannot be literals", loc);
 			
@@ -173,7 +188,7 @@ namespace SemWeb {
 		private void ReadObject(Resource subject, Entity predicate, ParseContext context, bool reverse) {
 			bool reverse2;
 			Location loc = context.Location;
-			Resource value = ReadResource(context, out reverse2);
+			Resource value = ReadResource(context, false, out reverse2);
 			if (value == null) OnError("Expecting a resource or literal object", loc);
 			if (reverse2) OnError("is...of not allowed on objects", loc);
 			
@@ -418,10 +433,10 @@ namespace SemWeb {
 			return b.ToString();
 		}
 		
-		private Resource ReadResource(ParseContext context, out bool reverse) {
+		private Resource ReadResource(ParseContext context, bool allowDirective, out bool reverse) {
 			Location loc = context.Location;
 			
-			Resource res = ReadResource2(context, out reverse);
+			Resource res = ReadResource2(context, allowDirective, out reverse);
 			
 			ReadWhitespace(context.source);
 			while (context.source.Peek() == '!' || context.source.Peek() == '^' || (context.source.Peek() == '.' && context.source.Peek2() != -1 && char.IsLetter((char)context.source.Peek2())) ) {
@@ -429,7 +444,7 @@ namespace SemWeb {
 				
 				bool reverse2;
 				loc = context.Location;
-				Resource path = ReadResource2(context, out reverse2);
+				Resource path = ReadResource2(context, false, out reverse2);
 				if (reverse || reverse2) OnError("is...of is not allowed in path expressions", loc);
 				if (!(path is Entity)) OnError("A path expression cannot be a literal", loc);
 				
@@ -486,7 +501,7 @@ namespace SemWeb {
 			}
 		}
 			
-		private Resource ReadResource2(ParseContext context, out bool reverse) {
+		private Resource ReadResource2(ParseContext context, bool allowDirective, out bool reverse) {
 			reverse = false;
 			
 			Location loc = context.Location;
@@ -498,15 +513,32 @@ namespace SemWeb {
 			string str = (string)tok;
 			if (str == "")
 				return null;
+				
+			// Directives
+			
+			if (str == "@prefix") {
+				if (allowDirective)
+					return PrefixResource;
+				else
+					OnError("The directive '" + str + "' is not allowed here", loc);
+			}
+
+			if (str == "@keywords") {
+				if (allowDirective)
+					return KeywordsResource;
+				else
+					OnError("The directive '" + str + "' is not allowed here", loc);
+			}
+
+			if (str == "@base") {
+				if (allowDirective)
+					return BaseResource;
+				else
+					OnError("The directive '" + str + "' is not allowed here", loc);
+			}
 			
 			// @ Keywords
 
-			if (str == "@prefix")
-				return PrefixResource;
-
-			if (str == "@keywords")
-				return KeywordsResource;
-			
 			if (context.UsingKeywords && context.Keywords.Contains(str))
 				str = "@" + str;
 			if (!context.UsingKeywords &&
@@ -531,12 +563,12 @@ namespace SemWeb {
 				return entGRAPHCONTAINS;
 
 			if (str == "@has") // ignore this token
-				return ReadResource2(context, out reverse);
+				return ReadResource2(context, false, out reverse);
 			
 			if (str == "@is") {
 				// Reverse predicate
 				bool reversetemp;
-				Resource pred = ReadResource2(context, out reversetemp);
+				Resource pred = ReadResource2(context, false, out reversetemp);
 				reverse = true;
 				
 				string of = ReadToken(context.source, context) as string;
@@ -601,7 +633,7 @@ namespace SemWeb {
 				Entity head = null, ent = null;
 				while (true) {
 					bool rev2;
-					Resource res = ReadResource(context, out rev2);
+					Resource res = ReadResource(context, false, out rev2);
 					if (res == null)
 						break;
 					
