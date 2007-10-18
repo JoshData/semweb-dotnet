@@ -18,6 +18,8 @@
 	  if no intersection is involved in the query.
 	  Implemented a sort of adaptive technique to pass down
 	  limits to the data sources even in an intersective query.
+	  Correct a KeyNotFoundException bug in the generics build
+	  in calls to AddLiteralFilter.
 	* SPARQL: Pass down LIMITs as far into the query as possible.
 	  Updated to IKVM 0.34.
 	* doc/: Added design document, corrected a mistake

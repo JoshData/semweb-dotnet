@@ -111,7 +111,7 @@ namespace SemWeb.Query {
 		}
 		
 		public void AddLiteralFilter(Variable variable, LiteralFilter filter) {
-			if (litFilters[variable] == null)
+			if (!litFilters.ContainsKey(variable))
 				litFilters[variable] = new LitFilterList();
 			((LitFilterList)litFilters[variable]).Add(filter);
 		}
