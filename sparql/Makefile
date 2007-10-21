@@ -4,7 +4,7 @@ SPARQL_RELEASE=upstream
 JAVA_HOME=/usr/java/jdk1.6.0_01/
 IKVM_BIN=ikvm-0.34.0.2/bin
 IKVM=$(IKVM_BIN)/ikvmc.exe
-ANT=~/dev/apache-ant-1.6.5/bin/ant
+ANT=JAVA_HOME=$(JAVA_HOME) /usr/bin/ant
 
 all: get-sources build-sparql
 
@@ -14,14 +14,13 @@ get-sources:
 	mkdir -p ../bin ../bin_generics
 
 build-sparql:
+	diff -urN $(SPARQL_RELEASE) $(SPARQL) --exclude=.svn --exclude=.settings --exclude=META-INF > local-changes.diff || true
 	cd $(SPARQL); $(ANT) jar;
 	mono $(IKVM) -out:sparql-core.dll -nostacktraceinfo \
-		$(SPARQL)/lib/sparql-core.jar $(SPARQL)/lib/openrdf-util.jar \
-		$(SPARQL)/lib/openrdf-model.jar
+		$(SPARQL)/dist/sparql-core.jar 
 	MONO_PATH=.:$(IKVM_BIN) mono --aot -O=all sparql-core.dll
 	cp sparql-core.dll* ../bin
 	cp sparql-core.dll* ../bin_generics
-	diff -urN $(SPARQL_RELEASE) $(SPARQL) --exclude=.svn --exclude=.settings --exclude=META-INF > local-changes.diff || true
 
 linked-libs/sparql-core.dll: sparql-core.dll
 	echo "<linker>" > sparql-linker.xml
