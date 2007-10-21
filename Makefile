@@ -139,4 +139,9 @@ package: all
 	rm -rf package-workspace
 	
 deploy: package
-	scp packages/semweb-$(VERSION).tgz packages/semweb.zip publius:www/code/semweb
+	scp packages/semweb-$(VERSION).tgz packages/semweb.zip occams.info:www/code/semweb
+
+clean:
+	rm bin*/SemWeb.dll* bin*/SemWeb.Sparql.dll* \
+	bin*/SemWeb.PostgreSQLStore.dll* bin*/SemWeb.SqliteStore.dll* bin*/SemWeb.MySQLStore.dll* \
+	bin*/rdfstorage.exe* bin*/rdfquery.exe* bin*/euler.exe*
