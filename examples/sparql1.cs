@@ -7,26 +7,22 @@ using SemWeb.Query;
 public class Sparql1 {
 
 	public static void Main() {
-		string endpoint = "http://my.opera.com/community/sparql/sparql";
+		string endpoint = "http://www.rdfabout.com/sparql";
 		
 		string ex1 = "PREFIX foaf: <http://xmlns.com/foaf/0.1/>\n"
-					+ "SELECT ?user ?blog ?user2 WHERE \n"
-					+ "{ ?user foaf:nick \"chaals\" .\n"
-					+ "  ?user foaf:weblog ?blog . \n"
-					+ "  ?user foaf:knows ?user2 . } LIMIT 10 \n";
+					+ "SELECT ?name \n"
+					+ "WHERE { [] foaf:name ?name . }\n"
+					+ "LIMIT 10 \n";
 
 		string ex2 = "PREFIX foaf: <http://xmlns.com/foaf/0.1/>\n"
-					+ "ASK WHERE \n"
-					+ "{ ?user foaf:nick \"chaals\" .\n"
-					+ "  ?user foaf:weblog ?blog . \n"
-					+ "  ?user foaf:knows ?user2 . } \n";
+					+ "ASK \n"
+					+ "WHERE { [] foaf:name ?name . }\n";
 
 		string ex3 = "PREFIX foaf: <http://xmlns.com/foaf/0.1/>\n"
-					+ "CONSTRUCT { ?user foaf:knows ?user2 } WHERE \n"
-					+ "{ ?user foaf:nick \"chaals\" .\n"
-					+ "  ?user foaf:knows ?user2 . } LIMIT 10 \n";
+					+ "CONSTRUCT { ?person foaf:name2 ?name } \n"
+					+ "WHERE { ?person foaf:name ?name . }\n"
+					+ "LIMIT 10 \n";
 
-					
 		SparqlHttpSource source = new SparqlHttpSource(endpoint);
 		
 		Console.WriteLine("RunSparqlQuery(ex1, Console.Out):");
@@ -51,7 +47,7 @@ public class Sparql1 {
 		
 		Console.WriteLine("Select(subject,__,__)");
 		using (N3Writer writer = new N3Writer(Console.Out))
-			source.Select(new Statement("http://my.opera.com/danbri/xml/foaf#me", null, null), writer);
+			source.Select(new Statement("http://www.rdfabout.com/rdf/usgov/congress/people/M000303", null, null), writer);
 		Console.WriteLine();
 		
 		Console.WriteLine("Query(...) A");
@@ -59,7 +55,7 @@ public class Sparql1 {
 		QueryOptions qo = new QueryOptions();
 		qo.Limit = 10;
 		source.Query(new Statement[] {
-			new Statement(a, "http://xmlns.com/foaf/0.1/nick", (Literal)"chaals"),
+			new Statement(a, "http://xmlns.com/foaf/0.1/name", (Literal)"John McCain"),
 			new Statement(a, new Variable("b"), new Variable("c")),
 			}, qo, new SparqlXmlQuerySink(Console.Out));
 		Console.WriteLine();
@@ -68,7 +64,7 @@ public class Sparql1 {
 		Console.WriteLine("Query(...) B");
 		QueryResultBuffer qb = new QueryResultBuffer();
 		source.Query(new Statement[] {
-			new Statement(a, "http://xmlns.com/foaf/0.1/nick", (Literal)"chaals"),
+			new Statement(a, "http://xmlns.com/foaf/0.1/name", (Literal)"John McCain"),
 			new Statement(a, new Variable("b"), new Variable("c")),
 			}, qo, qb);
 		foreach (VariableBindings b in qb) {
