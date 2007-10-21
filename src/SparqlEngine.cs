@@ -39,7 +39,7 @@ namespace SemWeb.Query {
 		private const string BNodePersistUri = "tag:taubz.for.net,2005:bnode_persist_uri/";
 
 		string queryString;
-		name.levering.ryan.sparql.model.Query query;
+		name.levering.ryan.sparql.parser.model.QueryNode query;
 		ArrayList extFunctions = new ArrayList();
 		
 		public bool AllowPersistBNodes = false;
@@ -53,6 +53,8 @@ namespace SemWeb.Query {
 			Select
 		}
 		
+		/* CONSTRUCTORS */
+		
 		public SparqlEngine(TextReader query)
 			: this(query.ReadToEnd()) {
 		}
@@ -60,7 +62,7 @@ namespace SemWeb.Query {
 		public SparqlEngine(string query) {
 			queryString = query;
 			try {
-				this.query = SPARQLParser.parse(new java.io.StringReader(query));
+				this.query = (name.levering.ryan.sparql.parser.model.QueryNode)SPARQLParser.parse(new java.io.StringReader(query));
 				if (this.query is SelectQuery) {
 					SelectQuery sq = (SelectQuery)this.query;
 					ReturnLimit = sq.getLimit();
@@ -76,6 +78,8 @@ namespace SemWeb.Query {
 			extFunctions.Add(new LCFunction());
 			extFunctions.Add(new UCFunction());
 		}
+		
+		/* QUERY TYPE AND OUTPUT CONTROL PROPERTIES */
 		
 		public QueryType Type {
 			get {
@@ -120,9 +124,17 @@ namespace SemWeb.Query {
 			}
 		}
 		
+		/* QUERY EXECUTION CONTROL METHODS */
+		
 		public void AddExternalFunction(RdfFunction function) {
 			extFunctions.Add(function);
 		}
+		
+		public override string GetExplanation() {
+			return query.ToString();
+		}
+		
+		/* QUERY EXECUTION METHODS */
 	
 		public override void Run(SelectableSource source, TextWriter output) {
 			if (query is AskQuery)
@@ -141,8 +153,12 @@ namespace SemWeb.Query {
 			if (!(query is AskQuery))
 				throw new InvalidOperationException("Only ASK queries are supported by this method (" + query.GetType() + ").");
 			AskQuery q = (AskQuery)query;
-			RdfSourceWrapper sourcewrapper =  BindLogic(source);
-			return q.execute(sourcewrapper);
+			RdfSourceWrapper sourcewrapper = BindLogic(source);
+			try {
+				return q.execute(sourcewrapper);
+			} catch (name.levering.ryan.sparql.common.QueryException e) {
+				throw new QueryExecutionException("Error executing query: " + e.Message, e);
+			}
 		}
 		
 		public void Ask(SelectableSource source, TextWriter output) {
@@ -153,10 +169,8 @@ namespace SemWeb.Query {
 			w.WriteAttributeString("xmlns", "http://www.w3.org/2001/sw/DataAccess/rf1/result");
 			w.WriteStartElement("head");
 			w.WriteEndElement();
-			w.WriteStartElement("results");
 			w.WriteStartElement("boolean");
 			w.WriteString(result ? "true" : "false");
-			w.WriteEndElement();
 			w.WriteEndElement();
 			w.WriteEndElement();
 			w.Flush();
@@ -167,8 +181,12 @@ namespace SemWeb.Query {
 				throw new InvalidOperationException("Only CONSTRUCT queries are supported by this method (" + query.GetType() + ").");
 			ConstructQuery q = (ConstructQuery)query;
 			RdfSourceWrapper sourcewrapper = BindLogic(source);
-			RdfGraph graph = q.execute(sourcewrapper);
-			WriteGraph(graph, sourcewrapper, sink);
+			try {
+				RdfGraph graph = q.execute(sourcewrapper);
+				WriteGraph(graph, sourcewrapper, sink);
+			} catch (name.levering.ryan.sparql.common.QueryException e) {
+				throw new QueryExecutionException("Error executing query: " + e.Message, e);
+			}
 		}
 		
 		public NamespaceManager GetQueryPrefixes() {
@@ -216,8 +234,12 @@ namespace SemWeb.Query {
 				throw new InvalidOperationException("Only DESCRIBE queries are supported by this method (" + query.GetType() + ").");
 			DescribeQuery q = (DescribeQuery)query;
 			RdfSourceWrapper sourcewrapper = BindLogic(source);
-			RdfGraph graph = q.execute(sourcewrapper);
-			WriteGraph(graph, sourcewrapper, sink);
+			try {
+				RdfGraph graph = q.execute(sourcewrapper);
+				WriteGraph(graph, sourcewrapper, sink);
+			} catch (name.levering.ryan.sparql.common.QueryException e) {
+				throw new QueryExecutionException("Error executing query: " + e.Message, e);
+			}
 		}
 
 		public void Describe(SelectableSource source, TextWriter output) {
@@ -235,21 +257,6 @@ namespace SemWeb.Query {
 			Run(source, sink);
 		}
 
-		public override string GetExplanation() {
-			return query.ToString();
-		}
-		
-		private RdfSourceWrapper BindLogic(SelectableSource source) {
-			RdfSourceWrapper sourcewrapper = new RdfSourceWrapper(source, QueryMeta, this);
-			MyLogicFactory logic = new MyLogicFactory();
-			foreach (RdfFunction f in extFunctions)
-				logic.registerExternalFunction(
-					new URIWrapper(f.Uri),
-					new ExtFuncWrapper(sourcewrapper, f));
-			query.setLogic(logic);
-			return sourcewrapper;
-		}
-		
 		public override void Run(SelectableSource source, QueryResultSink resultsink) {
 			if (!(query is SelectQuery))
 				throw new InvalidOperationException("Only SELECT queries are supported by this method (" + query.GetType() + ").");
@@ -261,7 +268,7 @@ namespace SemWeb.Query {
 			RdfBindingSet results;
 			try {
 				results = squery.execute(sourcewrapper);
-			} catch (java.lang.Exception e) {
+			} catch (name.levering.ryan.sparql.common.QueryException e) {
 				throw new QueryExecutionException("Error executing query: " + e.Message, e);
 			}
 			
@@ -317,6 +324,22 @@ namespace SemWeb.Query {
 			resultsink.Finished();
 		}
 		
+		/* INTERNAL METHODS TO CONTROL QUERY EXECUTION */
+		
+		private RdfSourceWrapper BindLogic(SelectableSource source) {
+			RdfSourceWrapper sourcewrapper = new RdfSourceWrapper(source, QueryMeta, this);
+			
+			MyLogicFactory logic = new MyLogicFactory();
+			foreach (RdfFunction f in extFunctions)
+				logic.registerExternalFunction(
+					new URIWrapper(f.Uri),
+					new ExtFuncWrapper(sourcewrapper, f));
+			
+			query.prepare(sourcewrapper, logic);
+			
+			return sourcewrapper;
+		}
+		
 		class MyLogicFactory : name.levering.ryan.sparql.logic.StreamedLogic {
 		    public override name.levering.ryan.sparql.model.logic.ConstraintLogic getGroupConstraintLogic(name.levering.ryan.sparql.model.data.GroupConstraintData data) {
         		return new RdfGroupLogic(data, new name.levering.ryan.sparql.logic.streamed.IndexedSetIntersectLogic());
@@ -324,7 +347,7 @@ namespace SemWeb.Query {
 		}
 	
 		class RdfSourceWrapper : AdvancedRdfSource,
-				org.openrdf.model.ValueFactory {
+				SPARQLValueFactory {
 				
 			public readonly SelectableSource source;
 			Hashtable bnodes = new Hashtable();
@@ -394,11 +417,11 @@ namespace SemWeb.Query {
 		     * null, in which case it assumes these are "wildcards" and all statements
 		     * that match the remainding parameters will be returned.
      		 */ 
-     		public java.util.Iterator getDefaultStatements (org.openrdf.model.Value subject, org.openrdf.model.URI predicate, org.openrdf.model.Value @object) {
+     		public java.util.Iterator getDefaultStatements (name.levering.ryan.sparql.common.Value subject, name.levering.ryan.sparql.common.URI predicate, name.levering.ryan.sparql.common.Value @object) {
 				return GetIterator( new Statement(ToEntity(subject), ToEntity(predicate), ToResource(@object), QueryMeta), true, -1 );
 			}
 
-     		public java.util.Iterator getDefaultStatements (org.openrdf.model.Value[] subject, org.openrdf.model.Value[] predicate, org.openrdf.model.Value[] @object, object[] litFilters, int limit) {
+     		public java.util.Iterator getDefaultStatements (name.levering.ryan.sparql.common.Value[] subject, name.levering.ryan.sparql.common.Value[] predicate, name.levering.ryan.sparql.common.Value[] @object, object[] litFilters, int limit) {
 				return GetIterator( ToEntities(subject), ToEntities(predicate), ToResources(@object), QueryMeta == null ? null : new Entity[] { QueryMeta }, litFilters, true, limit );
      		}
 			
@@ -413,11 +436,11 @@ namespace SemWeb.Query {
 		     * @param obj the object to match statements against
 		     * @return an Iterator over the matching statements
 		     */
-     		public java.util.Iterator getStatements (org.openrdf.model.Value subject, org.openrdf.model.URI predicate, org.openrdf.model.Value @object) {
+     		public java.util.Iterator getStatements (name.levering.ryan.sparql.common.Value subject, name.levering.ryan.sparql.common.URI predicate, name.levering.ryan.sparql.common.Value @object) {
 				return GetIterator(  new Statement(ToEntity(subject), ToEntity(predicate), ToResource(@object), null), false, -1 );
 			}
 	
-     		public java.util.Iterator getStatements (org.openrdf.model.Value[] subject, org.openrdf.model.Value[] predicate, org.openrdf.model.Value[] @object, object[] litFilters, int limit) {
+     		public java.util.Iterator getStatements (name.levering.ryan.sparql.common.Value[] subject, name.levering.ryan.sparql.common.Value[] predicate, name.levering.ryan.sparql.common.Value[] @object, object[] litFilters, int limit) {
 				return GetIterator(  ToEntities(subject), ToEntities(predicate), ToResources(@object), null, litFilters, false, limit );
      		}
      		
@@ -427,15 +450,15 @@ namespace SemWeb.Query {
 		     * null, in which case it assumes these are "wildcards" and all statements
 		     * that match the remainding parameters will be returned.
 		     */
-     		public java.util.Iterator getStatements (org.openrdf.model.Value subject, org.openrdf.model.URI predicate, org.openrdf.model.Value @object, org.openrdf.model.URI graph) {
+     		public java.util.Iterator getStatements (name.levering.ryan.sparql.common.Value subject, name.levering.ryan.sparql.common.URI predicate, name.levering.ryan.sparql.common.Value @object, name.levering.ryan.sparql.common.URI graph) {
 				return GetIterator( new Statement(ToEntity(subject), ToEntity(predicate), ToResource(@object), ToEntity(graph)), false, -1 );
 			}
 			
-     		public java.util.Iterator getStatements (org.openrdf.model.Value[] subject, org.openrdf.model.Value[] predicate, org.openrdf.model.Value[] @object, org.openrdf.model.URI[] graph, object[] litFilters, int limit) {
+     		public java.util.Iterator getStatements (name.levering.ryan.sparql.common.Value[] subject, name.levering.ryan.sparql.common.Value[] predicate, name.levering.ryan.sparql.common.Value[] @object, name.levering.ryan.sparql.common.URI[] graph, object[] litFilters, int limit) {
 				return GetIterator( ToEntities(subject), ToEntities(predicate), ToResources(@object), ToEntities(graph), litFilters, false, limit );
      		}
      		
-			public org.openrdf.model.ValueFactory getValueFactory() {
+			public name.levering.ryan.sparql.common.SPARQLValueFactory getValueFactory() {
 				return this;
 			}
 			
@@ -445,58 +468,58 @@ namespace SemWeb.Query {
 				return ret;
 			}
 			
-			public bool hasDefaultStatement (org.openrdf.model.Value subject, org.openrdf.model.URI @predicate, org.openrdf.model.Value @object) {
+			public bool hasDefaultStatement (name.levering.ryan.sparql.common.Value subject, name.levering.ryan.sparql.common.URI @predicate, name.levering.ryan.sparql.common.Value @object) {
 				return has(new Statement(ToEntity(subject), ToEntity(predicate), ToResource(@object), QueryMeta));
 			}
 			
-			public bool hasStatement (org.openrdf.model.Value subject, org.openrdf.model.URI @predicate, org.openrdf.model.Value @object) {
+			public bool hasStatement (name.levering.ryan.sparql.common.Value subject, name.levering.ryan.sparql.common.URI @predicate, name.levering.ryan.sparql.common.Value @object) {
 				return has(new Statement(ToEntity(subject), ToEntity(predicate), ToResource(@object), null));
 			}
 	
-			public bool hasStatement (org.openrdf.model.Value subject, org.openrdf.model.URI @predicate, org.openrdf.model.Value @object, org.openrdf.model.URI graph) {
+			public bool hasStatement (name.levering.ryan.sparql.common.Value subject, name.levering.ryan.sparql.common.URI @predicate, name.levering.ryan.sparql.common.Value @object, name.levering.ryan.sparql.common.URI graph) {
 				return has(new Statement(ToEntity(subject), ToEntity(predicate), ToResource(@object), ToEntity(graph)));
 			}
 			
-			public Entity ToEntity(org.openrdf.model.Value ent) {
+			public Entity ToEntity(name.levering.ryan.sparql.common.Value ent) {
 				if (ent == null) return null;
 				if (ent is BNodeWrapper) return ((BNodeWrapper)ent).r;
 				if (ent is URIWrapper) return ((URIWrapper)ent).r;
-				if (ent is org.openrdf.model.BNode) {
-					org.openrdf.model.BNode bnode = (org.openrdf.model.BNode)ent;
+				if (ent is name.levering.ryan.sparql.common.BNode) {
+					name.levering.ryan.sparql.common.BNode bnode = (name.levering.ryan.sparql.common.BNode)ent;
 					Entity r = (Entity)bnodes[bnode.getID()];
 					if (r == null) {
 						r = new BNode();
 						bnodes[bnode.getID()] = r;
 					}
 					return r;
-				} else if (ent is org.openrdf.model.URI) {
-					org.openrdf.model.URI uri = (org.openrdf.model.URI)ent;
-					return new Entity(uri.toString());
+				} else if (ent is name.levering.ryan.sparql.common.URI) {
+					name.levering.ryan.sparql.common.URI uri = (name.levering.ryan.sparql.common.URI)ent;
+					return new Entity(uri.getURI());
 				} else {
 					return null;
 				}
 			}
 			
-			public Resource ToResource(org.openrdf.model.Value value) {
+			public Resource ToResource(name.levering.ryan.sparql.common.Value value) {
 				if (value == null) return null;
 				if (value is LiteralWrapper) return ((LiteralWrapper)value).r;
-				if (value is org.openrdf.model.Literal) {
-					org.openrdf.model.Literal literal = (org.openrdf.model.Literal)value;
-					return new Literal(literal.getLabel(), literal.getLanguage(), literal.getDatatype() == null ? null : literal.getDatatype().toString());
+				if (value is name.levering.ryan.sparql.common.Literal) {
+					name.levering.ryan.sparql.common.Literal literal = (name.levering.ryan.sparql.common.Literal)value;
+					return new Literal(literal.getLabel(), literal.getLanguage(), literal.getDatatype() == null ? null : literal.getDatatype().getURI());
 				} else {
 					return ToEntity(value);
 				}
 			}
 			
-			public Entity[] ToEntities(org.openrdf.model.Value[] ents) {
+			public Entity[] ToEntities(name.levering.ryan.sparql.common.Value[] ents) {
 				if (ents == null) return null;
 				ArrayList ret = new ArrayList();
 				for (int i = 0; i < ents.Length; i++)
-					if (!(ents[i] is org.openrdf.model.Literal))
+					if (!(ents[i] is name.levering.ryan.sparql.common.Literal))
 						ret.Add( ToEntity(ents[i]) );
 				return (Entity[])ret.ToArray(typeof(Entity));
 			}
-			public Resource[] ToResources(org.openrdf.model.Value[] ents) {
+			public Resource[] ToResources(name.levering.ryan.sparql.common.Value[] ents) {
 				if (ents == null) return null;
 				Resource[] ret = new Resource[ents.Length];
 				for (int i = 0; i < ents.Length; i++)
@@ -510,86 +533,87 @@ namespace SemWeb.Query {
 					if (ents[i] is SparqlVariable)
 						ret[i] = ToResource(binding.getValue((SparqlVariable)ents[i]));
 					else
-						ret[i] = ToResource((org.openrdf.model.Value)ents[i]);
+						ret[i] = ToResource((name.levering.ryan.sparql.common.Value)ents[i]);
 				}
 				return ret;
 			}
 	
-			public org.openrdf.model.BNode createBNode() {
-				return new BNodeWrapper(new BNode());
+			public name.levering.ryan.sparql.common.Value createValue(name.levering.ryan.sparql.common.Value value) {
+				throw new NotImplementedException();
 			}
-			public org.openrdf.model.BNode createBNode(string id) {
-				throw new Exception(id);
+			public name.levering.ryan.sparql.common.BNode createBNode(name.levering.ryan.sparql.common.BNode value) {
+				throw new NotImplementedException();
 			}
-			public org.openrdf.model.Literal createLiteral(string value, string lang) {
-				return new LiteralWrapper(new Literal(value, lang, null));
+			public name.levering.ryan.sparql.common.Literal createLiteral(name.levering.ryan.sparql.common.Literal value) {
+				throw new NotImplementedException();
 			}
-			public org.openrdf.model.Literal createLiteral(string value, org.openrdf.model.URI datatype) {
-				return new LiteralWrapper(new Literal(value, null, datatype.toString()));
-			}
-			public org.openrdf.model.Literal createLiteral(string value) {
-				return new LiteralWrapper(new Literal(value));
-			}
-			public org.openrdf.model.Literal createLiteral(float value) {
-				return new LiteralWrapper(Literal.FromValue(value));
-			}
-			public org.openrdf.model.Literal createLiteral(double value) {
-				return new LiteralWrapper(Literal.FromValue(value));
-			}
-			public org.openrdf.model.Literal createLiteral(byte value) {
-				return new LiteralWrapper(Literal.FromValue(value));
-			}
-			public org.openrdf.model.Literal createLiteral(short value) {
-				return new LiteralWrapper(Literal.FromValue(value));
-			}
-			public org.openrdf.model.Literal createLiteral(int value) {
-				return new LiteralWrapper(Literal.FromValue(value));
-			}
-			public org.openrdf.model.Literal createLiteral(long value) {
-				return new LiteralWrapper(Literal.FromValue(value));
-			}
-			public org.openrdf.model.Literal createLiteral(bool value) {
-				return new LiteralWrapper(Literal.FromValue(value));
-			}
-			public org.openrdf.model.URI createURI(string ns, string ln) {
-				return createURI(ns + ln);
-			}
-			public org.openrdf.model.URI createURI(string uri) {
-				return new URIWrapper(new Entity(uri));
-			}
-			public org.openrdf.model.Statement createStatement (org.openrdf.model.Resource subject, org.openrdf.model.URI @predicate, org.openrdf.model.Value @object) {
-				return new Stmt(subject, predicate, @object); 
-			}
-			public org.openrdf.model.Statement createStatement (org.openrdf.model.Resource subject, org.openrdf.model.URI @predicate, org.openrdf.model.Value @object, org.openrdf.model.Resource graph) {
-				return new Stmt(subject, predicate, @object, graph); 
+			public name.levering.ryan.sparql.common.URI createURI(name.levering.ryan.sparql.common.URI value) {
+				throw new NotImplementedException();
 			}
 			
-			class Stmt : org.openrdf.model.Statement {
-				org.openrdf.model.Resource subject;
-				org.openrdf.model.URI predicate;
-				org.openrdf.model.Value @object;
-				org.openrdf.model.Resource graph;
-				public Stmt(org.openrdf.model.Resource subject, org.openrdf.model.URI @predicate, org.openrdf.model.Value @object) {
+			public name.levering.ryan.sparql.common.BNode createBNode() {
+				return new BNodeWrapper(new BNode());
+			}
+			public name.levering.ryan.sparql.common.BNode createBNode(string id) {
+				return new BNodeWrapper(new BNode(id));
+			}
+			public name.levering.ryan.sparql.common.Literal createLiteral(string value, string lang) {
+				return new LiteralWrapper(new Literal(value, lang, null));
+			}
+			public name.levering.ryan.sparql.common.Literal createLiteral(string value, name.levering.ryan.sparql.common.URI datatype) {
+				return new LiteralWrapper(new Literal(value, null, datatype.getURI()));
+			}
+			public name.levering.ryan.sparql.common.Literal createLiteral(string value) {
+				return new LiteralWrapper(new Literal(value));
+			}
+			public name.levering.ryan.sparql.common.Literal createLiteral(float value) {
+				return new LiteralWrapper(Literal.FromValue(value));
+			}
+			public name.levering.ryan.sparql.common.Literal createLiteral(double value) {
+				return new LiteralWrapper(Literal.FromValue(value));
+			}
+			public name.levering.ryan.sparql.common.Literal createLiteral(byte value) {
+				return new LiteralWrapper(Literal.FromValue(value));
+			}
+			public name.levering.ryan.sparql.common.Literal createLiteral(short value) {
+				return new LiteralWrapper(Literal.FromValue(value));
+			}
+			public name.levering.ryan.sparql.common.Literal createLiteral(int value) {
+				return new LiteralWrapper(Literal.FromValue(value));
+			}
+			public name.levering.ryan.sparql.common.Literal createLiteral(long value) {
+				return new LiteralWrapper(Literal.FromValue(value));
+			}
+			public name.levering.ryan.sparql.common.Literal createLiteral(bool value) {
+				return new LiteralWrapper(Literal.FromValue(value));
+			}
+			public name.levering.ryan.sparql.common.URI createURI(string ns, string ln) {
+				return createURI(ns + ln);
+			}
+			public name.levering.ryan.sparql.common.URI createURI(string uri) {
+				return new URIWrapper(new Entity(uri));
+			}
+			public name.levering.ryan.sparql.common.Statement createStatement (name.levering.ryan.sparql.common.Resource subject, name.levering.ryan.sparql.common.URI @predicate, name.levering.ryan.sparql.common.Value @object) {
+				return new Stmt(subject, predicate, @object); 
+			}
+			
+			class Stmt : name.levering.ryan.sparql.common.Statement {
+				name.levering.ryan.sparql.common.Resource subject;
+				name.levering.ryan.sparql.common.URI predicate;
+				name.levering.ryan.sparql.common.Value @object;
+				public Stmt(name.levering.ryan.sparql.common.Resource subject, name.levering.ryan.sparql.common.URI @predicate, name.levering.ryan.sparql.common.Value @object) {
 					this.subject = subject;
 					this.predicate = predicate;
 					this.@object = @object;
 				}
-				public Stmt(org.openrdf.model.Resource subject, org.openrdf.model.URI @predicate, org.openrdf.model.Value @object, org.openrdf.model.Resource graph) {
-					this.subject = subject;
-					this.predicate = predicate;
-					this.@object = @object;
-					this.graph = graph;
-				}
-				public org.openrdf.model.Resource getSubject() { return subject; }
-				public org.openrdf.model.URI getPredicate() { return predicate; }
-				public org.openrdf.model.Value getObject() { return @object; }
-				public org.openrdf.model.Resource getContext() { return graph; }
+				public name.levering.ryan.sparql.common.Resource getSubject() { return subject; }
+				public name.levering.ryan.sparql.common.URI getPredicate() { return predicate; }
+				public name.levering.ryan.sparql.common.Value getObject() { return @object; }
 				public bool equals(object other) {
-					org.openrdf.model.Statement s = (org.openrdf.model.Statement)other;
+					name.levering.ryan.sparql.common.Statement s = (name.levering.ryan.sparql.common.Statement)other;
 					return getSubject().Equals(s.getSubject())
 						&& getPredicate().Equals(s.getPredicate())
-						&& getObject().Equals(s.getObject())
-						&& getContext().Equals(s.getContext());
+						&& getObject().Equals(s.getObject());
 				}
 				public int hashCode() { return getSubject().GetHashCode(); }
 			}
@@ -623,15 +647,15 @@ namespace SemWeb.Query {
 				return new Entity(SparqlEngine.BNodePersistUri + ":" + id);
 			}
 			
-			public static org.openrdf.model.Value Wrap(Resource res, Hashtable cache) {
+			public static name.levering.ryan.sparql.common.Value Wrap(Resource res, Hashtable cache) {
 				if (cache.ContainsKey(res))
-					return (org.openrdf.model.Value)cache[res];
-				org.openrdf.model.Value value = Wrap(res);
+					return (name.levering.ryan.sparql.common.Value)cache[res];
+				name.levering.ryan.sparql.common.Value value = Wrap(res);
 				cache[res] = value;
 				return value;
 			}
 
-			public static org.openrdf.model.Value Wrap(Resource res) {
+			public static name.levering.ryan.sparql.common.Value Wrap(Resource res) {
 				if (res is Literal)
 					return new LiteralWrapper((Literal)res);
 				else if (res.Uri == null)
@@ -705,80 +729,90 @@ namespace SemWeb.Query {
 		
 		class GraphStatementWrapper : GraphStatement {
 			public readonly Statement s;
-			org.openrdf.model.Value S;
-			org.openrdf.model.URI P;
-			org.openrdf.model.Value O;
-			org.openrdf.model.URI G;
+			name.levering.ryan.sparql.common.Value S;
+			name.levering.ryan.sparql.common.URI P;
+			name.levering.ryan.sparql.common.Value O;
+			name.levering.ryan.sparql.common.URI G;
 			
 			public GraphStatementWrapper(Statement statement, Hashtable cache) {
 				s = statement;
 				S = RdfSourceWrapper.Wrap(s.Subject, cache);
 				if (s.Predicate.Uri == null)
 					throw new QueryExecutionException("Statement's predicate is a blank node.");
-				P = RdfSourceWrapper.Wrap(s.Predicate, cache) as org.openrdf.model.URI;
+				P = RdfSourceWrapper.Wrap(s.Predicate, cache) as name.levering.ryan.sparql.common.URI;
 				O = RdfSourceWrapper.Wrap(s.Object, cache);
-				G = RdfSourceWrapper.Wrap(s.Meta, cache) as org.openrdf.model.URI;
+				G = RdfSourceWrapper.Wrap(s.Meta, cache) as name.levering.ryan.sparql.common.URI;
 			}
 			
-			public org.openrdf.model.URI getGraphName() { return G; }
+			public name.levering.ryan.sparql.common.URI getGraphName() { return G; }
 			
-			public org.openrdf.model.Value getSubject() { return S; }
+			public name.levering.ryan.sparql.common.Value getSubject() { return S; }
 	
-			public org.openrdf.model.URI getPredicate() { return P; }
+			public name.levering.ryan.sparql.common.URI getPredicate() { return P; }
 				
-			public org.openrdf.model.Value getObject() { return O; }
+			public name.levering.ryan.sparql.common.Value getObject() { return O; }
 		}
 		
-		class BNodeWrapper : java.lang.Object, org.openrdf.model.BNode {
+		class BNodeWrapper : java.lang.Object, name.levering.ryan.sparql.common.BNode {
 			public BNode r;
 			public BNodeWrapper(BNode res) { r = res; }
-			public string getID() { throw new NotSupportedException(); }
-			public override bool equals(object other) {
-				if (!(other is BNodeWrapper)) return false;
-				return r.Equals(((BNodeWrapper)other).r);
+			public string getID() {
+				if (r.LocalName != null) return r.LocalName;
+				return r.GetHashCode().ToString();
 			}
-			public override int hashCode() { return r.GetHashCode(); }
+			public override bool equals(object other) {
+				if (other is BNodeWrapper)
+					return r.Equals(((BNodeWrapper)other).r);
+				if (other is name.levering.ryan.sparql.common.BNode)
+					return getID().Equals(((name.levering.ryan.sparql.common.BNode)other).getID());
+				return false;
+			}
+			public override int hashCode() {
+					if (r.LocalName != null) java.lang.String.instancehelper_hashCode(getID());
+					return r.GetHashCode();
+			}
+			public object getNative() { return r; }
 		}
 	
-		class URIWrapper : java.lang.Object, org.openrdf.model.URI {
+		class URIWrapper : java.lang.Object, name.levering.ryan.sparql.common.URI {
 			public Entity r;
 			int hc;
 			public URIWrapper(Entity res) { r = res; hc = java.lang.String.instancehelper_hashCode(r.Uri); }
-			public string getLocalName() { return ""; }
-			public string getNamespace() { return r.Uri; }
-			string org.openrdf.model.URI.toString() { return r.Uri; }
+			public string getURI() { return r.Uri; }
 			public override string toString() { return r.Uri; }
 			public override bool equals(object other) {
 				if (other is URIWrapper)
 					return r.Equals(((URIWrapper)other).r);
-				else if (other is org.openrdf.model.URI)
-					return r.Uri == ((org.openrdf.model.URI)other).toString();
+				else if (other is name.levering.ryan.sparql.common.URI)
+					return r.Uri == ((name.levering.ryan.sparql.common.URI)other).getURI();
 				else
 					return false;
 			}
 			public override int hashCode() { return hc; }
+			public object getNative() { return r.Uri; }
 		}
 	
-		class LiteralWrapper : java.lang.Object, org.openrdf.model.Literal {
+		class LiteralWrapper : java.lang.Object, name.levering.ryan.sparql.common.Literal {
 			public Literal r;
 			int hc;
 			public LiteralWrapper(Literal res) { r = res; hc = java.lang.String.instancehelper_hashCode(r.Value); }
-			public org.openrdf.model.URI getDatatype() { if (r.DataType == null) return null; return new URIWrapper(r.DataType); }
+			public name.levering.ryan.sparql.common.URI getDatatype() { if (r.DataType == null) return null; return new URIWrapper(r.DataType); }
 			public string getLabel() { return r.Value; }
 			public string getLanguage() { return r.Language; }
 			public override bool equals(object other) {
 				if (other is LiteralWrapper)
 					return r.Equals(((LiteralWrapper)other).r);
-				else if (other is org.openrdf.model.Literal)
-					return r.Equals(GetLiteral((org.openrdf.model.Literal)other));
+				else if (other is name.levering.ryan.sparql.common.Literal)
+					return r.Equals(GetLiteral((name.levering.ryan.sparql.common.Literal)other));
 				return false;
 			}
 			public override int hashCode() { return hc; }
-			static Literal GetLiteral(org.openrdf.model.Literal literal) {
+			static Literal GetLiteral(name.levering.ryan.sparql.common.Literal literal) {
 				return new Literal(literal.getLabel(), literal.getLanguage(),
 					literal.getDatatype() == null ? null
-						: literal.getDatatype().toString());
+						: literal.getDatatype().getURI());
 			}
+			public object getNative() { return r; }
 		}
 		
 		class ExtFuncWrapper : name.levering.ryan.sparql.logic.function.ExternalFunctionFactory, name.levering.ryan.sparql.logic.function.ExternalFunction {
@@ -790,11 +824,11 @@ namespace SemWeb.Query {
 				func = f;
 			}
 			
-			public name.levering.ryan.sparql.logic.function.ExternalFunction create(name.levering.ryan.sparql.model.logic.LogicFactory logicfactory, name.levering.ryan.sparql.common.impl.SPARQLValueFactory valuefactory) {
+			public name.levering.ryan.sparql.logic.function.ExternalFunction create(name.levering.ryan.sparql.model.logic.LogicFactory logicfactory, name.levering.ryan.sparql.common.SPARQLValueFactory valuefactory) {
 				return this;
 			}
 
-			public org.openrdf.model.Value evaluate(name.levering.ryan.sparql.model.logic.ExpressionLogic[] arguments, name.levering.ryan.sparql.common.RdfBindingRow binding) {
+			public name.levering.ryan.sparql.common.Value evaluate(name.levering.ryan.sparql.model.logic.ExpressionLogic[] arguments, name.levering.ryan.sparql.common.RdfBindingRow binding) {
 				try {
 					Resource ret = func.Evaluate(source.ToResources(arguments, binding));
 					return RdfSourceWrapper.Wrap(ret);
@@ -913,7 +947,7 @@ namespace SemWeb.Query {
 				    		java.util.Set values = (java.util.Set)knownValues.get(expr);
 	                        VarKnownValuesList values2 = new VarKnownValuesList();
 				    		for (java.util.Iterator iter = values.iterator(); iter.hasNext(); ) {
-				    			Resource r = src.ToResource((org.openrdf.model.Value)iter.next());
+				    			Resource r = src.ToResource((name.levering.ryan.sparql.common.Value)iter.next());
 				    			if (r != null)
 				    				values2.Add(r);
 				    		}
@@ -921,13 +955,13 @@ namespace SemWeb.Query {
 				    		opts.VariableKnownValues[v] = values2;
 				    	}
 				    	
-				    	if (!(expr is org.openrdf.model.BNode))
+				    	if (!(expr is name.levering.ryan.sparql.common.BNode))
 				    		((VariableList)opts.DistinguishedVariables).Add(v);
 			    	}
 		    		return v;
 		    	}
 		    	
-	    		return entities ? src.ToEntity((org.openrdf.model.Value)expr) : src.ToResource((org.openrdf.model.Value)expr);
+	    		return entities ? src.ToEntity((name.levering.ryan.sparql.common.Value)expr) : src.ToResource((name.levering.ryan.sparql.common.Value)expr);
 		    }
 		    
 			protected override void extractLiteralFilters(name.levering.ryan.sparql.model.logic.ExpressionLogic node, java.util.Map literalFilters) {
@@ -953,17 +987,17 @@ namespace SemWeb.Query {
 						return;
 					
 					SparqlVariable var;
-					org.openrdf.model.Literal val;
+					name.levering.ryan.sparql.common.Literal val;
 					
 					object left = RemoveCast(b.getLeftExpression());
 					object right = RemoveCast(b.getRightExpression());
 					
-					if (left is ASTVar && right is org.openrdf.model.Literal) {
+					if (left is ASTVar && right is name.levering.ryan.sparql.common.Literal) {
 						var = (SparqlVariable)left;
-						val = (org.openrdf.model.Literal)right;
-					} else if (right is ASTVar && left is org.openrdf.model.Literal) {
+						val = (name.levering.ryan.sparql.common.Literal)right;
+					} else if (right is ASTVar && left is name.levering.ryan.sparql.common.Literal) {
 						var = (SparqlVariable)right;
-						val = (org.openrdf.model.Literal)left;
+						val = (name.levering.ryan.sparql.common.Literal)left;
 						switch (comp) {
 						case LiteralFilter.CompType.LT: comp = LiteralFilter.CompType.GE; break;
 						case LiteralFilter.CompType.LE: comp = LiteralFilter.CompType.GT; break;
@@ -974,7 +1008,7 @@ namespace SemWeb.Query {
 						return;
 					}
 					
-					object parsedvalue = new Literal(val.getLabel(), null, val.getDatatype() == null ? null : val.getDatatype().ToString()).ParseValue();
+					object parsedvalue = new Literal(val.getLabel(), null, val.getDatatype() == null ? null : val.getDatatype().getURI()).ParseValue();
 					
 					LiteralFilter filter = LiteralFilter.Create(comp, parsedvalue);
 					addLiteralFilter(var, filter, literalFilters);
@@ -992,7 +1026,7 @@ namespace SemWeb.Query {
 		    		if (inside is ASTLiteral) {
 		    			string value = ((ASTLiteral)inside).getLabel();
 		    			double doublevalue = double.Parse(value);
-		    			return new LiteralWrapper(new Literal((-doublevalue).ToString(), null, ((ASTLiteral)inside).getDatatype().ToString()));
+		    			return new LiteralWrapper(new Literal((-doublevalue).ToString(), null, ((ASTLiteral)inside).getDatatype().getURI()));
 		    		}
 		    	}
 		    	return node;

@@ -22,6 +22,8 @@
 	  in calls to AddLiteralFilter.
 	* SPARQL: Pass down LIMITs as far into the query as possible.
 	  Updated to IKVM 0.34.
+	  Updated to the latest engine upstream from Ryan Levering's
+	  SourceForge repository.
 	* doc/: Added design document, corrected a mistake
 	  reported by Peter Williams (thanks!), and added something
 	  on SparqlHttpSource to doc/query.html.
