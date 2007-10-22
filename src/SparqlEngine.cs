@@ -859,8 +859,9 @@ namespace SemWeb.Query {
 		    		else if (limit > 0)
 		    			opts.Limit = limit;
 		    		
-		    		opts.DistinguishedVariables = new VariableList();
-
+					VariableList distinguishedVars = new VariableList();
+					VariableList undistinguishedVars = new VariableList();
+					
                     opts.VariableKnownValues = new VarKnownValuesType();
 		    		
 		    		Statement[] graph = new Statement[tripleConstraints.size()];
@@ -871,14 +872,25 @@ namespace SemWeb.Query {
 		    			if (triple == null) return null;
 		    			
 						graph[i] = new Statement(null, null, null, null); // I don't understand why this should be necessary for a struct, but I get a null reference exception otherwise (yet, that didn't happen initially)
-		    			graph[i].Subject = ToRes(triple.getSubjectExpression(), knownValues, true, varMap1, varMap2, s, opts) as Entity;
-		    			graph[i].Predicate = ToRes(triple.getPredicateExpression(), knownValues, true, varMap1, varMap2, s, opts) as Entity;
-		    			graph[i].Object = ToRes(triple.getObjectExpression(), knownValues, false, varMap1, varMap2, s, opts);
+		    			graph[i].Subject = ToRes(triple.getSubjectExpression(), knownValues, true, varMap1, varMap2, s, opts, distinguishedVars, undistinguishedVars) as Entity;
+		    			graph[i].Predicate = ToRes(triple.getPredicateExpression(), knownValues, true, varMap1, varMap2, s, opts, distinguishedVars, undistinguishedVars) as Entity;
+		    			graph[i].Object = ToRes(triple.getObjectExpression(), knownValues, false, varMap1, varMap2, s, opts, distinguishedVars, undistinguishedVars);
 		    			graph[i].Meta = new Variable(); // TODO
 		    			if (graph[i].AnyNull) return new RdfBindingSetImpl();
 		    			if (!(graph[i].Subject is Variable) && !(graph[i].Predicate is Variable) && !(graph[i].Object is Variable))
 		    				return null; // we could use Contains(), but we'll just abandon the Query() path altogether
 		    		}
+
+					if (distinguishedVars.Count > 0) {
+						opts.DistinguishedVariables = distinguishedVars;
+					} else if (undistinguishedVars.Count > 0) {
+						// we don't mean to make it distinguished, but we need at least one,
+						// and for now we'll just take them all
+						opts.DistinguishedVariables = undistinguishedVars;
+					} else {
+						// no variables!
+						return null;
+					}
 
                     opts.VariableLiteralFilters = new LitFilterMap();
 		    		foreach (DictionaryEntry kv in varMap1) {
@@ -933,7 +945,7 @@ namespace SemWeb.Query {
 				}
 		    }
 		    
-		    Resource ToRes(object expr, java.util.Map knownValues, bool entities, Hashtable varMap1, Hashtable varMap2, RdfSourceWrapper src, QueryOptions opts) {
+		    Resource ToRes(object expr, java.util.Map knownValues, bool entities, Hashtable varMap1, Hashtable varMap2, RdfSourceWrapper src, QueryOptions opts, VariableList distinguishedVars, VariableList undistinguishedVars) {
 		    	if (expr is SparqlVariable) {
 		    		Variable v;
 		    		if (varMap1.ContainsKey(expr)) {
@@ -956,7 +968,9 @@ namespace SemWeb.Query {
 				    	}
 				    	
 				    	if (!(expr is name.levering.ryan.sparql.common.BNode))
-				    		((VariableList)opts.DistinguishedVariables).Add(v);
+				    		distinguishedVars.Add(v);
+						else
+							undistinguishedVars.Add(v);
 			    	}
 		    		return v;
 		    	}

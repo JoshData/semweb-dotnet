@@ -1,3 +1,10 @@
+	* SPARQL: Updated engine's conf/grammars/20070624.jjt so that
+	  bnodes as _:... aren't treated as regular qnames.
+	* SparqlEngine: When a graph pattern with no named variables
+	  but some bnode variables is being evaluated with Query(),
+	  make sure to pass at least one variable as a distinguished
+	  variable to Query().
+
 2007-10-21 Version 1.02
 
 	* Literal: Removed static Create(bool) method, which was
