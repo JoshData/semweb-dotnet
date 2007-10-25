@@ -1,4 +1,4 @@
-VERSION=1.02
+VERSION=1.021
     # don't forget to update src/AssemblyInfo.cs!!
 
 ########################

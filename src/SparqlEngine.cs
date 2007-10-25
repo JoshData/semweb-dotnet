@@ -539,16 +539,19 @@ namespace SemWeb.Query {
 			}
 	
 			public name.levering.ryan.sparql.common.Value createValue(name.levering.ryan.sparql.common.Value value) {
-				throw new NotImplementedException();
+				if (value is BNodeWrapper) return value;
+				if (value is LiteralWrapper) return value;
+				if (value is URIWrapper) return value;
+				return Wrap(ToResource(value));
 			}
 			public name.levering.ryan.sparql.common.BNode createBNode(name.levering.ryan.sparql.common.BNode value) {
-				throw new NotImplementedException();
+				return (name.levering.ryan.sparql.common.BNode)createValue(value);
 			}
 			public name.levering.ryan.sparql.common.Literal createLiteral(name.levering.ryan.sparql.common.Literal value) {
-				throw new NotImplementedException();
+				return (name.levering.ryan.sparql.common.Literal)createValue(value);
 			}
 			public name.levering.ryan.sparql.common.URI createURI(name.levering.ryan.sparql.common.URI value) {
-				throw new NotImplementedException();
+				return (name.levering.ryan.sparql.common.URI)createValue(value);
 			}
 			
 			public name.levering.ryan.sparql.common.BNode createBNode() {

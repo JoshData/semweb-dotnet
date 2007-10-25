@@ -15,7 +15,7 @@ get-sources:
 
 build-sparql:
 	diff -urN $(SPARQL_RELEASE) $(SPARQL) --exclude=.svn --exclude=.settings --exclude=META-INF > local-changes.diff || true
-	cd $(SPARQL); $(ANT) jar;
+	cd $(SPARQL); $(ANT) grammar jar;
 	mono $(IKVM) -out:sparql-core.dll -nostacktraceinfo \
 		$(SPARQL)/dist/sparql-core.jar 
 	MONO_PATH=.:$(IKVM_BIN) mono --aot -O=all sparql-core.dll
