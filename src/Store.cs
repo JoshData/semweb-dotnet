@@ -90,7 +90,11 @@ namespace SemWeb {
 				case "xml":
 					if (spec == "") throw new ArgumentException("Use: xml:filename");
 					if (output) {
-						return new RdfXmlWriter(spec);
+						#if !SILVERLIGHT
+							return new RdfXmlWriter(spec);
+						#else
+							throw new NotSupportedException("RDF/XML output is not supported in the Silverlight build of the SemWeb library.");
+						#endif
 					} else {
 						return new RdfXmlReader(spec);
 					}

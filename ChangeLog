@@ -2,6 +2,8 @@
 	  access a store, pass meta fields as Statement.DefaultMeta,
 	  rather than as a variable, because Euler requires that.
 	  Really this needs some more attention.
+	* Implemented a Silverlight build (set the preprocessor define
+	  SILVERLIGHT) which removes the dependency on the XmlDocument class.
 
 2007-10-25 Version 1.021
 

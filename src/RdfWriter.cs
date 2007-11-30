@@ -55,7 +55,11 @@ namespace SemWeb {
 		public static RdfWriter Create(string type, TextWriter output) {
 			switch (RdfReader.NormalizeMimeType(type)) {
 				case "xml":
-					return new RdfXmlWriter(output);
+					#if !SILVERLIGHT
+						return new RdfXmlWriter(output);
+					#else
+						throw new NotSupportedException("RDF/XML output is not supported by the Silverlight build of the SemWeb library.");
+					#endif
 				case "n3":
 					return new N3Writer(output);
 				default:
@@ -66,7 +70,11 @@ namespace SemWeb {
 		public static RdfWriter Create(string type, string file) {
 			switch (RdfReader.NormalizeMimeType(type)) {
 				case "xml":
-					return new RdfXmlWriter(file);
+					#if !SILVERLIGHT
+						return new RdfXmlWriter(file);
+					#else
+						throw new NotSupportedException("RDF/XML output is not supported by the Silverlight build of the SemWeb library.");
+					#endif
 				case "n3":
 					return new N3Writer(file);
 				default:

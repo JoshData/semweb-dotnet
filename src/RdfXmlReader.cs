@@ -28,10 +28,12 @@ namespace SemWeb {
 			rdfObject = "http://www.w3.org/1999/02/22-rdf-syntax-ns#object",
 			rdfStatement = "http://www.w3.org/1999/02/22-rdf-syntax-ns#Statement";
 		
+		#if !SILVERLIGHT
 		public RdfXmlReader(XmlDocument document) {
 			xml = new XmlBaseAwareReader(new XmlNodeReader(document));
 			LoadNamespaces();
 		}
+		#endif
 		
 		public RdfXmlReader(XmlReader document) {
 			XmlValidatingReader reader = new XmlValidatingReader(document); // decodes entity definitions

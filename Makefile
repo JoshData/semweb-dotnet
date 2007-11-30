@@ -22,6 +22,7 @@ ifeq "$(PROFILE)" ""
 all:
 	PROFILE=DOTNET1 make
 	PROFILE=DOTNET2 make
+	PROFILE=SILVERLIGHT make
 #	PROFILE=DOTNET3 make
 
 # If we have a PROFILE specified.
@@ -40,6 +41,11 @@ endif
 ifeq "$(PROFILE)" "DOTNET3"
 BIN=bin_linq
 MCS=gmcs -d:DOTNET3 -langversion:linq
+endif
+
+ifeq "$(PROFILE)" "SILVERLIGHT"
+BIN=bin_silverlight
+MCS=gmcs -d:SILVERLIGHT
 endif
 
 all: $(BIN)/SemWeb.dll $(BIN)/SemWeb.PostgreSQLStore.dll $(BIN)/SemWeb.MySQLStore.dll $(BIN)/SemWeb.SqliteStore.dll $(BIN)/SemWeb.Sparql.dll $(BIN)/rdfstorage.exe $(BIN)/rdfquery.exe $(BIN)/euler.exe

@@ -6,6 +6,11 @@ using System.Xml;
 
 using SemWeb;
 
+// Since this class relies on the XmlDocument class,
+// it must be excluded completely from the Silverlight
+// build.
+#if !SILVERLIGHT
+
 namespace SemWeb {
 	public class RdfXmlWriter : RdfWriter {
 	
@@ -501,5 +506,6 @@ namespace SemWeb {
 		}
 		
 	}
-
 }
+
+#endif
