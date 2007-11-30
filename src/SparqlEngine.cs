@@ -878,7 +878,7 @@ namespace SemWeb.Query {
 		    			graph[i].Subject = ToRes(triple.getSubjectExpression(), knownValues, true, varMap1, varMap2, s, opts, distinguishedVars, undistinguishedVars) as Entity;
 		    			graph[i].Predicate = ToRes(triple.getPredicateExpression(), knownValues, true, varMap1, varMap2, s, opts, distinguishedVars, undistinguishedVars) as Entity;
 		    			graph[i].Object = ToRes(triple.getObjectExpression(), knownValues, false, varMap1, varMap2, s, opts, distinguishedVars, undistinguishedVars);
-		    			graph[i].Meta = new Variable(); // TODO
+		    			graph[i].Meta = Statement.DefaultMeta; // TODO
 		    			if (graph[i].AnyNull) return new RdfBindingSetImpl();
 		    			if (!(graph[i].Subject is Variable) && !(graph[i].Predicate is Variable) && !(graph[i].Object is Variable))
 		    				return null; // we could use Contains(), but we'll just abandon the Query() path altogether
