@@ -58,6 +58,13 @@ Each directory contains the files:
 	case if you just reference them).
 	
 
+DOCUMENTATION
+-------------
+
+For more information, view doc/index.html and the API documentation
+in apidocs/index.html.
+
+
 BUILD INSTRUCTIONS
 ------------------
 
@@ -80,6 +87,23 @@ that the sources can be compiled for both .NET 1.1 and 2.0, taking
 advantage of generics.
 
 
+LICENSE
+-------
+
+The portions of this library not written by someone else are Copyright 2007
+Joshua Tauberer, and are dual-licensed under both the GNU GPL (version 2
+or later) and the Creative Commons Attribution license. See below for
+licensing information on the 3rd-party components of the library. Everything
+not listed below was written originally by me, or (as in the case of the
+binaries) derived from my source files.
+
+In short, you can use the library if the program it is incorporated
+into either 1) is licensed under the GNU GPL, or 2) credits me for
+the use of the SemWeb library. However, this does not cover any obligations
+you may have for using the components of the library derived from
+other projects.
+
+
 IMPORTED FILES FROM OTHER PROJECTS & CREDITS
 --------------------------------------------
 
@@ -92,24 +116,13 @@ See: http://sparql.sourceforge.net/
 
 IKVM*.dll are auxiliary assemblies for running the SPARQL
 engine.  IKVM was written by Jeroen Frijters.  See http://www.ikvm.net.
+The IVKM license is of a type I don't recognize off hand, so
+you will have to inspect it to see if it imposes any obligations
+on you if you distribute it.
 
 Euler.cs is adapted from Jos De Roo's JavaScript Euler inferencing
-engine.  See: http://www.agfa.com/w3c/euler/
-
-
-LICENSE
--------
-
-Copyright 2007 Joshua Tauberer.  This package is released under the 
-terms of the Creative Commons Attribution License:
-
-	http://creativecommons.org/licenses/by/2.0/
-
-The license basically means you can copy, distribute and modify this 
-package however you like, but you need to give me due credit.  I think 
-that's fair.  My interpretation of this is that it applies to both the 
-source and binary form of the library.
-
-For more information, view doc/index.html and the API documentation
-in apidocs/index.html.
-
+engine.  See: http://www.agfa.com/w3c/euler/ The original source
+code (and thus this derived file) was licensed under the W3C Software
+License, so you will have to check that to see if it imposes any
+obligations on you if you distribute it. The compiled SemWeb.dll
+contains this source code.
