@@ -4,6 +4,8 @@
 // version = '$Id: euler.js,v 1.35 2006/12/17 01:25:01 josd Exp $'
 // http://eulersharp.cvs.sourceforge.net/eulersharp/2006/02swap/euler.js?view=log
 // ---------------------------------------------------------------
+// The original Euler code is licensed under the W3C Software License.
+// This is a very liberal translation of the original code into C#.
 
 using System;
 using System.Collections;
