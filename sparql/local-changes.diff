@@ -19,13 +19,13 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/build.x
 +</project>
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/conf/grammars/20070624.jjt work-copy/conf/grammars/20070624.jjt
 --- upstream/conf/grammars/20070624.jjt	2007-10-07 07:19:16.000000000 -0400
-+++ work-copy/conf/grammars/20070624.jjt	2007-10-22 06:27:45.000000000 -0400
++++ work-copy/conf/grammars/20070624.jjt	2007-10-22 06:28:44.000000000 -0400
 @@ -144,7 +144,7 @@
  	| <#WS: ("\u0020" | "\u0009" | "\r" | "\n") >
  	| <#VARNAME: (<PN_CHARS_U> | ["0"-"9"]) (<PN_CHARS_U> | ["0"-"9"] | "\u00B7" | ["\u0300"-"\u036F"] | ["\u203F"-"\u2040"] )* >
  	| <#PN_CHARS: <PN_CHARS_U> | "-" | ["0"-"9"] | "\u00B7" | ["\u0300"-"\u036F"] | ["\u203F"-"\u2040"] >
 -	| <#PN_PREFIX: <PN_CHARS_U> ( (<PN_CHARS> | ".")* <PN_CHARS> )? >
-+	| <#PN_PREFIX: ( "_" (<PN_CHARS> | ".")* <PN_CHARS> ) | ( <PN_CHARS_BASE> ( (<PN_CHARS> | ".")* <PN_CHARS> )? ) >
++	| <#PN_PREFIX: ( "_" (<PN_CHARS> | ".")* <PN_CHARS> ) | ( <PN_CHARS_BASE> ( (<PN_CHARS> | ".")* <PN_CHARS> )? ) > /* don't accept the underscore alone because that is for BNODE_LABEL */
  	| <#PN_LOCAL: (<PN_CHARS_U> | ["0"-"9"]) ( (<PN_CHARS> | ".")* <PN_CHARS> )? >
  	| <#EXPONENT: ["E","e"] (["+","-"])? (["0"-"9"])+ >
  	| <#ECHAR: "\\" ["t","b","n","r","f","\\","'","\""] >
@@ -1379,8 +1379,17 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
  
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/logic/DefaultDescribeQueryLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/DefaultDescribeQueryLogic.java
 --- upstream/src/main/name/levering/ryan/sparql/logic/DefaultDescribeQueryLogic.java	2007-10-07 07:19:19.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/logic/DefaultDescribeQueryLogic.java	2007-10-21 12:35:15.000000000 -0400
-@@ -25,6 +25,7 @@
++++ work-copy/src/main/name/levering/ryan/sparql/logic/DefaultDescribeQueryLogic.java	2007-12-29 20:50:22.000000000 -0500
+@@ -7,6 +7,8 @@
+ 
+ import java.util.ArrayList;
+ import java.util.Collection;
++import java.util.Comparator;
++import java.util.HashMap;
+ import java.util.HashSet;
+ import java.util.Iterator;
+ import java.util.List;
+@@ -25,6 +27,7 @@
  import name.levering.ryan.sparql.common.impl.RdfGraphImpl;
  import name.levering.ryan.sparql.model.GroupConstraint;
  import name.levering.ryan.sparql.model.data.DescribeQueryData;
@@ -1388,7 +1397,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
  import name.levering.ryan.sparql.model.logic.DescribeQueryLogic;
  import name.levering.ryan.sparql.model.logic.OrderExpressionLogic;
  import name.levering.ryan.sparql.model.logic.helper.SetProjectionLogic;
-@@ -82,17 +83,26 @@
+@@ -82,17 +85,26 @@
  	 * @return an RDF graph containing the formed triples
  	 */
  	public RdfGraph execute(RdfSource source) {
@@ -1418,7 +1427,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
  
  		// Now project to the solution set
  		List variables = new ArrayList();
-@@ -105,7 +115,7 @@
+@@ -105,7 +117,7 @@
  		results = this.logic.project(results, variables);
  
  		// Now apply ordering in reverse order
@@ -1427,21 +1436,21 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
  			OrderExpressionLogic orderer = (OrderExpressionLogic) orderExpressions.get(i);
  			orderer.order(results);
  		}
-@@ -147,7 +157,7 @@
+@@ -147,7 +159,7 @@
  		RdfGraphImpl graph = new RdfGraphImpl();
  		for (int i = 0; i < resources.length; i++) {
  			for (Iterator varResources = resources[i].iterator(); varResources.hasNext();) {
 -				graph.addTriples(describe((Resource) varResources.next(), source, new HashSet()));
-+				graph.addTriples(describe((Resource) varResources.next(), source, new HashSet(), 0));
++				graph.addTriples(uniq(describe((Resource) varResources.next(), source, new HashSet(), -1, 0)));
  			}
  		}
  
-@@ -163,26 +173,38 @@
+@@ -163,27 +175,101 @@
  	 * @return all of the statements that give a one-level description of a
  	 *         resource
  	 */
 -	private Collection describe(Value value, RdfSource source, Set alreadyDescribed) {
-+	private Collection describe(Value value, RdfSource source, Set alreadyDescribed, int direction) {
++	private Collection describe(Value value, RdfSource source, Set alreadyDescribed, int direction, int depth) {
  		// First add the current node to the described list
  		alreadyDescribed.add(value);
  
@@ -1463,23 +1472,57 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
 +			if (direction != -1 && direction != i) continue;
 +			
 +			Iterator statements;
-+			if (i == 0)
++			if (i == 0) // forward
 +				statements = source.getDefaultStatements(value, null, null);
-+			else
++			else // back links
 +				statements = source.getDefaultStatements(null, null, value);
++				
++			// Accumulate statements and objects by predicate.
++			HashMap statementsByPred = new HashMap();
++			HashMap objectsByPred = new HashMap();
 +				
 +			while (statements.hasNext()) {
 +				LenientStatement statement = (LenientStatement) statements.next();
++				
++				Value predicate = statement.getPredicate();
++				
++				if (!statementsByPred.containsKey(predicate)) {
++					statementsByPred.put(predicate, new ArrayList());
++					objectsByPred.put(predicate, new HashSet());
++				}
++				
++				((ArrayList)statementsByPred.get(predicate)).add(statement);
++				
++				Value object;
++				if (i == 0)
++					object = statement.getObject();
++				else
++					object = statement.getSubject();
 +
-+				// If the statement points to a blank node, recurse and describe
-+				// that. But only do forward-links on bnodes.
-+				if (statement.getObject() instanceof BNode) {
++				// If the statement points to a blank node, add it to the list objects to describe.
++				if (object instanceof BNode) {
 +					// Check if we covered the blank node already to prevent loops
-+					if (!alreadyDescribed.contains(statement.getObject())) {
-+						descriptions.addAll(describe(statement.getObject(), source, alreadyDescribed, 0));
++					if (!alreadyDescribed.contains(object)) {
++						((HashSet)objectsByPred.get(predicate)).add(object);
++					}
++				}
++			}
++			
++			// Don't include predicates for backlinks that have too many statement instances.
++			for (Iterator si = statementsByPred.keySet().iterator(); si.hasNext(); ) {
++				Object predicate = si.next();
++				ArrayList slist = (ArrayList)statementsByPred.get(predicate);
++				if ((i == 0 && slist.size() < (1024>>depth)) || (slist.size() < (512>>depth))) {
++					// Add all of the statements for this predicate.
++					descriptions.addAll(slist);
++					
++					// For each of the bnodes on the other end of the statement
++					// that haven't yet been described (checked above), add
++					// recursive descriptions for them too.
++					for (Iterator j = ((HashSet)objectsByPred.get(predicate)).iterator(); j.hasNext(); ) {
++						descriptions.addAll(describe((Value)j.next(), source, alreadyDescribed, direction, depth+1));
 +					}
  				}
-+				descriptions.add(statement);
  			}
 -			descriptions.add(statements.next());
  		}
@@ -1487,6 +1530,35 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
  		return descriptions;
  	}
  
++	/**
++	 * Makes a collection of statements unique by removing duplicate elements.
++	 * This preserves the order of the list and keeps the first occurrences of elements.
++	 */
++	private Collection uniq(Collection x) {
++		HashSet y = new HashSet();
++		Collection z = new ArrayList();
++		for (Iterator i = x.iterator(); i.hasNext(); ) {
++			LenientStatement a = (LenientStatement)i.next();
++			StatementWrapper w = new StatementWrapper(a);
++			if (y.contains(w)) continue;
++			y.add(w);
++			z.add(a);
++		}
++		return z;
++	}
++	
++	private class StatementWrapper {
++		LenientStatement s;
++		public StatementWrapper(LenientStatement s) { this.s = s; }
++		public int hashCode() {
++			return s.getSubject().hashCode() ^ s.getPredicate().hashCode() ^ s.getObject().hashCode();
++		}
++		public boolean equals(Object other) {
++			StatementWrapper t = (StatementWrapper)other;
++			return s.getSubject().equals(t.s.getSubject()) && s.getPredicate().equals(t.s.getPredicate()) && s.getObject().equals(t.s.getObject());
++		}
++	}
+ }
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/logic/DefaultGraphTranslationLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/DefaultGraphTranslationLogic.java
 --- upstream/src/main/name/levering/ryan/sparql/logic/DefaultGraphTranslationLogic.java	2007-10-07 07:19:19.000000000 -0400
 +++ work-copy/src/main/name/levering/ryan/sparql/logic/DefaultGraphTranslationLogic.java	2007-10-21 12:35:15.000000000 -0400
@@ -4763,7 +4835,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
  	public String toString() {
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/parser/model/SPARQLParserTreeConstants.java work-copy/src/main/name/levering/ryan/sparql/parser/model/SPARQLParserTreeConstants.java
 --- upstream/src/main/name/levering/ryan/sparql/parser/model/SPARQLParserTreeConstants.java	2007-10-07 07:19:57.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/parser/model/SPARQLParserTreeConstants.java	2007-10-22 06:22:37.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/parser/model/SPARQLParserTreeConstants.java	2007-12-29 20:49:50.000000000 -0500
 @@ -1,141 +1,139 @@
 -/* Generated By:JJTree: Do not edit this line. C:/workspaces/sparql/SPARQL Engine Trunk/src/main/name/levering/ryan/sparql/parser/model\SPARQLParserTreeConstants.java */
 -
@@ -5137,7 +5209,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
      public Object getNative() {
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/parser/SPARQLParserConstants.java work-copy/src/main/name/levering/ryan/sparql/parser/SPARQLParserConstants.java
 --- upstream/src/main/name/levering/ryan/sparql/parser/SPARQLParserConstants.java	2007-10-07 07:19:57.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/parser/SPARQLParserConstants.java	2007-10-22 06:22:39.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/parser/SPARQLParserConstants.java	2007-12-29 20:49:52.000000000 -0500
 @@ -1,139 +1,136 @@
 -/* Generated By:JJTree&JavaCC: Do not edit this line. SPARQLParserConstants.java */
 -package name.levering.ryan.sparql.parser;
@@ -5416,7 +5488,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
 +}
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/parser/SPARQLParser.java work-copy/src/main/name/levering/ryan/sparql/parser/SPARQLParser.java
 --- upstream/src/main/name/levering/ryan/sparql/parser/SPARQLParser.java	2007-10-07 07:19:39.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/parser/SPARQLParser.java	2007-10-22 06:22:39.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/parser/SPARQLParser.java	2007-12-29 20:49:53.000000000 -0500
 @@ -1,4422 +1,3182 @@
 -/* Generated By:JJTree&JavaCC: Do not edit this line. SPARQLParser.java */
 -package name.levering.ryan.sparql.parser;
@@ -11683,10 +11755,6 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
 +
 +  final public void GraphTerm() throws ParseException {
 +    switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-+    case BNODE_LABEL:
-+    case ANON:
-+      BlankNode();
-+      break;
 +    case IRI_REF:
 +    case PNAME_NS:
 +    case QNAME:
@@ -11714,6 +11782,10 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
 +    case 92:
 +    case 93:
 +      BooleanLiteral();
++      break;
++    case BNODE_LABEL:
++    case ANON:
++      BlankNode();
 +      break;
 +    case NIL:
 +                      ASTEmptyNode jjtn001 = new ASTEmptyNode(JJTEMPTYNODE);
@@ -13021,8 +13093,8 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
 +}
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/parser/SPARQLParserTokenManager.java work-copy/src/main/name/levering/ryan/sparql/parser/SPARQLParserTokenManager.java
 --- upstream/src/main/name/levering/ryan/sparql/parser/SPARQLParserTokenManager.java	2007-10-07 07:19:57.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/parser/SPARQLParserTokenManager.java	2007-10-22 06:22:39.000000000 -0400
-@@ -1,3352 +1,3352 @@
++++ work-copy/src/main/name/levering/ryan/sparql/parser/SPARQLParserTokenManager.java	2007-12-29 20:49:53.000000000 -0500
+@@ -1,3660 +1,3997 @@
 -/* Generated By:JJTree&JavaCC: Do not edit this line. SPARQLParserTokenManager.java */
 -package name.levering.ryan.sparql.parser;
 -
@@ -13102,54 +13174,54 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
 -}
 +   {
 +      case 0:
-+         if ((active0 & 0x1e3ffdf000000000L) != 0L || (active1 & 0x37ff0002L) != 0L)
-+            return 337;
 +         if ((active1 & 0x4L) != 0L)
-+            return 338;
-+         if ((active0 & 0x2000000000000000L) != 0L)
-+            return 339;
++            return 388;
 +         if ((active0 & 0x100000000000000L) != 0L)
-+            return 340;
++            return 389;
++         if ((active0 & 0x1e3ffdf000000000L) != 0L || (active1 & 0x37ff0002L) != 0L)
++            return 390;
++         if ((active0 & 0x2000000000000000L) != 0L)
++            return 391;
 +         if ((active1 & 0xc00L) != 0L)
-+            return 341;
++            return 392;
 +         return -1;
 +      case 1:
 +         if ((active0 & 0x1e3ffdf000000000L) != 0L || (active1 & 0x37ff0000L) != 0L)
-+            return 337;
++            return 390;
 +         if ((active1 & 0x800L) != 0L)
-+            return 341;
++            return 392;
 +         return -1;
 +      case 2:
 +         if ((active0 & 0x1e3dfdf000000000L) != 0L || (active1 & 0x37ff0000L) != 0L)
-+            return 337;
++            return 390;
 +         return -1;
 +      case 3:
 +         if ((active0 & 0x1e39edf000000000L) != 0L || (active1 & 0x37fe0000L) != 0L)
-+            return 337;
++            return 390;
 +         return -1;
 +      case 4:
 +         if ((active0 & 0x1e31cde000000000L) != 0L || (active1 & 0x27fc0000L) != 0L)
-+            return 337;
++            return 390;
 +         return -1;
 +      case 5:
 +         if ((active0 & 0x12200de000000000L) != 0L || (active1 & 0x32c0000L) != 0L)
-+            return 337;
++            return 390;
 +         return -1;
 +      case 6:
 +         if ((active0 & 0x2000d8000000000L) != 0L || (active1 & 0x32c0000L) != 0L)
-+            return 337;
++            return 390;
 +         return -1;
 +      case 7:
 +         if ((active0 & 0x2000c8000000000L) != 0L || (active1 & 0x22c0000L) != 0L)
-+            return 337;
++            return 390;
 +         return -1;
 +      case 8:
 +         if ((active0 & 0x40000000000L) != 0L || (active1 & 0x2040000L) != 0L)
-+            return 337;
++            return 390;
 +         return -1;
 +      case 9:
 +         if ((active1 & 0x40000L) != 0L)
-+            return 337;
++            return 390;
 +         return -1;
 +      default :
 +         return -1;
@@ -13830,7 +13902,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
 +      case 38:
 +         return jjMoveStringLiteralDfa1_0(0x0L, 0x80L);
 +      case 40:
-+         return jjStartNfaWithStates_0(0, 61, 339);
++         return jjStartNfaWithStates_0(0, 61, 391);
 +      case 41:
 +         return jjStopAtPos(0, 63);
 +      case 42:
@@ -13842,7 +13914,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
 +      case 45:
 +         return jjStopAtPos(0, 69);
 +      case 46:
-+         return jjStartNfaWithStates_0(0, 56, 340);
++         return jjStartNfaWithStates_0(0, 56, 389);
 +      case 47:
 +         return jjStopAtPos(0, 78);
 +      case 59:
@@ -13856,7 +13928,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
 +         jjmatchedKind = 76;
 +         return jjMoveStringLiteralDfa1_0(0x0L, 0x2000L);
 +      case 91:
-+         return jjStartNfaWithStates_0(0, 66, 338);
++         return jjStartNfaWithStates_0(0, 66, 388);
 +      case 93:
 +         return jjStopAtPos(0, 67);
 +      case 94:
@@ -13937,7 +14009,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
 +         if ((active1 & 0x200L) != 0L)
 +            return jjStopAtPos(1, 73);
 +         else if ((active1 & 0x800L) != 0L)
-+            return jjStartNfaWithStates_0(1, 75, 341);
++            return jjStartNfaWithStates_0(1, 75, 392);
 +         else if ((active1 & 0x2000L) != 0L)
 +            return jjStopAtPos(1, 77);
 +         break;
@@ -13981,7 +14053,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
 +      case 89:
 +      case 121:
 +         if ((active0 & 0x2000000000000L) != 0L)
-+            return jjStartNfaWithStates_0(1, 49, 337);
++            return jjStartNfaWithStates_0(1, 49, 390);
 +         break;
 +      case 124:
 +         if ((active1 & 0x40L) != 0L)
@@ -14012,7 +14084,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
 +      case 67:
 +      case 99:
 +         if ((active0 & 0x4000000000000L) != 0L)
-+            return jjStartNfaWithStates_0(2, 50, 337);
++            return jjStartNfaWithStates_0(2, 50, 390);
 +         break;
 +      case 68:
 +      case 100:
@@ -14032,7 +14104,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
 +      case 75:
 +      case 107:
 +         if ((active0 & 0x100000000000L) != 0L)
-+            return jjStartNfaWithStates_0(2, 44, 337);
++            return jjStartNfaWithStates_0(2, 44, 390);
 +         break;
 +      case 76:
 +      case 108:
@@ -14049,7 +14121,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
 +      case 82:
 +      case 114:
 +         if ((active1 & 0x10000L) != 0L)
-+            return jjStartNfaWithStates_0(2, 80, 337);
++            return jjStartNfaWithStates_0(2, 80, 390);
 +         break;
 +      case 83:
 +      case 115:
@@ -14090,9 +14162,9 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
 +      case 69:
 +      case 101:
 +         if ((active0 & 0x1000000000L) != 0L)
-+            return jjStartNfaWithStates_0(3, 36, 337);
++            return jjStartNfaWithStates_0(3, 36, 390);
 +         else if ((active1 & 0x10000000L) != 0L)
-+            return jjStartNfaWithStates_0(3, 92, 337);
++            return jjStartNfaWithStates_0(3, 92, 390);
 +         return jjMoveStringLiteralDfa4_0(active0, 0x1404000000000L, active1, 0x4200000L);
 +      case 70:
 +      case 102:
@@ -14114,7 +14186,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
 +      case 77:
 +      case 109:
 +         if ((active0 & 0x200000000000L) != 0L)
-+            return jjStartNfaWithStates_0(3, 45, 337);
++            return jjStartNfaWithStates_0(3, 45, 390);
 +         break;
 +      case 78:
 +      case 110:
@@ -14162,28 +14234,28 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
 +      case 68:
 +      case 100:
 +         if ((active0 & 0x400000000000L) != 0L)
-+            return jjStartNfaWithStates_0(4, 46, 337);
++            return jjStartNfaWithStates_0(4, 46, 390);
 +         else if ((active1 & 0x100000L) != 0L)
-+            return jjStartNfaWithStates_0(4, 84, 337);
++            return jjStartNfaWithStates_0(4, 84, 390);
 +         break;
 +      case 69:
 +      case 101:
 +         if ((active0 & 0x800000000000L) != 0L)
-+            return jjStartNfaWithStates_0(4, 47, 337);
++            return jjStartNfaWithStates_0(4, 47, 390);
 +         else if ((active1 & 0x20000000L) != 0L)
-+            return jjStartNfaWithStates_0(4, 93, 337);
++            return jjStartNfaWithStates_0(4, 93, 390);
 +         return jjMoveStringLiteralDfa5_0(active0, 0x1020000000000000L, active1, 0L);
 +      case 72:
 +      case 104:
 +         if ((active0 & 0x400000000000000L) != 0L)
-+            return jjStartNfaWithStates_0(4, 58, 337);
++            return jjStartNfaWithStates_0(4, 58, 390);
 +         break;
 +      case 73:
 +      case 105:
 +         if ((active1 & 0x400000L) != 0L)
-+            return jjStartNfaWithStates_0(4, 86, 337);
++            return jjStartNfaWithStates_0(4, 86, 390);
 +         else if ((active1 & 0x800000L) != 0L)
-+            return jjStartNfaWithStates_0(4, 87, 337);
++            return jjStartNfaWithStates_0(4, 87, 390);
 +         return jjMoveStringLiteralDfa5_0(active0, 0xa000000000L, active1, 0L);
 +      case 77:
 +      case 109:
@@ -14191,7 +14263,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
 +      case 78:
 +      case 110:
 +         if ((active0 & 0x800000000000000L) != 0L)
-+            return jjStartNfaWithStates_0(4, 59, 337);
++            return jjStartNfaWithStates_0(4, 59, 390);
 +         break;
 +      case 79:
 +      case 111:
@@ -14199,17 +14271,17 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
 +      case 82:
 +      case 114:
 +         if ((active0 & 0x1000000000000L) != 0L)
-+            return jjStartNfaWithStates_0(4, 48, 337);
++            return jjStartNfaWithStates_0(4, 48, 390);
 +         return jjMoveStringLiteralDfa5_0(active0, 0x80000000000L, active1, 0L);
 +      case 84:
 +      case 116:
 +         if ((active0 & 0x10000000000000L) != 0L)
-+            return jjStartNfaWithStates_0(4, 52, 337);
++            return jjStartNfaWithStates_0(4, 52, 390);
 +         return jjMoveStringLiteralDfa5_0(active0, 0x40000000000L, active1, 0x2280000L);
 +      case 88:
 +      case 120:
 +         if ((active1 & 0x4000000L) != 0L)
-+            return jjStartNfaWithStates_0(4, 90, 337);
++            return jjStartNfaWithStates_0(4, 90, 390);
 +         break;
 +      default :
 +         break;
@@ -14242,19 +14314,19 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
 +      case 82:
 +      case 114:
 +         if ((active0 & 0x1000000000000000L) != 0L)
-+            return jjStartNfaWithStates_0(5, 60, 337);
++            return jjStartNfaWithStates_0(5, 60, 390);
 +         return jjMoveStringLiteralDfa6_0(active0, 0x40000000000L, active1, 0L);
 +      case 84:
 +      case 116:
 +         if ((active0 & 0x4000000000L) != 0L)
-+            return jjStartNfaWithStates_0(5, 38, 337);
++            return jjStartNfaWithStates_0(5, 38, 390);
 +         else if ((active0 & 0x20000000000000L) != 0L)
-+            return jjStartNfaWithStates_0(5, 53, 337);
++            return jjStartNfaWithStates_0(5, 53, 390);
 +         break;
 +      case 88:
 +      case 120:
 +         if ((active0 & 0x2000000000L) != 0L)
-+            return jjStartNfaWithStates_0(5, 37, 337);
++            return jjStartNfaWithStates_0(5, 37, 390);
 +         break;
 +      case 89:
 +      case 121:
@@ -14287,12 +14359,12 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
 +      case 68:
 +      case 100:
 +         if ((active0 & 0x10000000000L) != 0L)
-+            return jjStartNfaWithStates_0(6, 40, 337);
++            return jjStartNfaWithStates_0(6, 40, 390);
 +         break;
 +      case 75:
 +      case 107:
 +         if ((active1 & 0x1000000L) != 0L)
-+            return jjStartNfaWithStates_0(6, 88, 337);
++            return jjStartNfaWithStates_0(6, 88, 390);
 +         break;
 +      case 80:
 +      case 112:
@@ -14331,24 +14403,24 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
 +      case 69:
 +      case 101:
 +         if ((active0 & 0x80000000000L) != 0L)
-+            return jjStartNfaWithStates_0(7, 43, 337);
++            return jjStartNfaWithStates_0(7, 43, 390);
 +         else if ((active1 & 0x80000L) != 0L)
-+            return jjStartNfaWithStates_0(7, 83, 337);
++            return jjStartNfaWithStates_0(7, 83, 390);
 +         break;
 +      case 76:
 +      case 108:
 +         if ((active0 & 0x200000000000000L) != 0L)
-+            return jjStartNfaWithStates_0(7, 57, 337);
++            return jjStartNfaWithStates_0(7, 57, 390);
 +         break;
 +      case 77:
 +      case 109:
 +         if ((active1 & 0x200000L) != 0L)
-+            return jjStartNfaWithStates_0(7, 85, 337);
++            return jjStartNfaWithStates_0(7, 85, 390);
 +         break;
 +      case 84:
 +      case 116:
 +         if ((active0 & 0x8000000000L) != 0L)
-+            return jjStartNfaWithStates_0(7, 39, 337);
++            return jjStartNfaWithStates_0(7, 39, 390);
 +         break;
 +      default :
 +         break;
@@ -14372,12 +14444,12 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
 +      case 76:
 +      case 108:
 +         if ((active1 & 0x2000000L) != 0L)
-+            return jjStartNfaWithStates_0(8, 89, 337);
++            return jjStartNfaWithStates_0(8, 89, 390);
 +         break;
 +      case 84:
 +      case 116:
 +         if ((active0 & 0x40000000000L) != 0L)
-+            return jjStartNfaWithStates_0(8, 42, 337);
++            return jjStartNfaWithStates_0(8, 42, 390);
 +         break;
 +      default :
 +         break;
@@ -14417,7 +14489,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
 +      case 83:
 +      case 115:
 +         if ((active1 & 0x40000L) != 0L)
-+            return jjStartNfaWithStates_0(10, 82, 337);
++            return jjStartNfaWithStates_0(10, 82, 390);
 +         break;
 +      default :
 +         break;
@@ -17107,7 +17179,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
 +{
 +   int[] nextStates;
 +   int startsAt = 0;
-+   jjnewStateCnt = 337;
++   jjnewStateCnt = 388;
 +   int i = 1;
 +   jjstateSet[0] = startState;
 +   int j, kind = 0x7fffffff;
@@ -17130,7 +17202,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
 +                     jjCheckNAddStates(0, 6);
 +                  }
 +                  else if (curChar == 46)
-+                     jjCheckNAddTwoStates(332, 333);
++                     jjCheckNAddTwoStates(383, 384);
 +                  else if (curChar == 58)
 +                  {
 +                     if (kind > 10)
@@ -17154,40 +17226,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
 +                  else if (curChar == 39)
 +                     jjCheckNAddStates(14, 16);
 +                  break;
-+               case 338:
-+               case 190:
-+                  if ((0x100002600L & l) != 0L)
-+                     jjCheckNAddTwoStates(190, 191);
-+                  break;
-+               case 339:
-+                  if ((0x100002600L & l) != 0L)
-+                     jjCheckNAddTwoStates(187, 188);
-+                  else if (curChar == 41)
-+                  {
-+                     if (kind > 23)
-+                        kind = 23;
-+                  }
-+                  break;
-+               case 340:
-+                  if ((0x3ff000000000000L & l) != 0L)
-+                     jjCheckNAddTwoStates(333, 334);
-+                  if ((0x3ff000000000000L & l) != 0L)
-+                  {
-+                     if (kind > 17)
-+                        kind = 17;
-+                     jjCheckNAdd(332);
-+                  }
-+                  break;
-+               case 341:
-+                  if ((0xafffff7e00000000L & l) != 0L)
-+                     jjCheckNAddTwoStates(1, 2);
-+                  else if (curChar == 62)
-+                  {
-+                     if (kind > 9)
-+                        kind = 9;
-+                  }
-+                  break;
-+               case 337:
++               case 390:
 +                  if ((0x3ff600000000000L & l) != 0L)
 +                     jjCheckNAddStates(17, 19);
 +                  else if (curChar == 58)
@@ -17207,6 +17246,39 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
 +                     jjCheckNAdd(223);
 +                  if ((0x3ff200000000000L & l) != 0L)
 +                     jjCheckNAdd(195);
++                  break;
++               case 389:
++                  if ((0x3ff000000000000L & l) != 0L)
++                     jjCheckNAddTwoStates(384, 385);
++                  if ((0x3ff000000000000L & l) != 0L)
++                  {
++                     if (kind > 17)
++                        kind = 17;
++                     jjCheckNAdd(383);
++                  }
++                  break;
++               case 388:
++               case 190:
++                  if ((0x100002600L & l) != 0L)
++                     jjCheckNAddTwoStates(190, 191);
++                  break;
++               case 391:
++                  if ((0x100002600L & l) != 0L)
++                     jjCheckNAddTwoStates(187, 188);
++                  else if (curChar == 41)
++                  {
++                     if (kind > 23)
++                        kind = 23;
++                  }
++                  break;
++               case 392:
++                  if ((0xafffff7e00000000L & l) != 0L)
++                     jjCheckNAddTwoStates(1, 2);
++                  else if (curChar == 62)
++                  {
++                     if (kind > 9)
++                        kind = 9;
++                  }
 +                  break;
 +               case 1:
 +                  if ((0xafffff7e00000000L & l) != 0L)
@@ -17818,7 +17890,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
 +                  break;
 +               case 193:
 +                  if ((0x3ff600000000000L & l) != 0L)
-+                     jjCheckNAddStates(20, 22);
++                     jjCheckNAddStates(40, 42);
 +                  break;
 +               case 194:
 +                  if ((0x3ff200000000000L & l) != 0L)
@@ -17838,6 +17910,8 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
 +                  break;
 +               case 200:
 +               case 208:
++               case 296:
++               case 303:
 +                  if ((0x3ff000000000000L & l) != 0L)
 +                     jjCheckNAdd(201);
 +                  break;
@@ -17884,7 +17958,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
 +                  break;
 +               case 213:
 +                  if ((0x3ff000000000000L & l) != 0L)
-+                     jjCheckNAddStates(20, 22);
++                     jjCheckNAddStates(40, 42);
 +                  break;
 +               case 214:
 +                  if ((0x3ff000000000000L & l) != 0L)
@@ -17912,7 +17986,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
 +                  break;
 +               case 221:
 +                  if ((0x3ff600000000000L & l) != 0L)
-+                     jjCheckNAddStates(17, 19);
++                     jjCheckNAddStates(43, 45);
 +                  break;
 +               case 222:
 +                  if ((0x3ff200000000000L & l) != 0L)
@@ -17931,11 +18005,11 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
 +                     break;
 +                  if (kind > 11)
 +                     kind = 11;
-+                  jjCheckNAddStates(40, 42);
++                  jjCheckNAddStates(46, 48);
 +                  break;
 +               case 225:
 +                  if ((0x3ff600000000000L & l) != 0L)
-+                     jjCheckNAddStates(40, 42);
++                     jjCheckNAddStates(46, 48);
 +                  break;
 +               case 226:
 +                  if ((0x3ff200000000000L & l) != 0L && kind > 11)
@@ -17997,7 +18071,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
 +                  break;
 +               case 244:
 +                  if ((0x3ff000000000000L & l) != 0L)
-+                     jjCheckNAddStates(40, 42);
++                     jjCheckNAddStates(46, 48);
 +                  break;
 +               case 245:
 +                  if ((0x3ff000000000000L & l) != 0L)
@@ -18070,6 +18144,8 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
 +                  break;
 +               case 269:
 +               case 277:
++               case 321:
++               case 328:
 +                  if ((0x3ff000000000000L & l) != 0L)
 +                     jjCheckNAdd(270);
 +                  break;
@@ -18116,7 +18192,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
 +                  break;
 +               case 282:
 +                  if ((0x3ff000000000000L & l) != 0L)
-+                     jjCheckNAddStates(17, 19);
++                     jjCheckNAddStates(43, 45);
 +                  break;
 +               case 283:
 +                  if ((0x3ff000000000000L & l) != 0L)
@@ -18142,26 +18218,17 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
 +                  if ((0x3ff000000000000L & l) != 0L)
 +                     jjstateSet[jjnewStateCnt++] = 289;
 +                  break;
-+               case 292:
-+                  if ((0x3ff000000000000L & l) != 0L)
-+                     jjstateSet[jjnewStateCnt++] = 293;
-+                  break;
-+               case 293:
-+                  if ((0x3ff000000000000L & l) != 0L)
-+                     jjstateSet[jjnewStateCnt++] = 294;
++               case 291:
++                  if ((0x3ff600000000000L & l) != 0L)
++                     jjCheckNAddStates(20, 22);
 +                  break;
 +               case 294:
-+               case 302:
 +                  if ((0x3ff000000000000L & l) != 0L)
-+                     jjCheckNAdd(295);
++                     jjstateSet[jjnewStateCnt++] = 295;
 +                  break;
 +               case 295:
 +                  if ((0x3ff000000000000L & l) != 0L)
-+                     jjCheckNAddStates(43, 46);
-+                  break;
-+               case 296:
-+                  if ((0x3ff000000000000L & l) != 0L)
-+                     jjstateSet[jjnewStateCnt++] = 297;
++                     jjstateSet[jjnewStateCnt++] = 296;
 +                  break;
 +               case 297:
 +                  if ((0x3ff000000000000L & l) != 0L)
@@ -18183,26 +18250,26 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
 +                  if ((0x3ff000000000000L & l) != 0L)
 +                     jjstateSet[jjnewStateCnt++] = 302;
 +                  break;
-+               case 304:
++               case 302:
 +                  if ((0x3ff000000000000L & l) != 0L)
-+                     jjstateSet[jjnewStateCnt++] = 305;
++                     jjstateSet[jjnewStateCnt++] = 303;
 +                  break;
 +               case 305:
 +                  if ((0x3ff000000000000L & l) != 0L)
 +                     jjstateSet[jjnewStateCnt++] = 306;
 +                  break;
 +               case 306:
-+               case 314:
 +                  if ((0x3ff000000000000L & l) != 0L)
-+                     jjCheckNAdd(307);
++                     jjstateSet[jjnewStateCnt++] = 307;
 +                  break;
 +               case 307:
++               case 315:
 +                  if ((0x3ff000000000000L & l) != 0L)
-+                     jjCheckNAddStates(47, 50);
++                     jjCheckNAdd(308);
 +                  break;
 +               case 308:
 +                  if ((0x3ff000000000000L & l) != 0L)
-+                     jjstateSet[jjnewStateCnt++] = 309;
++                     jjCheckNAddStates(20, 22);
 +                  break;
 +               case 309:
 +                  if ((0x3ff000000000000L & l) != 0L)
@@ -18224,108 +18291,271 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
 +                  if ((0x3ff000000000000L & l) != 0L)
 +                     jjstateSet[jjnewStateCnt++] = 314;
 +                  break;
-+               case 315:
++               case 314:
++                  if ((0x3ff000000000000L & l) != 0L)
++                     jjstateSet[jjnewStateCnt++] = 315;
++                  break;
++               case 316:
++                  if ((0x3ff600000000000L & l) != 0L)
++                     jjCheckNAddStates(17, 19);
++                  break;
++               case 319:
++                  if ((0x3ff000000000000L & l) != 0L)
++                     jjstateSet[jjnewStateCnt++] = 320;
++                  break;
++               case 320:
++                  if ((0x3ff000000000000L & l) != 0L)
++                     jjstateSet[jjnewStateCnt++] = 321;
++                  break;
++               case 322:
++                  if ((0x3ff000000000000L & l) != 0L)
++                     jjstateSet[jjnewStateCnt++] = 323;
++                  break;
++               case 323:
++                  if ((0x3ff000000000000L & l) != 0L)
++                     jjstateSet[jjnewStateCnt++] = 324;
++                  break;
++               case 324:
++                  if ((0x3ff000000000000L & l) != 0L)
++                     jjstateSet[jjnewStateCnt++] = 325;
++                  break;
++               case 325:
++                  if ((0x3ff000000000000L & l) != 0L)
++                     jjstateSet[jjnewStateCnt++] = 326;
++                  break;
++               case 326:
++                  if ((0x3ff000000000000L & l) != 0L)
++                     jjstateSet[jjnewStateCnt++] = 327;
++                  break;
++               case 327:
++                  if ((0x3ff000000000000L & l) != 0L)
++                     jjstateSet[jjnewStateCnt++] = 328;
++                  break;
++               case 330:
++                  if ((0x3ff000000000000L & l) != 0L)
++                     jjstateSet[jjnewStateCnt++] = 331;
++                  break;
++               case 331:
++                  if ((0x3ff000000000000L & l) != 0L)
++                     jjstateSet[jjnewStateCnt++] = 332;
++                  break;
++               case 332:
++               case 340:
++                  if ((0x3ff000000000000L & l) != 0L)
++                     jjCheckNAdd(333);
++                  break;
++               case 333:
++                  if ((0x3ff000000000000L & l) != 0L)
++                     jjCheckNAddStates(17, 19);
++                  break;
++               case 334:
++                  if ((0x3ff000000000000L & l) != 0L)
++                     jjstateSet[jjnewStateCnt++] = 335;
++                  break;
++               case 335:
++                  if ((0x3ff000000000000L & l) != 0L)
++                     jjstateSet[jjnewStateCnt++] = 336;
++                  break;
++               case 336:
++                  if ((0x3ff000000000000L & l) != 0L)
++                     jjstateSet[jjnewStateCnt++] = 337;
++                  break;
++               case 337:
++                  if ((0x3ff000000000000L & l) != 0L)
++                     jjstateSet[jjnewStateCnt++] = 338;
++                  break;
++               case 338:
++                  if ((0x3ff000000000000L & l) != 0L)
++                     jjstateSet[jjnewStateCnt++] = 339;
++                  break;
++               case 339:
++                  if ((0x3ff000000000000L & l) != 0L)
++                     jjstateSet[jjnewStateCnt++] = 340;
++                  break;
++               case 343:
++                  if ((0x3ff000000000000L & l) != 0L)
++                     jjstateSet[jjnewStateCnt++] = 344;
++                  break;
++               case 344:
++                  if ((0x3ff000000000000L & l) != 0L)
++                     jjstateSet[jjnewStateCnt++] = 345;
++                  break;
++               case 345:
++               case 353:
++                  if ((0x3ff000000000000L & l) != 0L)
++                     jjCheckNAdd(346);
++                  break;
++               case 346:
++                  if ((0x3ff000000000000L & l) != 0L)
++                     jjCheckNAddStates(49, 52);
++                  break;
++               case 347:
++                  if ((0x3ff000000000000L & l) != 0L)
++                     jjstateSet[jjnewStateCnt++] = 348;
++                  break;
++               case 348:
++                  if ((0x3ff000000000000L & l) != 0L)
++                     jjstateSet[jjnewStateCnt++] = 349;
++                  break;
++               case 349:
++                  if ((0x3ff000000000000L & l) != 0L)
++                     jjstateSet[jjnewStateCnt++] = 350;
++                  break;
++               case 350:
++                  if ((0x3ff000000000000L & l) != 0L)
++                     jjstateSet[jjnewStateCnt++] = 351;
++                  break;
++               case 351:
++                  if ((0x3ff000000000000L & l) != 0L)
++                     jjstateSet[jjnewStateCnt++] = 352;
++                  break;
++               case 352:
++                  if ((0x3ff000000000000L & l) != 0L)
++                     jjstateSet[jjnewStateCnt++] = 353;
++                  break;
++               case 355:
++                  if ((0x3ff000000000000L & l) != 0L)
++                     jjstateSet[jjnewStateCnt++] = 356;
++                  break;
++               case 356:
++                  if ((0x3ff000000000000L & l) != 0L)
++                     jjstateSet[jjnewStateCnt++] = 357;
++                  break;
++               case 357:
++               case 365:
++                  if ((0x3ff000000000000L & l) != 0L)
++                     jjCheckNAdd(358);
++                  break;
++               case 358:
++                  if ((0x3ff000000000000L & l) != 0L)
++                     jjCheckNAddStates(53, 56);
++                  break;
++               case 359:
++                  if ((0x3ff000000000000L & l) != 0L)
++                     jjstateSet[jjnewStateCnt++] = 360;
++                  break;
++               case 360:
++                  if ((0x3ff000000000000L & l) != 0L)
++                     jjstateSet[jjnewStateCnt++] = 361;
++                  break;
++               case 361:
++                  if ((0x3ff000000000000L & l) != 0L)
++                     jjstateSet[jjnewStateCnt++] = 362;
++                  break;
++               case 362:
++                  if ((0x3ff000000000000L & l) != 0L)
++                     jjstateSet[jjnewStateCnt++] = 363;
++                  break;
++               case 363:
++                  if ((0x3ff000000000000L & l) != 0L)
++                     jjstateSet[jjnewStateCnt++] = 364;
++                  break;
++               case 364:
++                  if ((0x3ff000000000000L & l) != 0L)
++                     jjstateSet[jjnewStateCnt++] = 365;
++                  break;
++               case 366:
 +                  if (curChar != 58)
 +                     break;
 +                  if (kind > 10)
 +                     kind = 10;
 +                  jjCheckNAddTwoStates(224, 252);
 +                  break;
-+               case 316:
++               case 367:
 +                  if ((0x3ff000000000000L & l) == 0L)
 +                     break;
 +                  if (kind > 16)
 +                     kind = 16;
 +                  jjCheckNAddStates(0, 6);
 +                  break;
-+               case 317:
++               case 368:
 +                  if ((0x3ff000000000000L & l) == 0L)
 +                     break;
 +                  if (kind > 16)
 +                     kind = 16;
-+                  jjCheckNAdd(317);
++                  jjCheckNAdd(368);
 +                  break;
-+               case 318:
++               case 369:
 +                  if ((0x3ff000000000000L & l) != 0L)
-+                     jjCheckNAddTwoStates(318, 319);
++                     jjCheckNAddTwoStates(369, 370);
 +                  break;
-+               case 319:
++               case 370:
 +                  if (curChar != 46)
 +                     break;
 +                  if (kind > 17)
 +                     kind = 17;
-+                  jjCheckNAdd(320);
++                  jjCheckNAdd(371);
 +                  break;
-+               case 320:
++               case 371:
 +                  if ((0x3ff000000000000L & l) == 0L)
 +                     break;
 +                  if (kind > 17)
 +                     kind = 17;
-+                  jjCheckNAdd(320);
++                  jjCheckNAdd(371);
 +                  break;
-+               case 321:
++               case 372:
 +                  if ((0x3ff000000000000L & l) != 0L)
-+                     jjCheckNAddTwoStates(321, 322);
++                     jjCheckNAddTwoStates(372, 373);
 +                  break;
-+               case 322:
++               case 373:
 +                  if (curChar == 46)
-+                     jjCheckNAddTwoStates(323, 324);
++                     jjCheckNAddTwoStates(374, 375);
 +                  break;
-+               case 323:
++               case 374:
 +                  if ((0x3ff000000000000L & l) != 0L)
-+                     jjCheckNAddTwoStates(323, 324);
++                     jjCheckNAddTwoStates(374, 375);
 +                  break;
-+               case 325:
++               case 376:
 +                  if ((0x280000000000L & l) != 0L)
-+                     jjCheckNAdd(326);
++                     jjCheckNAdd(377);
 +                  break;
-+               case 326:
++               case 377:
 +                  if ((0x3ff000000000000L & l) == 0L)
 +                     break;
 +                  if (kind > 18)
 +                     kind = 18;
-+                  jjCheckNAdd(326);
++                  jjCheckNAdd(377);
 +                  break;
-+               case 327:
++               case 378:
 +                  if ((0x3ff000000000000L & l) != 0L)
-+                     jjCheckNAddTwoStates(327, 328);
++                     jjCheckNAddTwoStates(378, 379);
 +                  break;
-+               case 329:
++               case 380:
 +                  if ((0x280000000000L & l) != 0L)
-+                     jjCheckNAdd(330);
++                     jjCheckNAdd(381);
 +                  break;
-+               case 330:
++               case 381:
 +                  if ((0x3ff000000000000L & l) == 0L)
 +                     break;
 +                  if (kind > 18)
 +                     kind = 18;
-+                  jjCheckNAdd(330);
++                  jjCheckNAdd(381);
 +                  break;
-+               case 331:
++               case 382:
 +                  if (curChar == 46)
-+                     jjCheckNAddTwoStates(332, 333);
++                     jjCheckNAddTwoStates(383, 384);
 +                  break;
-+               case 332:
++               case 383:
 +                  if ((0x3ff000000000000L & l) == 0L)
 +                     break;
 +                  if (kind > 17)
 +                     kind = 17;
-+                  jjCheckNAdd(332);
++                  jjCheckNAdd(383);
 +                  break;
-+               case 333:
++               case 384:
 +                  if ((0x3ff000000000000L & l) != 0L)
-+                     jjCheckNAddTwoStates(333, 334);
++                     jjCheckNAddTwoStates(384, 385);
 +                  break;
-+               case 335:
++               case 386:
 +                  if ((0x280000000000L & l) != 0L)
-+                     jjCheckNAdd(336);
++                     jjCheckNAdd(387);
 +                  break;
-+               case 336:
++               case 387:
 +                  if ((0x3ff000000000000L & l) == 0L)
 +                     break;
 +                  if (kind > 18)
 +                     kind = 18;
-+                  jjCheckNAdd(336);
++                  jjCheckNAdd(387);
 +                  break;
 +               default : break;
 +            }
@@ -18339,40 +18569,42 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
 +            switch(jjstateSet[--i])
 +            {
 +               case 0:
-+                  if ((0x7fffffe87fffffeL & l) != 0L)
-+                     jjCheckNAddStates(51, 58);
++                  if ((0x7fffffe07fffffeL & l) != 0L)
++                     jjCheckNAddStates(57, 64);
 +                  else if (curChar == 92)
-+                     jjAddStates(59, 60);
++                     jjAddStates(65, 66);
++                  else if (curChar == 95)
++                     jjCheckNAddStates(67, 72);
 +                  else if (curChar == 91)
-+                     jjAddStates(61, 62);
++                     jjAddStates(73, 74);
 +                  else if (curChar == 64)
 +                     jjCheckNAdd(103);
 +                  if (curChar == 95)
 +                     jjstateSet[jjnewStateCnt++] = 3;
 +                  break;
-+               case 338:
-+               case 191:
-+                  if (curChar == 93 && kind > 24)
-+                     kind = 24;
-+                  break;
-+               case 341:
-+               case 1:
-+                  if ((0xc7fffffebfffffffL & l) != 0L)
-+                     jjCheckNAddTwoStates(1, 2);
-+                  break;
-+               case 337:
++               case 390:
 +                  if ((0x7fffffe87fffffeL & l) != 0L)
 +                     jjCheckNAdd(223);
 +                  else if (curChar == 92)
-+                     jjAddStates(63, 64);
++                     jjAddStates(75, 76);
 +                  if ((0x7fffffe87fffffeL & l) != 0L)
 +                     jjCheckNAddStates(17, 19);
 +                  else if (curChar == 92)
-+                     jjAddStates(65, 66);
++                     jjAddStates(77, 78);
 +                  if ((0x7fffffe87fffffeL & l) != 0L)
 +                     jjCheckNAdd(195);
 +                  if ((0x7fffffe87fffffeL & l) != 0L)
 +                     jjCheckNAddStates(20, 22);
++                  break;
++               case 388:
++               case 191:
++                  if (curChar == 93 && kind > 24)
++                     kind = 24;
++                  break;
++               case 392:
++               case 1:
++                  if ((0xc7fffffebfffffffL & l) != 0L)
++                     jjCheckNAddTwoStates(1, 2);
 +                  break;
 +               case 4:
 +                  if ((0x7fffffe87fffffeL & l) == 0L)
@@ -18391,11 +18623,11 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
 +                  break;
 +               case 7:
 +                  if (curChar == 92)
-+                     jjAddStates(67, 68);
++                     jjAddStates(79, 80);
 +                  break;
 +               case 8:
 +                  if ((0x20000000200000L & l) != 0L)
-+                     jjAddStates(69, 70);
++                     jjAddStates(81, 82);
 +                  break;
 +               case 9:
 +                  if ((0x7e0000007eL & l) != 0L)
@@ -18440,7 +18672,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
 +                  break;
 +               case 20:
 +                  if ((0x20000000200000L & l) != 0L)
-+                     jjAddStates(71, 72);
++                     jjAddStates(83, 84);
 +                  break;
 +               case 21:
 +                  if ((0x7e0000007eL & l) != 0L)
@@ -18489,7 +18721,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
 +                  break;
 +               case 33:
 +                  if ((0x20000000200000L & l) != 0L)
-+                     jjAddStates(73, 74);
++                     jjAddStates(85, 86);
 +                  break;
 +               case 34:
 +                  if ((0x7e0000007eL & l) != 0L)
@@ -18553,7 +18785,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
 +                  break;
 +               case 50:
 +                  if ((0x20000000200000L & l) != 0L)
-+                     jjAddStates(75, 76);
++                     jjAddStates(87, 88);
 +                  break;
 +               case 51:
 +                  if ((0x7e0000007eL & l) != 0L)
@@ -18607,7 +18839,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
 +                  break;
 +               case 63:
 +                  if ((0x20000000200000L & l) != 0L)
-+                     jjAddStates(77, 78);
++                     jjAddStates(89, 90);
 +                  break;
 +               case 64:
 +                  if ((0x7e0000007eL & l) != 0L)
@@ -18655,7 +18887,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
 +                  break;
 +               case 78:
 +                  if ((0x20000000200000L & l) != 0L)
-+                     jjAddStates(79, 80);
++                     jjAddStates(91, 92);
 +                  break;
 +               case 79:
 +                  if ((0x7e0000007eL & l) != 0L)
@@ -18709,7 +18941,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
 +                  break;
 +               case 91:
 +                  if ((0x20000000200000L & l) != 0L)
-+                     jjAddStates(81, 82);
++                     jjAddStates(93, 94);
 +                  break;
 +               case 92:
 +                  if ((0x7e0000007eL & l) != 0L)
@@ -18767,7 +18999,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
 +                  break;
 +               case 109:
 +                  if (curChar == 92)
-+                     jjAddStates(83, 84);
++                     jjAddStates(95, 96);
 +                  break;
 +               case 110:
 +                  if ((0x14404410144044L & l) != 0L)
@@ -18775,7 +19007,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
 +                  break;
 +               case 111:
 +                  if ((0x20000000200000L & l) != 0L)
-+                     jjAddStates(85, 86);
++                     jjAddStates(97, 98);
 +                  break;
 +               case 112:
 +                  if ((0x7e0000007eL & l) != 0L)
@@ -18824,7 +19056,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
 +                  break;
 +               case 126:
 +                  if (curChar == 92)
-+                     jjAddStates(87, 88);
++                     jjAddStates(99, 100);
 +                  break;
 +               case 127:
 +                  if ((0x14404410144044L & l) != 0L)
@@ -18832,7 +19064,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
 +                  break;
 +               case 128:
 +                  if ((0x20000000200000L & l) != 0L)
-+                     jjAddStates(89, 90);
++                     jjAddStates(101, 102);
 +                  break;
 +               case 129:
 +                  if ((0x7e0000007eL & l) != 0L)
@@ -18881,7 +19113,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
 +                  break;
 +               case 145:
 +                  if (curChar == 92)
-+                     jjAddStates(91, 92);
++                     jjAddStates(103, 104);
 +                  break;
 +               case 146:
 +                  if ((0x14404410144044L & l) != 0L)
@@ -18889,7 +19121,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
 +                  break;
 +               case 147:
 +                  if ((0x20000000200000L & l) != 0L)
-+                     jjAddStates(93, 94);
++                     jjAddStates(105, 106);
 +                  break;
 +               case 148:
 +                  if ((0x7e0000007eL & l) != 0L)
@@ -18938,7 +19170,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
 +                  break;
 +               case 168:
 +                  if (curChar == 92)
-+                     jjAddStates(95, 96);
++                     jjAddStates(107, 108);
 +                  break;
 +               case 169:
 +                  if ((0x14404410144044L & l) != 0L)
@@ -18946,7 +19178,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
 +                  break;
 +               case 170:
 +                  if ((0x20000000200000L & l) != 0L)
-+                     jjAddStates(97, 98);
++                     jjAddStates(109, 110);
 +                  break;
 +               case 171:
 +                  if ((0x7e0000007eL & l) != 0L)
@@ -18991,15 +19223,15 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
 +                  break;
 +               case 189:
 +                  if (curChar == 91)
-+                     jjAddStates(61, 62);
++                     jjAddStates(73, 74);
 +                  break;
 +               case 192:
-+                  if ((0x7fffffe87fffffeL & l) != 0L)
-+                     jjCheckNAddStates(51, 58);
++                  if (curChar == 95)
++                     jjCheckNAddStates(67, 72);
 +                  break;
 +               case 193:
 +                  if ((0x7fffffe87fffffeL & l) != 0L)
-+                     jjCheckNAddStates(20, 22);
++                     jjCheckNAddStates(40, 42);
 +                  break;
 +               case 194:
 +                  if ((0x7fffffe87fffffeL & l) != 0L)
@@ -19007,11 +19239,11 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
 +                  break;
 +               case 196:
 +                  if (curChar == 92)
-+                     jjAddStates(63, 64);
++                     jjAddStates(111, 112);
 +                  break;
 +               case 197:
 +                  if ((0x20000000200000L & l) != 0L)
-+                     jjAddStates(99, 100);
++                     jjAddStates(113, 114);
 +                  break;
 +               case 198:
 +                  if ((0x7e0000007eL & l) != 0L)
@@ -19023,6 +19255,8 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
 +                  break;
 +               case 200:
 +               case 208:
++               case 296:
++               case 303:
 +                  if ((0x7e0000007eL & l) != 0L)
 +                     jjCheckNAdd(201);
 +                  break;
@@ -19056,7 +19290,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
 +                  break;
 +               case 209:
 +                  if ((0x20000000200000L & l) != 0L)
-+                     jjAddStates(101, 102);
++                     jjAddStates(115, 116);
 +                  break;
 +               case 210:
 +                  if ((0x7e0000007eL & l) != 0L)
@@ -19073,7 +19307,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
 +                  break;
 +               case 213:
 +                  if ((0x7e0000007eL & l) != 0L)
-+                     jjCheckNAddStates(20, 22);
++                     jjCheckNAddStates(40, 42);
 +                  break;
 +               case 214:
 +                  if ((0x7e0000007eL & l) != 0L)
@@ -19101,7 +19335,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
 +                  break;
 +               case 221:
 +                  if ((0x7fffffe87fffffeL & l) != 0L)
-+                     jjCheckNAddStates(17, 19);
++                     jjCheckNAddStates(43, 45);
 +                  break;
 +               case 222:
 +                  if ((0x7fffffe87fffffeL & l) != 0L)
@@ -19112,11 +19346,11 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
 +                     break;
 +                  if (kind > 11)
 +                     kind = 11;
-+                  jjCheckNAddStates(40, 42);
++                  jjCheckNAddStates(46, 48);
 +                  break;
 +               case 225:
 +                  if ((0x7fffffe87fffffeL & l) != 0L)
-+                     jjCheckNAddStates(40, 42);
++                     jjCheckNAddStates(46, 48);
 +                  break;
 +               case 226:
 +                  if ((0x7fffffe87fffffeL & l) != 0L && kind > 11)
@@ -19124,11 +19358,11 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
 +                  break;
 +               case 227:
 +                  if (curChar == 92)
-+                     jjAddStates(103, 104);
++                     jjAddStates(117, 118);
 +                  break;
 +               case 228:
 +                  if ((0x20000000200000L & l) != 0L)
-+                     jjAddStates(105, 106);
++                     jjAddStates(119, 120);
 +                  break;
 +               case 229:
 +                  if ((0x7e0000007eL & l) != 0L)
@@ -19173,7 +19407,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
 +                  break;
 +               case 240:
 +                  if ((0x20000000200000L & l) != 0L)
-+                     jjAddStates(107, 108);
++                     jjAddStates(121, 122);
 +                  break;
 +               case 241:
 +                  if ((0x7e0000007eL & l) != 0L)
@@ -19190,7 +19424,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
 +                  break;
 +               case 244:
 +                  if ((0x7e0000007eL & l) != 0L)
-+                     jjCheckNAddStates(40, 42);
++                     jjCheckNAddStates(46, 48);
 +                  break;
 +               case 245:
 +                  if ((0x7e0000007eL & l) != 0L)
@@ -19222,7 +19456,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
 +                  break;
 +               case 253:
 +                  if ((0x20000000200000L & l) != 0L)
-+                     jjAddStates(109, 110);
++                     jjAddStates(123, 124);
 +                  break;
 +               case 254:
 +                  if ((0x7e0000007eL & l) != 0L)
@@ -19242,7 +19476,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
 +                     break;
 +                  if (kind > 11)
 +                     kind = 11;
-+                  jjCheckNAddStates(40, 42);
++                  jjCheckNAddStates(46, 48);
 +                  break;
 +               case 258:
 +                  if ((0x7e0000007eL & l) != 0L)
@@ -19270,11 +19504,11 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
 +                  break;
 +               case 265:
 +                  if (curChar == 92)
-+                     jjAddStates(65, 66);
++                     jjAddStates(125, 126);
 +                  break;
 +               case 266:
 +                  if ((0x20000000200000L & l) != 0L)
-+                     jjAddStates(111, 112);
++                     jjAddStates(127, 128);
 +                  break;
 +               case 267:
 +                  if ((0x7e0000007eL & l) != 0L)
@@ -19286,6 +19520,8 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
 +                  break;
 +               case 269:
 +               case 277:
++               case 321:
++               case 328:
 +                  if ((0x7e0000007eL & l) != 0L)
 +                     jjCheckNAdd(270);
 +                  break;
@@ -19319,7 +19555,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
 +                  break;
 +               case 278:
 +                  if ((0x20000000200000L & l) != 0L)
-+                     jjAddStates(113, 114);
++                     jjAddStates(129, 130);
 +                  break;
 +               case 279:
 +                  if ((0x7e0000007eL & l) != 0L)
@@ -19336,7 +19572,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
 +                  break;
 +               case 282:
 +                  if ((0x7e0000007eL & l) != 0L)
-+                     jjCheckNAddStates(17, 19);
++                     jjCheckNAddStates(43, 45);
 +                  break;
 +               case 283:
 +                  if ((0x7e0000007eL & l) != 0L)
@@ -19363,33 +19599,28 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
 +                     jjstateSet[jjnewStateCnt++] = 289;
 +                  break;
 +               case 290:
-+                  if (curChar == 92)
-+                     jjAddStates(59, 60);
++                  if ((0x7fffffe07fffffeL & l) != 0L)
++                     jjCheckNAddStates(57, 64);
 +                  break;
 +               case 291:
-+                  if ((0x20000000200000L & l) != 0L)
-+                     jjAddStates(115, 116);
++                  if ((0x7fffffe87fffffeL & l) != 0L)
++                     jjCheckNAddStates(20, 22);
 +                  break;
 +               case 292:
-+                  if ((0x7e0000007eL & l) != 0L)
-+                     jjstateSet[jjnewStateCnt++] = 293;
++                  if (curChar == 92)
++                     jjAddStates(75, 76);
 +                  break;
 +               case 293:
-+                  if ((0x7e0000007eL & l) != 0L)
-+                     jjstateSet[jjnewStateCnt++] = 294;
++                  if ((0x20000000200000L & l) != 0L)
++                     jjAddStates(131, 132);
 +                  break;
 +               case 294:
-+               case 302:
 +                  if ((0x7e0000007eL & l) != 0L)
-+                     jjCheckNAdd(295);
++                     jjstateSet[jjnewStateCnt++] = 295;
 +                  break;
 +               case 295:
 +                  if ((0x7e0000007eL & l) != 0L)
-+                     jjCheckNAddStates(43, 46);
-+                  break;
-+               case 296:
-+                  if ((0x7e0000007eL & l) != 0L)
-+                     jjstateSet[jjnewStateCnt++] = 297;
++                     jjstateSet[jjnewStateCnt++] = 296;
 +                  break;
 +               case 297:
 +                  if ((0x7e0000007eL & l) != 0L)
@@ -19411,30 +19642,30 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
 +                  if ((0x7e0000007eL & l) != 0L)
 +                     jjstateSet[jjnewStateCnt++] = 302;
 +                  break;
-+               case 303:
-+                  if ((0x20000000200000L & l) != 0L)
-+                     jjAddStates(117, 118);
++               case 302:
++                  if ((0x7e0000007eL & l) != 0L)
++                     jjstateSet[jjnewStateCnt++] = 303;
 +                  break;
 +               case 304:
-+                  if ((0x7e0000007eL & l) != 0L)
-+                     jjstateSet[jjnewStateCnt++] = 305;
++                  if ((0x20000000200000L & l) != 0L)
++                     jjAddStates(133, 134);
 +                  break;
 +               case 305:
 +                  if ((0x7e0000007eL & l) != 0L)
 +                     jjstateSet[jjnewStateCnt++] = 306;
 +                  break;
 +               case 306:
-+               case 314:
 +                  if ((0x7e0000007eL & l) != 0L)
-+                     jjCheckNAdd(307);
++                     jjstateSet[jjnewStateCnt++] = 307;
 +                  break;
 +               case 307:
++               case 315:
 +                  if ((0x7e0000007eL & l) != 0L)
-+                     jjCheckNAddStates(47, 50);
++                     jjCheckNAdd(308);
 +                  break;
 +               case 308:
 +                  if ((0x7e0000007eL & l) != 0L)
-+                     jjstateSet[jjnewStateCnt++] = 309;
++                     jjCheckNAddStates(20, 22);
 +                  break;
 +               case 309:
 +                  if ((0x7e0000007eL & l) != 0L)
@@ -19456,17 +19687,204 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
 +                  if ((0x7e0000007eL & l) != 0L)
 +                     jjstateSet[jjnewStateCnt++] = 314;
 +                  break;
-+               case 324:
-+                  if ((0x2000000020L & l) != 0L)
-+                     jjAddStates(119, 120);
++               case 314:
++                  if ((0x7e0000007eL & l) != 0L)
++                     jjstateSet[jjnewStateCnt++] = 315;
 +                  break;
-+               case 328:
-+                  if ((0x2000000020L & l) != 0L)
-+                     jjAddStates(121, 122);
++               case 316:
++                  if ((0x7fffffe87fffffeL & l) != 0L)
++                     jjCheckNAddStates(17, 19);
++                  break;
++               case 317:
++                  if (curChar == 92)
++                     jjAddStates(77, 78);
++                  break;
++               case 318:
++                  if ((0x20000000200000L & l) != 0L)
++                     jjAddStates(135, 136);
++                  break;
++               case 319:
++                  if ((0x7e0000007eL & l) != 0L)
++                     jjstateSet[jjnewStateCnt++] = 320;
++                  break;
++               case 320:
++                  if ((0x7e0000007eL & l) != 0L)
++                     jjstateSet[jjnewStateCnt++] = 321;
++                  break;
++               case 322:
++                  if ((0x7e0000007eL & l) != 0L)
++                     jjstateSet[jjnewStateCnt++] = 323;
++                  break;
++               case 323:
++                  if ((0x7e0000007eL & l) != 0L)
++                     jjstateSet[jjnewStateCnt++] = 324;
++                  break;
++               case 324:
++                  if ((0x7e0000007eL & l) != 0L)
++                     jjstateSet[jjnewStateCnt++] = 325;
++                  break;
++               case 325:
++                  if ((0x7e0000007eL & l) != 0L)
++                     jjstateSet[jjnewStateCnt++] = 326;
++                  break;
++               case 326:
++                  if ((0x7e0000007eL & l) != 0L)
++                     jjstateSet[jjnewStateCnt++] = 327;
++                  break;
++               case 327:
++                  if ((0x7e0000007eL & l) != 0L)
++                     jjstateSet[jjnewStateCnt++] = 328;
++                  break;
++               case 329:
++                  if ((0x20000000200000L & l) != 0L)
++                     jjAddStates(137, 138);
++                  break;
++               case 330:
++                  if ((0x7e0000007eL & l) != 0L)
++                     jjstateSet[jjnewStateCnt++] = 331;
++                  break;
++               case 331:
++                  if ((0x7e0000007eL & l) != 0L)
++                     jjstateSet[jjnewStateCnt++] = 332;
++                  break;
++               case 332:
++               case 340:
++                  if ((0x7e0000007eL & l) != 0L)
++                     jjCheckNAdd(333);
++                  break;
++               case 333:
++                  if ((0x7e0000007eL & l) != 0L)
++                     jjCheckNAddStates(17, 19);
 +                  break;
 +               case 334:
++                  if ((0x7e0000007eL & l) != 0L)
++                     jjstateSet[jjnewStateCnt++] = 335;
++                  break;
++               case 335:
++                  if ((0x7e0000007eL & l) != 0L)
++                     jjstateSet[jjnewStateCnt++] = 336;
++                  break;
++               case 336:
++                  if ((0x7e0000007eL & l) != 0L)
++                     jjstateSet[jjnewStateCnt++] = 337;
++                  break;
++               case 337:
++                  if ((0x7e0000007eL & l) != 0L)
++                     jjstateSet[jjnewStateCnt++] = 338;
++                  break;
++               case 338:
++                  if ((0x7e0000007eL & l) != 0L)
++                     jjstateSet[jjnewStateCnt++] = 339;
++                  break;
++               case 339:
++                  if ((0x7e0000007eL & l) != 0L)
++                     jjstateSet[jjnewStateCnt++] = 340;
++                  break;
++               case 341:
++                  if (curChar == 92)
++                     jjAddStates(65, 66);
++                  break;
++               case 342:
++                  if ((0x20000000200000L & l) != 0L)
++                     jjAddStates(139, 140);
++                  break;
++               case 343:
++                  if ((0x7e0000007eL & l) != 0L)
++                     jjstateSet[jjnewStateCnt++] = 344;
++                  break;
++               case 344:
++                  if ((0x7e0000007eL & l) != 0L)
++                     jjstateSet[jjnewStateCnt++] = 345;
++                  break;
++               case 345:
++               case 353:
++                  if ((0x7e0000007eL & l) != 0L)
++                     jjCheckNAdd(346);
++                  break;
++               case 346:
++                  if ((0x7e0000007eL & l) != 0L)
++                     jjCheckNAddStates(49, 52);
++                  break;
++               case 347:
++                  if ((0x7e0000007eL & l) != 0L)
++                     jjstateSet[jjnewStateCnt++] = 348;
++                  break;
++               case 348:
++                  if ((0x7e0000007eL & l) != 0L)
++                     jjstateSet[jjnewStateCnt++] = 349;
++                  break;
++               case 349:
++                  if ((0x7e0000007eL & l) != 0L)
++                     jjstateSet[jjnewStateCnt++] = 350;
++                  break;
++               case 350:
++                  if ((0x7e0000007eL & l) != 0L)
++                     jjstateSet[jjnewStateCnt++] = 351;
++                  break;
++               case 351:
++                  if ((0x7e0000007eL & l) != 0L)
++                     jjstateSet[jjnewStateCnt++] = 352;
++                  break;
++               case 352:
++                  if ((0x7e0000007eL & l) != 0L)
++                     jjstateSet[jjnewStateCnt++] = 353;
++                  break;
++               case 354:
++                  if ((0x20000000200000L & l) != 0L)
++                     jjAddStates(141, 142);
++                  break;
++               case 355:
++                  if ((0x7e0000007eL & l) != 0L)
++                     jjstateSet[jjnewStateCnt++] = 356;
++                  break;
++               case 356:
++                  if ((0x7e0000007eL & l) != 0L)
++                     jjstateSet[jjnewStateCnt++] = 357;
++                  break;
++               case 357:
++               case 365:
++                  if ((0x7e0000007eL & l) != 0L)
++                     jjCheckNAdd(358);
++                  break;
++               case 358:
++                  if ((0x7e0000007eL & l) != 0L)
++                     jjCheckNAddStates(53, 56);
++                  break;
++               case 359:
++                  if ((0x7e0000007eL & l) != 0L)
++                     jjstateSet[jjnewStateCnt++] = 360;
++                  break;
++               case 360:
++                  if ((0x7e0000007eL & l) != 0L)
++                     jjstateSet[jjnewStateCnt++] = 361;
++                  break;
++               case 361:
++                  if ((0x7e0000007eL & l) != 0L)
++                     jjstateSet[jjnewStateCnt++] = 362;
++                  break;
++               case 362:
++                  if ((0x7e0000007eL & l) != 0L)
++                     jjstateSet[jjnewStateCnt++] = 363;
++                  break;
++               case 363:
++                  if ((0x7e0000007eL & l) != 0L)
++                     jjstateSet[jjnewStateCnt++] = 364;
++                  break;
++               case 364:
++                  if ((0x7e0000007eL & l) != 0L)
++                     jjstateSet[jjnewStateCnt++] = 365;
++                  break;
++               case 375:
 +                  if ((0x2000000020L & l) != 0L)
-+                     jjAddStates(123, 124);
++                     jjAddStates(143, 144);
++                  break;
++               case 379:
++                  if ((0x2000000020L & l) != 0L)
++                     jjAddStates(145, 146);
++                  break;
++               case 385:
++                  if ((0x2000000020L & l) != 0L)
++                     jjAddStates(147, 148);
 +                  break;
 +               default : break;
 +            }
@@ -19485,14 +19903,9 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
 +            {
 +               case 0:
 +                  if (jjCanMove_1(hiByte, i1, i2, l1, l2))
-+                     jjCheckNAddStates(51, 58);
++                     jjCheckNAddStates(57, 64);
 +                  break;
-+               case 341:
-+               case 1:
-+                  if (jjCanMove_0(hiByte, i1, i2, l1, l2))
-+                     jjCheckNAddTwoStates(1, 2);
-+                  break;
-+               case 337:
++               case 390:
 +                  if (jjCanMove_2(hiByte, i1, i2, l1, l2))
 +                     jjCheckNAddStates(20, 22);
 +                  if (jjCanMove_2(hiByte, i1, i2, l1, l2))
@@ -19501,6 +19914,11 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
 +                     jjCheckNAddStates(17, 19);
 +                  if (jjCanMove_2(hiByte, i1, i2, l1, l2))
 +                     jjCheckNAdd(223);
++                  break;
++               case 392:
++               case 1:
++                  if (jjCanMove_0(hiByte, i1, i2, l1, l2))
++                     jjCheckNAddTwoStates(1, 2);
 +                  break;
 +               case 4:
 +                  if (!jjCanMove_1(hiByte, i1, i2, l1, l2))
@@ -19563,7 +19981,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
 +                  break;
 +               case 193:
 +                  if (jjCanMove_2(hiByte, i1, i2, l1, l2))
-+                     jjCheckNAddStates(20, 22);
++                     jjCheckNAddStates(40, 42);
 +                  break;
 +               case 194:
 +                  if (jjCanMove_2(hiByte, i1, i2, l1, l2))
@@ -19571,7 +19989,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
 +                  break;
 +               case 221:
 +                  if (jjCanMove_2(hiByte, i1, i2, l1, l2))
-+                     jjCheckNAddStates(17, 19);
++                     jjCheckNAddStates(43, 45);
 +                  break;
 +               case 222:
 +                  if (jjCanMove_2(hiByte, i1, i2, l1, l2))
@@ -19582,15 +20000,23 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
 +                     break;
 +                  if (kind > 11)
 +                     kind = 11;
-+                  jjCheckNAddStates(40, 42);
++                  jjCheckNAddStates(46, 48);
 +                  break;
 +               case 225:
 +                  if (jjCanMove_2(hiByte, i1, i2, l1, l2))
-+                     jjCheckNAddStates(40, 42);
++                     jjCheckNAddStates(46, 48);
 +                  break;
 +               case 226:
 +                  if (jjCanMove_2(hiByte, i1, i2, l1, l2) && kind > 11)
 +                     kind = 11;
++                  break;
++               case 291:
++                  if (jjCanMove_2(hiByte, i1, i2, l1, l2))
++                     jjCheckNAddStates(20, 22);
++                  break;
++               case 316:
++                  if (jjCanMove_2(hiByte, i1, i2, l1, l2))
++                     jjCheckNAddStates(17, 19);
 +                  break;
 +               default : break;
 +            }
@@ -19603,7 +20029,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
 +         kind = 0x7fffffff;
 +      }
 +      ++curPos;
-+      if ((i = jjnewStateCnt) == (startsAt = 337 - (jjnewStateCnt = startsAt)))
++      if ((i = jjnewStateCnt) == (startsAt = 388 - (jjnewStateCnt = startsAt)))
 +         return curPos;
 +      try { curChar = input_stream.readChar(); }
 +      catch(java.io.IOException e) { return curPos; }
@@ -19693,12 +20119,14 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
 +   }
 +}
  static final int[] jjnextStates = {
-    317, 318, 319, 321, 322, 327, 328, 47, 62, 75, 90, 124, 125, 126, 107, 108, 
-    109, 221, 222, 265, 193, 194, 196, 4, 32, 5, 6, 7, 141, 142, 143, 145, 
-@@ -3356,305 +3356,286 @@
-    83, 92, 95, 110, 111, 112, 116, 127, 128, 129, 133, 146, 147, 148, 152, 169, 
-    170, 171, 175, 198, 202, 210, 214, 228, 240, 229, 233, 241, 245, 254, 258, 267, 
-    271, 279, 283, 292, 296, 304, 308, 325, 326, 329, 330, 335, 336, 
+-   317, 318, 319, 321, 322, 327, 328, 47, 62, 75, 90, 124, 125, 126, 107, 108, 
+-   109, 221, 222, 265, 193, 194, 196, 4, 32, 5, 6, 7, 141, 142, 143, 145, 
+-   144, 160, 164, 165, 166, 168, 167, 183, 225, 226, 227, 221, 222, 223, 265, 193, 
+-   194, 195, 196, 193, 194, 195, 221, 222, 223, 265, 196, 291, 303, 190, 191, 197, 
+-   209, 266, 278, 8, 20, 9, 13, 21, 25, 34, 38, 51, 55, 64, 67, 79, 
+-   83, 92, 95, 110, 111, 112, 116, 127, 128, 129, 133, 146, 147, 148, 152, 169, 
+-   170, 171, 175, 198, 202, 210, 214, 228, 240, 229, 233, 241, 245, 254, 258, 267, 
+-   271, 279, 283, 292, 296, 304, 308, 325, 326, 329, 330, 335, 336, 
 -};
 -private static final boolean jjCanMove_0(int hiByte, int i1, int i2, long l1, long l2)
 -{
@@ -19778,6 +20206,16 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
 -   "IN_SINGLE_LINE_COMMENT", 
 -   "POSSIBLE_FUNCTION", 
 -};
++   368, 369, 370, 372, 373, 378, 379, 47, 62, 75, 90, 124, 125, 126, 107, 108, 
++   109, 316, 222, 317, 291, 194, 292, 4, 32, 5, 6, 7, 141, 142, 143, 145, 
++   144, 160, 164, 165, 166, 168, 167, 183, 193, 194, 196, 221, 222, 265, 225, 226, 
++   227, 316, 222, 223, 317, 291, 194, 195, 292, 291, 194, 195, 316, 222, 223, 317, 
++   292, 342, 354, 193, 194, 221, 222, 265, 196, 190, 191, 293, 304, 318, 329, 8, 
++   20, 9, 13, 21, 25, 34, 38, 51, 55, 64, 67, 79, 83, 92, 95, 110, 
++   111, 112, 116, 127, 128, 129, 133, 146, 147, 148, 152, 169, 170, 171, 175, 197, 
++   209, 198, 202, 210, 214, 228, 240, 229, 233, 241, 245, 254, 258, 266, 278, 267, 
++   271, 279, 283, 294, 297, 305, 309, 319, 322, 330, 334, 343, 347, 355, 359, 376, 
++   377, 380, 381, 386, 387, 
 +};
 +private static final boolean jjCanMove_0(int hiByte, int i1, int i2, long l1, long l2)
 +{
@@ -19956,8 +20394,8 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
 -
 +};
 +protected JavaCharStream input_stream;
-+private final int[] jjrounds = new int[337];
-+private final int[] jjstateSet = new int[674];
++private final int[] jjrounds = new int[388];
++private final int[] jjstateSet = new int[776];
 +StringBuffer image;
 +int jjimageLen;
 +int lengthOfMatch;
@@ -19982,7 +20420,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
 +{
 +   int i;
 +   jjround = 0x80000001;
-+   for (i = 337; i-- > 0;)
++   for (i = 388; i-- > 0;)
 +      jjrounds[i] = 0x80000000;
 +}
 +public void ReInit(JavaCharStream stream, int lexState)
@@ -20274,3 +20712,160 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
 +   }
 +}
 +}
+Binary files upstream/temp/name/levering/ryan/sparql/common/AdvancedRdfSource.class and work-copy/temp/name/levering/ryan/sparql/common/AdvancedRdfSource.class differ
+Binary files upstream/temp/name/levering/ryan/sparql/common/BNode.class and work-copy/temp/name/levering/ryan/sparql/common/BNode.class differ
+Binary files upstream/temp/name/levering/ryan/sparql/common/GraphStatement.class and work-copy/temp/name/levering/ryan/sparql/common/GraphStatement.class differ
+Binary files upstream/temp/name/levering/ryan/sparql/common/impl/AbstractRdfBindingRow.class and work-copy/temp/name/levering/ryan/sparql/common/impl/AbstractRdfBindingRow.class differ
+Binary files upstream/temp/name/levering/ryan/sparql/common/impl/AbstractRdfBindingSet.class and work-copy/temp/name/levering/ryan/sparql/common/impl/AbstractRdfBindingSet.class differ
+Binary files upstream/temp/name/levering/ryan/sparql/common/impl/BNodeExpression.class and work-copy/temp/name/levering/ryan/sparql/common/impl/BNodeExpression.class differ
+Binary files upstream/temp/name/levering/ryan/sparql/common/impl/DateTime.class and work-copy/temp/name/levering/ryan/sparql/common/impl/DateTime.class differ
+Binary files upstream/temp/name/levering/ryan/sparql/common/impl/DateTime$DateTimeFields.class and work-copy/temp/name/levering/ryan/sparql/common/impl/DateTime$DateTimeFields.class differ
+Binary files upstream/temp/name/levering/ryan/sparql/common/impl/InternalSPARQLValueFactory$BNodeImpl.class and work-copy/temp/name/levering/ryan/sparql/common/impl/InternalSPARQLValueFactory$BNodeImpl.class differ
+Binary files upstream/temp/name/levering/ryan/sparql/common/impl/InternalSPARQLValueFactory.class and work-copy/temp/name/levering/ryan/sparql/common/impl/InternalSPARQLValueFactory.class differ
+Binary files upstream/temp/name/levering/ryan/sparql/common/impl/InternalSPARQLValueFactory$LiteralImpl.class and work-copy/temp/name/levering/ryan/sparql/common/impl/InternalSPARQLValueFactory$LiteralImpl.class differ
+Binary files upstream/temp/name/levering/ryan/sparql/common/impl/InternalSPARQLValueFactory$URIImpl.class and work-copy/temp/name/levering/ryan/sparql/common/impl/InternalSPARQLValueFactory$URIImpl.class differ
+Binary files upstream/temp/name/levering/ryan/sparql/common/impl/LiteralExpression.class and work-copy/temp/name/levering/ryan/sparql/common/impl/LiteralExpression.class differ
+Binary files upstream/temp/name/levering/ryan/sparql/common/impl/RdfBindingRowImpl.class and work-copy/temp/name/levering/ryan/sparql/common/impl/RdfBindingRowImpl.class differ
+Binary files upstream/temp/name/levering/ryan/sparql/common/impl/RdfBindingSetImpl$BindingIterator.class and work-copy/temp/name/levering/ryan/sparql/common/impl/RdfBindingSetImpl$BindingIterator.class differ
+Binary files upstream/temp/name/levering/ryan/sparql/common/impl/RdfBindingSetImpl.class and work-copy/temp/name/levering/ryan/sparql/common/impl/RdfBindingSetImpl.class differ
+Binary files upstream/temp/name/levering/ryan/sparql/common/impl/RdfBindingSetImpl$GenericRdfBindingRow.class and work-copy/temp/name/levering/ryan/sparql/common/impl/RdfBindingSetImpl$GenericRdfBindingRow.class differ
+Binary files upstream/temp/name/levering/ryan/sparql/common/impl/RdfBindingSetUtils.class and work-copy/temp/name/levering/ryan/sparql/common/impl/RdfBindingSetUtils.class differ
+Binary files upstream/temp/name/levering/ryan/sparql/common/impl/RdfGraphImpl.class and work-copy/temp/name/levering/ryan/sparql/common/impl/RdfGraphImpl.class differ
+Binary files upstream/temp/name/levering/ryan/sparql/common/impl/StatementImpl.class and work-copy/temp/name/levering/ryan/sparql/common/impl/StatementImpl.class differ
+Binary files upstream/temp/name/levering/ryan/sparql/common/impl/UnboundStatementImpl.class and work-copy/temp/name/levering/ryan/sparql/common/impl/UnboundStatementImpl.class differ
+Binary files upstream/temp/name/levering/ryan/sparql/common/impl/URIExpression.class and work-copy/temp/name/levering/ryan/sparql/common/impl/URIExpression.class differ
+Binary files upstream/temp/name/levering/ryan/sparql/common/impl/ValueExpression.class and work-copy/temp/name/levering/ryan/sparql/common/impl/ValueExpression.class differ
+Binary files upstream/temp/name/levering/ryan/sparql/common/impl/VariableImpl.class and work-copy/temp/name/levering/ryan/sparql/common/impl/VariableImpl.class differ
+Binary files upstream/temp/name/levering/ryan/sparql/common/LenientStatement.class and work-copy/temp/name/levering/ryan/sparql/common/LenientStatement.class differ
+Binary files upstream/temp/name/levering/ryan/sparql/common/Literal.class and work-copy/temp/name/levering/ryan/sparql/common/Literal.class differ
+Binary files upstream/temp/name/levering/ryan/sparql/common/QueryException.class and work-copy/temp/name/levering/ryan/sparql/common/QueryException.class differ
+Binary files upstream/temp/name/levering/ryan/sparql/common/RdfBindingRow.class and work-copy/temp/name/levering/ryan/sparql/common/RdfBindingRow.class differ
+Binary files upstream/temp/name/levering/ryan/sparql/common/RdfBindingSet.class and work-copy/temp/name/levering/ryan/sparql/common/RdfBindingSet.class differ
+Binary files upstream/temp/name/levering/ryan/sparql/common/RdfBindingSetVisitor.class and work-copy/temp/name/levering/ryan/sparql/common/RdfBindingSetVisitor.class differ
+Binary files upstream/temp/name/levering/ryan/sparql/common/RdfGraph.class and work-copy/temp/name/levering/ryan/sparql/common/RdfGraph.class differ
+Binary files upstream/temp/name/levering/ryan/sparql/common/RdfSource.class and work-copy/temp/name/levering/ryan/sparql/common/RdfSource.class differ
+Binary files upstream/temp/name/levering/ryan/sparql/common/Resource.class and work-copy/temp/name/levering/ryan/sparql/common/Resource.class differ
+Binary files upstream/temp/name/levering/ryan/sparql/common/SPARQLConstants.class and work-copy/temp/name/levering/ryan/sparql/common/SPARQLConstants.class differ
+Binary files upstream/temp/name/levering/ryan/sparql/common/SPARQLValueFactory.class and work-copy/temp/name/levering/ryan/sparql/common/SPARQLValueFactory.class differ
+Binary files upstream/temp/name/levering/ryan/sparql/common/Statement.class and work-copy/temp/name/levering/ryan/sparql/common/Statement.class differ
+Binary files upstream/temp/name/levering/ryan/sparql/common/URI.class and work-copy/temp/name/levering/ryan/sparql/common/URI.class differ
+Binary files upstream/temp/name/levering/ryan/sparql/common/Value.class and work-copy/temp/name/levering/ryan/sparql/common/Value.class differ
+Binary files upstream/temp/name/levering/ryan/sparql/common/Variable.class and work-copy/temp/name/levering/ryan/sparql/common/Variable.class differ
+Binary files upstream/temp/name/levering/ryan/sparql/extensions/fpredicates/FunctionalPredicate.class and work-copy/temp/name/levering/ryan/sparql/extensions/fpredicates/FunctionalPredicate.class differ
+Binary files upstream/temp/name/levering/ryan/sparql/extensions/fpredicates/FunctionalPredicateConstants.class and work-copy/temp/name/levering/ryan/sparql/extensions/fpredicates/FunctionalPredicateConstants.class differ
+Binary files upstream/temp/name/levering/ryan/sparql/extensions/fpredicates/FunctionalPredicateLogic.class and work-copy/temp/name/levering/ryan/sparql/extensions/fpredicates/FunctionalPredicateLogic.class differ
+Binary files upstream/temp/name/levering/ryan/sparql/extensions/fpredicates/RdfsMemberProperty.class and work-copy/temp/name/levering/ryan/sparql/extensions/fpredicates/RdfsMemberProperty.class differ
+Binary files upstream/temp/name/levering/ryan/sparql/extensions/fpredicates/RdfsMemberProperty$RdfsMemberBindingSet.class and work-copy/temp/name/levering/ryan/sparql/extensions/fpredicates/RdfsMemberProperty$RdfsMemberBindingSet.class differ
+Binary files upstream/temp/name/levering/ryan/sparql/extensions/fpredicates/RdfsMemberProperty$RdfsMemberBindingSet$RdfsMemberIterator.class and work-copy/temp/name/levering/ryan/sparql/extensions/fpredicates/RdfsMemberProperty$RdfsMemberBindingSet$RdfsMemberIterator.class differ
+Binary files upstream/temp/name/levering/ryan/sparql/extensions/fpredicates/RdfsMemberProperty$RdfsMemberBindingSet$RdfsMemberIterator$StatementBindingRow.class and work-copy/temp/name/levering/ryan/sparql/extensions/fpredicates/RdfsMemberProperty$RdfsMemberBindingSet$RdfsMemberIterator$StatementBindingRow.class differ
+Binary files upstream/temp/name/levering/ryan/sparql/extensions/fpredicates/RdfsMemberProperty$VirtualPropertySet.class and work-copy/temp/name/levering/ryan/sparql/extensions/fpredicates/RdfsMemberProperty$VirtualPropertySet.class differ
+Binary files upstream/temp/name/levering/ryan/sparql/extensions/functions/aggregate/CountFunction$1.class and work-copy/temp/name/levering/ryan/sparql/extensions/functions/aggregate/CountFunction$1.class differ
+Binary files upstream/temp/name/levering/ryan/sparql/extensions/functions/aggregate/CountFunction.class and work-copy/temp/name/levering/ryan/sparql/extensions/functions/aggregate/CountFunction.class differ
+Binary files upstream/temp/name/levering/ryan/sparql/extensions/functions/aggregate/IsMaxFunction$1.class and work-copy/temp/name/levering/ryan/sparql/extensions/functions/aggregate/IsMaxFunction$1.class differ
+Binary files upstream/temp/name/levering/ryan/sparql/extensions/functions/aggregate/IsMaxFunction.class and work-copy/temp/name/levering/ryan/sparql/extensions/functions/aggregate/IsMaxFunction.class differ
+Binary files upstream/temp/name/levering/ryan/sparql/extensions/functions/aggregate/IsMinFunction$1.class and work-copy/temp/name/levering/ryan/sparql/extensions/functions/aggregate/IsMinFunction$1.class differ
+Binary files upstream/temp/name/levering/ryan/sparql/extensions/functions/aggregate/IsMinFunction.class and work-copy/temp/name/levering/ryan/sparql/extensions/functions/aggregate/IsMinFunction.class differ
+Binary files upstream/temp/name/levering/ryan/sparql/extensions/functions/aggregate/MaxFunction$1.class and work-copy/temp/name/levering/ryan/sparql/extensions/functions/aggregate/MaxFunction$1.class differ
+Binary files upstream/temp/name/levering/ryan/sparql/extensions/functions/aggregate/MaxFunction.class and work-copy/temp/name/levering/ryan/sparql/extensions/functions/aggregate/MaxFunction.class differ
+Binary files upstream/temp/name/levering/ryan/sparql/extensions/functions/aggregate/MinFunction$1.class and work-copy/temp/name/levering/ryan/sparql/extensions/functions/aggregate/MinFunction$1.class differ
+Binary files upstream/temp/name/levering/ryan/sparql/extensions/functions/aggregate/MinFunction.class and work-copy/temp/name/levering/ryan/sparql/extensions/functions/aggregate/MinFunction.class differ
+Binary files upstream/temp/name/levering/ryan/sparql/extensions/functions/datetime/AddHourFunction$1.class and work-copy/temp/name/levering/ryan/sparql/extensions/functions/datetime/AddHourFunction$1.class differ
+Binary files upstream/temp/name/levering/ryan/sparql/extensions/functions/datetime/AddHourFunction.class and work-copy/temp/name/levering/ryan/sparql/extensions/functions/datetime/AddHourFunction.class differ
+Binary files upstream/temp/name/levering/ryan/sparql/extensions/functions/datetime/AddMinuteFunction$1.class and work-copy/temp/name/levering/ryan/sparql/extensions/functions/datetime/AddMinuteFunction$1.class differ
+Binary files upstream/temp/name/levering/ryan/sparql/extensions/functions/datetime/AddMinuteFunction.class and work-copy/temp/name/levering/ryan/sparql/extensions/functions/datetime/AddMinuteFunction.class differ
+Binary files upstream/temp/name/levering/ryan/sparql/extensions/functions/datetime/AddMonthFunction$1.class and work-copy/temp/name/levering/ryan/sparql/extensions/functions/datetime/AddMonthFunction$1.class differ
+Binary files upstream/temp/name/levering/ryan/sparql/extensions/functions/datetime/AddMonthFunction.class and work-copy/temp/name/levering/ryan/sparql/extensions/functions/datetime/AddMonthFunction.class differ
+Binary files upstream/temp/name/levering/ryan/sparql/extensions/functions/datetime/AddSecondFunction$1.class and work-copy/temp/name/levering/ryan/sparql/extensions/functions/datetime/AddSecondFunction$1.class differ
+Binary files upstream/temp/name/levering/ryan/sparql/extensions/functions/datetime/AddSecondFunction.class and work-copy/temp/name/levering/ryan/sparql/extensions/functions/datetime/AddSecondFunction.class differ
+Binary files upstream/temp/name/levering/ryan/sparql/extensions/functions/datetime/AddYearFunction$1.class and work-copy/temp/name/levering/ryan/sparql/extensions/functions/datetime/AddYearFunction$1.class differ
+Binary files upstream/temp/name/levering/ryan/sparql/extensions/functions/datetime/AddYearFunction.class and work-copy/temp/name/levering/ryan/sparql/extensions/functions/datetime/AddYearFunction.class differ
+Binary files upstream/temp/name/levering/ryan/sparql/extensions/functions/datetime/DateTimeUtils.class and work-copy/temp/name/levering/ryan/sparql/extensions/functions/datetime/DateTimeUtils.class differ
+Binary files upstream/temp/name/levering/ryan/sparql/extensions/functions/datetime/DayFunction$1.class and work-copy/temp/name/levering/ryan/sparql/extensions/functions/datetime/DayFunction$1.class differ
+Binary files upstream/temp/name/levering/ryan/sparql/extensions/functions/datetime/DayFunction.class and work-copy/temp/name/levering/ryan/sparql/extensions/functions/datetime/DayFunction.class differ
+Binary files upstream/temp/name/levering/ryan/sparql/extensions/functions/datetime/FormatFunction$1.class and work-copy/temp/name/levering/ryan/sparql/extensions/functions/datetime/FormatFunction$1.class differ
+Binary files upstream/temp/name/levering/ryan/sparql/extensions/functions/datetime/FormatFunction.class and work-copy/temp/name/levering/ryan/sparql/extensions/functions/datetime/FormatFunction.class differ
+Binary files upstream/temp/name/levering/ryan/sparql/extensions/functions/datetime/HourFunction$1.class and work-copy/temp/name/levering/ryan/sparql/extensions/functions/datetime/HourFunction$1.class differ
+Binary files upstream/temp/name/levering/ryan/sparql/extensions/functions/datetime/HourFunction.class and work-copy/temp/name/levering/ryan/sparql/extensions/functions/datetime/HourFunction.class differ
+Binary files upstream/temp/name/levering/ryan/sparql/extensions/functions/datetime/MinuteFunction$1.class and work-copy/temp/name/levering/ryan/sparql/extensions/functions/datetime/MinuteFunction$1.class differ
+Binary files upstream/temp/name/levering/ryan/sparql/extensions/functions/datetime/MinuteFunction.class and work-copy/temp/name/levering/ryan/sparql/extensions/functions/datetime/MinuteFunction.class differ
+Binary files upstream/temp/name/levering/ryan/sparql/extensions/functions/datetime/MonthFunction$1.class and work-copy/temp/name/levering/ryan/sparql/extensions/functions/datetime/MonthFunction$1.class differ
+Binary files upstream/temp/name/levering/ryan/sparql/extensions/functions/datetime/MonthFunction.class and work-copy/temp/name/levering/ryan/sparql/extensions/functions/datetime/MonthFunction.class differ
+Binary files upstream/temp/name/levering/ryan/sparql/extensions/functions/datetime/ParseFunction$1.class and work-copy/temp/name/levering/ryan/sparql/extensions/functions/datetime/ParseFunction$1.class differ
+Binary files upstream/temp/name/levering/ryan/sparql/extensions/functions/datetime/ParseFunction.class and work-copy/temp/name/levering/ryan/sparql/extensions/functions/datetime/ParseFunction.class differ
+Binary files upstream/temp/name/levering/ryan/sparql/extensions/functions/datetime/SecondFunction$1.class and work-copy/temp/name/levering/ryan/sparql/extensions/functions/datetime/SecondFunction$1.class differ
+Binary files upstream/temp/name/levering/ryan/sparql/extensions/functions/datetime/SecondFunction.class and work-copy/temp/name/levering/ryan/sparql/extensions/functions/datetime/SecondFunction.class differ
+Binary files upstream/temp/name/levering/ryan/sparql/extensions/functions/datetime/YearFunction$1.class and work-copy/temp/name/levering/ryan/sparql/extensions/functions/datetime/YearFunction$1.class differ
+Binary files upstream/temp/name/levering/ryan/sparql/extensions/functions/datetime/YearFunction.class and work-copy/temp/name/levering/ryan/sparql/extensions/functions/datetime/YearFunction.class differ
+Binary files upstream/temp/name/levering/ryan/sparql/extensions/functions/FunctionConstants.class and work-copy/temp/name/levering/ryan/sparql/extensions/functions/FunctionConstants.class differ
+Binary files upstream/temp/name/levering/ryan/sparql/extensions/functions/string/ConcatFunction$1.class and work-copy/temp/name/levering/ryan/sparql/extensions/functions/string/ConcatFunction$1.class differ
+Binary files upstream/temp/name/levering/ryan/sparql/extensions/functions/string/ConcatFunction.class and work-copy/temp/name/levering/ryan/sparql/extensions/functions/string/ConcatFunction.class differ
+Binary files upstream/temp/name/levering/ryan/sparql/extensions/functions/string/ContainsFunction$1.class and work-copy/temp/name/levering/ryan/sparql/extensions/functions/string/ContainsFunction$1.class differ
+Binary files upstream/temp/name/levering/ryan/sparql/extensions/functions/string/ContainsFunction.class and work-copy/temp/name/levering/ryan/sparql/extensions/functions/string/ContainsFunction.class differ
+Binary files upstream/temp/name/levering/ryan/sparql/extensions/functions/string/EndsWithFunction$1.class and work-copy/temp/name/levering/ryan/sparql/extensions/functions/string/EndsWithFunction$1.class differ
+Binary files upstream/temp/name/levering/ryan/sparql/extensions/functions/string/EndsWithFunction.class and work-copy/temp/name/levering/ryan/sparql/extensions/functions/string/EndsWithFunction.class differ
+Binary files upstream/temp/name/levering/ryan/sparql/extensions/functions/string/LengthFunction$1.class and work-copy/temp/name/levering/ryan/sparql/extensions/functions/string/LengthFunction$1.class differ
+Binary files upstream/temp/name/levering/ryan/sparql/extensions/functions/string/LengthFunction.class and work-copy/temp/name/levering/ryan/sparql/extensions/functions/string/LengthFunction.class differ
+Binary files upstream/temp/name/levering/ryan/sparql/extensions/functions/string/LowerCaseFunction$1.class and work-copy/temp/name/levering/ryan/sparql/extensions/functions/string/LowerCaseFunction$1.class differ
+Binary files upstream/temp/name/levering/ryan/sparql/extensions/functions/string/LowerCaseFunction.class and work-copy/temp/name/levering/ryan/sparql/extensions/functions/string/LowerCaseFunction.class differ
+Binary files upstream/temp/name/levering/ryan/sparql/extensions/functions/string/ReplaceFunction$1.class and work-copy/temp/name/levering/ryan/sparql/extensions/functions/string/ReplaceFunction$1.class differ
+Binary files upstream/temp/name/levering/ryan/sparql/extensions/functions/string/ReplaceFunction.class and work-copy/temp/name/levering/ryan/sparql/extensions/functions/string/ReplaceFunction.class differ
+Binary files upstream/temp/name/levering/ryan/sparql/extensions/functions/string/StartsWithFunction$1.class and work-copy/temp/name/levering/ryan/sparql/extensions/functions/string/StartsWithFunction$1.class differ
+Binary files upstream/temp/name/levering/ryan/sparql/extensions/functions/string/StartsWithFunction.class and work-copy/temp/name/levering/ryan/sparql/extensions/functions/string/StartsWithFunction.class differ
+Binary files upstream/temp/name/levering/ryan/sparql/extensions/functions/string/SubstringAfterFunction$1.class and work-copy/temp/name/levering/ryan/sparql/extensions/functions/string/SubstringAfterFunction$1.class differ
+Binary files upstream/temp/name/levering/ryan/sparql/extensions/functions/string/SubstringAfterFunction.class and work-copy/temp/name/levering/ryan/sparql/extensions/functions/string/SubstringAfterFunction.class differ
+Binary files upstream/temp/name/levering/ryan/sparql/extensions/functions/string/SubstringBeforeFunction$1.class and work-copy/temp/name/levering/ryan/sparql/extensions/functions/string/SubstringBeforeFunction$1.class differ
+Binary files upstream/temp/name/levering/ryan/sparql/extensions/functions/string/SubstringBeforeFunction.class and work-copy/temp/name/levering/ryan/sparql/extensions/functions/string/SubstringBeforeFunction.class differ
+Binary files upstream/temp/name/levering/ryan/sparql/extensions/functions/string/SubstringFunction$1.class and work-copy/temp/name/levering/ryan/sparql/extensions/functions/string/SubstringFunction$1.class differ
+Binary files upstream/temp/name/levering/ryan/sparql/extensions/functions/string/SubstringFunction.class and work-copy/temp/name/levering/ryan/sparql/extensions/functions/string/SubstringFunction.class differ
+Binary files upstream/temp/name/levering/ryan/sparql/extensions/functions/string/TranslateFunction$1.class and work-copy/temp/name/levering/ryan/sparql/extensions/functions/string/TranslateFunction$1.class differ
+Binary files upstream/temp/name/levering/ryan/sparql/extensions/functions/string/TranslateFunction.class and work-copy/temp/name/levering/ryan/sparql/extensions/functions/string/TranslateFunction.class differ
+Binary files upstream/temp/name/levering/ryan/sparql/extensions/functions/string/UpperCaseFunction$1.class and work-copy/temp/name/levering/ryan/sparql/extensions/functions/string/UpperCaseFunction$1.class differ
+Binary files upstream/temp/name/levering/ryan/sparql/extensions/functions/string/UpperCaseFunction.class and work-copy/temp/name/levering/ryan/sparql/extensions/functions/string/UpperCaseFunction.class differ
+Binary files upstream/temp/name/levering/ryan/sparql/extensions/with/DefaultWithConstraintLogic.class and work-copy/temp/name/levering/ryan/sparql/extensions/with/DefaultWithConstraintLogic.class differ
+Binary files upstream/temp/name/levering/ryan/sparql/extensions/with/WithExtension.class and work-copy/temp/name/levering/ryan/sparql/extensions/with/WithExtension.class differ
+Binary files upstream/temp/name/levering/ryan/sparql/logic/BaseLogic.class and work-copy/temp/name/levering/ryan/sparql/logic/BaseLogic.class differ
+Binary files upstream/temp/name/levering/ryan/sparql/logic/BNodeRenamingConstructQueryLogic.class and work-copy/temp/name/levering/ryan/sparql/logic/BNodeRenamingConstructQueryLogic.class differ
+Binary files upstream/temp/name/levering/ryan/sparql/logic/DefaultAskQueryLogic.class and work-copy/temp/name/levering/ryan/sparql/logic/DefaultAskQueryLogic.class differ
+Binary files upstream/temp/name/levering/ryan/sparql/logic/DefaultConstructQueryLogic.class and work-copy/temp/name/levering/ryan/sparql/logic/DefaultConstructQueryLogic.class differ
+Binary files upstream/temp/name/levering/ryan/sparql/logic/function/ExternalFunction.class and work-copy/temp/name/levering/ryan/sparql/logic/function/ExternalFunction.class differ
+Binary files upstream/temp/name/levering/ryan/sparql/logic/function/ExternalFunctionException.class and work-copy/temp/name/levering/ryan/sparql/logic/function/ExternalFunctionException.class differ
+Binary files upstream/temp/name/levering/ryan/sparql/logic/function/ExternalFunctionFactory.class and work-copy/temp/name/levering/ryan/sparql/logic/function/ExternalFunctionFactory.class differ
+Binary files upstream/temp/name/levering/ryan/sparql/logic/function/ValueFunction.class and work-copy/temp/name/levering/ryan/sparql/logic/function/ValueFunction.class differ
+Binary files upstream/temp/name/levering/ryan/sparql/logic/streamed/SourcedRdfBindingSet.class and work-copy/temp/name/levering/ryan/sparql/logic/streamed/SourcedRdfBindingSet.class differ
+Binary files upstream/temp/name/levering/ryan/sparql/logic/streamed/StackedRdfBindingSet.class and work-copy/temp/name/levering/ryan/sparql/logic/streamed/StackedRdfBindingSet.class differ
+Binary files upstream/temp/name/levering/ryan/sparql/logic/streamed/StreamedBindingSetVisitor.class and work-copy/temp/name/levering/ryan/sparql/logic/streamed/StreamedBindingSetVisitor.class differ
+Binary files upstream/temp/name/levering/ryan/sparql/logic/streamed/VirtualRdfBindingSet.class and work-copy/temp/name/levering/ryan/sparql/logic/streamed/VirtualRdfBindingSet.class differ
+Binary files upstream/temp/name/levering/ryan/sparql/model/data/AskQueryData.class and work-copy/temp/name/levering/ryan/sparql/model/data/AskQueryData.class differ
+Binary files upstream/temp/name/levering/ryan/sparql/model/data/BinaryExpressionData.class and work-copy/temp/name/levering/ryan/sparql/model/data/BinaryExpressionData.class differ
+Binary files upstream/temp/name/levering/ryan/sparql/model/data/CallExpressionData.class and work-copy/temp/name/levering/ryan/sparql/model/data/CallExpressionData.class differ
+Binary files upstream/temp/name/levering/ryan/sparql/model/data/ConstraintData.class and work-copy/temp/name/levering/ryan/sparql/model/data/ConstraintData.class differ
+Binary files upstream/temp/name/levering/ryan/sparql/model/data/ConstructQueryData.class and work-copy/temp/name/levering/ryan/sparql/model/data/ConstructQueryData.class differ
+Binary files upstream/temp/name/levering/ryan/sparql/model/data/DescribeQueryData.class and work-copy/temp/name/levering/ryan/sparql/model/data/DescribeQueryData.class differ
+Binary files upstream/temp/name/levering/ryan/sparql/model/data/FilterConstraintData.class and work-copy/temp/name/levering/ryan/sparql/model/data/FilterConstraintData.class differ
+Binary files upstream/temp/name/levering/ryan/sparql/model/data/GraphConstraintData.class and work-copy/temp/name/levering/ryan/sparql/model/data/GraphConstraintData.class differ
+Binary files upstream/temp/name/levering/ryan/sparql/model/data/GroupConstraintData.class and work-copy/temp/name/levering/ryan/sparql/model/data/GroupConstraintData.class differ
+Binary files upstream/temp/name/levering/ryan/sparql/model/data/OptionalConstraintData.class and work-copy/temp/name/levering/ryan/sparql/model/data/OptionalConstraintData.class differ
+Binary files upstream/temp/name/levering/ryan/sparql/model/data/OrderExpressionData.class and work-copy/temp/name/levering/ryan/sparql/model/data/OrderExpressionData.class differ
+Binary files upstream/temp/name/levering/ryan/sparql/model/data/QueryData.class and work-copy/temp/name/levering/ryan/sparql/model/data/QueryData.class differ
+Binary files upstream/temp/name/levering/ryan/sparql/model/data/SelectQueryData.class and work-copy/temp/name/levering/ryan/sparql/model/data/SelectQueryData.class differ
+Binary files upstream/temp/name/levering/ryan/sparql/model/data/TripleConstraintData.class and work-copy/temp/name/levering/ryan/sparql/model/data/TripleConstraintData.class differ
+Binary files upstream/temp/name/levering/ryan/sparql/model/data/UnaryExpressionData.class and work-copy/temp/name/levering/ryan/sparql/model/data/UnaryExpressionData.class differ
+Binary files upstream/temp/name/levering/ryan/sparql/model/data/UnboundStatement.class and work-copy/temp/name/levering/ryan/sparql/model/data/UnboundStatement.class differ
+Binary files upstream/temp/name/levering/ryan/sparql/model/data/UnionConstraintData.class and work-copy/temp/name/levering/ryan/sparql/model/data/UnionConstraintData.class differ
+Binary files upstream/temp/name/levering/ryan/sparql/model/data/WithConstraintData.class and work-copy/temp/name/levering/ryan/sparql/model/data/WithConstraintData.class differ
+Binary files upstream/temp/name/levering/ryan/sparql/model/GroupConstraint.class and work-copy/temp/name/levering/ryan/sparql/model/GroupConstraint.class differ
+Binary files upstream/temp/name/levering/ryan/sparql/model/logic/AskQueryLogic.class and work-copy/temp/name/levering/ryan/sparql/model/logic/AskQueryLogic.class differ
+Binary files upstream/temp/name/levering/ryan/sparql/model/logic/ConstraintLogic$CallParams.class and work-copy/temp/name/levering/ryan/sparql/model/logic/ConstraintLogic$CallParams.class differ
+Binary files upstream/temp/name/levering/ryan/sparql/model/logic/ConstraintLogic.class and work-copy/temp/name/levering/ryan/sparql/model/logic/ConstraintLogic.class differ
+Binary files upstream/temp/name/levering/ryan/sparql/model/logic/ConstructQueryLogic.class and work-copy/temp/name/levering/ryan/sparql/model/logic/ConstructQueryLogic.class differ
+Binary files upstream/temp/name/levering/ryan/sparql/model/logic/DescribeQueryLogic.class and work-copy/temp/name/levering/ryan/sparql/model/logic/DescribeQueryLogic.class differ
+Binary files upstream/temp/name/levering/ryan/sparql/model/logic/ExpressionLogic.class and work-copy/temp/name/levering/ryan/sparql/model/logic/ExpressionLogic.class differ
+Binary files upstream/temp/name/levering/ryan/sparql/model/logic/helper/EffectiveBooleanLogic.class and work-copy/temp/name/levering/ryan/sparql/model/logic/helper/EffectiveBooleanLogic.class differ
+Binary files upstream/temp/name/levering/ryan/sparql/model/logic/helper/GraphTranslationLogic.class and work-copy/temp/name/levering/ryan/sparql/model/logic/helper/GraphTranslationLogic.class differ
+Binary files upstream/temp/name/levering/ryan/sparql/model/logic/helper/SetRangeLogic.class and work-copy/temp/name/levering/ryan/sparql/model/logic/helper/SetRangeLogic.class differ
+Binary files upstream/temp/name/levering/ryan/sparql/model/logic/helper/ValueConversionLogic.class and work-copy/temp/name/levering/ryan/sparql/model/logic/helper/ValueConversionLogic.class differ
+Binary files upstream/temp/name/levering/ryan/sparql/model/logic/helper/ValueOrderingLogic.class and work-copy/temp/name/levering/ryan/sparql/model/logic/helper/ValueOrderingLogic.class differ
+Binary files upstream/temp/name/levering/ryan/sparql/model/logic/LogicFactory.class and work-copy/temp/name/levering/ryan/sparql/model/logic/LogicFactory.class differ
+Binary files upstream/temp/name/levering/ryan/sparql/model/logic/NumericPromotionLogic.class and work-copy/temp/name/levering/ryan/sparql/model/logic/NumericPromotionLogic.class differ
+Binary files upstream/temp/name/levering/ryan/sparql/model/logic/OrderExpressionLogic.class and work-copy/temp/name/levering/ryan/sparql/model/logic/OrderExpressionLogic.class differ
+Binary files upstream/temp/name/levering/ryan/sparql/model/logic/SelectQueryLogic.class and work-copy/temp/name/levering/ryan/sparql/model/logic/SelectQueryLogic.class differ
