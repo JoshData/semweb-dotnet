@@ -1,3 +1,5 @@
+	* GraphMatch: Once a part of a query narrows the results down
+	  to zero possible bindings, don't process it any further.
 	* SparqlEngine: For now, when using QueryableSource methods to
 	  access a store, pass meta fields as Statement.DefaultMeta,
 	  rather than as a variable, because Euler requires that.

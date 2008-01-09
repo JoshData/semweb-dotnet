@@ -518,6 +518,11 @@ namespace SemWeb.Query {
 				}
 				
 				bindings = newbindings;
+				
+				// We go no intersections, so we can't get any results.
+				// No need to try further parts of the query.
+				if (bindings.Rows.Count == 0)
+					break;
 			}
 			
 			// If there's no limit specified, then we aren't doing adaptive limiting.
