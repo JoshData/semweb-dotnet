@@ -162,6 +162,203 @@ namespace SemWeb {
 		public override string ToString() {
 			return "<" + Uri + ">";
 		}
+		
+		public static string ValidateUri(string uri) {
+			// Validates the uri as an RDF IRI Reference, 
+			// i.e. an absolute URI with optional fragment,
+			// based on the RDF Concepts document and RFC 3987
+			// (and RFCs recursively referenced therein).
+			
+			// From the IRI RFC 3987, we are accepting:
+			//
+			//   scheme ":" ihier-part [ "?" iquery ] [ "#" ifragment ]
+			//
+			//   scheme         = ALPHA *( ALPHA | DIGIT | "+" | "-" | "." )
+			//   ihier-part     = "//" iauthority ipath-abempty | ipath-absolute | ipath-rootless | ipath-empty
+			//   iauthority     = [ iuserinfo "@" ] ihost [ ":" port ]
+			//   iuserinfo      = *( iunreserved / pct-encoded / sub-delims / ":" )
+			//   ihost          = IP-literal / IPv4address / ireg-name
+			//   port           = *DIGIT
+			//   IP-literal     = "[" ( IPv6address / IPvFuture  ) "]"
+			//   IPv4address    = dec-octet "." dec-octet "." dec-octet "." dec-octet
+			//   ipath-absolute = "/" [ isegment-nz *( "/" isegment ) ]
+			//   ipath-rootless = isegment-nz *( "/" isegment )
+			//   isegment       = *ipchar
+			//   isegment-nz    = 1*ipchar
+			//   ipath-empty    = (nothing)
+			//   iquery         = *( ipchar | iprivate | "/" | "?" )
+			//   ifragment      = *( ipchar | "/" | "?" )
+			//   ipchar         = iunreserved | pct-encoded | sub-delims | ":" | "@"
+			//   iunreserved    = ALPHA | DIGIT | "-" | "." | "_" | "~" | ucschar
+			//   pct-encoded    = "%" HEXDIG HEXDIG
+			//   sub-delims     = "!" | "$" | "&" | "'" | "(" | ")" | "*" | "+" | "," | ";" | "="
+			//   iprivate       = %xE000-F8FF | %xF0000-FFFFD | %x100000-10FFFD
+			//   ALPHA          =  %x41-5A | %x61-7A   ; A-Z / a-z
+			//   DIGIT          =  %x30-39 ; 0-9
+			//   HEXDIG         =  DIGIT / "A" / "B" / "C" / "D" / "E" / "F"
+			
+			char state = 's';
+			
+			foreach (char c in uri) {
+				// From 'RDF Concepts' section 6.4,
+				// a URI cannot contain control characters (#x00-#x1F, #x7F-#x9F)
+				if (c <= 0x1F || (c >= 0x7F && c <= 0x9F))
+					return "The control character '" + c + "' (" + ((int)c).ToString("x") + ") is not allowed.";
+			
+				switch (state) {
+
+				// scheme =  ALPHA *( ALPHA | DIGIT | "+" | "-" | "." )
+				// The scheme is terminated by a colon after the first character.
+					
+				case 's': // first character in scheme
+					if (!ValidateUriIsAlpha(c))
+						return "The character '" + c + "' (" + ((int)c).ToString("x") + ") is not allowed as the first character in a URI, which is the start of the scheme.";
+					state = 'S';
+					break;
+				
+				case 'S': // non-first character in scheme
+					if (c == ':') // transition to ihier-part
+						state = 'H';
+					else if (!ValidateUriIsAlpha(c) && !ValidateUriIsDigit(c) && c != '+' && c != '-' && c != '.')
+						return "The character '" + c + "' (" + ((int)c).ToString("x") + ") is not allowed in the scheme portion of the URI.";
+					break;
+					
+				//   ihier-part     = "//" iauthority ipath-abempty | ipath-absolute | ipath-rootless | ipath-empty
+				case 'H': // start of ihier-part (just read the colon)
+					if (c == '/')        // either start of //+iauthority+ipath-abempty or ipath-absolute 
+						state = '/';
+					else if (c == '?')   // empty ihier-part, start of query
+						state = 'q';
+					else if (c == '#')   // empty ihier-part, start of fragment
+						state = 'f';
+					else {
+						// This is the first character of ipath-rootless, which must be an ipchar
+						if (!ValidateUriIsIpchar(c))
+							return "The character '" + c + "' (" + ((int)c).ToString("x") + ") is not allowed at the start of the (rootless) path portion of the URI.";
+						state = 'r';
+					}
+					break;
+				
+				case '/': // either 2nd slash of //+iauthority+ipath-abempty or 1st character past slash in ipath-absolute
+					if (c == '/')
+						state = 'a'; // iauthority, to lead into ipath-abempty
+					else if (!ValidateUriIsIpchar(c))
+						return "The character '" + c + "' (" + ((int)c).ToString("x") + ") is not allowed at the start of the (absolute without authority) path portion of the URI.";
+					// For the rest of ipath-absolute, we go to state r.
+					state = 'r';
+					break;
+					
+				case 'r': // 2nd character and later of ipath-rootless, or
+				          // 3rd character and later of ipath-absolute, or
+				          // 2nd character and later of ipath-abempty,
+				          // all of which are *( "/" isegment ) and terminate the ihier-part of the URI.
+					if (c == '?')   // start of query
+						state = 'q';
+					else if (c == '#')   // start of fragment
+						state = 'f';
+					else if (c != '/' && !ValidateUriIsIpchar(c))
+						return "The character '" + c + "' (" + ((int)c).ToString("x") + ") is not allowed in the path portion of the URI.";
+					// stay in this state
+					break;
+
+				case 'a': // the start of iauthority, which then goes to ipath-abempty, which then terminates the ihier-part
+					// We very loosely check this part because we can't do this easily deterministically.
+					// (For instance, we don't know if we are looking at a username or host until we
+					// find an @ sign or the end.) So we allow any of the allowed characters in
+					// this region, until we can be sure we are moving into ipath-abempty with a
+					// slash, or into the query with a question mark, or fragment with a hash. 
+					// None of those three characters can occur in this part (fortunately).
+					
+					if (c == '?')   // start of query
+						state = 'q';
+					else if (c == '#')   // start of fragment
+						state = 'f';
+					else if (c == '/')   // start of a non-empty ipath-abempty, which is *( "/" isegment )
+						state = 'r';
+						
+					// The allowed characters are:
+					// iauthority: '@' | ':'
+					// iuserinfo: iunreserved / pct-encoded / sub-delims / ':'
+					// ihost: 
+					// port: DIGIT
+					// IP-literal: '[' ']'
+					// IPv6address: HEXDIG ':'
+					// IPvFuture: 'v' HEXDIG '.' unreserved subdelims ':'
+					// IPv4address: DIGIT '.'
+					// ireg-name: iunreserved / pct-encoded / sub-delims
+						
+					else if (c != '@' && c != ':' && c != '[' && c != ']' && c != '.' && c != ':' && c != '%'
+						&& !ValidateUriIsIUnreserved(c) && !ValidateUriIsSubdelim(c))
+						return "The character '" + c + "' (" + ((int)c).ToString("x") + ") is not allowed in the authority (user, host, and port) portion of the URI.";
+
+					// stay in this state
+
+					break;
+				
+				case 'q': // start of query string
+					// iquery         = *( ipchar / iprivate / "/" / "?" )
+					if (c == '#')   // start of fragment
+						state = 'f';
+					else if (c != '/' && c != '?' && !ValidateUriIsIpchar(c) && !ValidateUriIsIPrivate(c))
+						return "The character '" + c + "' (" + ((int)c).ToString("x") + ") is not allowed in the query string portion of the URI.";
+					// stay in this state
+					break;
+					
+				case 'f': // start of fragment
+					// ifragment      = *( ipchar / "/" / "?" )
+					if (c != '/' && c != '?' && !ValidateUriIsIpchar(c))
+						return "The character '" + c + "' (" + ((int)c).ToString("x") + ") is not allowed in the fragment portion of the URI.";
+					// stay in this state
+					break;
+				}
+			}
+			
+			// Which state did we end up in? If we end in some states, we didn't finish the URI.
+			switch (state) {
+			case 's': // first character in scheme: the URI was empty
+				return "The URI is empty.";
+			case 'S': // non-first character in scheme
+				return "The URI must start with a scheme name (e.g. \"http:\").";
+			case 'H': // start of ihier-part
+				return "After the scheme (e.g. \"http:\"), something must follow, such as double-slashes.";
+			case '/': // just read first slash of "//" or the starting slash in a path
+			case 'r': // various
+				// no problem: we can end here
+				break;
+			case 'a': // just read second slash starting the authority part
+				return "After the double-slashes, a host name (or a user-plus-@-sign) must follow.";
+			case 'q': // start of query 
+			case 'f': // start of fragment
+				// no problem: we can have empty query strings and fragments
+				break;
+			}
+			
+			// This is an OK IRI.
+			return null;
+		}
+		
+		private static bool ValidateUriIsAlpha(char c) {
+			return (c >= 0x41 && c <= 0x5A) || (c >= 0x61 && c <= 0x7A);
+		}
+		private static bool ValidateUriIsDigit(char c) {
+			return c >= 0x30 && c <= 0x39;
+		}
+		private static bool ValidateUriIsIUnreserved(char c) {
+			return ValidateUriIsAlpha(c) || ValidateUriIsDigit(c) || c == '-' || c == '.' || c == '_' || c == '~'
+				|| (c >= 0xA0 && c <= 0xD7FF) || (c >= 0xF900 && c <= 0xFDCF) || (c >= 0xFDF0 && c <= 0xFFEF); // ucschar
+		}
+		private static bool ValidateUriIsSubdelim(char c) {
+			return c == '!' || c == '$' || c == '&' || c == '\'' || c == '(' || c == ')' || c == '*' || c == '+' || c ==  ',' || c == ';' || c == '=';
+		}
+		private static bool ValidateUriIsIpchar(char c) {
+			// also could be pct-encoded char, but we don't have look-ahead so we just
+			// check the percent -- the rest will be OK because the HEXDIG chars could appear alone
+			return ValidateUriIsIUnreserved(c) || ValidateUriIsSubdelim(c) || c == ':' || c == '@' || c == '%';
+		}
+		private static bool ValidateUriIsIPrivate(char c) {
+			return c >= 0xE000 && c <= 0xF8FF;
+		}
+		
 	}
 	
 	public class BNode : Entity {

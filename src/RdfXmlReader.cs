@@ -129,7 +129,14 @@ namespace SemWeb {
 			if (xml.NamespaceURI == "" && BaseUri == null)
 				return "#" + xml.LocalName;
 
-			return xml.NamespaceURI + xml.LocalName;
+			return CheckUri(xml.NamespaceURI + xml.LocalName);
+		}
+		
+		private string CheckUri(string uri) {
+			string error = Entity.ValidateUri(uri);
+			if (error != null)
+				OnWarning("The URI <" + uri + "> is not valid: " + error);
+			return uri;
 		}
 		
 		private int isset(string attribute) {
@@ -137,7 +144,7 @@ namespace SemWeb {
 		}
 		
 		private string Unrelativize(string uri) {
-			return GetAbsoluteUri(xml.BaseURI != "" ? xml.BaseURI : BaseUri, uri);
+			return CheckUri(GetAbsoluteUri(xml.BaseURI != "" ? xml.BaseURI : BaseUri, uri));
 		}
 		
 		private Entity GetBlankNode(string nodeID) {
@@ -195,11 +202,12 @@ namespace SemWeb {
 			
 			// If the name of the element is not rdf:Description,
 			// then the name gives its type.
-			if (CurNode() != NS.RDF + "Description") {
-				if (IsRestrictedName(CurNode()) || IsDeprecatedName(CurNode()))
+			string curnode = CurNode();
+			if (curnode != NS.RDF + "Description") {
+				if (IsRestrictedName(curnode) || IsDeprecatedName(curnode))
 					OnError(xml.Name + " cannot be the type of a resource.");
-				if (CurNode() == NS.RDF + "li") OnError("rdf:li cannot be the type of a resource");
-				storage.Add(new Statement(entity, rdfType, (Entity)CurNode(), Meta));
+				if (curnode == NS.RDF + "li") OnError("rdf:li cannot be the type of a resource");
+				storage.Add(new Statement(entity, rdfType, (Entity)curnode, Meta));
 			}
 			
 			ParsePropertyAttributes(entity);

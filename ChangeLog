@@ -1,3 +1,7 @@
+	* Entity: Added ValidateUri static method to validate that a string
+	  is an ok IRI-Reference.
+	* N3Reader, RdfXmlReader: Validate incoming URIs and issue warnings
+	  on failures --- since the validation is new and untested.
 	* GraphMatch: Once a part of a query narrows the results down
 	  to zero possible bindings, don't process it any further.
 	* SparqlEngine: For now, when using QueryableSource methods to

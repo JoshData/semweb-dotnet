@@ -588,6 +588,9 @@ namespace SemWeb {
 			
 			if (str.StartsWith("<") && str.EndsWith(">")) {
 				string uri = GetAbsoluteUri(BaseUri, str.Substring(1, str.Length-2));
+				string urierror = Entity.ValidateUri(uri);
+				if (urierror != null)
+					OnWarning(urierror, loc);
 				return GetResource(context, uri);
 			}
 			
@@ -716,6 +719,9 @@ namespace SemWeb {
 		
 		private void OnError(string message, Location position) {
 			throw new ParserException(message + ", line " + position.Line + " col " + position.Col);
+		}
+		private void OnWarning(string message, Location position) {
+			base.OnWarning(message + ", line " + position.Line + " col " + position.Col);
 		}
 		/*private void OnError(string message, Location position, Exception cause) {
 			throw new ParserException(message + ", line " + position.Line + " col " + position.Col, cause);
