@@ -124,6 +124,8 @@ namespace SemWeb.Stores {
 		// Debugging flags from environment variables.
 		static bool Debug = System.Environment.GetEnvironmentVariable("SEMWEB_DEBUG_SQL") != null;
 		static bool DebugLogSpeed = System.Environment.GetEnvironmentVariable("SEMWEB_DEBUG_SQL_LOG_SPEED") != null;
+		static bool NoSQLView = System.Environment.GetEnvironmentVariable("SEMWEB_SQL_NOVIEWS") != null;
+		static string InitCommands = System.Environment.GetEnvironmentVariable("SEMWEB_SQL_INIT_COMMANDS");
 		
 		// This guy is reused in various calls to avoid allocating a new one of
 		// these all the time.
@@ -210,6 +212,9 @@ namespace SemWeb.Stores {
 			CreateTable();
 			if (CreateVersion()) // tests if this is a new table
 				CreateIndexes();
+
+			if (InitCommands != null)
+				RunCommand(InitCommands);
 		}
 		
 		// Creates the info block in the literal row with ID zero.  Returns true
@@ -1388,7 +1393,7 @@ namespace SemWeb.Stores {
 					varOrder[ctr++] = v;
 			}
 			
-			bool useView = useDistinct && SupportsViews;
+			bool useView = useDistinct && SupportsViews && !NoSQLView;
 			
 			// Set the initial bindings to the result sink
 
