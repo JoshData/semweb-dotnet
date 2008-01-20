@@ -94,8 +94,7 @@ The portions of this library not written by someone else are Copyright 2007
 Joshua Tauberer, and are dual-licensed under both the GNU GPL (version 2
 or later) and the Creative Commons Attribution license. See below for
 licensing information on the 3rd-party components of the library. Everything
-not listed below was written originally by me, or (as in the case of the
-binaries) derived from my source files.
+not listed below was written originally by me.
 
 In short, you can use the library if the program it is incorporated
 into either 1) is licensed under the GNU GPL, or 2) credits me for
@@ -116,13 +115,11 @@ See: http://sparql.sourceforge.net/
 
 IKVM*.dll are auxiliary assemblies for running the SPARQL
 engine.  IKVM was written by Jeroen Frijters.  See http://www.ikvm.net.
-The IVKM license is of a type I don't recognize off hand, so
-you will have to inspect it to see if it imposes any obligations
-on you if you distribute it.
+The IVKM license is the zlib license, which is GPL compatible.
 
 Euler.cs is adapted from Jos De Roo's JavaScript Euler inferencing
 engine.  See: http://www.agfa.com/w3c/euler/ The original source
 code (and thus this derived file) was licensed under the W3C Software
-License, so you will have to check that to see if it imposes any
-obligations on you if you distribute it. The compiled SemWeb.dll
-contains this source code.
+License, which is GPL compatible. The packaged SemWeb.dll contains
+this source code, and is thus (as is) released under the GPL license
+only (not the CC license).

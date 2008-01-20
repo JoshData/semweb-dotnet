@@ -45,7 +45,7 @@ endif
 
 ifeq "$(PROFILE)" "SILVERLIGHT"
 BIN=bin_silverlight
-MCS=gmcs -d:SILVERLIGHT
+MCS=smcs -d:SILVERLIGHT
 endif
 
 all: $(BIN)/SemWeb.dll $(BIN)/SemWeb.PostgreSQLStore.dll $(BIN)/SemWeb.MySQLStore.dll $(BIN)/SemWeb.SqliteStore.dll $(BIN)/SemWeb.Sparql.dll $(BIN)/rdfstorage.exe $(BIN)/rdfquery.exe $(BIN)/euler.exe
