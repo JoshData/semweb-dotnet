@@ -18,7 +18,7 @@ public class RDFQuery {
 		[Mono.GetOptions.Option("The type of the query: '{rsquary}' to match the N3 graph with the target data or 'sparql' to run a SPARQL SELECT query on the target data.")]
 		public string type = "rsquary";
 		
-		[Mono.GetOptions.Option("The format for variable binding output (currently only '{xml}').")]
+		[Mono.GetOptions.Option("The format for variable binding output: {xml}, csv, html")]
 		public string format = "xml";
 		
 		[Mono.GetOptions.Option("Maximum number of results to report.")]
@@ -45,6 +45,8 @@ public class RDFQuery {
 			qs = new SparqlXmlQuerySink(Console.Out);
 		else if (opts.format == "lubm")
 			qs = new LUBMReferenceAnswerOutputQuerySink();
+		else if (opts.format == "csv")
+			qs = new CSVQuerySink();
 		else {
 			Console.Error.WriteLine("Invalid output format.");
 			return;
@@ -115,6 +117,32 @@ public class PrintQuerySink : QueryResultSink {
 		foreach (Variable var in result.Variables)
 			if (var.LocalName != null && result[var] != null)
 				Console.WriteLine(var.LocalName + " ==> " + result[var].ToString());
+		Console.WriteLine();
+		return true;
+	}
+}
+
+public class CSVQuerySink : QueryResultSink {
+	public override void Init(Variable[] variables) {
+		bool first = true;
+		foreach (Variable var in variables) {
+			if (var.LocalName == null) continue;
+			if (!first) Console.Write(","); first = false;
+			Console.Write(var.LocalName);
+		}
+		Console.WriteLine("");
+	}
+	public override bool Add(VariableBindings result) {
+		bool first = true;
+		foreach (Variable var in result.Variables) {
+			if (var.LocalName == null) continue;
+			if (!first) Console.Write(","); first = false;
+			if (result[var] == null) continue;
+
+			string t = result[var].ToString();
+			if (result[var] is Literal) t = ((Literal)result[var]).Value;
+			Console.Write(t);
+		}
 		Console.WriteLine();
 		return true;
 	}

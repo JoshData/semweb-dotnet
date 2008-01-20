@@ -8,7 +8,8 @@
 	  SILVERLIGHT) which removes the dependency on the XmlDocument class.
 	* SPARQL DESCRIBE output now includes back-links, but limits the
 	  number of returned statements based on the total for each
-	  predicate, using hard-coded limits.
+	  predicate, using hard-coded limits and exponential fall-off.
+	* tools/rdfquery.cs: Added a CSV output format.
 
 2007-10-25 Version 1.021
 
