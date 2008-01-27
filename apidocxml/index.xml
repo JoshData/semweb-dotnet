@@ -85,6 +85,7 @@
       <Type Name="DateTimeCompareFilter" />
       <Type Name="TimeSpanCompareFilter" />
       <Type Name="FilterSink" />
+      <Type Name="StringEndsWithFilter" />
     </Namespace>
     <Namespace Name="SemWeb.Inference">
       <Type Name="RDFS" />
@@ -98,7 +99,7 @@
     </Namespace>
   </Types>
   <Assemblies>
-    <Assembly Name="SemWeb" Version="0.8.7.0">
+    <Assembly Name="SemWeb" Version="1.0.2.1">
       <Attributes>
         <Attribute>
           <AttributeName>System.Runtime.CompilerServices.RuntimeCompatibility(WrapNonExceptionThrows=true)</AttributeName>

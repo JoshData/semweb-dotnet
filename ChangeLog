@@ -27,6 +27,7 @@
 	  ^...$ maps to StringContains.
 	* tools/rdfquery.cs: Added a CSV output format.
 	* tools/euler.cs: Allow queries to be issued in SPARQL language.
+	* Updated API docs.
 
 2007-10-25 Version 1.021
 

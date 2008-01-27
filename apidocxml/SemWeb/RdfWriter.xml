@@ -2,7 +2,7 @@
   <TypeSignature Language="C#" Value="public abstract class RdfWriter : IDisposable, SemWeb.StatementSink" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
-    <AssemblyVersion>0.8.1.1</AssemblyVersion>
+    <AssemblyVersion>1.0.2.1</AssemblyVersion>
   </AssemblyInfo>
   <Base>
     <BaseTypeName>System.Object</BaseTypeName>
@@ -122,6 +122,62 @@
         <param name="source">A source containing statements to write.</param>
         <summary>Writes out the contents of the StatementSource.</summary>
         <remarks>None.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Create">
+      <MemberSignature Language="C#" Value="public static SemWeb.RdfWriter Create (string type, System.IO.TextWriter output);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>SemWeb.RdfWriter</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="type" Type="System.String" />
+        <Parameter Name="output" Type="System.IO.TextWriter" />
+      </Parameters>
+      <Docs>
+        <param name="type">The type of the writer to create. See below for possible values.</param>
+        <param name="output">A TextWriter to output to.</param>
+        <summary>Creates a new RdfWriter whose type is specified by a string constant.</summary>
+        <returns>A new RdfWriter.</returns>
+        <remarks>The possible values for <paramref name="type" /> are:
+          <list type="table">
+            <listheader>
+              <term>
+                <paramref name="type" />
+              </term>
+              <description>Reader</description>
+            </listheader>
+            <item>
+              <term>"xml", "text/xml", "application/xml", "application/rdf+xml"</term>
+              <description>
+                <see cref="T:SemWeb.RdfXmlWriter" />
+              </description>
+            </item>
+            <item>
+              <term>"n3", "text/n3", "application/n3", "application/turtle", "application/x-turtle"</term>
+              <description>
+                <see cref="T:SemWeb.N3Writer" />
+              </description>
+            </item>
+          </list></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Create">
+      <MemberSignature Language="C#" Value="public static SemWeb.RdfWriter Create (string type, string file);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>SemWeb.RdfWriter</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="type" Type="System.String" />
+        <Parameter Name="file" Type="System.String" />
+      </Parameters>
+      <Docs>
+        <param name="type">The type of the writer to create. See below for possible values.</param>
+        <param name="file">The name of a file to output to, or "-" to output to Standard Output.</param>
+        <summary>Creates a new RdfWriter whose type is specified by a string constant.</summary>
+        <returns>A new RdfWriter.</returns>
+        <remarks>The possible values for <paramref name="type" /> are listed in the Remarks section of <see cref="M:SemWeb.RdfWriter.Create(System.String,System.IO.TextWriter)" /></remarks>
       </Docs>
     </Member>
   </Members>
