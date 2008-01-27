@@ -1,7 +1,7 @@
 SPARQL=work-copy
 SPARQL_RELEASE=upstream
 
-JAVA_HOME=/usr/java/jdk1.6.0_01/
+JAVA_HOME=/usr/java/jdk1.6.0_03/
 IKVM_BIN=ikvm-0.34.0.2/bin
 IKVM=$(IKVM_BIN)/ikvmc.exe
 ANT=JAVA_HOME=$(JAVA_HOME) /usr/bin/ant
@@ -14,7 +14,7 @@ get-sources:
 	mkdir -p ../bin ../bin_generics
 
 build-sparql:
-	diff -urN $(SPARQL_RELEASE) $(SPARQL) --exclude=.svn --exclude=.settings --exclude=META-INF > local-changes.diff || true
+	diff -urN $(SPARQL_RELEASE) $(SPARQL) --exclude=.svn --exclude=.settings --exclude=META-INF | grep -v "Binary files "  > local-changes.diff || true
 	cd $(SPARQL); $(ANT) grammar jar;
 	mono $(IKVM) -out:sparql-core.dll -nostacktraceinfo \
 		$(SPARQL)/dist/sparql-core.jar 

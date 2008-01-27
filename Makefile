@@ -111,7 +111,7 @@ $(BIN)/rdfquery.exe: tools/rdfquery.cs
 	$(MCS) -debug tools/rdfquery.cs -out:$(BIN)/rdfquery.exe -r:$(BIN)/SemWeb.dll -r:$(BIN)/SemWeb.Sparql.dll -r:Mono.GetOptions	
 
 $(BIN)/euler.exe: tools/euler.cs
-	$(MCS) -debug tools/euler.cs -out:$(BIN)/euler.exe -r:$(BIN)/SemWeb.dll
+	$(MCS) -debug tools/euler.cs -out:$(BIN)/euler.exe -r:$(BIN)/SemWeb.dll -r:$(BIN)/SemWeb.Sparql.dll
 
 endif
 # that's the end of the test if we have a PROFILE given

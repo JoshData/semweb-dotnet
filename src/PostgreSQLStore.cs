@@ -54,8 +54,8 @@ namespace SemWeb.Stores {
 		
 		protected override void CreateLikeTest(string column, string match, int method, System.Text.StringBuilder command) {
 			command.Append(column);
-			command.Append(" LIKE ;");
-			if (method == 1) command.Append("%"); // contains
+			command.Append(" LIKE '");
+			if (method == 1 || method == 2) command.Append("%"); // contains or ends-with
 			
 			// Postgres is weird. Because we will use the backslash to escape % and _, we have
 			// to escape the string twice.  Once regularly, and then again to escape all
@@ -64,7 +64,8 @@ namespace SemWeb.Stores {
 			EscapedAppend(bldr, match, false, false);
 			EscapedAppend(command, match, false, true);
 			
-			command.Append("%'");
+			if (method != 2) command.Append("%"); // contains or starts-with
+			command.Append("'");
 		}
 
 		public override void Close() {

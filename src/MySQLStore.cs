@@ -55,9 +55,10 @@ namespace SemWeb.Stores {
 		protected override void CreateLikeTest(string column, string match, int method, System.Text.StringBuilder command) {
 			command.Append(column);
 			command.Append(" LIKE \"");
-			if (method == 1) command.Append("%"); // contains
+			if (method == 1 || method == 2) command.Append("%"); // contains or ends-with
 			EscapedAppend(command, match, false, true);
-			command.Append("%\"");
+			if (method != 2) command.Append("%"); // contains or starts with
+			command.Append("\"");
 		}
 
 		public override void Close() {

@@ -188,6 +188,7 @@ namespace SemWeb.Stores {
 		
 		protected abstract void CreateNullTest(string column, System.Text.StringBuilder command);
 		protected abstract void CreateLikeTest(string column, string prefix, int method, System.Text.StringBuilder command);
+			// method: 0 == startswith, 1 == contains, 2 == ends with
 		
 		protected virtual bool CreateEntityPrefixTest(string column, string prefix, System.Text.StringBuilder command) {
 			command.Append('(');
@@ -911,6 +912,7 @@ namespace SemWeb.Stores {
 				
 				int id = GetResourceId(r, false);
 				if (id == 0) return false;
+				if (Debug) Console.Error.WriteLine("(" + id + " " + r + ")");
 				cmd.Append('(');
 				cmd.Append(col);
 				cmd.Append('=');
@@ -1135,11 +1137,16 @@ namespace SemWeb.Stores {
 		}
 		
 		void PrefetchResourceIds(IList resources) {
+			Hashtable seen_e = new Hashtable();
+			Hashtable seen_l = new Hashtable();
+			
+			int resStart = 0;
+			while (resStart < resources.Count) {
+
 			StringBuilder cmd_e = new StringBuilder();
 			cmd_e.Append("SELECT id, value FROM ");
 			cmd_e.Append(table);
 			cmd_e.Append("_entities WHERE value IN (");
-			Hashtable seen_e = new Hashtable();
 			bool hasEnts = false;
 
 			StringBuilder cmd_l = new StringBuilder();
@@ -1147,11 +1154,15 @@ namespace SemWeb.Stores {
 			cmd_l.Append(table);
 			cmd_l.Append("_literals WHERE hash IN (");
 			bool hasLiterals = false;
-			Hashtable seen_l = new Hashtable();
 
-			foreach (Resource r in resources) {
+			int ctr = 0;
+			while (resStart < resources.Count && ctr < 1000) {
+				Resource r = (Resource)resources[resStart++];
+				
 				if ((object)r == (object)Statement.DefaultMeta || GetResourceKey(r) != null) // no need to prefetch
 					continue;
+					
+				ctr++;
 			
 				if (r.Uri != null) {
 					if (seen_e.ContainsKey(r.Uri)) continue;
@@ -1197,6 +1208,8 @@ namespace SemWeb.Stores {
 						SetResourceKey((Literal)seen_l[hash], new ResourceKey(id));
 					}
 				}
+			}
+			
 			}
 		}
 		
@@ -1773,6 +1786,10 @@ namespace SemWeb.Stores {
 				SemWeb.Filters.StringStartsWithFilter f = (SemWeb.Filters.StringStartsWithFilter)filter;
 				return CreateLikeTest(col, f.Pattern, 0); // 0=starts-with
 			}
+			if (filter is SemWeb.Filters.StringEndsWithFilter) {
+				SemWeb.Filters.StringEndsWithFilter f = (SemWeb.Filters.StringEndsWithFilter)filter;
+				return CreateLikeTest(col, f.Pattern, 2); // 2==ends-with
+			}
 			if (filter is SemWeb.Filters.NumericCompareFilter) {
 				SemWeb.Filters.NumericCompareFilter f = (SemWeb.Filters.NumericCompareFilter)filter;
 				return col + FilterOpToSQL(f.Type) + f.Number;
@@ -1972,7 +1989,7 @@ namespace SemWeb.Stores {
 				try {
 					RunCommand(cmd);
 				} catch (Exception e) {
-					if (Debug) Console.Error.WriteLine(e);
+					if (Debug && e.Message.IndexOf("already exists") == -1) Console.Error.WriteLine(e);
 				}
 			}
 		}
@@ -2011,6 +2028,7 @@ namespace SemWeb.Stores {
 				"CREATE INDEX meta_index ON " + table + "_statements(meta);",
 			
 				"CREATE UNIQUE INDEX literal_index ON " + table + "_literals(hash);",
+				"CREATE INDEX literal_value_index ON " + table + "_literals(value(20));",
 				"CREATE UNIQUE INDEX entity_index ON " + table + "_entities(value(255));"
 				};
 		}

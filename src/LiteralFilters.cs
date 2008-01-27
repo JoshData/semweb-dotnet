@@ -110,6 +110,17 @@ namespace SemWeb.Filters {
 		}
 	}
 
+	public class StringEndsWithFilter : LiteralFilter {
+		public readonly string Pattern;
+		public StringEndsWithFilter(string pattern) {
+			Pattern = pattern;
+		}
+		public override bool Filter(Literal resource, SelectableSource targetModel) {
+			string v = resource.Value;
+			return v.EndsWith(Pattern);
+		}
+	}
+
 	public class NumericCompareFilter : LiteralFilter {
 		public readonly Decimal Number;
 		public readonly CompType Type;

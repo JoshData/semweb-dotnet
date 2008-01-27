@@ -4,17 +4,29 @@
 	  on failures --- since the validation is new and untested.
 	* GraphMatch: Once a part of a query narrows the results down
 	  to zero possible bindings, don't process it any further.
-	* SparqlEngine: For now, when using QueryableSource methods to
-	  access a store, pass meta fields as Statement.DefaultMeta,
-	  rather than as a variable, because Euler requires that.
-	  Really this needs some more attention.
+	* Euler: Properly ignore Meta fields of statements, especially so
+	  that when a Query comes down from SparqlEngine, which passes
+	  variables for Meta fields, it doesn't get confused here.
 	* Implemented a Silverlight build (set the preprocessor define
 	  SILVERLIGHT) which removes the dependency on the XmlDocument class.
 	* SPARQL DESCRIBE output now includes back-links, but limits the
 	  number of returned statements based on the total for each
 	  predicate, using hard-coded limits and exponential fall-off.
 	* SPARQL: ORDER BY's DESC() now works.
+	* SQLStore: CreateLikeTest revised to be able to do string
+	  ends-with tests. StringEndsWith literal filters are now
+	  passed down into the SQL query.
+	* SQLStore: When getting IDs for resources, don't get more than
+	  1000 at a time.
+	* SQLStore: Create indexes over the literal value column so
+	  we can do fast string-starts-with filtering.
+	* SparqlEngine: Turn regex(,) calls into literal filters for simple
+	  expressions with no operators except ^ and $, so that we can pass
+	  them down into the SQL query. Neither ^ and $ map to StringContains,
+	  ^... maps to StringStartsWith, ...$ maps to StringEndsWith, and
+	  ^...$ maps to StringContains.
 	* tools/rdfquery.cs: Added a CSV output format.
+	* tools/euler.cs: Allow queries to be issued in SPARQL language.
 
 2007-10-25 Version 1.021
 

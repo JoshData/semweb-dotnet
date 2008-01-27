@@ -878,7 +878,7 @@ namespace SemWeb.Query {
 		    			graph[i].Subject = ToRes(triple.getSubjectExpression(), knownValues, true, varMap1, varMap2, s, opts, distinguishedVars, undistinguishedVars) as Entity;
 		    			graph[i].Predicate = ToRes(triple.getPredicateExpression(), knownValues, true, varMap1, varMap2, s, opts, distinguishedVars, undistinguishedVars) as Entity;
 		    			graph[i].Object = ToRes(triple.getObjectExpression(), knownValues, false, varMap1, varMap2, s, opts, distinguishedVars, undistinguishedVars);
-		    			graph[i].Meta = Statement.DefaultMeta; // TODO
+		    			graph[i].Meta = new Variable(); // each part of the statement can have difference provenance
 		    			if (graph[i].AnyNull) return new RdfBindingSetImpl();
 		    			if (!(graph[i].Subject is Variable) && !(graph[i].Predicate is Variable) && !(graph[i].Object is Variable))
 		    				return null; // we could use Contains(), but we'll just abandon the Query() path altogether
@@ -888,8 +888,9 @@ namespace SemWeb.Query {
 						opts.DistinguishedVariables = distinguishedVars;
 					} else if (undistinguishedVars.Count > 0) {
 						// we don't mean to make it distinguished, but we need at least one,
-						// and for now we'll just take them all
-						opts.DistinguishedVariables = undistinguishedVars;
+						// and for now we'll just take the first
+						opts.DistinguishedVariables = new VariableList();
+						((VariableList)opts.DistinguishedVariables).Add(undistinguishedVars[0]);
 					} else {
 						// no variables!
 						return null;
@@ -982,6 +983,7 @@ namespace SemWeb.Query {
 		    }
 		    
 			protected override void extractLiteralFilters(name.levering.ryan.sparql.model.logic.ExpressionLogic node, java.util.Map literalFilters) {
+				//Console.Error.WriteLine(node + " " + node.GetType());
 				base.extractLiteralFilters(node, literalFilters);
 			
 				if (node is BinaryExpressionNode) {
@@ -1029,8 +1031,51 @@ namespace SemWeb.Query {
 					
 					LiteralFilter filter = LiteralFilter.Create(comp, parsedvalue);
 					addLiteralFilter(var, filter, literalFilters);
+
+				} else if (node is ASTRegexFuncNode) {
+					ASTRegexFuncNode renode = (ASTRegexFuncNode)node;
+					
+					SparqlVariable var = RemoveCast(renode.getArguments().get(0)) as ASTVar;
+					name.levering.ryan.sparql.common.Literal relit = RemoveCast(renode.getArguments().get(1)) as name.levering.ryan.sparql.common.Literal;
+					
+					if (var == null || relit == null) return;
+					
+					
+					string re = relit.getLabel();
+					if (re.Length == 0) return;
+					
+					bool startsW = removeChar(ref re, '^', 0); // chop of ^ from start, return whether it was there
+					bool endsW = removeChar(ref re, '$', 1); // chop of $ from end, return whether it was there
+					
+					// make sure the re that's left has no special re characters
+					foreach (char c in re)
+						if (c == '(' || c == '[' || c == '{' || c == '*' || c == '?' || c == '+' || c == '\\' || c == '|' || c == '.')
+							return;
+					
+					LiteralFilter filter;
+					if (startsW && endsW) {
+						filter = LiteralFilter.Create(LiteralFilter.CompType.EQ, re);
+					} else if (startsW) {
+						filter = new SemWeb.Filters.StringStartsWithFilter(re);
+					} else if (endsW) {
+						filter = new SemWeb.Filters.StringEndsWithFilter(re);
+					} else {
+						filter = new SemWeb.Filters.StringContainsFilter(re);
+					}
+					addLiteralFilter(var, filter, literalFilters);
 				}
 			}
+		    
+		    bool removeChar(ref string re, char c, int end) {
+		    	bool ret = re[(end == 0 ? 0 : re.Length-1)] == c;
+		    	if (ret) {
+		    		if (end == 0)
+		    			re = re.Substring(1);
+		    		else
+		    			re = re.Substring(0, re.Length-1);
+		    	}
+		    	return ret;
+		    }
 		    
 		    object RemoveCast(object node) {
 		    	if (node is ASTFunctionCall) {

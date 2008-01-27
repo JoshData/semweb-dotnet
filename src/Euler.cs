@@ -71,9 +71,9 @@ namespace SemWeb.Inference {
 		private void QueryCheckArg(Statement[] graph) {
 			if (graph == null) throw new ArgumentNullException("graph");
 			foreach (Statement s in graph) {
-				if (s.Subject == null || s.Predicate == null || s.Object == null)
+				if (s.Subject == null || s.Predicate == null || s.Object == null || s.Meta == null)
 					throw new ArgumentNullException("Graph statements cannot contain a null subject, predicate, or object. Use a Variable instance instead.");
-				if (s.Meta == null || s.Meta != Statement.DefaultMeta)
+				if (s.Meta != Statement.DefaultMeta && !(s.Meta is Variable))
 					throw new NotSupportedException("Graph statements' meta fields must be Statement.DefaultMeta. Other values of meta are not currently supported.");
 			}
 		}
@@ -308,7 +308,7 @@ namespace SemWeb.Inference {
 						bool canRepresentHead = true;
 						for (int i = 0; i < c.rule.body.Length; i++) {
 							ev.head[i] = evaluate(c.rule.body[i], c.env);
-							if (ev.head[i] == Statement.All) // can't represent it: literal in subject position, for instance
+							if (ev.head[i].AnyNull) // can't represent it: literal in subject position, for instance
 								canRepresentHead = false;
 						}
 						
@@ -544,7 +544,7 @@ namespace SemWeb.Inference {
 			if (s is Literal || p is Literal)
 				return Statement.All;
 				
-			return new Statement((Entity)s, (Entity)p, o, t.Meta);
+			return new Statement((Entity)s, (Entity)p, o, Statement.DefaultMeta);
 		}
 		
 		// The next few routines convert a set of axioms from a StatementSource
