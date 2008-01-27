@@ -712,9 +712,6 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/conf/gr
 +	{ jjtThis.setQRef(qRef.image.substring(1, qRef.image.length() - 1)); }
 +}
 \ No newline at end of file
-Binary files upstream/dist/sparql-core.jar and work-copy/dist/sparql-core.jar differ
-Binary files upstream/dist/sparql-tests.jar and work-copy/dist/sparql-tests.jar differ
-Binary files upstream/sparql-0.8.zip and work-copy/sparql-0.8.zip differ
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/common/AdvancedRdfSource.java work-copy/src/main/name/levering/ryan/sparql/common/AdvancedRdfSource.java
 --- upstream/src/main/name/levering/ryan/sparql/common/AdvancedRdfSource.java	1969-12-31 19:00:00.000000000 -0500
 +++ work-copy/src/main/name/levering/ryan/sparql/common/AdvancedRdfSource.java	2007-10-21 12:35:15.000000000 -0400
@@ -1379,17 +1376,16 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
  
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/logic/DefaultDescribeQueryLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/DefaultDescribeQueryLogic.java
 --- upstream/src/main/name/levering/ryan/sparql/logic/DefaultDescribeQueryLogic.java	2007-10-07 07:19:19.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/logic/DefaultDescribeQueryLogic.java	2007-12-29 20:50:22.000000000 -0500
-@@ -7,6 +7,8 @@
++++ work-copy/src/main/name/levering/ryan/sparql/logic/DefaultDescribeQueryLogic.java	2007-12-29 21:11:01.000000000 -0500
+@@ -7,6 +7,7 @@
  
  import java.util.ArrayList;
  import java.util.Collection;
-+import java.util.Comparator;
 +import java.util.HashMap;
  import java.util.HashSet;
  import java.util.Iterator;
  import java.util.List;
-@@ -25,6 +27,7 @@
+@@ -25,6 +26,7 @@
  import name.levering.ryan.sparql.common.impl.RdfGraphImpl;
  import name.levering.ryan.sparql.model.GroupConstraint;
  import name.levering.ryan.sparql.model.data.DescribeQueryData;
@@ -1397,7 +1393,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
  import name.levering.ryan.sparql.model.logic.DescribeQueryLogic;
  import name.levering.ryan.sparql.model.logic.OrderExpressionLogic;
  import name.levering.ryan.sparql.model.logic.helper.SetProjectionLogic;
-@@ -82,17 +85,26 @@
+@@ -82,17 +84,26 @@
  	 * @return an RDF graph containing the formed triples
  	 */
  	public RdfGraph execute(RdfSource source) {
@@ -1427,7 +1423,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
  
  		// Now project to the solution set
  		List variables = new ArrayList();
-@@ -105,7 +117,7 @@
+@@ -105,7 +116,7 @@
  		results = this.logic.project(results, variables);
  
  		// Now apply ordering in reverse order
@@ -1436,7 +1432,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
  			OrderExpressionLogic orderer = (OrderExpressionLogic) orderExpressions.get(i);
  			orderer.order(results);
  		}
-@@ -147,7 +159,7 @@
+@@ -147,7 +158,7 @@
  		RdfGraphImpl graph = new RdfGraphImpl();
  		for (int i = 0; i < resources.length; i++) {
  			for (Iterator varResources = resources[i].iterator(); varResources.hasNext();) {
@@ -1445,7 +1441,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
  			}
  		}
  
-@@ -163,27 +175,101 @@
+@@ -163,27 +174,101 @@
  	 * @return all of the statements that give a one-level description of a
  	 *         resource
  	 */
@@ -1642,6 +1638,19 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
  							}
  						}
  						// And check to make sure this wasn't a final set, so we
+diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/logic/DefaultOrderExpressionLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/DefaultOrderExpressionLogic.java
+--- upstream/src/main/name/levering/ryan/sparql/logic/DefaultOrderExpressionLogic.java	2006-08-20 20:01:01.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/logic/DefaultOrderExpressionLogic.java	2008-01-26 19:24:39.000000000 -0500
+@@ -67,6 +67,9 @@
+ 			sortedList.add(row);
+ 		}
+ 		Collections.sort(sortedList, new ExpressionComparator(this.data.getExpression()));
++		
++		if (data.getDirection() == OrderExpressionData.DESCENDING)
++			Collections.reverse(sortedList);
+ 
+ 		RdfBindingSetImpl newSet = new RdfBindingSetImpl(set.getVariables());
+ 		newSet.setOrdered(true);
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/logic/DefaultSelectQueryLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/DefaultSelectQueryLogic.java
 --- upstream/src/main/name/levering/ryan/sparql/logic/DefaultSelectQueryLogic.java	2006-08-20 20:01:01.000000000 -0400
 +++ work-copy/src/main/name/levering/ryan/sparql/logic/DefaultSelectQueryLogic.java	2007-10-21 12:35:15.000000000 -0400
@@ -4404,6 +4413,18 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
      }
  
      public Set getVariables() {
+diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/parser/model/ASTQName.java work-copy/src/main/name/levering/ryan/sparql/parser/model/ASTQName.java
+--- upstream/src/main/name/levering/ryan/sparql/parser/model/ASTQName.java	2007-10-07 07:19:18.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/parser/model/ASTQName.java	2008-01-20 11:59:40.000000000 -0500
+@@ -31,7 +31,7 @@
+         } else if (this.namespace != null) {
+             resolvedNamespace = this.namespace;
+         } else {
+-            resolvedNamespace = "";
++        	throw new RuntimeException("The namespace prefix " + this.namespace + " has not been defined.");
+         }
+         return resolvedNamespace + this.localName;
+     }
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/parser/model/ASTSameTermFuncNode.java work-copy/src/main/name/levering/ryan/sparql/parser/model/ASTSameTermFuncNode.java
 --- upstream/src/main/name/levering/ryan/sparql/parser/model/ASTSameTermFuncNode.java	2007-10-07 07:19:18.000000000 -0400
 +++ work-copy/src/main/name/levering/ryan/sparql/parser/model/ASTSameTermFuncNode.java	1969-12-31 19:00:00.000000000 -0500
@@ -4835,7 +4856,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
  	public String toString() {
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/parser/model/SPARQLParserTreeConstants.java work-copy/src/main/name/levering/ryan/sparql/parser/model/SPARQLParserTreeConstants.java
 --- upstream/src/main/name/levering/ryan/sparql/parser/model/SPARQLParserTreeConstants.java	2007-10-07 07:19:57.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/parser/model/SPARQLParserTreeConstants.java	2007-12-29 20:49:50.000000000 -0500
++++ work-copy/src/main/name/levering/ryan/sparql/parser/model/SPARQLParserTreeConstants.java	2008-01-26 19:24:42.000000000 -0500
 @@ -1,141 +1,139 @@
 -/* Generated By:JJTree: Do not edit this line. C:/workspaces/sparql/SPARQL Engine Trunk/src/main/name/levering/ryan/sparql/parser/model\SPARQLParserTreeConstants.java */
 -
@@ -5209,7 +5230,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
      public Object getNative() {
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/parser/SPARQLParserConstants.java work-copy/src/main/name/levering/ryan/sparql/parser/SPARQLParserConstants.java
 --- upstream/src/main/name/levering/ryan/sparql/parser/SPARQLParserConstants.java	2007-10-07 07:19:57.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/parser/SPARQLParserConstants.java	2007-12-29 20:49:52.000000000 -0500
++++ work-copy/src/main/name/levering/ryan/sparql/parser/SPARQLParserConstants.java	2008-01-26 19:24:44.000000000 -0500
 @@ -1,139 +1,136 @@
 -/* Generated By:JJTree&JavaCC: Do not edit this line. SPARQLParserConstants.java */
 -package name.levering.ryan.sparql.parser;
@@ -5488,7 +5509,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
 +}
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/parser/SPARQLParser.java work-copy/src/main/name/levering/ryan/sparql/parser/SPARQLParser.java
 --- upstream/src/main/name/levering/ryan/sparql/parser/SPARQLParser.java	2007-10-07 07:19:39.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/parser/SPARQLParser.java	2007-12-29 20:49:53.000000000 -0500
++++ work-copy/src/main/name/levering/ryan/sparql/parser/SPARQLParser.java	2008-01-26 19:24:44.000000000 -0500
 @@ -1,4422 +1,3182 @@
 -/* Generated By:JJTree&JavaCC: Do not edit this line. SPARQLParser.java */
 -package name.levering.ryan.sparql.parser;
@@ -13093,7 +13114,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
 +}
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/parser/SPARQLParserTokenManager.java work-copy/src/main/name/levering/ryan/sparql/parser/SPARQLParserTokenManager.java
 --- upstream/src/main/name/levering/ryan/sparql/parser/SPARQLParserTokenManager.java	2007-10-07 07:19:57.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/parser/SPARQLParserTokenManager.java	2007-12-29 20:49:53.000000000 -0500
++++ work-copy/src/main/name/levering/ryan/sparql/parser/SPARQLParserTokenManager.java	2008-01-26 19:24:44.000000000 -0500
 @@ -1,3660 +1,3997 @@
 -/* Generated By:JJTree&JavaCC: Do not edit this line. SPARQLParserTokenManager.java */
 -package name.levering.ryan.sparql.parser;
@@ -20712,160 +20733,3 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
 +   }
 +}
 +}
-Binary files upstream/temp/name/levering/ryan/sparql/common/AdvancedRdfSource.class and work-copy/temp/name/levering/ryan/sparql/common/AdvancedRdfSource.class differ
-Binary files upstream/temp/name/levering/ryan/sparql/common/BNode.class and work-copy/temp/name/levering/ryan/sparql/common/BNode.class differ
-Binary files upstream/temp/name/levering/ryan/sparql/common/GraphStatement.class and work-copy/temp/name/levering/ryan/sparql/common/GraphStatement.class differ
-Binary files upstream/temp/name/levering/ryan/sparql/common/impl/AbstractRdfBindingRow.class and work-copy/temp/name/levering/ryan/sparql/common/impl/AbstractRdfBindingRow.class differ
-Binary files upstream/temp/name/levering/ryan/sparql/common/impl/AbstractRdfBindingSet.class and work-copy/temp/name/levering/ryan/sparql/common/impl/AbstractRdfBindingSet.class differ
-Binary files upstream/temp/name/levering/ryan/sparql/common/impl/BNodeExpression.class and work-copy/temp/name/levering/ryan/sparql/common/impl/BNodeExpression.class differ
-Binary files upstream/temp/name/levering/ryan/sparql/common/impl/DateTime.class and work-copy/temp/name/levering/ryan/sparql/common/impl/DateTime.class differ
-Binary files upstream/temp/name/levering/ryan/sparql/common/impl/DateTime$DateTimeFields.class and work-copy/temp/name/levering/ryan/sparql/common/impl/DateTime$DateTimeFields.class differ
-Binary files upstream/temp/name/levering/ryan/sparql/common/impl/InternalSPARQLValueFactory$BNodeImpl.class and work-copy/temp/name/levering/ryan/sparql/common/impl/InternalSPARQLValueFactory$BNodeImpl.class differ
-Binary files upstream/temp/name/levering/ryan/sparql/common/impl/InternalSPARQLValueFactory.class and work-copy/temp/name/levering/ryan/sparql/common/impl/InternalSPARQLValueFactory.class differ
-Binary files upstream/temp/name/levering/ryan/sparql/common/impl/InternalSPARQLValueFactory$LiteralImpl.class and work-copy/temp/name/levering/ryan/sparql/common/impl/InternalSPARQLValueFactory$LiteralImpl.class differ
-Binary files upstream/temp/name/levering/ryan/sparql/common/impl/InternalSPARQLValueFactory$URIImpl.class and work-copy/temp/name/levering/ryan/sparql/common/impl/InternalSPARQLValueFactory$URIImpl.class differ
-Binary files upstream/temp/name/levering/ryan/sparql/common/impl/LiteralExpression.class and work-copy/temp/name/levering/ryan/sparql/common/impl/LiteralExpression.class differ
-Binary files upstream/temp/name/levering/ryan/sparql/common/impl/RdfBindingRowImpl.class and work-copy/temp/name/levering/ryan/sparql/common/impl/RdfBindingRowImpl.class differ
-Binary files upstream/temp/name/levering/ryan/sparql/common/impl/RdfBindingSetImpl$BindingIterator.class and work-copy/temp/name/levering/ryan/sparql/common/impl/RdfBindingSetImpl$BindingIterator.class differ
-Binary files upstream/temp/name/levering/ryan/sparql/common/impl/RdfBindingSetImpl.class and work-copy/temp/name/levering/ryan/sparql/common/impl/RdfBindingSetImpl.class differ
-Binary files upstream/temp/name/levering/ryan/sparql/common/impl/RdfBindingSetImpl$GenericRdfBindingRow.class and work-copy/temp/name/levering/ryan/sparql/common/impl/RdfBindingSetImpl$GenericRdfBindingRow.class differ
-Binary files upstream/temp/name/levering/ryan/sparql/common/impl/RdfBindingSetUtils.class and work-copy/temp/name/levering/ryan/sparql/common/impl/RdfBindingSetUtils.class differ
-Binary files upstream/temp/name/levering/ryan/sparql/common/impl/RdfGraphImpl.class and work-copy/temp/name/levering/ryan/sparql/common/impl/RdfGraphImpl.class differ
-Binary files upstream/temp/name/levering/ryan/sparql/common/impl/StatementImpl.class and work-copy/temp/name/levering/ryan/sparql/common/impl/StatementImpl.class differ
-Binary files upstream/temp/name/levering/ryan/sparql/common/impl/UnboundStatementImpl.class and work-copy/temp/name/levering/ryan/sparql/common/impl/UnboundStatementImpl.class differ
-Binary files upstream/temp/name/levering/ryan/sparql/common/impl/URIExpression.class and work-copy/temp/name/levering/ryan/sparql/common/impl/URIExpression.class differ
-Binary files upstream/temp/name/levering/ryan/sparql/common/impl/ValueExpression.class and work-copy/temp/name/levering/ryan/sparql/common/impl/ValueExpression.class differ
-Binary files upstream/temp/name/levering/ryan/sparql/common/impl/VariableImpl.class and work-copy/temp/name/levering/ryan/sparql/common/impl/VariableImpl.class differ
-Binary files upstream/temp/name/levering/ryan/sparql/common/LenientStatement.class and work-copy/temp/name/levering/ryan/sparql/common/LenientStatement.class differ
-Binary files upstream/temp/name/levering/ryan/sparql/common/Literal.class and work-copy/temp/name/levering/ryan/sparql/common/Literal.class differ
-Binary files upstream/temp/name/levering/ryan/sparql/common/QueryException.class and work-copy/temp/name/levering/ryan/sparql/common/QueryException.class differ
-Binary files upstream/temp/name/levering/ryan/sparql/common/RdfBindingRow.class and work-copy/temp/name/levering/ryan/sparql/common/RdfBindingRow.class differ
-Binary files upstream/temp/name/levering/ryan/sparql/common/RdfBindingSet.class and work-copy/temp/name/levering/ryan/sparql/common/RdfBindingSet.class differ
-Binary files upstream/temp/name/levering/ryan/sparql/common/RdfBindingSetVisitor.class and work-copy/temp/name/levering/ryan/sparql/common/RdfBindingSetVisitor.class differ
-Binary files upstream/temp/name/levering/ryan/sparql/common/RdfGraph.class and work-copy/temp/name/levering/ryan/sparql/common/RdfGraph.class differ
-Binary files upstream/temp/name/levering/ryan/sparql/common/RdfSource.class and work-copy/temp/name/levering/ryan/sparql/common/RdfSource.class differ
-Binary files upstream/temp/name/levering/ryan/sparql/common/Resource.class and work-copy/temp/name/levering/ryan/sparql/common/Resource.class differ
-Binary files upstream/temp/name/levering/ryan/sparql/common/SPARQLConstants.class and work-copy/temp/name/levering/ryan/sparql/common/SPARQLConstants.class differ
-Binary files upstream/temp/name/levering/ryan/sparql/common/SPARQLValueFactory.class and work-copy/temp/name/levering/ryan/sparql/common/SPARQLValueFactory.class differ
-Binary files upstream/temp/name/levering/ryan/sparql/common/Statement.class and work-copy/temp/name/levering/ryan/sparql/common/Statement.class differ
-Binary files upstream/temp/name/levering/ryan/sparql/common/URI.class and work-copy/temp/name/levering/ryan/sparql/common/URI.class differ
-Binary files upstream/temp/name/levering/ryan/sparql/common/Value.class and work-copy/temp/name/levering/ryan/sparql/common/Value.class differ
-Binary files upstream/temp/name/levering/ryan/sparql/common/Variable.class and work-copy/temp/name/levering/ryan/sparql/common/Variable.class differ
-Binary files upstream/temp/name/levering/ryan/sparql/extensions/fpredicates/FunctionalPredicate.class and work-copy/temp/name/levering/ryan/sparql/extensions/fpredicates/FunctionalPredicate.class differ
-Binary files upstream/temp/name/levering/ryan/sparql/extensions/fpredicates/FunctionalPredicateConstants.class and work-copy/temp/name/levering/ryan/sparql/extensions/fpredicates/FunctionalPredicateConstants.class differ
-Binary files upstream/temp/name/levering/ryan/sparql/extensions/fpredicates/FunctionalPredicateLogic.class and work-copy/temp/name/levering/ryan/sparql/extensions/fpredicates/FunctionalPredicateLogic.class differ
-Binary files upstream/temp/name/levering/ryan/sparql/extensions/fpredicates/RdfsMemberProperty.class and work-copy/temp/name/levering/ryan/sparql/extensions/fpredicates/RdfsMemberProperty.class differ
-Binary files upstream/temp/name/levering/ryan/sparql/extensions/fpredicates/RdfsMemberProperty$RdfsMemberBindingSet.class and work-copy/temp/name/levering/ryan/sparql/extensions/fpredicates/RdfsMemberProperty$RdfsMemberBindingSet.class differ
-Binary files upstream/temp/name/levering/ryan/sparql/extensions/fpredicates/RdfsMemberProperty$RdfsMemberBindingSet$RdfsMemberIterator.class and work-copy/temp/name/levering/ryan/sparql/extensions/fpredicates/RdfsMemberProperty$RdfsMemberBindingSet$RdfsMemberIterator.class differ
-Binary files upstream/temp/name/levering/ryan/sparql/extensions/fpredicates/RdfsMemberProperty$RdfsMemberBindingSet$RdfsMemberIterator$StatementBindingRow.class and work-copy/temp/name/levering/ryan/sparql/extensions/fpredicates/RdfsMemberProperty$RdfsMemberBindingSet$RdfsMemberIterator$StatementBindingRow.class differ
-Binary files upstream/temp/name/levering/ryan/sparql/extensions/fpredicates/RdfsMemberProperty$VirtualPropertySet.class and work-copy/temp/name/levering/ryan/sparql/extensions/fpredicates/RdfsMemberProperty$VirtualPropertySet.class differ
-Binary files upstream/temp/name/levering/ryan/sparql/extensions/functions/aggregate/CountFunction$1.class and work-copy/temp/name/levering/ryan/sparql/extensions/functions/aggregate/CountFunction$1.class differ
-Binary files upstream/temp/name/levering/ryan/sparql/extensions/functions/aggregate/CountFunction.class and work-copy/temp/name/levering/ryan/sparql/extensions/functions/aggregate/CountFunction.class differ
-Binary files upstream/temp/name/levering/ryan/sparql/extensions/functions/aggregate/IsMaxFunction$1.class and work-copy/temp/name/levering/ryan/sparql/extensions/functions/aggregate/IsMaxFunction$1.class differ
-Binary files upstream/temp/name/levering/ryan/sparql/extensions/functions/aggregate/IsMaxFunction.class and work-copy/temp/name/levering/ryan/sparql/extensions/functions/aggregate/IsMaxFunction.class differ
-Binary files upstream/temp/name/levering/ryan/sparql/extensions/functions/aggregate/IsMinFunction$1.class and work-copy/temp/name/levering/ryan/sparql/extensions/functions/aggregate/IsMinFunction$1.class differ
-Binary files upstream/temp/name/levering/ryan/sparql/extensions/functions/aggregate/IsMinFunction.class and work-copy/temp/name/levering/ryan/sparql/extensions/functions/aggregate/IsMinFunction.class differ
-Binary files upstream/temp/name/levering/ryan/sparql/extensions/functions/aggregate/MaxFunction$1.class and work-copy/temp/name/levering/ryan/sparql/extensions/functions/aggregate/MaxFunction$1.class differ
-Binary files upstream/temp/name/levering/ryan/sparql/extensions/functions/aggregate/MaxFunction.class and work-copy/temp/name/levering/ryan/sparql/extensions/functions/aggregate/MaxFunction.class differ
-Binary files upstream/temp/name/levering/ryan/sparql/extensions/functions/aggregate/MinFunction$1.class and work-copy/temp/name/levering/ryan/sparql/extensions/functions/aggregate/MinFunction$1.class differ
-Binary files upstream/temp/name/levering/ryan/sparql/extensions/functions/aggregate/MinFunction.class and work-copy/temp/name/levering/ryan/sparql/extensions/functions/aggregate/MinFunction.class differ
-Binary files upstream/temp/name/levering/ryan/sparql/extensions/functions/datetime/AddHourFunction$1.class and work-copy/temp/name/levering/ryan/sparql/extensions/functions/datetime/AddHourFunction$1.class differ
-Binary files upstream/temp/name/levering/ryan/sparql/extensions/functions/datetime/AddHourFunction.class and work-copy/temp/name/levering/ryan/sparql/extensions/functions/datetime/AddHourFunction.class differ
-Binary files upstream/temp/name/levering/ryan/sparql/extensions/functions/datetime/AddMinuteFunction$1.class and work-copy/temp/name/levering/ryan/sparql/extensions/functions/datetime/AddMinuteFunction$1.class differ
-Binary files upstream/temp/name/levering/ryan/sparql/extensions/functions/datetime/AddMinuteFunction.class and work-copy/temp/name/levering/ryan/sparql/extensions/functions/datetime/AddMinuteFunction.class differ
-Binary files upstream/temp/name/levering/ryan/sparql/extensions/functions/datetime/AddMonthFunction$1.class and work-copy/temp/name/levering/ryan/sparql/extensions/functions/datetime/AddMonthFunction$1.class differ
-Binary files upstream/temp/name/levering/ryan/sparql/extensions/functions/datetime/AddMonthFunction.class and work-copy/temp/name/levering/ryan/sparql/extensions/functions/datetime/AddMonthFunction.class differ
-Binary files upstream/temp/name/levering/ryan/sparql/extensions/functions/datetime/AddSecondFunction$1.class and work-copy/temp/name/levering/ryan/sparql/extensions/functions/datetime/AddSecondFunction$1.class differ
-Binary files upstream/temp/name/levering/ryan/sparql/extensions/functions/datetime/AddSecondFunction.class and work-copy/temp/name/levering/ryan/sparql/extensions/functions/datetime/AddSecondFunction.class differ
-Binary files upstream/temp/name/levering/ryan/sparql/extensions/functions/datetime/AddYearFunction$1.class and work-copy/temp/name/levering/ryan/sparql/extensions/functions/datetime/AddYearFunction$1.class differ
-Binary files upstream/temp/name/levering/ryan/sparql/extensions/functions/datetime/AddYearFunction.class and work-copy/temp/name/levering/ryan/sparql/extensions/functions/datetime/AddYearFunction.class differ
-Binary files upstream/temp/name/levering/ryan/sparql/extensions/functions/datetime/DateTimeUtils.class and work-copy/temp/name/levering/ryan/sparql/extensions/functions/datetime/DateTimeUtils.class differ
-Binary files upstream/temp/name/levering/ryan/sparql/extensions/functions/datetime/DayFunction$1.class and work-copy/temp/name/levering/ryan/sparql/extensions/functions/datetime/DayFunction$1.class differ
-Binary files upstream/temp/name/levering/ryan/sparql/extensions/functions/datetime/DayFunction.class and work-copy/temp/name/levering/ryan/sparql/extensions/functions/datetime/DayFunction.class differ
-Binary files upstream/temp/name/levering/ryan/sparql/extensions/functions/datetime/FormatFunction$1.class and work-copy/temp/name/levering/ryan/sparql/extensions/functions/datetime/FormatFunction$1.class differ
-Binary files upstream/temp/name/levering/ryan/sparql/extensions/functions/datetime/FormatFunction.class and work-copy/temp/name/levering/ryan/sparql/extensions/functions/datetime/FormatFunction.class differ
-Binary files upstream/temp/name/levering/ryan/sparql/extensions/functions/datetime/HourFunction$1.class and work-copy/temp/name/levering/ryan/sparql/extensions/functions/datetime/HourFunction$1.class differ
-Binary files upstream/temp/name/levering/ryan/sparql/extensions/functions/datetime/HourFunction.class and work-copy/temp/name/levering/ryan/sparql/extensions/functions/datetime/HourFunction.class differ
-Binary files upstream/temp/name/levering/ryan/sparql/extensions/functions/datetime/MinuteFunction$1.class and work-copy/temp/name/levering/ryan/sparql/extensions/functions/datetime/MinuteFunction$1.class differ
-Binary files upstream/temp/name/levering/ryan/sparql/extensions/functions/datetime/MinuteFunction.class and work-copy/temp/name/levering/ryan/sparql/extensions/functions/datetime/MinuteFunction.class differ
-Binary files upstream/temp/name/levering/ryan/sparql/extensions/functions/datetime/MonthFunction$1.class and work-copy/temp/name/levering/ryan/sparql/extensions/functions/datetime/MonthFunction$1.class differ
-Binary files upstream/temp/name/levering/ryan/sparql/extensions/functions/datetime/MonthFunction.class and work-copy/temp/name/levering/ryan/sparql/extensions/functions/datetime/MonthFunction.class differ
-Binary files upstream/temp/name/levering/ryan/sparql/extensions/functions/datetime/ParseFunction$1.class and work-copy/temp/name/levering/ryan/sparql/extensions/functions/datetime/ParseFunction$1.class differ
-Binary files upstream/temp/name/levering/ryan/sparql/extensions/functions/datetime/ParseFunction.class and work-copy/temp/name/levering/ryan/sparql/extensions/functions/datetime/ParseFunction.class differ
-Binary files upstream/temp/name/levering/ryan/sparql/extensions/functions/datetime/SecondFunction$1.class and work-copy/temp/name/levering/ryan/sparql/extensions/functions/datetime/SecondFunction$1.class differ
-Binary files upstream/temp/name/levering/ryan/sparql/extensions/functions/datetime/SecondFunction.class and work-copy/temp/name/levering/ryan/sparql/extensions/functions/datetime/SecondFunction.class differ
-Binary files upstream/temp/name/levering/ryan/sparql/extensions/functions/datetime/YearFunction$1.class and work-copy/temp/name/levering/ryan/sparql/extensions/functions/datetime/YearFunction$1.class differ
-Binary files upstream/temp/name/levering/ryan/sparql/extensions/functions/datetime/YearFunction.class and work-copy/temp/name/levering/ryan/sparql/extensions/functions/datetime/YearFunction.class differ
-Binary files upstream/temp/name/levering/ryan/sparql/extensions/functions/FunctionConstants.class and work-copy/temp/name/levering/ryan/sparql/extensions/functions/FunctionConstants.class differ
-Binary files upstream/temp/name/levering/ryan/sparql/extensions/functions/string/ConcatFunction$1.class and work-copy/temp/name/levering/ryan/sparql/extensions/functions/string/ConcatFunction$1.class differ
-Binary files upstream/temp/name/levering/ryan/sparql/extensions/functions/string/ConcatFunction.class and work-copy/temp/name/levering/ryan/sparql/extensions/functions/string/ConcatFunction.class differ
-Binary files upstream/temp/name/levering/ryan/sparql/extensions/functions/string/ContainsFunction$1.class and work-copy/temp/name/levering/ryan/sparql/extensions/functions/string/ContainsFunction$1.class differ
-Binary files upstream/temp/name/levering/ryan/sparql/extensions/functions/string/ContainsFunction.class and work-copy/temp/name/levering/ryan/sparql/extensions/functions/string/ContainsFunction.class differ
-Binary files upstream/temp/name/levering/ryan/sparql/extensions/functions/string/EndsWithFunction$1.class and work-copy/temp/name/levering/ryan/sparql/extensions/functions/string/EndsWithFunction$1.class differ
-Binary files upstream/temp/name/levering/ryan/sparql/extensions/functions/string/EndsWithFunction.class and work-copy/temp/name/levering/ryan/sparql/extensions/functions/string/EndsWithFunction.class differ
-Binary files upstream/temp/name/levering/ryan/sparql/extensions/functions/string/LengthFunction$1.class and work-copy/temp/name/levering/ryan/sparql/extensions/functions/string/LengthFunction$1.class differ
-Binary files upstream/temp/name/levering/ryan/sparql/extensions/functions/string/LengthFunction.class and work-copy/temp/name/levering/ryan/sparql/extensions/functions/string/LengthFunction.class differ
-Binary files upstream/temp/name/levering/ryan/sparql/extensions/functions/string/LowerCaseFunction$1.class and work-copy/temp/name/levering/ryan/sparql/extensions/functions/string/LowerCaseFunction$1.class differ
-Binary files upstream/temp/name/levering/ryan/sparql/extensions/functions/string/LowerCaseFunction.class and work-copy/temp/name/levering/ryan/sparql/extensions/functions/string/LowerCaseFunction.class differ
-Binary files upstream/temp/name/levering/ryan/sparql/extensions/functions/string/ReplaceFunction$1.class and work-copy/temp/name/levering/ryan/sparql/extensions/functions/string/ReplaceFunction$1.class differ
-Binary files upstream/temp/name/levering/ryan/sparql/extensions/functions/string/ReplaceFunction.class and work-copy/temp/name/levering/ryan/sparql/extensions/functions/string/ReplaceFunction.class differ
-Binary files upstream/temp/name/levering/ryan/sparql/extensions/functions/string/StartsWithFunction$1.class and work-copy/temp/name/levering/ryan/sparql/extensions/functions/string/StartsWithFunction$1.class differ
-Binary files upstream/temp/name/levering/ryan/sparql/extensions/functions/string/StartsWithFunction.class and work-copy/temp/name/levering/ryan/sparql/extensions/functions/string/StartsWithFunction.class differ
-Binary files upstream/temp/name/levering/ryan/sparql/extensions/functions/string/SubstringAfterFunction$1.class and work-copy/temp/name/levering/ryan/sparql/extensions/functions/string/SubstringAfterFunction$1.class differ
-Binary files upstream/temp/name/levering/ryan/sparql/extensions/functions/string/SubstringAfterFunction.class and work-copy/temp/name/levering/ryan/sparql/extensions/functions/string/SubstringAfterFunction.class differ
-Binary files upstream/temp/name/levering/ryan/sparql/extensions/functions/string/SubstringBeforeFunction$1.class and work-copy/temp/name/levering/ryan/sparql/extensions/functions/string/SubstringBeforeFunction$1.class differ
-Binary files upstream/temp/name/levering/ryan/sparql/extensions/functions/string/SubstringBeforeFunction.class and work-copy/temp/name/levering/ryan/sparql/extensions/functions/string/SubstringBeforeFunction.class differ
-Binary files upstream/temp/name/levering/ryan/sparql/extensions/functions/string/SubstringFunction$1.class and work-copy/temp/name/levering/ryan/sparql/extensions/functions/string/SubstringFunction$1.class differ
-Binary files upstream/temp/name/levering/ryan/sparql/extensions/functions/string/SubstringFunction.class and work-copy/temp/name/levering/ryan/sparql/extensions/functions/string/SubstringFunction.class differ
-Binary files upstream/temp/name/levering/ryan/sparql/extensions/functions/string/TranslateFunction$1.class and work-copy/temp/name/levering/ryan/sparql/extensions/functions/string/TranslateFunction$1.class differ
-Binary files upstream/temp/name/levering/ryan/sparql/extensions/functions/string/TranslateFunction.class and work-copy/temp/name/levering/ryan/sparql/extensions/functions/string/TranslateFunction.class differ
-Binary files upstream/temp/name/levering/ryan/sparql/extensions/functions/string/UpperCaseFunction$1.class and work-copy/temp/name/levering/ryan/sparql/extensions/functions/string/UpperCaseFunction$1.class differ
-Binary files upstream/temp/name/levering/ryan/sparql/extensions/functions/string/UpperCaseFunction.class and work-copy/temp/name/levering/ryan/sparql/extensions/functions/string/UpperCaseFunction.class differ
-Binary files upstream/temp/name/levering/ryan/sparql/extensions/with/DefaultWithConstraintLogic.class and work-copy/temp/name/levering/ryan/sparql/extensions/with/DefaultWithConstraintLogic.class differ
-Binary files upstream/temp/name/levering/ryan/sparql/extensions/with/WithExtension.class and work-copy/temp/name/levering/ryan/sparql/extensions/with/WithExtension.class differ
-Binary files upstream/temp/name/levering/ryan/sparql/logic/BaseLogic.class and work-copy/temp/name/levering/ryan/sparql/logic/BaseLogic.class differ
-Binary files upstream/temp/name/levering/ryan/sparql/logic/BNodeRenamingConstructQueryLogic.class and work-copy/temp/name/levering/ryan/sparql/logic/BNodeRenamingConstructQueryLogic.class differ
-Binary files upstream/temp/name/levering/ryan/sparql/logic/DefaultAskQueryLogic.class and work-copy/temp/name/levering/ryan/sparql/logic/DefaultAskQueryLogic.class differ
-Binary files upstream/temp/name/levering/ryan/sparql/logic/DefaultConstructQueryLogic.class and work-copy/temp/name/levering/ryan/sparql/logic/DefaultConstructQueryLogic.class differ
-Binary files upstream/temp/name/levering/ryan/sparql/logic/function/ExternalFunction.class and work-copy/temp/name/levering/ryan/sparql/logic/function/ExternalFunction.class differ
-Binary files upstream/temp/name/levering/ryan/sparql/logic/function/ExternalFunctionException.class and work-copy/temp/name/levering/ryan/sparql/logic/function/ExternalFunctionException.class differ
-Binary files upstream/temp/name/levering/ryan/sparql/logic/function/ExternalFunctionFactory.class and work-copy/temp/name/levering/ryan/sparql/logic/function/ExternalFunctionFactory.class differ
-Binary files upstream/temp/name/levering/ryan/sparql/logic/function/ValueFunction.class and work-copy/temp/name/levering/ryan/sparql/logic/function/ValueFunction.class differ
-Binary files upstream/temp/name/levering/ryan/sparql/logic/streamed/SourcedRdfBindingSet.class and work-copy/temp/name/levering/ryan/sparql/logic/streamed/SourcedRdfBindingSet.class differ
-Binary files upstream/temp/name/levering/ryan/sparql/logic/streamed/StackedRdfBindingSet.class and work-copy/temp/name/levering/ryan/sparql/logic/streamed/StackedRdfBindingSet.class differ
-Binary files upstream/temp/name/levering/ryan/sparql/logic/streamed/StreamedBindingSetVisitor.class and work-copy/temp/name/levering/ryan/sparql/logic/streamed/StreamedBindingSetVisitor.class differ
-Binary files upstream/temp/name/levering/ryan/sparql/logic/streamed/VirtualRdfBindingSet.class and work-copy/temp/name/levering/ryan/sparql/logic/streamed/VirtualRdfBindingSet.class differ
-Binary files upstream/temp/name/levering/ryan/sparql/model/data/AskQueryData.class and work-copy/temp/name/levering/ryan/sparql/model/data/AskQueryData.class differ
-Binary files upstream/temp/name/levering/ryan/sparql/model/data/BinaryExpressionData.class and work-copy/temp/name/levering/ryan/sparql/model/data/BinaryExpressionData.class differ
-Binary files upstream/temp/name/levering/ryan/sparql/model/data/CallExpressionData.class and work-copy/temp/name/levering/ryan/sparql/model/data/CallExpressionData.class differ
-Binary files upstream/temp/name/levering/ryan/sparql/model/data/ConstraintData.class and work-copy/temp/name/levering/ryan/sparql/model/data/ConstraintData.class differ
-Binary files upstream/temp/name/levering/ryan/sparql/model/data/ConstructQueryData.class and work-copy/temp/name/levering/ryan/sparql/model/data/ConstructQueryData.class differ
-Binary files upstream/temp/name/levering/ryan/sparql/model/data/DescribeQueryData.class and work-copy/temp/name/levering/ryan/sparql/model/data/DescribeQueryData.class differ
-Binary files upstream/temp/name/levering/ryan/sparql/model/data/FilterConstraintData.class and work-copy/temp/name/levering/ryan/sparql/model/data/FilterConstraintData.class differ
-Binary files upstream/temp/name/levering/ryan/sparql/model/data/GraphConstraintData.class and work-copy/temp/name/levering/ryan/sparql/model/data/GraphConstraintData.class differ
-Binary files upstream/temp/name/levering/ryan/sparql/model/data/GroupConstraintData.class and work-copy/temp/name/levering/ryan/sparql/model/data/GroupConstraintData.class differ
-Binary files upstream/temp/name/levering/ryan/sparql/model/data/OptionalConstraintData.class and work-copy/temp/name/levering/ryan/sparql/model/data/OptionalConstraintData.class differ
-Binary files upstream/temp/name/levering/ryan/sparql/model/data/OrderExpressionData.class and work-copy/temp/name/levering/ryan/sparql/model/data/OrderExpressionData.class differ
-Binary files upstream/temp/name/levering/ryan/sparql/model/data/QueryData.class and work-copy/temp/name/levering/ryan/sparql/model/data/QueryData.class differ
-Binary files upstream/temp/name/levering/ryan/sparql/model/data/SelectQueryData.class and work-copy/temp/name/levering/ryan/sparql/model/data/SelectQueryData.class differ
-Binary files upstream/temp/name/levering/ryan/sparql/model/data/TripleConstraintData.class and work-copy/temp/name/levering/ryan/sparql/model/data/TripleConstraintData.class differ
-Binary files upstream/temp/name/levering/ryan/sparql/model/data/UnaryExpressionData.class and work-copy/temp/name/levering/ryan/sparql/model/data/UnaryExpressionData.class differ
-Binary files upstream/temp/name/levering/ryan/sparql/model/data/UnboundStatement.class and work-copy/temp/name/levering/ryan/sparql/model/data/UnboundStatement.class differ
-Binary files upstream/temp/name/levering/ryan/sparql/model/data/UnionConstraintData.class and work-copy/temp/name/levering/ryan/sparql/model/data/UnionConstraintData.class differ
-Binary files upstream/temp/name/levering/ryan/sparql/model/data/WithConstraintData.class and work-copy/temp/name/levering/ryan/sparql/model/data/WithConstraintData.class differ
-Binary files upstream/temp/name/levering/ryan/sparql/model/GroupConstraint.class and work-copy/temp/name/levering/ryan/sparql/model/GroupConstraint.class differ
-Binary files upstream/temp/name/levering/ryan/sparql/model/logic/AskQueryLogic.class and work-copy/temp/name/levering/ryan/sparql/model/logic/AskQueryLogic.class differ
-Binary files upstream/temp/name/levering/ryan/sparql/model/logic/ConstraintLogic$CallParams.class and work-copy/temp/name/levering/ryan/sparql/model/logic/ConstraintLogic$CallParams.class differ
-Binary files upstream/temp/name/levering/ryan/sparql/model/logic/ConstraintLogic.class and work-copy/temp/name/levering/ryan/sparql/model/logic/ConstraintLogic.class differ
-Binary files upstream/temp/name/levering/ryan/sparql/model/logic/ConstructQueryLogic.class and work-copy/temp/name/levering/ryan/sparql/model/logic/ConstructQueryLogic.class differ
-Binary files upstream/temp/name/levering/ryan/sparql/model/logic/DescribeQueryLogic.class and work-copy/temp/name/levering/ryan/sparql/model/logic/DescribeQueryLogic.class differ
-Binary files upstream/temp/name/levering/ryan/sparql/model/logic/ExpressionLogic.class and work-copy/temp/name/levering/ryan/sparql/model/logic/ExpressionLogic.class differ
-Binary files upstream/temp/name/levering/ryan/sparql/model/logic/helper/EffectiveBooleanLogic.class and work-copy/temp/name/levering/ryan/sparql/model/logic/helper/EffectiveBooleanLogic.class differ
-Binary files upstream/temp/name/levering/ryan/sparql/model/logic/helper/GraphTranslationLogic.class and work-copy/temp/name/levering/ryan/sparql/model/logic/helper/GraphTranslationLogic.class differ
-Binary files upstream/temp/name/levering/ryan/sparql/model/logic/helper/SetRangeLogic.class and work-copy/temp/name/levering/ryan/sparql/model/logic/helper/SetRangeLogic.class differ
-Binary files upstream/temp/name/levering/ryan/sparql/model/logic/helper/ValueConversionLogic.class and work-copy/temp/name/levering/ryan/sparql/model/logic/helper/ValueConversionLogic.class differ
-Binary files upstream/temp/name/levering/ryan/sparql/model/logic/helper/ValueOrderingLogic.class and work-copy/temp/name/levering/ryan/sparql/model/logic/helper/ValueOrderingLogic.class differ
-Binary files upstream/temp/name/levering/ryan/sparql/model/logic/LogicFactory.class and work-copy/temp/name/levering/ryan/sparql/model/logic/LogicFactory.class differ
-Binary files upstream/temp/name/levering/ryan/sparql/model/logic/NumericPromotionLogic.class and work-copy/temp/name/levering/ryan/sparql/model/logic/NumericPromotionLogic.class differ
-Binary files upstream/temp/name/levering/ryan/sparql/model/logic/OrderExpressionLogic.class and work-copy/temp/name/levering/ryan/sparql/model/logic/OrderExpressionLogic.class differ
-Binary files upstream/temp/name/levering/ryan/sparql/model/logic/SelectQueryLogic.class and work-copy/temp/name/levering/ryan/sparql/model/logic/SelectQueryLogic.class differ
