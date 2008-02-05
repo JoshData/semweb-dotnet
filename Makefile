@@ -1,4 +1,4 @@
-VERSION=1.021
+VERSION=1.03
     # don't forget to update src/AssemblyInfo.cs!!
 
 ########################
@@ -22,7 +22,7 @@ ifeq "$(PROFILE)" ""
 all:
 	PROFILE=DOTNET1 make
 	PROFILE=DOTNET2 make
-	PROFILE=SILVERLIGHT make
+#	PROFILE=SILVERLIGHT make
 #	PROFILE=DOTNET3 make
 
 # If we have a PROFILE specified.
@@ -93,6 +93,7 @@ else
 endif
 	
 $(BIN)/SemWeb.MySQLStore.dll: src/MySQLStore.cs
+ifneq "$(PROFILE)" "DOTNET1" # the MySql.Data lib we are compiling against is 2.0.
 ifneq "$(mysql_available)" "0"
 	$(MCS) -debug src/MySQLStore.cs -out:$(BIN)/SemWeb.MySQLStore.dll -t:library\
 		 -r:$(BIN)/SemWeb.dll -r:System.Data -r:MySql.Data -d:CONNECTOR -lib:lib
@@ -100,6 +101,7 @@ ifneq "$(mysql_available)" "0"
 	# -r:$(BIN)/SemWeb.dll -r:System.Data -r:ByteFX.Data -d:BYTEFX
 else
 	@echo "SKIPPING compilation of SemWeb.MySQLStore.dll because MySql.Data assembly seems to be not available in the GAC.";
+endif
 endif
 
 # Utility programs

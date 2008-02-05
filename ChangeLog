@@ -1,3 +1,7 @@
+2008-02-02 Version 1.03
+
+	* The library is now dual-licensed under Creative Commons Attribution
+	  (as before) plus GNU GPL v2 or later.
 	* Entity: Added ValidateUri static method to validate that a string
 	  is an ok IRI-Reference.
 	* N3Reader, RdfXmlReader: Validate incoming URIs and issue warnings
