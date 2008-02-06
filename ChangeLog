@@ -1,3 +1,8 @@
+	* Created a new interface that allows the N3Reader to signal to
+	  the N3Writer when a [] bnode goes out of scope, so the writer
+	  can remove from memory the association from the bnode object
+	  to the local name it gives it in the output.
+
 2008-02-02 Version 1.03
 
 	* The library is now dual-licensed under Creative Commons Attribution

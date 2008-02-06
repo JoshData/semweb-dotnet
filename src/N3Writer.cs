@@ -6,7 +6,7 @@ using System.Text;
 using SemWeb;
 
 namespace SemWeb {
-	public class N3Writer : RdfWriter {
+	public class N3Writer : RdfWriter, CanForgetBNodes {
 		TextWriter writer;
 		NamespaceManager2 ns = new NamespaceManager2();
 		bool hasWritten = false;
@@ -232,6 +232,11 @@ namespace SemWeb {
 				base.AddNamespace(uri, prefix);
 				addedPrefixes.Add(prefix);
 			}
+		}
+		
+		void CanForgetBNodes.ForgetBNode(BNode bnode) {
+			anonNames.Remove(bnode);
+			anonNameMap.Remove(bnode);
 		}
 	}
 }

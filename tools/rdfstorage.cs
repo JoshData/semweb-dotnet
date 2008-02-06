@@ -202,7 +202,7 @@ public class RDFStorage {
 	}
 }
 
-internal class StatementFilterSink : StatementSink {
+internal class StatementFilterSink : StatementSink, CanForgetBNodes {
 	StatementSink sink;
 	int counter = 0;
 	
@@ -214,6 +214,11 @@ internal class StatementFilterSink : StatementSink {
 		counter++;
 		sink.Add(statement);
 		return true;
+	}
+	
+	public void ForgetBNode(BNode node) {
+		CanForgetBNodes x = sink as CanForgetBNodes;
+		if (x != null) x.ForgetBNode(node);
 	}
 }
 

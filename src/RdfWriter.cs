@@ -82,4 +82,8 @@ namespace SemWeb {
 			}
 		}
 	}
+	
+	public interface CanForgetBNodes {
+		void ForgetBNode(BNode bnode);
+	}
 }
