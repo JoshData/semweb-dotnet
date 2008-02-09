@@ -407,7 +407,7 @@ namespace SemWeb.Query {
 					foreach (Statement s in part.Graph)
 						qs += "\n\t" + s;
 
-					result.AddComments("QUERY: " + qs + "  => " + matches.Count);
+					result.AddComments("QUERY: " + qs + (returnLimit > 0 ? " [limit " + returnLimit + "/" + localLimit + "]" : "") + "  => " + matches.Count);
 					
 					// If we got back at least as many rows as our local (adaptive) limit,
 					// then we know that the limiting (possibly) had an effect and we may
@@ -417,26 +417,59 @@ namespace SemWeb.Query {
 				}
 				
 				// Intersect the existing bindings with the new matches.
+				// This involves creating binding rows that:
+				//    Match on the intersection of variables from the two sets
+				//    But include only interestingVariables variables, which
+				//    are distinguished variables plus any variables we will
+				//    encounter in later parts of the query
 				
-				// get a list of variables the old and new have in common
+				// Get a list of variables the old and new have in common, and
+				// a list for the common variables of their indexes in the old
+				// and new sets
 				int nCommonVars;
 				int[,] commonVars = IntersectVariables(bindings.Variables, vars, out nCommonVars);
 				
-				BindingSet newbindings = new BindingSet();
+				ResSet retainedVariables = null;
+				if (interestingVariables != null) {
+					retainedVariables = new ResSet();
+					foreach (Variable v in bindings.Variables)
+						if (interestingVariables.Contains(v))
+							retainedVariables.Add(v);
+					foreach (Variable v in vars)
+						if (interestingVariables.Contains(v))
+							retainedVariables.Add(v);
+				}
 				
-				newbindings.Variables = new Variable[bindings.Variables.Length + vars.Length - nCommonVars];
-				bindings.Variables.CopyTo(newbindings.Variables, 0);
-				int ctr = bindings.Variables.Length;
-				int[] newindexes = new int[vars.Length];
-				for (int i = 0; i < vars.Length; i++) {
-					if (Array.IndexOf(newbindings.Variables, vars[i]) == -1) {
-						newbindings.Variables[ctr] = vars[i];
-						newindexes[i] = ctr;
-						ctr++;
+				BindingSet newbindings = new BindingSet();
+				if (retainedVariables == null)
+					newbindings.Variables = new Variable[bindings.Variables.Length + vars.Length - nCommonVars];
+				else
+					newbindings.Variables = new Variable[retainedVariables.Count];
+				
+				// Make a list of the variables in the final set, and a mapping
+				// from indexes in the old/new set to indexes in the final set.
+				int ctr = 0;
+				int[] variableMapLeft = new int[bindings.Variables.Length];
+				for (int i = 0; i < variableMapLeft.Length; i++) {
+					if (retainedVariables == null || retainedVariables.Contains(bindings.Variables[i])) {
+						variableMapLeft[i] = ctr;
+						newbindings.Variables[ctr++] = bindings.Variables[i];
 					} else {
-						newindexes[i] = -1;
+						variableMapLeft[i] = -1;
 					}
 				}
+
+				int[] variableMapRight = new int[vars.Length];
+				for (int i = 0; i < variableMapRight.Length; i++) {
+					if ((retainedVariables == null || retainedVariables.Contains(vars[i]))
+						&& Array.IndexOf(newbindings.Variables, vars[i]) == -1) {
+						variableMapRight[i] = ctr;
+						newbindings.Variables[ctr++] = vars[i];
+					} else {
+						variableMapRight[i] = -1;
+					}
+				}
+				
 				newbindings.Rows = new BindingList();
 				
 				int nMatches = 0;
@@ -448,12 +481,10 @@ namespace SemWeb.Query {
 							VariableBindings right = (VariableBindings)matches[i];
 							
 							Resource[] newValues = new Resource[newbindings.Variables.Length];
-							if (left != null) // null on first intersection
-								left.Values.CopyTo(newValues, 0);
-							right.Values.CopyTo(newValues, bindings.Variables.Length);
+							CopyValues(left == null ? null : left.Values, right.Values, newValues, variableMapLeft, variableMapRight);
 							
 							nMatches++;
-							if (!quickDupCheckIsDup(newbindings, newValues, nMatches, interestingVariables))
+							if (!quickDupCheckIsDup(newbindings, newValues, nMatches))
 								newbindings.Rows.Add(new VariableBindings(newbindings.Variables, newValues));
 						}
 					}
@@ -504,13 +535,10 @@ namespace SemWeb.Query {
 							VariableBindings right = (VariableBindings)list[i];
 							
 							Resource[] newValues = new Resource[newbindings.Variables.Length];
-							left.Values.CopyTo(newValues, 0);
-							for (int j = 0; j < newindexes.Length; j++)
-								if (newindexes[j] != -1)
-									newValues[newindexes[j]] = right.Values[j];
+							CopyValues(left.Values, right.Values, newValues, variableMapLeft, variableMapRight);
 
 							nMatches++;
-							if (!quickDupCheckIsDup(newbindings, newValues, nMatches, interestingVariables))
+							if (!quickDupCheckIsDup(newbindings, newValues, nMatches))
 								newbindings.Rows.Add(new VariableBindings(newbindings.Variables, newValues));
 						}
 					}
@@ -540,7 +568,7 @@ namespace SemWeb.Query {
 			if (!adaptiveLimitDidLimit) break;
 			
 			// Increase the adaptive limit multiplier for next time.
-			adaptiveLimitMultiplier *= 3;
+			adaptiveLimitMultiplier *= 5;
 			
 			} // end of adaptive limiting
 			
@@ -610,8 +638,21 @@ namespace SemWeb.Query {
 			nCommonVars = commonVars.Count;
 			return ret;
 		}
+
+		#if !DOTNET2
+		static void CopyValues(Resource[] left, Resource[] right, Resource[] newValues, int[] variableMapLeft, int[] variableMapRight) {
+		#else
+		static void CopyValues(IList<Resource> left, IList<Resource> right, Resource[] newValues, int[] variableMapLeft, int[] variableMapRight) {
+		#endif
+			for (int i = 0; i < variableMapLeft.Length; i++)
+				if (variableMapLeft[i] != -1)
+					newValues[variableMapLeft[i]] = left[i];
+			for (int i = 0; i < variableMapRight.Length; i++)
+				if (variableMapRight[i] != -1)
+					newValues[variableMapRight[i]] = right[i];
+		}
 		
-		static bool quickDupCheckIsDup(BindingSet newbindings, Resource[] newValues, int nMatches, ResSet interestingVariables) {
+		static bool quickDupCheckIsDup(BindingSet newbindings, Resource[] newValues, int nMatches) {
 			// If there is a more than 10-to-1 ratio of rejected duplicates
 			// to unique rows, then we check all rows.  Otherwise we check the first 100.
 
@@ -620,7 +661,6 @@ namespace SemWeb.Query {
 				if (i > 100 && !isHighRejectRatio) break;
 				bool dup = true;
 				for (int j = 0; j < newValues.Length; j++) {
-					if (interestingVariables != null && !interestingVariables.Contains(newbindings.Variables[j])) continue;
 					Resource left = ((VariableBindings)newbindings.Rows[i]).Values[j];
 					Resource right = newValues[j];
 					if ((object)left == null || (object)right == null) {

@@ -6,6 +6,9 @@
 	  value filters, and to not add WHERE expressions for filters
 	  that did not get a JOIN. If we create a VIEW in order to do
 	  projections of variables, issue a DROP VIEW IF EXISTS first.
+	* GraphMatch: After each part of an intersective query, forget
+	  bindings for nondistinguished variables that we dont need
+	  anymore.
 
 2008-02-02 Version 1.03
 
