@@ -2,6 +2,10 @@
 	  the N3Writer when a [] bnode goes out of scope, so the writer
 	  can remove from memory the association from the bnode object
 	  to the local name it gives it in the output.
+	* SQLStore: Query: Make sure to add JOINs for variables with literal
+	  value filters, and to not add WHERE expressions for filters
+	  that did not get a JOIN. If we create a VIEW in order to do
+	  projections of variables, issue a DROP VIEW IF EXISTS first.
 
 2008-02-02 Version 1.03
 

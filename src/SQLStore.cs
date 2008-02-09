@@ -1527,7 +1527,12 @@ namespace SemWeb.Stores {
 							int vIndex = varRef_Inner.Count;
 							varRef2[v] = vIndex;
 							
-							if (distinguishedVars.Contains(v)) {
+							#if !DOTNET2
+							bool hasLitFilter = (options.VariableLiteralFilters != null && options.VariableLiteralFilters[v] != null);
+							#else
+							bool hasLitFilter = (options.VariableLiteralFilters != null && options.VariableLiteralFilters.ContainsKey(v));
+							#endif
+							if (distinguishedVars.Contains(v) || hasLitFilter) {
 								StringBuilder joinTarget = fromClause;
 								if (useView) joinTarget = outerSelectJoins;
 								
@@ -1602,6 +1607,7 @@ namespace SemWeb.Stores {
 			// Add literal filters to the WHERE clause
 
 			foreach (Variable v in varOrder) {
+				// Is there a literal value filter?
 				if (options.VariableLiteralFilters == null) continue;
 				#if !DOTNET2
 				if (options.VariableLiteralFilters[v] == null) continue;
@@ -1609,6 +1615,10 @@ namespace SemWeb.Stores {
 				if (!options.VariableLiteralFilters.ContainsKey(v)) continue;
 				#endif
 				
+				// If this variable was not used in a literal column, then
+				// we cannot filter its value. Really, it will never be a literal.
+				if (!(bool)varSelectedLiteral[v]) continue;
+
 				foreach (LiteralFilter filter in (ICollection)options.VariableLiteralFilters[v]) {
 					string s = FilterToSQL(filter, "vlit" + (int)varRef2[v] + ".value");
 					if (s == null) continue;
@@ -1628,7 +1638,9 @@ namespace SemWeb.Stores {
 			
 			string viewname = "queryview" + Math.Abs(GetHashCode());
 			if (useView) {
-				cmd.Append("CREATE VIEW ");
+				cmd.Append("DROP VIEW IF EXISTS ");
+				cmd.Append(viewname);
+				cmd.Append("; CREATE VIEW ");
 				cmd.Append(viewname);
 				cmd.Append(" AS ");
 				
