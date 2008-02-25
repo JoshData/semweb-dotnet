@@ -388,7 +388,7 @@ namespace SemWeb {
 				// A variable: \?[a-zA-Z_][a-zA-Z0-9_]*
 				while (true) {
 					int c = source.Peek();
-					if (c == -1 || (!char.IsLetterOrDigit((char)c) && c != '-' && c != '_' && c != ':')) break;					
+					if (c == -1 || (!Entity.ValidateUriIsIUnreserved((char)c) && c != ':') || c == '.') break;
 					b.Append((char)source.Read());
 				}
 			
@@ -657,8 +657,7 @@ namespace SemWeb {
 					
 					if (ent == null) {
 						ent = new BNode();
-						if (head == null)
-							head = ent;
+						head = ent;
 					} else {
 						Entity sub = new BNode();
 						Add(context.store, new Statement(ent, entRDFREST, sub, context.meta), loc);
@@ -668,8 +667,8 @@ namespace SemWeb {
 					Add(context.store, new Statement(ent, entRDFFIRST, res, context.meta), loc);
 					if (fb2) DoForget(res, context);
 				}
-				if (ent == null) // No list items.
-					ent = entRDFNIL; // according to Turtle spec
+				if (head == null) // No list items.
+					head = entRDFNIL; // according to Turtle spec
 				else
 					Add(context.store, new Statement(ent, entRDFREST, entRDFNIL, context.meta), loc);
 				

@@ -343,7 +343,7 @@ namespace SemWeb {
 		private static bool ValidateUriIsDigit(char c) {
 			return c >= 0x30 && c <= 0x39;
 		}
-		private static bool ValidateUriIsIUnreserved(char c) {
+		internal static bool ValidateUriIsIUnreserved(char c) {
 			return ValidateUriIsAlpha(c) || ValidateUriIsDigit(c) || c == '-' || c == '.' || c == '_' || c == '~'
 				|| (c >= 0xA0 && c <= 0xD7FF) || (c >= 0xF900 && c <= 0xFDCF) || (c >= 0xFDF0 && c <= 0xFFEF); // ucschar
 		}
