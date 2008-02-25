@@ -1,5 +1,7 @@
 	* N3Reader: Correct the class of characters allowed in variable
 	  names, and fix reading ( ) lists.
+	* N3Reader: Parse true/false as xsd:boolean. Patch from Mark
+	  Cidade: thanks!!
 	* Created a new interface that allows the N3Reader to signal to
 	  the N3Writer when a [] bnode goes out of scope, so the writer
 	  can remove from memory the association from the bnode object

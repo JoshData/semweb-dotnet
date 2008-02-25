@@ -714,6 +714,12 @@ namespace SemWeb {
 					return new Literal(numval.ToString(), null, NS.XMLSCHEMA + "double");
 			}
 			
+			//BOOLEAN LITERAL
+			
+			if (str == "true" || str == "false") {
+			  return new Literal(str,null,NS.XMLSCHEMA+"boolean");
+			}
+			
 			// If @keywords is used, alphanumerics that aren't keywords
 			// are local names in the default namespace.
 			if (context.UsingKeywords && char.IsLetter(str[0])) {
