@@ -15,6 +15,10 @@
 	  anymore.
 	* MySQLStore: Make sure database is open before checking server
 	  version.
+	* SPARQL: Major restructuring of query processing in Ryan's
+	  library to push processing as deep into the queries as
+	  possible. Which variables are "locally" distinguished are now
+	  available at the level of SemWeb's Query() method.
 
 2008-02-02 Version 1.03
 

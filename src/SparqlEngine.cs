@@ -61,6 +61,10 @@ namespace SemWeb.Query {
 	
 		public SparqlEngine(string query) {
 			queryString = query;
+			
+			if (queryString.Trim().Length == 0)
+				throw new QueryFormatException("SPARQL syntax error: Empty query.");
+			
 			try {
 				this.query = (name.levering.ryan.sparql.parser.model.QueryNode)SPARQLParser.parse(new java.io.StringReader(query));
 				if (this.query is SelectQuery) {
@@ -72,6 +76,8 @@ namespace SemWeb.Query {
 				throw new QueryFormatException("SPARQL syntax error at: " + e.Message);
 			} catch (ParseException e) {
 				throw new QueryFormatException("SPARQL syntax error: " + e.getMessage());
+			} catch (java.util.EmptyStackException e) {
+				throw new QueryFormatException("SPARQL syntax error: Unknown error. (java.util.EmptyStackException)");
 			}
 			
 			extFunctions.Add(new TestFunction());
@@ -846,21 +852,15 @@ namespace SemWeb.Query {
 		    	: base(data, logic) {
 		    }
 		    
-		    protected override RdfBindingSet runTripleConstraints(java.util.List tripleConstraints, RdfSource source,
-		    	java.util.Collection defaultDatasets, java.util.Collection namedDatasets,
-		    	java.util.Map knownValues, java.util.Map knownFilters, int limit) {
-		    	
-		    	RdfSourceWrapper s = (RdfSourceWrapper)source;
+		    protected override RdfBindingSet runTripleConstraints(java.util.List tripleConstraints, 
+		    	name.levering.ryan.sparql.model.logic.ConstraintLogic.CallParams p) {
+		    	RdfSourceWrapper s = (RdfSourceWrapper)p.source;
 		    	
 		    	if (s.source is QueryableSource) {
 		    		QueryableSource qs = (QueryableSource)s.source;
 		    		QueryOptions opts = new QueryOptions();
 		    		
-		    		opts.Limit = 0;
-		    		if (limit == 0)
-		    			opts.Limit = 1;
-		    		else if (limit > 0)
-		    			opts.Limit = limit;
+		    		opts.Limit = p.limit;
 		    		
 					VariableList distinguishedVars = new VariableList();
 					VariableList undistinguishedVars = new VariableList();
@@ -875,16 +875,18 @@ namespace SemWeb.Query {
 		    			if (triple == null) return null;
 		    			
 						graph[i] = new Statement(null, null, null, null); // I don't understand why this should be necessary for a struct, but I get a null reference exception otherwise (yet, that didn't happen initially)
-		    			graph[i].Subject = ToRes(triple.getSubjectExpression(), knownValues, true, varMap1, varMap2, s, opts, distinguishedVars, undistinguishedVars) as Entity;
-		    			graph[i].Predicate = ToRes(triple.getPredicateExpression(), knownValues, true, varMap1, varMap2, s, opts, distinguishedVars, undistinguishedVars) as Entity;
-		    			graph[i].Object = ToRes(triple.getObjectExpression(), knownValues, false, varMap1, varMap2, s, opts, distinguishedVars, undistinguishedVars);
+		    			graph[i].Subject = ToRes(triple.getSubjectExpression(), p.knownValues, true, varMap1, varMap2, s, opts, distinguishedVars, undistinguishedVars, p.distinguishedVariables) as Entity;
+		    			graph[i].Predicate = ToRes(triple.getPredicateExpression(), p.knownValues, true, varMap1, varMap2, s, opts, distinguishedVars, undistinguishedVars, p.distinguishedVariables) as Entity;
+		    			graph[i].Object = ToRes(triple.getObjectExpression(), p.knownValues, false, varMap1, varMap2, s, opts, distinguishedVars, undistinguishedVars, p.distinguishedVariables);
 		    			graph[i].Meta = new Variable(); // each part of the statement can have difference provenance
 		    			if (graph[i].AnyNull) return new RdfBindingSetImpl();
 		    			if (!(graph[i].Subject is Variable) && !(graph[i].Predicate is Variable) && !(graph[i].Object is Variable))
 		    				return null; // we could use Contains(), but we'll just abandon the Query() path altogether
 		    		}
 
-					if (distinguishedVars.Count > 0) {
+					if (p.distinguishedVariables == null) {
+						opts.DistinguishedVariables = null;
+					} else if (distinguishedVars.Count > 0) {
 						opts.DistinguishedVariables = distinguishedVars;
 					} else if (undistinguishedVars.Count > 0) {
 						// we don't mean to make it distinguished, but we need at least one,
@@ -898,9 +900,9 @@ namespace SemWeb.Query {
 
                     opts.VariableLiteralFilters = new LitFilterMap();
 		    		foreach (DictionaryEntry kv in varMap1) {
-		    			if (knownFilters != null && knownFilters.containsKey(kv.Key)) {
+		    			if (p.knownFilters != null && p.knownFilters.containsKey(kv.Key)) {
                             LitFilterList filters = new LitFilterList();
-		    				for (java.util.Iterator iter = ((java.util.List)knownFilters.get(kv.Key)).iterator(); iter.hasNext(); )
+		    				for (java.util.Iterator iter = ((java.util.List)p.knownFilters.get(kv.Key)).iterator(); iter.hasNext(); )
 		    					filters.Add((LiteralFilter)iter.next());
 		    				opts.VariableLiteralFilters[(Variable)kv.Value] = filters;
 		    			}
@@ -949,7 +951,7 @@ namespace SemWeb.Query {
 				}
 		    }
 		    
-		    Resource ToRes(object expr, java.util.Map knownValues, bool entities, Hashtable varMap1, Hashtable varMap2, RdfSourceWrapper src, QueryOptions opts, VariableList distinguishedVars, VariableList undistinguishedVars) {
+		    Resource ToRes(object expr, java.util.Map knownValues, bool entities, Hashtable varMap1, Hashtable varMap2, RdfSourceWrapper src, QueryOptions opts, VariableList distinguishedVars, VariableList undistinguishedVars, java.util.Set sparqlDistinguished) {
 		    	if (expr is SparqlVariable) {
 		    		Variable v;
 		    		if (varMap1.ContainsKey(expr)) {
@@ -971,7 +973,7 @@ namespace SemWeb.Query {
 				    		opts.VariableKnownValues[v] = values2;
 				    	}
 				    	
-				    	if (!(expr is name.levering.ryan.sparql.common.BNode))
+				    	if (sparqlDistinguished != null && sparqlDistinguished.contains(expr))
 				    		distinguishedVars.Add(v);
 						else
 							undistinguishedVars.Add(v);

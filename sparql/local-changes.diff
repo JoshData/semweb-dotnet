@@ -29,689 +29,6 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/conf/gr
  	| <#PN_LOCAL: (<PN_CHARS_U> | ["0"-"9"]) ( (<PN_CHARS> | ".")* <PN_CHARS> )? >
  	| <#EXPONENT: ["E","e"] (["+","-"])? (["0"-"9"])+ >
  	| <#ECHAR: "\\" ["t","b","n","r","f","\\","'","\""] >
-diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/conf/grammars/20070624.jjt~ work-copy/conf/grammars/20070624.jjt~
---- upstream/conf/grammars/20070624.jjt~	1969-12-31 19:00:00.000000000 -0500
-+++ work-copy/conf/grammars/20070624.jjt~	2007-10-21 11:57:31.000000000 -0400
-@@ -0,0 +1,678 @@
-+/*
-+ * SPARQL Engine
-+ * Copyright (C) 2007 Ryan Levering, All rights reserved.
-+ * See LICENSE for full license information
-+ */
-+
-+options {
-+   MULTI=true;
-+   JAVA_UNICODE_ESCAPE=true;
-+   NODE_PACKAGE="name.levering.ryan.sparql.parser.model";
-+   STATIC=false;
-+   IGNORE_CASE=true;
-+}
-+
-+PARSER_BEGIN(SPARQLParser)
-+package name.levering.ryan.sparql.parser;
-+
-+import name.levering.ryan.sparql.parser.model.*;
-+import name.levering.ryan.sparql.model.Query;
-+
-+class SPARQLParser {
-+
-+	public static Query parse(java.io.Reader reader) throws ParseException {
-+		SPARQLParser parser = new SPARQLParser(reader);
-+        return (QueryNode) parser.Query();
-+	}
-+
-+	public static Query parse(java.io.InputStream stream) throws ParseException {
-+		SPARQLParser parser = new SPARQLParser(stream);
-+        return (QueryNode) parser.Query();
-+	}
-+
-+	public static String unescape(String escapedString) {
-+		StringBuffer unescapedString = new StringBuffer(escapedString.length());
-+		StringBuffer unicodeCache = new StringBuffer(8);
-+		boolean escaped = false, isUnicode = false;
-+		for (int i = 0; i < escapedString.length(); i++) {
-+			char current = escapedString.charAt(i);
-+			if (isUnicode) {
-+				// If we just hit a backslash-u
-+				if (Character.isLetterOrDigit(current)) {
-+					unicodeCache.append(current);
-+				} else {
-+					unescapedString.append((char) Integer.parseInt(unicodeCache.toString(), 16));
-+					unicodeCache.setLength(0);
-+					unicodeCache.setLength(8);
-+					isUnicode = false;
-+				}
-+			} else if (escaped) {
-+				// If we just hit a backslash
-+				switch (current) {
-+					case '\\':
-+						unescapedString.append('\\');
-+						break;
-+					case 't':
-+						unescapedString.append('\t');
-+						break;
-+					case 'b':
-+						unescapedString.append('\b');
-+						break;
-+					case 'n':
-+						unescapedString.append('\n');
-+						break;
-+					case 'r':
-+						unescapedString.append('\r');
-+						break;
-+					case 'f':
-+						unescapedString.append('\f');
-+						break;
-+					case '"':
-+						unescapedString.append('"');
-+						break;
-+					case '\'':
-+						unescapedString.append('\'');
-+						break;
-+					case 'u':
-+						isUnicode = true;
-+				}
-+				escaped = false;
-+			} else {				
-+				// Normal behavior
-+				switch (current) {
-+					case '\\':
-+						escaped = true;
-+						break;
-+					default:
-+						unescapedString.append(current);
-+				}
-+			}
-+		}
-+		return unescapedString.toString();
-+	}
-+
-+}
-+
-+PARSER_END(SPARQLParser)
-+
-+SKIP :
-+{
-+  " "
-+| "\t"
-+| "\n"
-+| "\r"
-+| "\f"
-+}
-+
-+/* COMMENTS */
-+
-+MORE :
-+{
-+  "#" : IN_SINGLE_LINE_COMMENT
-+}
-+
-+<IN_SINGLE_LINE_COMMENT>
-+SPECIAL_TOKEN :
-+{
-+  <SINGLE_LINE_COMMENT: "\n" | "\r" | "\r\n" > : DEFAULT
-+}
-+
-+<IN_SINGLE_LINE_COMMENT>
-+MORE :
-+{
-+  < ~[] >
-+}
-+
-+TOKEN :
-+{
-+	<IRI_REF: "<" (~["<",">","'","{","}","|","^","`","\u0000"-"\u0020"])* ">" > /* Example - <http://purl.org/dc/elements/1.1/> */
-+    | <PNAME_NS: (<PN_PREFIX>)? ":" > /* Example - dc: or : */
-+	| <QNAME: (<PN_PREFIX>)? ":" (<PN_LOCAL>)? > /* Example - dc:title */
-+	| <BNODE_LABEL: "_:" <PN_LOCAL> >
-+	| <VAR1: "$" <VARNAME> >
-+	| <VAR2: "?" <VARNAME> >
-+	| <LANGTAG: "@" ( ["a"-"z","A"-"Z"] )+ ( "-" (["a"-"z","A"-"Z","0"-"9"])+ )* >
-+	| <INTEGER: (["0"-"9"])+ >
-+	| <DECIMAL: ( ([ "0"-"9" ])+ "."  (["0"-"9"])* ) | ( "." (["0"-"9"])+ ) >
-+	| <DOUBLE: ( ([ "0"-"9" ])+ "."  (["0"-"9"])* <EXPONENT> ) | ( "." (["0"-"9"])+ <EXPONENT> ) | ( (["0"-"9"])+ <EXPONENT> ) >
-+	| <STRING_LITERAL1: "'" ( (~["\\","\n","\r","'"]) | <ECHAR> | <UCHAR> )* "'" >
-+	| <STRING_LITERAL2: "\"" ( (~["\\","\n","\r","\""]) | <ECHAR> | <UCHAR> )* "\"" >
-+	| <STRING_LITERAL_LONG1: "'''" ( ("'" | "''")? ( (~["\\","'"]) | <ECHAR> | <UCHAR> ) )* "'''" >
-+	| <STRING_LITERAL_LONG2: "\"\"\"" ( ("\"" | "\"\"")? ( (~["\\","\""]) | <ECHAR> | <UCHAR> ) )* "\"\"\"" >
-+	| <NIL: "(" (<WS>)* ")" >
-+	| <ANON: "[" (<WS>)* "]" >
-+	| <#WS: ("\u0020" | "\u0009" | "\r" | "\n") >
-+	| <#VARNAME: (<PN_CHARS_U> | ["0"-"9"]) (<PN_CHARS_U> | ["0"-"9"] | "\u00B7" | ["\u0300"-"\u036F"] | ["\u203F"-"\u2040"] )* >
-+	| <#PN_CHARS: <PN_CHARS_U> | "-" | ["0"-"9"] | "\u00B7" | ["\u0300"-"\u036F"] | ["\u203F"-"\u2040"] >
-+	| <#PN_PREFIX: <PN_CHARS_U> ( (<PN_CHARS> | ".")* <PN_CHARS> )? >
-+	| <#PN_LOCAL: (<PN_CHARS_U> | ["0"-"9"]) ( (<PN_CHARS> | ".")* <PN_CHARS> )? >
-+	| <#EXPONENT: ["E","e"] (["+","-"])? (["0"-"9"])+ >
-+	| <#ECHAR: "\\" ["t","b","n","r","f","\\","'","\""] >
-+	| <#UCHAR: "\\" ( "u" <HEX> <HEX> <HEX> <HEX> | "U" <HEX> <HEX> <HEX> <HEX> <HEX> <HEX> <HEX> <HEX> ) >
-+	| <#HEX: ["0"-"9"] | ["a"-"f"] | ["A"-"F"] >
-+	| <#PN_CHARS_U: <PN_CHARS_BASE> | "_" >
-+	| <#PN_CHARS_BASE: ["a"-"z"] | ["A"-"Z"] 
-+			| ["\u00C0"-"\u00D6"] | ["\u00D8"-"\u00F6"] | ["\u00F8"-"\u02FF"] | ["\u0370"-"\u037D"]
-+			| ["\u037F"-"\u1FFF"] | ["\u200C"-"\u200D"] | ["\u2070"-"\u218F"] | ["\u2C00"-"\u2FEF"]
-+			| ["\u3001"-"\uD7FF"] | ["\uF900"-"\uFDCF"] | ["\uFDF0"-"\uFFFD"] | <UCHAR> >
-+}
-+
-+Node Query() #QueryContainer :
-+{}
-+{
-+	Prologue() (SelectQuery() | ConstructQuery() | DescribeQuery() | AskQuery() )
-+  	<EOF>
-+  	{ return jjtThis.jjtGetChild(jjtThis.jjtGetNumChildren() - 1); }
-+}
-+
-+void Prologue() #void : {}
-+{
-+  (BaseDecl())? (PrefixDecl())*
-+}
-+
-+void BaseDecl() #Base : {}
-+{
-+	"BASE" QuotedIRIref()
-+}
-+
-+void PrefixDecl() #Prefix :
-+{
-+	Token qName;
-+}
-+{
-+	"PREFIX" qName = <PNAME_NS> QuotedIRIref()
-+	{jjtThis.setPrefix(qName.image.substring(0, qName.image.indexOf(':'))); }
-+}
-+
-+void SelectQuery() #SelectQuery :
-+{}
-+{
-+	"SELECT" ("DISTINCT" { jjtThis.setDistinct(true); } | "REDUCED" { jjtThis.setReduced(true); })? ( (Var())+ | "*" ) (DatasetClause())* WhereClause() SolutionModifier()
-+}
-+
-+void ConstructQuery() #ConstructQuery :
-+{}
-+{
-+	"CONSTRUCT" ConstructTemplate() (DatasetClause())* WhereClause() SolutionModifier()
-+}
-+
-+void DescribeQuery() #DescribeQuery :
-+{}
-+{
-+	"DESCRIBE" ( (VarOrIRIref())+ | "*" ) (DatasetClause())* (WhereClause())? SolutionModifier()
-+}
-+
-+void AskQuery() #AskQuery :
-+{}
-+{
-+	"ASK" (DatasetClause())* WhereClause()
-+}
-+
-+void DatasetClause() #void :
-+{}
-+{
-+	"FROM" (DefaultGraphClause() | NamedGraphClause())
-+}
-+
-+void DefaultGraphClause() #DefaultGraph :
-+{}
-+{
-+	SourceSelector()
-+}
-+
-+void NamedGraphClause() #NamedGraph :
-+{}
-+{
-+	"NAMED" SourceSelector()
-+}
-+
-+void SourceSelector() #void :
-+{}
-+{
-+	IRIref()
-+}
-+
-+void WhereClause() #void :
-+{}
-+{
-+	("WHERE")? GroupGraphPattern()
-+}
-+
-+void SolutionModifier() #void :
-+{}
-+{
-+	(OrderClause())? (LimitOffsetClauses())?
-+}
-+
-+void LimitOffsetClauses() #void :
-+{}
-+{
-+	(( LimitClause() (OffsetClause())? ) | ( OffsetClause() (LimitClause())? ))
-+}
-+
-+void OrderClause() #OrderConditions :
-+{}
-+{
-+	"ORDER" "BY" ( OrderCondition() )+
-+}
-+
-+void OrderCondition() #void :
-+{
-+boolean ascending = true;
-+}
-+{
-+	( ( ( "ASC" | "DESC" {ascending = false;} ) BracketedExpression() #AscOrder(ascending) ) #DescOrder(!ascending) ) 
-+		| ( ( FunctionCall() | Var() | BracketedExpression() )#DefaultOrder )
-+}
-+
-+void LimitClause() #Limit :
-+{
-+Token limit;
-+}
-+{
-+	"LIMIT" limit = <INTEGER>
-+	{ jjtThis.setLimit(limit.image); }
-+}
-+
-+void OffsetClause() #Offset :
-+{
-+Token offset;
-+}
-+{
-+	"OFFSET" offset = <INTEGER>
-+	{ jjtThis.setOffset(offset.image); }
-+}
-+
-+void GroupGraphPattern() #GroupConstraint :
-+{}
-+{
-+	"{" GraphPattern() "}"
-+}
-+
-+void GraphPattern() #void :
-+{}
-+{
-+	FilteredBasicGraphPattern() ( GraphPatternNotTriples() (".")? GraphPattern() )? 
-+}
-+
-+void FilteredBasicGraphPattern() #void :
-+{}
-+{
-+	( BlockOfTriples() )? ( Constraint() (".")? FilteredBasicGraphPattern() )?
-+}
-+
-+void BlockOfTriples() #void :
-+{}
-+{
-+	TriplesSameSubject() ( "." ( TriplesSameSubject() )? )*
-+}
-+
-+void GraphPatternNotTriples() #void :
-+{}
-+{
-+	OptionalGraphPattern() | GroupOrUnionGraphPattern() | GraphGraphPattern()
-+}
-+
-+void OptionalGraphPattern() #OptionalConstraint :
-+{}
-+{
-+	"OPTIONAL" GroupGraphPattern()
-+}
-+
-+void GraphGraphPattern() #GraphConstraint :
-+{}
-+{
-+	"GRAPH" VarOrIRIref() #Graph(1) GroupGraphPattern()
-+}
-+
-+void GroupOrUnionGraphPattern() #void :
-+{}
-+{
-+	GroupGraphPattern() ("UNION" GroupGraphPattern() #UnionConstraint(2) )*
-+}
-+
-+void Constraint() #FilterConstraint :
-+{}
-+{
-+	"FILTER" (BracketedExpression() | BuiltInCall() | FunctionCall())
-+}
-+
-+void FunctionCall() #FunctionCall :
-+{}
-+{
-+	IRIref() ArgList()
-+}
-+
-+void ArgList() #Arguments :
-+{}
-+{
-+	<NIL> | ( "(" (Expression() ("," Expression() )*)? ")" )
-+}
-+
-+void ConstructTemplate() #ConstructTemplate :
-+{}
-+{
-+	"{" ConstructTriples() "}"
-+}
-+
-+void ConstructTriples() #void :
-+{}
-+{
-+	( TriplesSameSubject() ( "." ConstructTriples() )? )?
-+}
-+
-+void TriplesSameSubject() #void :
-+{}
-+{
-+	(VarOrTerm() PropertyListNotEmpty() #PropertyList) #TripleSet
-+		| (TriplesNode() (PropertyListNotEmpty() #PropertyList)?) #NodeSet
-+}
-+
-+void PropertyList() #void :
-+{}
-+{
-+	(PropertyListNotEmpty())?
-+}
-+
-+void PropertyListNotEmpty() #void :
-+{}
-+{
-+	(Verb() ObjectList() #ObjectList) #VerbObject(true) (";" PropertyList() )?
-+}
-+
-+void ObjectList() #void :
-+{}
-+{
-+	GraphNode() ("," ObjectList())?
-+}
-+
-+void Verb() #void :
-+{}
-+{
-+	VarOrIRIref() | "a" #TypeVerb(0)
-+}
-+
-+void TriplesNode() #void :
-+{}
-+{
-+	Collection() | BlankNodePropertyList()
-+}
-+
-+void BlankNodePropertyList() #BlankNodePropertyList :
-+{}
-+{
-+	"[" PropertyListNotEmpty() #PropertyList "]"
-+}
-+
-+void Collection() #Collection :
-+{}
-+{
-+	"(" ( GraphNode() )+ ")"
-+}
-+
-+void GraphNode() #void :
-+{}
-+{
-+	VarOrTerm() | TriplesNode()
-+}
-+
-+void VarOrTerm() #void :
-+{}
-+{
-+	Var() | GraphTerm()
-+}
-+
-+void VarOrIRIref() #void :
-+{}
-+{
-+	Var() | IRIref()
-+}
-+
-+void Var() #Var :
-+{
-+	Token varName;
-+}
-+{
-+	( varName = <VAR1> | varName = <VAR2> )
-+	{ jjtThis.setName(varName.image.substring(1)); }
-+}
-+
-+void GraphTerm() #void :
-+{}
-+{
-+	IRIref() 
-+		| RDFLiteral()
-+		| PositiveLiteral() 
-+		| "+" PositiveLiteral()
-+		| "-" NegativeLiteral() 
-+		| BooleanLiteral() 
-+		| BlankNode() 
-+		| ( <NIL> #EmptyNode(1) )
-+}
-+
-+void Expression() #void :
-+{}
-+{
-+	ConditionalOrExpression()
-+}
-+
-+void ConditionalOrExpression() #void :
-+{}
-+{
-+	ConditionalAndExpression()  ( "||" ConditionalAndExpression() #OrNode(2) )*
-+}
-+
-+void ConditionalAndExpression() #void :
-+{}
-+{
-+	ValueLogical() ("&&" ValueLogical() #AndNode(2) )*
-+}
-+
-+void ValueLogical() #void :
-+{}
-+{
-+	RelationalExpression()
-+}
-+
-+void RelationalExpression() #void :
-+{}
-+{
-+	NumericExpression()
-+	( 
-+		( "=" NumericExpression() #EqualsNode(2) ) 
-+			| ( "!=" NumericExpression() #NotEqualsNode(2) )
-+			| ( "<" NumericExpression() #LessThanNode(2) )
-+			| ( "<=" NumericExpression() #LessThanEqualsNode(2) )
-+			| ( ">" NumericExpression() #GreaterThanNode(2) )
-+			| ( ">=" NumericExpression() #GreaterThanEqualsNode(2) )
-+	)?
-+}
-+
-+void NumericExpression() #void :
-+{}
-+{
-+	AdditiveExpression()
-+}
-+
-+void AdditiveExpression() #void :
-+{}
-+{
-+	MultiplicativeExpression()
-+	( ( "+" MultiplicativeExpression()  #AdditionNode(2) )
-+		| ( "-" MultiplicativeExpression() #SubtractionNode(2) )
-+	)*
-+}
-+
-+void MultiplicativeExpression() #void :
-+{}
-+{
-+	UnaryExpression()
-+	( ( "*" UnaryExpression() #MultiplicationNode(2) )
-+		| ( "/" UnaryExpression() #DivisionNode(2) )
-+	)*
-+}
-+
-+void UnaryExpression() #void :
-+{}
-+{
-+	"!" PrimaryExpression() #NotNode(1)
-+		| "+" PrimaryExpression() #PlusNode(1)
-+		| "-" PrimaryExpression() #MinusNode(1)
-+		| PrimaryExpression()
-+}
-+
-+void PrimaryExpression() #void :
-+{}
-+{
-+	BracketedExpression()
-+		| BuiltInCall()
-+		| IRIrefOrFunction()
-+		| RDFLiteral()
-+		| PositiveLiteral()
-+		| BooleanLiteral()
-+		| BlankNode()
-+		| Var()
-+}
-+
-+void BracketedExpression() #void :
-+{}
-+{
-+	"(" Expression() ")"
-+}
-+
-+void BuiltInCall() #void :
-+{}
-+{
-+	"STR" "(" Expression() ")" #StrFuncNode(1)
-+		| "LANG" "(" Expression() ")" #LangFuncNode(1)
-+		| "LANGMATCHES" "(" Expression() "," Expression() ")" #LangMatchesFuncNode(1)
-+		| "DATATYPE" "(" Expression() ")" #DTFuncNode(1)
-+		| "BOUND" "(" Var() ")" #BoundFuncNode(1)
-+		| "sameTerm" "(" Expression() "," Expression() ")"
-+		| "isIRI" "(" Expression() ")" #URIFuncNode(1)
-+		| "isURI" "(" Expression() ")" #URIFuncNode(1)
-+		| "isBLANK" "(" Expression() ")" #BlankFuncNode(1)
-+		| "isLITERAL" "(" Expression() ")" #LiteralFuncNode(1)
-+		| RegexExpression()
-+}
-+
-+void RegexExpression() #RegexFuncNode :
-+{}
-+{
-+	"REGEX" "(" Expression() "," Expression() ("," Expression())? ")"
-+}
-+
-+void IRIrefOrFunction() #void :
-+{}
-+{
-+	IRIref() (ArgList() #FunctionCall(2))?
-+}
-+
-+void RDFLiteral() #Literal :
-+{
-+Token label, language;
-+String literal;
-+}
-+{
-+	( 
-+		label = <STRING_LITERAL1> {	literal = label.image.substring(1, label.image.length() - 1); }
-+		| 
-+		label = <STRING_LITERAL2> { literal = label.image.substring(1, label.image.length() - 1); }
-+		| 
-+		label = <STRING_LITERAL_LONG1> { literal = label.image.substring(3, label.image.length() - 3); }
-+		| 
-+		label = <STRING_LITERAL_LONG2> { literal = label.image.substring(3, label.image.length() - 3); }
-+	)
-+	{ 				// Escape all the escape characters
-+					jjtThis.setLabel(SPARQLParser.unescape(literal));
-+					
-+	}
-+	(
-+		language = <LANGTAG> { jjtThis.setLanguage(language.image.substring(1)); } 
-+		| 
-+		( "^^" IRIref() )
-+	)?
-+}
-+
-+void NegativeLiteral() #Literal :
-+{
-+Token number;
-+}
-+{
-+	(
-+		number = <INTEGER>
-+		{ jjtThis.setDatatype("http://www.w3.org/2001/XMLSchema#integer"); }
-+		| 
-+		number = <DECIMAL>
-+		{ jjtThis.setDatatype("http://www.w3.org/2001/XMLSchema#decimal"); }
-+		| 
-+		number = <DOUBLE>
-+		{ jjtThis.setDatatype("http://www.w3.org/2001/XMLSchema#double"); }
-+	)
-+	{ jjtThis.setLabel("-" + number.image); }
-+}
-+
-+void PositiveLiteral() #Literal :
-+{
-+Token number;
-+}
-+{
-+	(
-+		number = <INTEGER>
-+		{ jjtThis.setDatatype("http://www.w3.org/2001/XMLSchema#integer"); }
-+		| 
-+		number = <DECIMAL>
-+		{ jjtThis.setDatatype("http://www.w3.org/2001/XMLSchema#decimal"); }
-+		| 
-+		number = <DOUBLE>
-+		{ jjtThis.setDatatype("http://www.w3.org/2001/XMLSchema#double"); }
-+	)
-+	{ jjtThis.setLabel(number.image); }
-+}
-+
-+void BooleanLiteral() #Literal :
-+{
-+Token bool;
-+}
-+{
-+	(
-+		bool = "true" | bool = "false"
-+	)
-+	{ jjtThis.setLabel(bool.image);
-+		jjtThis.setDatatype("http://www.w3.org/2001/XMLSchema#boolean"); }
-+}
-+
-+void IRIref() #void :
-+{}
-+{
-+	QuotedIRIref() | QName()
-+}
-+
-+void QName() #QName :
-+{
-+Token qName;
-+}
-+{
-+	( qName = <QNAME> | qName = <PNAME_NS> )
-+	{ jjtThis.setNamespace(qName.image.substring(0, qName.image.indexOf(':'))); 
-+		jjtThis.setLocalName(qName.image.substring(qName.image.indexOf(':') + 1)); }
-+}
-+
-+void BlankNode() #void :
-+{
-+Token nodeLabel;
-+}
-+{
-+	( nodeLabel = <BNODE_LABEL> {jjtThis.setID(nodeLabel.image.substring(2));}) #LabeledBlankNode
-+	| 
-+	( <ANON> ) #GenericBlankNode
-+}
-+
-+void QuotedIRIref() #QuotedIRIref :
-+{
-+Token qRef;
-+}
-+{
-+	qRef = <IRI_REF>
-+	{ jjtThis.setQRef(qRef.image.substring(1, qRef.image.length() - 1)); }
-+}
-\ No newline at end of file
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/common/AdvancedRdfSource.java work-copy/src/main/name/levering/ryan/sparql/common/AdvancedRdfSource.java
 --- upstream/src/main/name/levering/ryan/sparql/common/AdvancedRdfSource.java	1969-12-31 19:00:00.000000000 -0500
 +++ work-copy/src/main/name/levering/ryan/sparql/common/AdvancedRdfSource.java	2007-10-21 12:35:15.000000000 -0400
@@ -884,6 +201,19 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
  	}
  
  	/**
+diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/common/impl/VariableImpl.java work-copy/src/main/name/levering/ryan/sparql/common/impl/VariableImpl.java
+--- upstream/src/main/name/levering/ryan/sparql/common/impl/VariableImpl.java	2007-10-07 07:19:17.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/common/impl/VariableImpl.java	2008-02-09 10:17:15.000000000 -0500
+@@ -77,4 +77,9 @@
+ 		return bindings.getValue(this);
+ 	}
+ 
++	public java.util.Set getVariables() {
++		java.util.HashSet ret = new java.util.HashSet();
++		ret.add(this);
++		return ret;
++	}
+ }
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/common/URI.java work-copy/src/main/name/levering/ryan/sparql/common/URI.java
 --- upstream/src/main/name/levering/ryan/sparql/common/URI.java	2007-10-07 07:19:17.000000000 -0400
 +++ work-copy/src/main/name/levering/ryan/sparql/common/URI.java	2007-10-21 12:35:15.000000000 -0400
@@ -1006,7 +336,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
  }
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/logic/BaseLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/BaseLogic.java
 --- upstream/src/main/name/levering/ryan/sparql/logic/BaseLogic.java	2007-10-07 07:19:19.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/logic/BaseLogic.java	2007-10-21 12:35:15.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/logic/BaseLogic.java	2008-02-09 10:18:23.000000000 -0500
 @@ -25,7 +25,6 @@
  import name.levering.ryan.sparql.logic.function.LangLogic;
  import name.levering.ryan.sparql.logic.function.LangMatchesLogic;
@@ -1015,7 +345,24 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
  import name.levering.ryan.sparql.logic.function.StrLogic;
  import name.levering.ryan.sparql.model.data.BinaryExpressionData;
  import name.levering.ryan.sparql.model.data.CallExpressionData;
-@@ -279,17 +278,6 @@
+@@ -90,16 +89,6 @@
+ 	}
+ 
+ 	/**
+-	 * Gets the default variables evaluation logic.
+-	 * 
+-	 * @param data the variable the logic is evaluating
+-	 * @return the logic handling the variable evaluation
+-	 */
+-	public ExpressionLogic getVariableLogic(Variable data) {
+-		return new DefaultVariableLogic(data);
+-	}
+-
+-	/**
+ 	 * Gets the default division logic.
+ 	 * 
+ 	 * @param data the binary data containing the expressions to divide
+@@ -279,17 +268,6 @@
  	}
  
  	/**
@@ -1033,7 +380,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
  	 * Gets the default 'regex' function logic.
  	 * 
  	 * @param data the function data containing arguments passed to the regex
-@@ -357,8 +345,8 @@
+@@ -357,8 +335,8 @@
  	 * 
  	 * @return the logic that orders Value objects
  	 */
@@ -1046,7 +393,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
  }
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/logic/BNodeRenamingConstructQueryLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/BNodeRenamingConstructQueryLogic.java
 --- upstream/src/main/name/levering/ryan/sparql/logic/BNodeRenamingConstructQueryLogic.java	2007-10-07 07:19:19.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/logic/BNodeRenamingConstructQueryLogic.java	2007-10-21 12:35:15.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/logic/BNodeRenamingConstructQueryLogic.java	2008-02-05 08:43:57.000000000 -0500
 @@ -22,6 +22,7 @@
  import name.levering.ryan.sparql.model.GroupConstraint;
  import name.levering.ryan.sparql.model.TripleConstraint;
@@ -1055,7 +402,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
  import name.levering.ryan.sparql.model.logic.ConstructQueryLogic;
  import name.levering.ryan.sparql.model.logic.OrderExpressionLogic;
  import name.levering.ryan.sparql.model.logic.helper.SetRangeLogic;
-@@ -85,16 +86,20 @@
+@@ -85,31 +86,21 @@
  	 * @return an RDF graph containing the formed triples
  	 */
  	public RdfGraph execute(RdfSource source) {
@@ -1067,21 +414,40 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
  		GroupConstraint constraint = this.data.getConstraint();
 -		Collection defaultDatasets = this.data.getDefaultDatasets();
 -		Collection namedDatasets = this.data.getNamedDatasets();
+-		List orderExpressions = this.data.getOrderExpressions();
+-		int limit = this.data.getLimit();
+-		int offset = this.data.getOffset();
 +		p.defaultDatasets = this.data.getDefaultDatasets();
 +		p.namedDatasets = this.data.getNamedDatasets();
- 		List orderExpressions = this.data.getOrderExpressions();
- 		int limit = this.data.getLimit();
- 		int offset = this.data.getOffset();
++		p.orderExpressions = this.data.getOrderExpressions();
++		p.limit = this.data.getLimit();
++		p.offset = this.data.getOffset();
++		p.rangeLogic = this.rangeLogic;
  
  		// First bind the result table
 -		RdfBindingSet results = constraint.constrain(new RdfBindingSetImpl(), source, defaultDatasets, namedDatasets);
+-
+-		// Now apply ordering in reverse order to give priority to the first
+-		// variable
+-		for (int i = orderExpressions.size() - 1; i >= 0; i--) {
+-			OrderExpressionLogic orderer = (OrderExpressionLogic) orderExpressions.get(i);
+-			orderer.order(results);
+-		}
+-
+-		// Now apply limiting and offsetting
+-		if (limit >= 0) {
+-			results = this.rangeLogic.limit(results, limit);
+-		}
+-		if (offset >= 0) {
+-			results = this.rangeLogic.offset(results, offset);
+-		}
 +		RdfBindingSet results = constraint.constrain(p);
  
- 		// Now apply ordering in reverse order to give priority to the first
- 		// variable
+ 		// Now apply the solutions to the template
+ 		RdfGraphImpl graph = new RdfGraphImpl();
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/logic/debug/DebugLogicWrapper.java work-copy/src/main/name/levering/ryan/sparql/logic/debug/DebugLogicWrapper.java
 --- upstream/src/main/name/levering/ryan/sparql/logic/debug/DebugLogicWrapper.java	2007-10-07 07:19:19.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/logic/debug/DebugLogicWrapper.java	2007-10-21 12:35:15.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/logic/debug/DebugLogicWrapper.java	2008-02-09 10:19:34.000000000 -0500
 @@ -145,10 +145,6 @@
  		return this.baseFactory.getLangMatchesLogic(data, valueFactory);
  	}
@@ -1104,7 +470,18 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
  	}
  
  	public ExpressionLogic getOrLogic(BinaryExpressionData data, SPARQLValueFactory valueFactory) {
-@@ -240,8 +236,8 @@
+@@ -209,10 +205,6 @@
+ 		return new UnionConstraintDebug(this.baseFactory.getUnionConstraintLogic(data), this.out);
+ 	}
+ 
+-	public ExpressionLogic getVariableLogic(Variable data) {
+-		return this.baseFactory.getVariableLogic(data);
+-	}
+-
+ 	public ConstraintLogic getWithConstraintLogic(WithConstraintData data) {
+ 		if (this.baseFactory instanceof ExtendedLogicFactory) {
+ 			((ExtendedLogicFactory) this.baseFactory).getWithConstraintLogic(data);
+@@ -240,8 +232,8 @@
  		return this.baseFactory.getValueConversionLogic(valueFactory);
  	}
  
@@ -1268,16 +645,37 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
          return returnSet;
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/logic/DefaultAskQueryLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/DefaultAskQueryLogic.java
 --- upstream/src/main/name/levering/ryan/sparql/logic/DefaultAskQueryLogic.java	2006-08-20 20:01:01.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/logic/DefaultAskQueryLogic.java	2007-10-21 12:35:15.000000000 -0400
-@@ -13,6 +13,7 @@
++++ work-copy/src/main/name/levering/ryan/sparql/logic/DefaultAskQueryLogic.java	2008-02-10 07:52:12.000000000 -0500
+@@ -13,6 +13,8 @@
  import name.levering.ryan.sparql.model.GroupConstraint;
  import name.levering.ryan.sparql.model.data.AskQueryData;
  import name.levering.ryan.sparql.model.logic.AskQueryLogic;
 +import name.levering.ryan.sparql.model.logic.ConstraintLogic;
++import name.levering.ryan.sparql.model.logic.helper.SetRangeLogic;
  
  /**
   * This is the simplest query logic in SPARQL, as it doesn't have to deal with
-@@ -48,14 +49,18 @@
+@@ -29,6 +31,8 @@
+      * The data to delegate the data requests to.
+      */
+     private final AskQueryData data;
++    
++    private final SetRangeLogic rangeLogic;
+ 
+     /**
+      * Creates a new object that handles the logic of the ask query, delegating
+@@ -36,8 +40,9 @@
+      * 
+      * @param data the ask query data object delegate
+      */
+-    public DefaultAskQueryLogic(AskQueryData data) {
++    public DefaultAskQueryLogic(AskQueryData data, SetRangeLogic rangeLogic) {
+         this.data = data;
++        this.rangeLogic = rangeLogic;
+     }
+ 
+     /**
+@@ -48,14 +53,19 @@
       * @return true if the delegated query data binds any value rows
       */
      public boolean execute(RdfSource source) {
@@ -1293,6 +691,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
 +        p.defaultDatasets = this.data.getDefaultDatasets();
 +        p.namedDatasets = this.data.getNamedDatasets();
 +        p.limit = 1;
++        p.rangeLogic = rangeLogic;
  
          // First bind the result table
 -        RdfBindingSet results = constraint.constrain(new RdfBindingSetImpl(),
@@ -1303,7 +702,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
          return results.iterator().hasNext();
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/logic/DefaultConstructQueryLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/DefaultConstructQueryLogic.java
 --- upstream/src/main/name/levering/ryan/sparql/logic/DefaultConstructQueryLogic.java	2007-10-07 07:19:19.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/logic/DefaultConstructQueryLogic.java	2007-10-21 12:35:15.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/logic/DefaultConstructQueryLogic.java	2008-02-05 08:36:55.000000000 -0500
 @@ -6,19 +6,32 @@
  package name.levering.ryan.sparql.logic;
  
@@ -1337,7 +736,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
  /**
   * This query logic constructs an RDF graph by applying an RDF template to a set
   * of value bindings. It must first bind the variables values, then apply
-@@ -67,17 +80,23 @@
+@@ -67,33 +80,23 @@
       * @return an RDF graph containing the formed triples
       */
      public RdfGraph execute(RdfSource source) {
@@ -1349,34 +748,44 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
          GroupConstraint constraint = this.data.getConstraint();
 -        Collection defaultDatasets = this.data.getDefaultDatasets();
 -        Collection namedDatasets = this.data.getNamedDatasets();
+-        List orderExpressions = this.data.getOrderExpressions();
+-        int limit = this.data.getLimit();
+-        int offset = this.data.getOffset();
+-
 +        p.defaultDatasets = this.data.getDefaultDatasets();
 +        p.namedDatasets = this.data.getNamedDatasets();
-         List orderExpressions = this.data.getOrderExpressions();
-         int limit = this.data.getLimit();
-         int offset = this.data.getOffset();
++        p.orderExpressions = this.data.getOrderExpressions();
++        p.limit = this.data.getLimit();
++        p.offset = this.data.getOffset();
++		  p.rangeLogic = this.rangeLogic;
 +		  
-+		  if (limit >= 0 && orderExpressions.size() == 0)
-+			  p.limit = limit;
- 
          // First bind the result table
 -        RdfBindingSet results = constraint.constrain(new RdfBindingSetImpl(),
 -                source, defaultDatasets, namedDatasets);
+-
+-        // Now apply ordering in reverse order to give priority to the first
+-        // variable
+-        for (int i = orderExpressions.size() - 1; i >= 0; i--) {
+-            OrderExpressionLogic orderer = (OrderExpressionLogic) orderExpressions.get(i);
+-            orderer.order(results);
+-        }
+-
+-        // Now apply limiting and offsetting
+-        if (limit >= 0) {
+-            results = this.rangeLogic.limit(results, limit);
+-        }
+-        if (offset >= 0) {
+-            results = this.rangeLogic.offset(results, offset);
+-        }
 +        RdfBindingSet results = constraint.constrain(p);
  
-         // Now apply ordering in reverse order to give priority to the first
-         // variable
-@@ -93,7 +112,7 @@
-         if (offset >= 0) {
-             results = this.rangeLogic.offset(results, offset);
-         }
--
-+		
++		  // Then construct the triples output.
          return this.translationLogic.translate(this.data.getTriples(), results);
      }
  
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/logic/DefaultDescribeQueryLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/DefaultDescribeQueryLogic.java
 --- upstream/src/main/name/levering/ryan/sparql/logic/DefaultDescribeQueryLogic.java	2007-10-07 07:19:19.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/logic/DefaultDescribeQueryLogic.java	2007-12-29 21:11:01.000000000 -0500
++++ work-copy/src/main/name/levering/ryan/sparql/logic/DefaultDescribeQueryLogic.java	2008-02-05 15:34:43.000000000 -0500
 @@ -7,6 +7,7 @@
  
  import java.util.ArrayList;
@@ -1393,7 +802,28 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
  import name.levering.ryan.sparql.model.logic.DescribeQueryLogic;
  import name.levering.ryan.sparql.model.logic.OrderExpressionLogic;
  import name.levering.ryan.sparql.model.logic.helper.SetProjectionLogic;
-@@ -82,17 +84,26 @@
+@@ -50,7 +52,7 @@
+ 	 * The logic that projects the binding set to the desired variables for
+ 	 * construction.
+ 	 */
+-	private final SetProjectionLogic logic;
++	private final SetProjectionLogic projectionLogic;
+ 
+ 	/**
+ 	 * The logic to handle limiting the rows of the binding set results.
+@@ -67,9 +69,9 @@
+ 	 * @param logic the logic to use to project the variables to the desired
+ 	 *            variables to describe
+ 	 */
+-	public DefaultDescribeQueryLogic(DescribeQueryData data, SetProjectionLogic logic, SetRangeLogic rangeLogic) {
++	public DefaultDescribeQueryLogic(DescribeQueryData data, SetProjectionLogic projectionLogic, SetRangeLogic rangeLogic) {
+ 		this.data = data;
+-		this.logic = logic;
++		this.projectionLogic = projectionLogic;
+ 		this.rangeLogic = rangeLogic;
+ 	}
+ 
+@@ -82,41 +84,35 @@
  	 * @return an RDF graph containing the formed triples
  	 */
  	public RdfGraph execute(RdfSource source) {
@@ -1405,34 +835,56 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
  		GroupConstraint constraint = this.data.getConstraint();
 -		Collection defaultDatasets = this.data.getDefaultDatasets();
 -		Collection namedDatasets = this.data.getNamedDatasets();
+-		List orderExpressions = this.data.getOrderExpressions();
 +		p.defaultDatasets = this.data.getDefaultDatasets();
 +		p.namedDatasets = this.data.getNamedDatasets();
- 		List orderExpressions = this.data.getOrderExpressions();
++		p.orderExpressions = this.data.getOrderExpressions();
  		List queryResources = this.data.getQueryResources();
- 		int limit = this.data.getLimit();
- 		int offset = this.data.getOffset();
+-		int limit = this.data.getLimit();
+-		int offset = this.data.getOffset();
++		p.limit = this.data.getLimit();
++		p.offset = this.data.getOffset();
  
-+	  if (limit >= 0 && orderExpressions.size() == 0)
-+		  p.limit = limit;
-+		  
- 		// First bind the result table
+-		// First bind the result table
 -		RdfBindingSet results = constraint.constrain(new RdfBindingSetImpl(), source, defaultDatasets, namedDatasets);
+-
+-		// Now project to the solution set
+-		List variables = new ArrayList();
++		// Get the distinguished variables.
++		p.distinguishedVariables = new HashSet();
+ 		for (Iterator i = queryResources.iterator(); i.hasNext();) {
+ 			Object resource = i.next();
+ 			if (resource instanceof Variable) {
+-				variables.add(resource);
++				p.distinguishedVariables.add(resource);
+ 			}
+ 		}
+-		results = this.logic.project(results, variables);
++		
++		p.rangeLogic = this.rangeLogic;
++		p.projectionLogic = this.projectionLogic;
+ 
+-		// Now apply ordering in reverse order
+-		for (int i = orderExpressions.size(); i >= 0; i--) {
+-			OrderExpressionLogic orderer = (OrderExpressionLogic) orderExpressions.get(i);
+-			orderer.order(results);
+-		}
+-
+-		// Now apply limiting and offsetting
+-		if (limit >= 0) {
+-			results = this.rangeLogic.limit(results, limit);
+-		}
+-		if (offset >= 0) {
+-			results = this.rangeLogic.offset(results, offset);
+-		}
++		// First bind the result table
 +		RdfBindingSet results = new RdfBindingSetImpl();
 +		if (constraint != null)
 +			results = constraint.constrain(p);
  
- 		// Now project to the solution set
- 		List variables = new ArrayList();
-@@ -105,7 +116,7 @@
- 		results = this.logic.project(results, variables);
- 
- 		// Now apply ordering in reverse order
--		for (int i = orderExpressions.size(); i >= 0; i--) {
-+		for (int i = orderExpressions.size()-1; i >= 0; i--) {
- 			OrderExpressionLogic orderer = (OrderExpressionLogic) orderExpressions.get(i);
- 			orderer.order(results);
- 		}
-@@ -147,7 +158,7 @@
+ 		// Now find the next level of concrete nodes
+ 		// For every resource in the solution set
+@@ -147,7 +143,7 @@
  		RdfGraphImpl graph = new RdfGraphImpl();
  		for (int i = 0; i < resources.length; i++) {
  			for (Iterator varResources = resources[i].iterator(); varResources.hasNext();) {
@@ -1441,7 +893,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
  			}
  		}
  
-@@ -163,27 +174,101 @@
+@@ -163,27 +159,101 @@
  	 * @return all of the statements that give a one-level description of a
  	 *         resource
  	 */
@@ -1653,8 +1105,15 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
  		newSet.setOrdered(true);
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/logic/DefaultSelectQueryLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/DefaultSelectQueryLogic.java
 --- upstream/src/main/name/levering/ryan/sparql/logic/DefaultSelectQueryLogic.java	2006-08-20 20:01:01.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/logic/DefaultSelectQueryLogic.java	2007-10-21 12:35:15.000000000 -0400
-@@ -12,6 +12,7 @@
++++ work-copy/src/main/name/levering/ryan/sparql/logic/DefaultSelectQueryLogic.java	2008-02-05 17:06:58.000000000 -0500
+@@ -6,12 +6,14 @@
+ package name.levering.ryan.sparql.logic;
+ 
+ import java.util.Collection;
++import java.util.HashSet;
+ import java.util.List;
+ 
+ import name.levering.ryan.sparql.common.RdfBindingSet;
  import name.levering.ryan.sparql.common.RdfSource;
  import name.levering.ryan.sparql.model.GroupConstraint;
  import name.levering.ryan.sparql.model.data.SelectQueryData;
@@ -1662,7 +1121,28 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
  import name.levering.ryan.sparql.model.logic.OrderExpressionLogic;
  import name.levering.ryan.sparql.model.logic.SelectQueryLogic;
  import name.levering.ryan.sparql.model.logic.helper.SetDistinctionLogic;
-@@ -74,19 +75,24 @@
+@@ -36,7 +38,7 @@
+     /**
+      * The logic used to do the set projection onto the result variables.
+      */
+-    private final SetProjectionLogic logic;
++    private final SetProjectionLogic projectionLogic;
+ 
+     /**
+      * The logic to remove duplicates from a set.
+@@ -58,9 +60,9 @@
+      * @param rangeLogic the logic to use to limit and offset
+      */
+     public DefaultSelectQueryLogic(SelectQueryData data,
+-            SetProjectionLogic logic, SetDistinctionLogic distinctLogic, SetRangeLogic rangeLogic) {
++            SetProjectionLogic projectionLogic, SetDistinctionLogic distinctLogic, SetRangeLogic rangeLogic) {
+         this.data = data;
+-        this.logic = logic;
++        this.projectionLogic = projectionLogic;
+         this.distinctLogic = distinctLogic;
+         this.rangeLogic = rangeLogic;
+     }
+@@ -74,45 +76,29 @@
       * @return an RDF graph containing the formed triples
       */
      public RdfBindingSet execute(RdfSource source) {
@@ -1673,24 +1153,61 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
          GroupConstraint constraint = this.data.getConstraint();
 -        Collection defaultDatasets = this.data.getDefaultDatasets();
 -        Collection namedDatasets = this.data.getNamedDatasets();
+-        List orderExpressions = this.data.getOrderExpressions();
+-        List queryExpressions = this.data.getQueryVariables();
+-        int limit = this.data.getLimit();
+-        int offset = this.data.getOffset();
+-        boolean distinct = this.data.getDistinct();
+-
 +        p.defaultDatasets = this.data.getDefaultDatasets();
 +        p.namedDatasets = this.data.getNamedDatasets();
-         List orderExpressions = this.data.getOrderExpressions();
-         List queryExpressions = this.data.getQueryVariables();
-         int limit = this.data.getLimit();
-         int offset = this.data.getOffset();
-         boolean distinct = this.data.getDistinct();
++        p.orderExpressions = this.data.getOrderExpressions();
++        if (this.data.getQueryVariables().isEmpty())
++			  p.distinguishedVariables = new HashSet(this.data.getVariables());
++		  else
++			  p.distinguishedVariables = new HashSet(this.data.getQueryVariables());
++        p.limit = this.data.getLimit();
++        p.offset = this.data.getOffset() > 0 ? this.data.getOffset() : 0;
++        if (this.data.getDistinct())
++			  p.distinct = ConstraintLogic.CallParams.DistinctType.DISTINCT;
 +		  
-+		  if (limit >= 0 && orderExpressions.size() == 0)
-+			  p.limit = limit;
- 
++		  p.rangeLogic = this.rangeLogic;
++		  p.distinctionLogic = this.distinctLogic;
++		  p.projectionLogic = this.projectionLogic;
++		  
          // First bind the result table
 -        RdfBindingSet results = constraint.constrain(null,
 -                source, defaultDatasets, namedDatasets);
+-
+-        // Now project to the solution set or the variable set
+-        if (!queryExpressions.isEmpty()) {
+-            results = this.logic.project(results, queryExpressions);
+-        } else {
+-        	results = this.logic.project(results, this.data.getVariables());
+-        }
+-
+-        // Now apply distinct
+-        if (distinct) {
+-            results = this.distinctLogic.makeDistinct(results);
+-        }
+-
+-        // Now apply ordering in reverse order
+-        for (int i = orderExpressions.size() - 1; i >= 0; i--) {
+-            OrderExpressionLogic orderer = (OrderExpressionLogic) orderExpressions.get(i);
+-            results = orderer.order(results);
+-        }
+-
+-        // Now apply limiting and offsetting
+-        if (limit >= 0) {
+-            results = this.rangeLogic.limit(results, limit);
+-        }
+-        if (offset >= 0) {
+-            results = this.rangeLogic.offset(results, offset);
+-        }
 +        RdfBindingSet results = constraint.constrain(p);
  
-         // Now project to the solution set or the variable set
-         if (!queryExpressions.isEmpty()) {
+         return results;
+     }
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/logic/DefaultValueOrderingLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/DefaultValueOrderingLogic.java
 --- upstream/src/main/name/levering/ryan/sparql/logic/DefaultValueOrderingLogic.java	2007-10-07 07:19:19.000000000 -0400
 +++ work-copy/src/main/name/levering/ryan/sparql/logic/DefaultValueOrderingLogic.java	2007-10-21 12:35:15.000000000 -0400
@@ -1766,6 +1283,84 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
  			return -1;
  		}
  
+diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/logic/DefaultVariableLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/DefaultVariableLogic.java
+--- upstream/src/main/name/levering/ryan/sparql/logic/DefaultVariableLogic.java	2007-10-07 07:19:19.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/logic/DefaultVariableLogic.java	1969-12-31 19:00:00.000000000 -0500
+@@ -1,50 +0,0 @@
+-/*
+- * SPARQL Engine
+- * Copyright (C) 2005 Ryan Levering, All rights reserved.
+- * See LICENSE for full license information
+- */
+-package name.levering.ryan.sparql.logic;
+-
+-import name.levering.ryan.sparql.common.RdfBindingRow;
+-import name.levering.ryan.sparql.common.Variable;
+-import name.levering.ryan.sparql.model.logic.ExpressionLogic;
+-
+-import name.levering.ryan.sparql.common.Value;
+-
+-/**
+- * The main lowest level logic in variable expression resolution, this will
+- * return the result of the variable binding in the current row being evaluated.
+- * 
+- * @author Ryan Levering
+- * @version 1.0
+- */
+-public class DefaultVariableLogic implements ExpressionLogic {
+-
+-    /**
+-     * The variable to return the value of in the current row.
+-     */
+-    private final Variable variable;
+-
+-    /**
+-     * Creates a new default logic that returns the value bound to a variable in
+-     * a binding row.
+-     * 
+-     * @param variable the variable to checking the binding for
+-     */
+-    public DefaultVariableLogic(Variable variable) {
+-        this.variable = variable;
+-    }
+-
+-    /**
+-     * Returns the object bound to the variable header in the current binding
+-     * row.
+-     * 
+-     * @param bindings the bindings used to evaluate the variable
+-     * @return the current bound Value object to the Variable in the row, or
+-     *         null if it isn't bound
+-     */
+-    public Value evaluate(RdfBindingRow bindings) {
+-        return bindings.getValue(this.variable);
+-    }
+-
+-}
+diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/logic/expression/BinaryLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/expression/BinaryLogic.java
+--- upstream/src/main/name/levering/ryan/sparql/logic/expression/BinaryLogic.java	2007-10-07 07:19:19.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/logic/expression/BinaryLogic.java	2008-02-09 15:00:10.000000000 -0500
+@@ -59,5 +59,20 @@
+      * @return the result of evaluating the operation
+      */
+     public abstract Value evaluate(Value leftValue, Value rightValue);
++	 
++	 public java.util.Set getVariables() {
++		 java.util.HashSet ret = new java.util.HashSet();
++		 ret.addAll(this.data.getLeftExpression().getVariables());
++		 ret.addAll(this.data.getRightExpression().getVariables());
++		 return ret;
++	 }
++	 
++	public ExpressionLogic getLeftExpression() {
++		return this.data.getLeftExpression();
++	}
++
++	public ExpressionLogic getRightExpression() {
++		return this.data.getRightExpression();
++	}
+ 
+ }
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/logic/expression/GreaterThanEqualsLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/expression/GreaterThanEqualsLogic.java
 --- upstream/src/main/name/levering/ryan/sparql/logic/expression/GreaterThanEqualsLogic.java	2007-10-07 07:19:19.000000000 -0400
 +++ work-copy/src/main/name/levering/ryan/sparql/logic/expression/GreaterThanEqualsLogic.java	2007-10-21 12:35:15.000000000 -0400
@@ -1834,10 +1429,22 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
      }
      
      /**
+diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/logic/expression/UnaryLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/expression/UnaryLogic.java
+--- upstream/src/main/name/levering/ryan/sparql/logic/expression/UnaryLogic.java	2007-10-07 07:19:19.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/logic/expression/UnaryLogic.java	2008-02-07 16:45:39.000000000 -0500
+@@ -56,4 +56,8 @@
+      * @return the result of evaluating the operation
+      */
+     public abstract Value evaluate(Value value);
++
++	 public java.util.Set getVariables() {
++		 return this.data.getExpression().getVariables();
++	 }
+ }
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/logic/ExtendedConstructQueryLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/ExtendedConstructQueryLogic.java
 --- upstream/src/main/name/levering/ryan/sparql/logic/ExtendedConstructQueryLogic.java	2007-10-07 07:19:19.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/logic/ExtendedConstructQueryLogic.java	2007-10-21 12:35:15.000000000 -0400
-@@ -87,17 +87,24 @@
++++ work-copy/src/main/name/levering/ryan/sparql/logic/ExtendedConstructQueryLogic.java	2008-02-05 15:36:31.000000000 -0500
+@@ -87,32 +87,23 @@
  	 * @return an RDF graph containing the formed triples
  	 */
  	public RdfGraph execute(RdfSource source) {
@@ -1849,22 +1456,49 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
  		GroupConstraint constraint = this.data.getConstraint();
 -		Collection defaultDatasets = this.data.getDefaultDatasets();
 -		Collection namedDatasets = this.data.getNamedDatasets();
+-		List orderExpressions = this.data.getOrderExpressions();
+-		int limit = this.data.getLimit();
+-		int offset = this.data.getOffset();
+-		boolean distinct = this.data.isDistinct();
 +		p.defaultDatasets = this.data.getDefaultDatasets();
 +		p.namedDatasets = this.data.getNamedDatasets();
- 		List orderExpressions = this.data.getOrderExpressions();
- 		int limit = this.data.getLimit();
- 		int offset = this.data.getOffset();
- 		boolean distinct = this.data.isDistinct();
++		p.orderExpressions = this.data.getOrderExpressions();
++		p.limit = this.data.getLimit();
++		p.offset = this.data.getOffset();
++		p.rangeLogic = this.rangeLogic;
++		// would be nice to only get distinct bindings, but we first
++		// need to get a SetDistinctionLogic
  
-+		if (limit >= 0 && orderExpressions.size() == 0)
-+			p.limit = limit;
-+		  
  		// First bind the result table
 -		RdfBindingSet results = constraint.constrain(new RdfBindingSetImpl(), source, defaultDatasets, namedDatasets);
+-
+-		// Now apply ordering in reverse order to give priority to the first
+-		// variable
+-		for (int i = orderExpressions.size() - 1; i >= 0; i--) {
+-			OrderExpressionLogic orderer = (OrderExpressionLogic) orderExpressions.get(i);
+-			orderer.order(results);
+-		}
+-
+-		// Now apply limiting and offsetting
+-		if (limit >= 0) {
+-			results = this.rangeLogic.limit(results, limit);
+-		}
+-		if (offset >= 0) {
+-			results = this.rangeLogic.offset(results, offset);
+-		}
 +		RdfBindingSet results = constraint.constrain(p);
  
- 		// Now apply ordering in reverse order to give priority to the first
- 		// variable
+ 		Collection triples;
+ 		if (this.data.getTriples().isEmpty()) {
+@@ -123,7 +114,7 @@
+ 		}
+ 		RdfGraph graph = this.translationLogic.translate(triples, results);
+ 
+-		if (distinct) {
++		if (this.data.isDistinct()) {
+ 			graph = this.distinctionLogic.makeDistinct(graph);
+ 		}
+ 
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/logic/function/BoundLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/function/BoundLogic.java
 --- upstream/src/main/name/levering/ryan/sparql/logic/function/BoundLogic.java	2007-10-07 07:19:19.000000000 -0400
 +++ work-copy/src/main/name/levering/ryan/sparql/logic/function/BoundLogic.java	2007-10-21 12:35:15.000000000 -0400
@@ -2021,8 +1655,8 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
  	 * Evaluates the function by evaluating the arguments and passing them to
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/logic/function/FunctionLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/function/FunctionLogic.java
 --- upstream/src/main/name/levering/ryan/sparql/logic/function/FunctionLogic.java	1969-12-31 19:00:00.000000000 -0500
-+++ work-copy/src/main/name/levering/ryan/sparql/logic/function/FunctionLogic.java	2007-10-21 12:35:15.000000000 -0400
-@@ -0,0 +1,41 @@
++++ work-copy/src/main/name/levering/ryan/sparql/logic/function/FunctionLogic.java	2008-02-07 16:51:42.000000000 -0500
+@@ -0,0 +1,48 @@
 +/*
 + * SPARQL Engine
 + * Copyright (C) 2005 Ryan Levering, All rights reserved.
@@ -2063,6 +1697,13 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
 +    public FunctionLogic(CallExpressionData data) {
 +        this.data = data;
 +    }
++
++	 public java.util.Set getVariables() {
++		 java.util.HashSet ret = new java.util.HashSet();
++		 for (Iterator i = this.data.getArguments().iterator(); i.hasNext(); )
++			 ret.addAll(((ExpressionLogic)i.next()).getVariables());
++		 return ret;
++	 }
 +}
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/logic/function/IsBlankLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/function/IsBlankLogic.java
 --- upstream/src/main/name/levering/ryan/sparql/logic/function/IsBlankLogic.java	2007-10-07 07:19:19.000000000 -0400
@@ -2489,7 +2130,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
  	 * Evaluates the argument to the function and does simplistic conversion to
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/logic/naive/DefaultFilterConstraintLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/naive/DefaultFilterConstraintLogic.java
 --- upstream/src/main/name/levering/ryan/sparql/logic/naive/DefaultFilterConstraintLogic.java	2007-10-07 07:19:19.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/logic/naive/DefaultFilterConstraintLogic.java	2007-10-21 12:35:15.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/logic/naive/DefaultFilterConstraintLogic.java	2008-02-09 15:24:09.000000000 -0500
 @@ -8,6 +8,7 @@
  import java.util.Collection;
  import java.util.Collections;
@@ -2519,9 +2160,26 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
              RdfBindingRow row = (RdfBindingRow) rows.next();
              try {
                  Value rawEvaluate = filterExpression.evaluate(row);
+@@ -97,16 +97,4 @@
+         }
+         return newBindings;
+     }
+-
+-    /**
+-     * Currently does nothing, as I'm not even sure what this method is used for
+-     * and the filter constraint doesn't really change the variable bindings at
+-     * all.
+-     * 
+-     * @return an empty list always
+-     */
+-    public Collection getVariables() {
+-        return Collections.EMPTY_LIST;
+-    }
+-
+ }
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/logic/naive/DefaultGroupConstraintLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/naive/DefaultGroupConstraintLogic.java
 --- upstream/src/main/name/levering/ryan/sparql/logic/naive/DefaultGroupConstraintLogic.java	2006-08-20 20:01:01.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/logic/naive/DefaultGroupConstraintLogic.java	2007-10-21 12:35:15.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/logic/naive/DefaultGroupConstraintLogic.java	2008-02-05 16:35:39.000000000 -0500
 @@ -9,6 +9,7 @@
  import java.util.Iterator;
  import java.util.LinkedList;
@@ -2564,16 +2222,17 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
  			}
  
  		}
-@@ -108,10 +110,17 @@
+@@ -108,10 +110,18 @@
  		// This scoped graphing isn't required by the spec, but it's allowed
  		for (Iterator graphs = graphQueue.iterator(); graphs.hasNext();) {
  			ConstraintLogic c = (ConstraintLogic) graphs.next();
 +			p2.bindings = current;
 +			
-+			// Only when the graph consists of a single triple constraint and
-+			// there are no filters can we pass down a limit.
-+			if (graphQueue.size() != -1 || filterQueue.size() > 0)
-+				p2.limit = -1;
++			// we would have to do more to pass these down reliably/usefully
++			p2.offset = 0;
++			p2.limit = -1;
++			p2.distinguishedVariables = null;
++			p2.orderExpressions = null;
 +				
  			if (current == null) {
 -				current = c.constrain(null, source, defaultDatasets, namedDatasets);
@@ -2584,7 +2243,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
  			}
  		}
  
-@@ -123,11 +132,14 @@
+@@ -123,12 +133,18 @@
  
  		for (Iterator optionals = optionalQueue.iterator(); optionals.hasNext();) {
  			ConstraintLogic c = (ConstraintLogic) optionals.next();
@@ -2599,85 +2258,157 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
 +			p2.bindings = current;
 +			current = c.constrain(p2);
  		}
++		
++		current = p.projectOrderDistinctLimit(current);
++		
  		return current;
  	}
+ 
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/logic/naive/DefaultOptionalConstraintLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/naive/DefaultOptionalConstraintLogic.java
 --- upstream/src/main/name/levering/ryan/sparql/logic/naive/DefaultOptionalConstraintLogic.java	2006-08-20 20:01:01.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/logic/naive/DefaultOptionalConstraintLogic.java	2007-10-21 12:35:15.000000000 -0400
-@@ -9,6 +9,7 @@
++++ work-copy/src/main/name/levering/ryan/sparql/logic/naive/DefaultOptionalConstraintLogic.java	2008-02-09 15:26:55.000000000 -0500
+@@ -6,9 +6,12 @@
+ package name.levering.ryan.sparql.logic.naive;
+ 
+ import java.util.Collection;
++import java.util.HashSet;
  import java.util.Iterator;
  import java.util.LinkedList;
  import java.util.List;
 +import java.util.Map;
++import java.util.Set;
  
  import name.levering.ryan.sparql.common.RdfBindingSet;
  import name.levering.ryan.sparql.common.RdfSource;
-@@ -74,13 +75,16 @@
+@@ -16,8 +19,12 @@
+ import name.levering.ryan.sparql.model.FilterConstraint;
+ import name.levering.ryan.sparql.model.GraphConstraint;
+ import name.levering.ryan.sparql.model.OptionalConstraint;
++import name.levering.ryan.sparql.model.data.ConstraintData;
++import name.levering.ryan.sparql.model.data.FilterConstraintData;
++import name.levering.ryan.sparql.model.data.GroupConstraintData;
+ import name.levering.ryan.sparql.model.data.OptionalConstraintData;
+ import name.levering.ryan.sparql.model.logic.ConstraintLogic;
++import name.levering.ryan.sparql.model.logic.LogicFactory;
+ import name.levering.ryan.sparql.model.logic.helper.IntersectOrderLogic;
+ import name.levering.ryan.sparql.model.logic.helper.SetIntersectLogic;
+ import name.levering.ryan.sparql.model.logic.helper.SetJoinLogic;
+@@ -43,9 +50,7 @@
+ 	 */
+ 	private final SetJoinLogic logic;
+ 
+-	private final IntersectOrderLogic orderLogic;
+-
+-	private final SetIntersectLogic intersectLogic;
++	private final LogicFactory factory;
+ 
+ 	/**
+ 	 * Creates a new optional constraint logic object that expands a binding set
+@@ -54,12 +59,10 @@
+ 	 * @param data the data that holds the constraints
+ 	 * @param logic the logic to calculate the set join operation
+ 	 */
+-	public DefaultOptionalConstraintLogic(OptionalConstraintData data, SetIntersectLogic intersectLogic,
+-			IntersectOrderLogic orderLogic, SetJoinLogic logic) {
++	public DefaultOptionalConstraintLogic(OptionalConstraintData data, SetJoinLogic logic, LogicFactory factory) {
+ 		this.data = data;
+ 		this.logic = logic;
+-		this.orderLogic = orderLogic;
+-		this.intersectLogic = intersectLogic;
++		this.factory = factory;
+ 	}
+ 
+ 	/**
+@@ -74,55 +77,46 @@
  	 * @param namedDatasets the named datasets for named queries, passed onto
  	 *            the grouped constraint
  	 */
 -	public RdfBindingSet constrain(RdfBindingSet bindings, RdfSource source, Collection defaultDatasets,
 -			Collection namedDatasets) {
 +	public RdfBindingSet constrain(ConstraintLogic.CallParams p) {
- 		List filterQueue = new LinkedList();
- 		List optionalQueue = new LinkedList();
- 		List graphQueue = new LinkedList();
- 
- 		RdfBindingSet current = null;
 +		
-+		ConstraintLogic.CallParams p2 = p.clone();
-+		p2.bindings = null;
++		// Interestingly, some filters will reference variables at a higher scope,
++		// and so we have to delay applying at least those filters (but for now
++		// all filters) until the join.
 +
- 		// Constrain in order, unless we hit an optional, graph, or value filter
- 		// These things all kind of depend on the previous bindings
- 		// Graph probably shouldn't technically, but I think in this
-@@ -94,7 +98,7 @@
- 			} else if (c instanceof GraphConstraint) {
- 				graphQueue.add(c);
- 			} else {
--				this.orderLogic.addBindingSet(c.constrain(null, source, defaultDatasets, namedDatasets));
-+				this.orderLogic.addBindingSet(c.constrain(p2));
- 			}
+ 		List filterQueue = new LinkedList();
+-		List optionalQueue = new LinkedList();
+-		List graphQueue = new LinkedList();
++		OptionalGroupConstraintData groupData = new OptionalGroupConstraintData();
  
- 		}
-@@ -103,11 +107,17 @@
- 		// This isn't required by the spec, but it's allowed
- 		for (Iterator graphs = graphQueue.iterator(); graphs.hasNext();) {
- 			ConstraintLogic c = (ConstraintLogic) graphs.next();
-+			
-+			// Only when the graph consists of a single triple constraint and
-+			// there are no filters can we pass down a limit.
-+			if (graphQueue.size() != -1 || filterQueue.size() > 0)
-+				p2.limit = -1;
-+			
- 			if (current == null) {
+-		RdfBindingSet current = null;
+-		// Constrain in order, unless we hit an optional, graph, or value filter
+-		// These things all kind of depend on the previous bindings
+-		// Graph probably shouldn't technically, but I think in this
+-		// implementation it does
+ 		for (Iterator cons = this.data.getConstraint().getConstraints().iterator(); cons.hasNext();) {
+ 			ConstraintLogic c = (ConstraintLogic) cons.next();
+-			if (c instanceof OptionalConstraint) {
+-				optionalQueue.add(c);
+-			} else if (c instanceof FilterConstraint) {
++			if (c instanceof FilterConstraintData) {
+ 				filterQueue.add(c);
+-			} else if (c instanceof GraphConstraint) {
+-				graphQueue.add(c);
+-			} else {
+-				this.orderLogic.addBindingSet(c.constrain(null, source, defaultDatasets, namedDatasets));
+-			}
+-
+-		}
+-		current = this.orderLogic.removeIntersectedSet();
+-
+-		// This isn't required by the spec, but it's allowed
+-		for (Iterator graphs = graphQueue.iterator(); graphs.hasNext();) {
+-			ConstraintLogic c = (ConstraintLogic) graphs.next();
+-			if (current == null) {
 -				current = c.constrain(null, source, defaultDatasets, namedDatasets);
-+				current = c.constrain(p2);
  			} else {
 -				current = this.intersectLogic.intersect(current, c.constrain(current, source, defaultDatasets,
 -						namedDatasets));
-+				p2.bindings = current;
-+				current = this.intersectLogic.intersect(current, c.constrain(p2));
++				groupData.constraints.add(c);
  			}
  		}
- 
-@@ -119,10 +129,11 @@
- 
- 		for (Iterator optionals = optionalQueue.iterator(); optionals.hasNext();) {
- 			ConstraintLogic c = (ConstraintLogic) optionals.next();
+-
+-		// At this point, we don't have any constraints so just bring the whole
+-		// set in
+-		if (current == null) {
+-			current = new RdfBindingSetImpl();
+-		}
+-
+-		for (Iterator optionals = optionalQueue.iterator(); optionals.hasNext();) {
+-			ConstraintLogic c = (ConstraintLogic) optionals.next();
 -			current = c.constrain(current, source, defaultDatasets, namedDatasets);
-+			p2.bindings = current;
-+			current = c.constrain(p2);
- 		}
+-		}
  		
 -		return this.logic.join(bindings, current, filterQueue);
-+		return this.logic.join(p.bindings, current, filterQueue);
++		// Use a GroupConstraintLogic to perform the intersections within this OPTIONAL.
++		ConstraintLogic group = factory.getGroupConstraintLogic(groupData);
++		RdfBindingSet bindings = group.constrain(p);
++		
++		// Join our bindings with the caller's outer bindings.
++		bindings = this.logic.join(p.bindings, bindings, filterQueue);
++		
++		bindings = p.projectOrderDistinctLimit(bindings);
++		
++		return bindings;
  	}
  
++	public class OptionalGroupConstraintData implements GroupConstraintData {
++		public LinkedList constraints = new LinkedList();
++		public Collection getConstraints() { return constraints; }
++		public Set getVariables() {
++        Set variableList = new HashSet();
++        for (Iterator cons = getConstraints().iterator(); cons.hasNext();) {
++            ConstraintData c = (ConstraintData) cons.next();
++            variableList.addAll(c.getVariables());
++        }
++        return variableList;
++	 	}
++	}
  }
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/logic/naive/DefaultTripleConstraintLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/naive/DefaultTripleConstraintLogic.java
 --- upstream/src/main/name/levering/ryan/sparql/logic/naive/DefaultTripleConstraintLogic.java	2007-10-07 07:19:19.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/logic/naive/DefaultTripleConstraintLogic.java	2007-10-21 12:35:15.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/logic/naive/DefaultTripleConstraintLogic.java	2008-02-05 16:03:00.000000000 -0500
 @@ -9,6 +9,7 @@
  import java.util.Collection;
  import java.util.Iterator;
@@ -2696,7 +2427,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
  
          ExpressionLogic subExpr = this.data.getSubjectExpression();
          ExpressionLogic predExpr = this.data.getPredicateExpression();
-@@ -109,25 +109,25 @@
+@@ -109,32 +109,33 @@
  
          Iterator statements;
          if (!variables.isEmpty()) {
@@ -2728,9 +2459,18 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
                                  object, (URI) i.next());
                          addStatements(newBindings, statements, flags);
                      }
+                 }
+             }
+         }
+-        return newBindings;
++		  
++        return p.projectOrderDistinctLimit(newBindings);
+     }
+ 
+     /**
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/logic/naive/DefaultUnionConstraintLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/naive/DefaultUnionConstraintLogic.java
 --- upstream/src/main/name/levering/ryan/sparql/logic/naive/DefaultUnionConstraintLogic.java	2007-10-07 07:19:19.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/logic/naive/DefaultUnionConstraintLogic.java	2007-10-21 12:35:15.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/logic/naive/DefaultUnionConstraintLogic.java	2008-02-05 15:54:36.000000000 -0500
 @@ -7,9 +7,12 @@
  
  import java.util.Collection;
@@ -2744,7 +2484,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
  import name.levering.ryan.sparql.model.data.UnionConstraintData;
  import name.levering.ryan.sparql.model.logic.ConstraintLogic;
  import name.levering.ryan.sparql.model.logic.helper.SetUnionLogic;
-@@ -60,15 +63,24 @@
+@@ -60,18 +63,69 @@
  	 * @return a set containing the union of all the bound values of all the sub
  	 *         constraints
  	 */
@@ -2752,26 +2492,76 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
 -			Collection namedDatasets) {
 +	public RdfBindingSet constrain(ConstraintLogic.CallParams p) {
  		RdfBindingSet current = null;
-+		ConstraintLogic.CallParams p2 = p.clone();
- 		for (Iterator groupOrUnions = this.data.getConstraints().iterator(); groupOrUnions.hasNext();) {
- 			ConstraintLogic group = (ConstraintLogic) groupOrUnions.next();
-+			p2.bindings = current;
- 			if (current == null) {
+-		for (Iterator groupOrUnions = this.data.getConstraints().iterator(); groupOrUnions.hasNext();) {
+-			ConstraintLogic group = (ConstraintLogic) groupOrUnions.next();
+-			if (current == null) {
 -				current = group.constrain(current, source, defaultDatasets, namedDatasets);
-+				current = group.constrain(p2);
- 			} else {
+-			} else {
 -				current = this.logic.union(current, group.constrain(current, source, defaultDatasets, namedDatasets));
-+				// If a limit is provided, subtract from the limit the number
-+				// of rows found already, and if we don't need any more, stop.
-+				if (p.limit >= 0) {
-+					p2.limit = p.limit - current.size();
-+					if (p2.limit <= 0)
-+						break;
-+				}
++		
++		// Because of DISTINCT, we can't quite know how
++		// many rows to ask from each part to reach our limit.
++		// So we do something adaptive.
++		
++		int lastCount = 0;
++		int limitFactor = 1;
++		while (limitFactor < 10000) {
++			current = null;
++			
++			for (Iterator groupOrUnions = this.data.getConstraints().iterator(); groupOrUnions.hasNext();) {
++				ConstraintLogic group = (ConstraintLogic) groupOrUnions.next();
 +				
-+				current = this.logic.union(current, group.constrain(p2));
++				ConstraintLogic.CallParams p2 = p.clone();
++				p2.bindings = current;
++				
++				if (current == null) {
++					// If an offset is specified for the global results, I'm not
++					// sure how to pass down the limit, especially if the results
++					// are ordered.
++					if (p.offset != 0) {
++						p2.offset = 0;
++						p2.limit = -1;
++					} else {
++						p2.limit *= limitFactor;
++					}
++					
++					current = group.constrain(p2);
++				} else {
++					// If a limit is provided, subtract from the limit the number
++					// of rows found already, and if we don't need any more, stop.
++					if (p.offset == 0 && p.limit >= 0) {
++						p2.limit = p.limit - current.size();
++						
++						if (p2.limit <= 0)
++							break;
++						
++						// But because of DISTINCT, it might be that none of the rows
++						// we get are new. So, we multiple our request by the limitFactor
++						// which increases adaptively.
++						p2.limit *= limitFactor;
++						
++						current = this.logic.union(current, group.constrain(p2));
++					}
++				}
  			}
++	
++			current = p.projectOrderDistinctLimit(current);
++			
++			// When we've reached our limit, or if there is no limit,
++			// or if we didn't get any more bindings than with the last
++			// adaptive limit, we're done.
++			if (p.limit == -1 || current.size() >= p.limit || current.size() == lastCount)
++				break;
++			
++			lastCount = current.size();
++			
++			// Increase the factor to get more results next time.
++			limitFactor *= 3;
  		}
+-
++		
+ 		return current;
+ 	}
  
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/logic/naive/NaiveSetJoinLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/naive/NaiveSetJoinLogic.java
 --- upstream/src/main/name/levering/ryan/sparql/logic/naive/NaiveSetJoinLogic.java	2007-10-07 07:19:19.000000000 -0400
@@ -2809,7 +2599,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
   * should only be used if caching of some sort is important, so a concrete
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/logic/naive/StaticSetUnionLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/naive/StaticSetUnionLogic.java
 --- upstream/src/main/name/levering/ryan/sparql/logic/naive/StaticSetUnionLogic.java	2007-10-07 07:19:19.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/logic/naive/StaticSetUnionLogic.java	2007-10-21 12:35:15.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/logic/naive/StaticSetUnionLogic.java	2008-02-05 08:50:39.000000000 -0500
 @@ -16,6 +16,8 @@
  import name.levering.ryan.sparql.common.impl.RdfBindingSetImpl;
  import name.levering.ryan.sparql.model.logic.helper.SetUnionLogic;
@@ -2821,8 +2611,8 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
   * is the aggregation of two other binding sets. This implementation does this
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/logic/streamed/AdvancedGroupConstraintLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/streamed/AdvancedGroupConstraintLogic.java
 --- upstream/src/main/name/levering/ryan/sparql/logic/streamed/AdvancedGroupConstraintLogic.java	1969-12-31 19:00:00.000000000 -0500
-+++ work-copy/src/main/name/levering/ryan/sparql/logic/streamed/AdvancedGroupConstraintLogic.java	2007-10-21 12:35:15.000000000 -0400
-@@ -0,0 +1,578 @@
++++ work-copy/src/main/name/levering/ryan/sparql/logic/streamed/AdvancedGroupConstraintLogic.java	2008-02-09 15:07:39.000000000 -0500
+@@ -0,0 +1,623 @@
 +/*
 + * SPARQL Engine
 + * Copyright (C) 2005 Ryan Levering, All rights reserved.
@@ -2852,18 +2642,19 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
 +import name.levering.ryan.sparql.common.Variable;
 +import name.levering.ryan.sparql.common.impl.RdfBindingSetImpl;
 +import name.levering.ryan.sparql.logic.function.ExternalFunctionLogic;
++import name.levering.ryan.sparql.logic.expression.AndLogic;
++import name.levering.ryan.sparql.logic.expression.BinaryLogic;
++import name.levering.ryan.sparql.logic.expression.EqualsLogic;
++import name.levering.ryan.sparql.logic.expression.OrLogic;
 +import name.levering.ryan.sparql.model.TripleConstraint;
++import name.levering.ryan.sparql.model.data.ConstraintData;
 +import name.levering.ryan.sparql.model.data.FilterConstraintData;
 +import name.levering.ryan.sparql.model.data.GroupConstraintData;
 +import name.levering.ryan.sparql.model.data.OptionalConstraintData;
 +import name.levering.ryan.sparql.model.logic.ConstraintLogic;
 +import name.levering.ryan.sparql.model.logic.ExpressionLogic;
 +import name.levering.ryan.sparql.model.logic.helper.SetIntersectLogic;
-+import name.levering.ryan.sparql.parser.model.ASTAndNode;
-+import name.levering.ryan.sparql.parser.model.ASTEqualsNode;
-+import name.levering.ryan.sparql.parser.model.ASTOrNode;
 +import name.levering.ryan.sparql.parser.model.ASTVar;
-+import name.levering.ryan.sparql.parser.model.BinaryExpressionNode;
 +import name.levering.ryan.sparql.parser.model.DelegatingTripleConstraint;
 +import name.levering.ryan.sparql.parser.model.EmptyVisitor;
 +import name.levering.ryan.sparql.parser.model.SimpleNode;
@@ -2892,7 +2683,6 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
 +	 
 +	 InternalSPARQLValueFactory valueFactory = new InternalSPARQLValueFactory();
 +
-+    
 +    private static final Map
 +		isFunctional = new HashMap(),
 +    	isInverseFunctional = new HashMap();
@@ -2929,18 +2719,20 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
 +        List optionalQueue = new LinkedList();
 +		List otherQueue = new LinkedList();
 +
-+		// Clone knownValues and knownFilters so we can freely modify it without affecting the caller.
++		// Get a ConstraintLogic.CallParams to pass to the triple queries.
 +		
-+		p = p.clone();
-+		if (p.knownValues == null)
-+			p.knownValues = new HashMap();
-+		else
-+			p.knownValues = new HashMap(p.knownValues);
-+			
-+		if (p.knownFilters == null)
-+			p.knownFilters = new HashMap();
-+		else
-+			p.knownFilters = new HashMap(p.knownFilters);
++		ConstraintLogic.CallParams p2 = p.clone();
++		if (p2.knownValues == null)
++			p2.knownValues = new HashMap();
++		if (p2.knownFilters == null)
++			p2.knownFilters = new HashMap();
++
++		if (p2.offset > 0) {
++			p2.offset = 0;
++			p2.limit = -1;
++		}
++		
++		p2.orderExpressions = null; // There is no reason to order the results either.
 +		
 +		// Get a list of variables that have known values, and of those the ones that are really cheap
 +		// (i.e. have just a few values).
@@ -2950,41 +2742,40 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
 +		Set cheapVars = new HashSet();
 +		
 +		// Any variables known by groups on top of us are known here, and cheap (I guess).
-+		knownVars.addAll(p.knownValues.keySet());
-+		cheapVars.addAll(p.knownValues.keySet());
++		knownVars.addAll(p2.knownValues.keySet());
++		cheapVars.addAll(p2.knownValues.keySet());
 +		
 +		// Split out the types of constraints and look for filters that tell us interesting things.
 +		
 +        for (Iterator cons = data.getConstraints().iterator(); cons.hasNext();) {
-+            ConstraintLogic c = (ConstraintLogic) cons.next();
++            ConstraintData c = (ConstraintData) cons.next();
 +            if (c instanceof OptionalConstraintData) {
 +				optionalQueue.add(c);
 +            } else if (c instanceof FilterConstraintData) {
 +				filterQueue.add(c);
 +				
 +				FilterConstraintData f = (FilterConstraintData)c;
-+				if (f.getExpression() instanceof BinaryExpressionNode) {
++				if (f.getExpression() instanceof BinaryLogic) {
 +					// If this filter is of the form FILTER(?var = <uri> || ?var = <uri> || ...)
 +					// then this is giving us some known values for the variable.
-+					BinaryExpressionNode b = (BinaryExpressionNode)f.getExpression();
++					BinaryLogic b = (BinaryLogic)f.getExpression();
 +					Variable v = getFilterPrimaryVariable(b);
 +					if (v != null) {
 +						Set values = new HashSet();
 +						getFilterValues(b, values);
-+						if (!p.knownValues.containsKey(v)) {
-+							p.knownValues.put(v, values);
++						if (!p2.knownValues.containsKey(v)) {
++							p2.knownValues.put(v, values);
 +							knownVars.add(v);
 +							cheapVars.add(v);
 +						} else {
-+							Set othervalues = (Set)p.knownValues.get(v);
++							Set othervalues = (Set)p2.knownValues.get(v);
 +							othervalues.retainAll(values);
 +						}
 +					}
 +				}
 +				
 +				// This by default does nothing, but subclassors may decide to do things here.
-+				extractLiteralFilters(f.getExpression(), p.knownFilters);
-+				
++				extractLiteralFilters(f.getExpression(), p2.knownFilters);
 +			} else if (c instanceof TripleConstraint) {
 +				tripleConstraints.add(c);
 +			} else {
@@ -2992,6 +2783,29 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
 +			}
 +		}
 +		
++		// If a subclass can answer this query's entire set of triple
++		// constraints at once, we pass it p2_batched, which is a bit
++		// different.
++
++		ConstraintLogic.CallParams p2_batched = p2.clone();
++		
++		// Make sure we add all of the variables in scope here to the distinguished
++		// set that we pass down to the individual triple constraints.
++
++		if (p2.distinguishedVariables != null) {
++			for (Iterator cons = data.getConstraints().iterator(); cons.hasNext();) {
++				ConstraintData c = (ConstraintData) cons.next();
++				p2.distinguishedVariables.addAll(c.getVariables());
++
++				// But don't make variables in triple constraints distinguished
++				// for the batched code path. We only need variables in use
++				// in the  filters and optionals.
++				if (c instanceof TripleConstraint)
++					continue;
++				p2_batched.distinguishedVariables.addAll(c.getVariables());
++			}
++		}
++			
 +		// Reorder the triple constraints so that complex constraints are done
 +		// after some of their variables have already been evaluated.  This is
 +		// a bit N^2-ish in the number of triple constraints, but it can be improved.
@@ -3008,7 +2822,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
 +				
 +				for (Iterator cons = tripleConstraints.iterator(); cons.hasNext();) {
 +					TripleConstraint c = (TripleConstraint) cons.next();
-+					float complexity = getComplexity(c, knownVars, cheapVars, p.knownFilters, p.source);
++					float complexity = getComplexity(c, knownVars, cheapVars, p2.knownFilters, p2.source);
 +					//System.err.println(">>> " + complexity + "\t" + c);
 +					if (leastConstraint == null || complexity < leastComplexity) {
 +						leastComplexity = complexity;
@@ -3064,64 +2878,96 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
 +		// Add the otherQueue back in.
 +		constraintOrder.addAll(otherQueue);
 +
++		// Because of filters and intersections, we can't pass limits directly down into
++		// the queries. However, we can adaptively limit. Try the limit,
++		// apply filters, and if we still have enough rows we're done.
++		// Otherwise, "double" the limit we pass down and try again.
++		
 +		// Run the constraints in the new order.
-+        RdfBindingSet current = null;
++		RdfBindingSet current = null;
 +		
-+		// Allow a subclass to take over running the constraints.
-+		current = runTripleConstraints(constraintOrder, p.source, p.defaultDatasets, p.namedDatasets, p.knownValues, p.knownFilters, p.limit);
-+		if (current != null) {
-+			constraintOrder.clear();
-+			if (optionalQueue.size() > 0)
-+				current = updateKnownVariables(current, p.knownValues);
-+		}
-+		
-+		for (Iterator cons = constraintOrder.iterator(); cons.hasNext();) {
-+			ConstraintLogic c = (ConstraintLogic) cons.next();
++		int adaptiveLimitMultiplier = 1;
++		while (adaptiveLimitMultiplier < 1000) {
++			// What limit do we pass down to the queries?
++			p2_batched.offset = 0;
++			p2.offset = 0;
++			if (p.offset == 0 && p.limit > 0) {
++				p2.limit = p.limit * adaptiveLimitMultiplier;
++				p2_batched.limit = p.limit * adaptiveLimitMultiplier;
++			}
 +			
-+			p.bindings = current;
++			boolean didFilter = false;
 +			
-+			// Only when the graph consists of a single triple constraint and
-+			// there are no filters can we pass down a limit.
-+			if (constraintOrder.size() != 1 || filterQueue.size() > 0)
-+				p.limit = -1;
++			// Clone p2 so we can modify the knownValues map but without
++			// destroying the original in case we loop around while doing
++			// the adaptive filter.
++			ConstraintLogic.CallParams p22 = p2.clone();
++			
++			// Allow a subclass to take over running the constraints.
++			current = runTripleConstraints(constraintOrder, p2_batched);
++			
++			if (current != null && current.size() >= p2_batched.limit)
++				didFilter = true;
++			
++			if (current != null && optionalQueue.size() > 0)
++				current = updateKnownVariables(current, p22.knownValues);
 +			
 +			if (current == null) {
-+				current = c.constrain(p);
-+			} else if (c instanceof FilterConstraintData) {
-+	            current = c.constrain(p);
-+	            filterQueue.remove(c);
-+			} else {
-+				current = logic.intersect(current, c.constrain(p));
++				// No subclass took over the intersections.
++				
++				for (Iterator cons = constraintOrder.iterator(); cons.hasNext();) {
++					ConstraintLogic c = (ConstraintLogic) cons.next();
++					
++					p22.bindings = current;
++					
++					if (current == null) {
++						current = c.constrain(p22);
++						if (current.size() >= p22.limit)
++							didFilter = true;
++					} else {
++						RdfBindingSet next = c.constrain(p22);
++						if (next.size() >= p22.limit)
++							didFilter = true;
++						current = logic.intersect(current, next);
++					}
++					
++					if (cons.hasNext() || optionalQueue.size() > 0)
++						current = updateKnownVariables(current, p22.knownValues);
++				}
 +			}
-+
-+			if (cons.hasNext() || optionalQueue.size() > 0)
-+				current = updateKnownVariables(current, p.knownValues);
-+        }
-+        
-+        // At this point, we're operating on the set, so let's make it an empty one
-+        if (current == null) {
-+            current = new RdfBindingSetImpl();
-+        }
-+
-+		// Any optionals...
-+        for (Iterator optionals = optionalQueue.iterator(); optionals.hasNext();) {
-+            ConstraintLogic c = (ConstraintLogic) optionals.next();
-+				p.bindings = current;
++			
++			// At this point, we're operating on the set, so let's make it an empty one
++			if (current == null)
++				current = new RdfBindingSetImpl();
++			
++			// Any optionals...
++			for (Iterator optionals = optionalQueue.iterator(); optionals.hasNext();) {
++				ConstraintLogic c = (ConstraintLogic) optionals.next();
++				p22.bindings = current;
 +				// note that we pass down the limit
-+            current = c.constrain(p);
-+        }
++				current = c.constrain(p22);
++			}
++			
++			// Any filters that were not moved up in the logic to process them as early as possible.
++			for (Iterator filters = filterQueue.iterator(); filters.hasNext();) {
++				ConstraintLogic c = (ConstraintLogic) filters.next();
++				p22.bindings = current;
++				current = c.constrain(p22);
++			}
++			
++			current = p.projectOrderDistinctLimit(current);
++			
++			// Are we done with the adaptive filter?
++			if (p.limit == -1 || current.size() >= p.limit || !didFilter || filterQueue.size() == 0)
++				break;
++			
++			adaptiveLimitMultiplier *= 5;
++		}
 +		
-+		// Any filters that were not moved up in the logic to process them as early as possible.
-+        for (Iterator filters = filterQueue.iterator(); filters.hasNext();) {
-+            ConstraintLogic c = (ConstraintLogic) filters.next();
-+				p.bindings = current;
-+            current = c.constrain(p);
-+        }
-+        return current;
-+    }
++		return current;
++   }
 +
-+	protected RdfBindingSet runTripleConstraints(List tripleConstraints, RdfSource source,
-+            Collection defaultDatasets, Collection namedDatasets, Map knownValues, Map knownFilters, int limit) {
++	protected RdfBindingSet runTripleConstraints(List tripleConstraints, ConstraintLogic.CallParams p) {
 +		return null;
 +	}
 +	
@@ -3175,9 +3021,9 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
 +	 *                       supported by the underlying AdvancedRdfSource).
 +     */
 +	protected void extractLiteralFilters(ExpressionLogic node, Map literalFilters) {
-+		if (node instanceof ASTAndNode) {
-+			extractLiteralFilters(((ASTAndNode)node).getLeftExpression(), literalFilters);
-+			extractLiteralFilters(((ASTAndNode)node).getRightExpression(), literalFilters);
++		if (node instanceof AndLogic) {
++			extractLiteralFilters(((AndLogic)node).getLeftExpression(), literalFilters);
++			extractLiteralFilters(((AndLogic)node).getRightExpression(), literalFilters);
 +		}
 +	}
 +	
@@ -3201,15 +3047,15 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
 +	}
 +	
 +	private void extractVariableFunctions(ExpressionLogic node, Map knownValues) {
-+		if (node instanceof ASTAndNode) {
-+			extractVariableFunctions(((ASTAndNode)node).getLeftExpression(), knownValues);
-+			extractVariableFunctions(((ASTAndNode)node).getRightExpression(), knownValues);
++		if (node instanceof AndLogic) {
++			extractVariableFunctions(((AndLogic)node).getLeftExpression(), knownValues);
++			extractVariableFunctions(((AndLogic)node).getRightExpression(), knownValues);
 +		}
-+		if (node instanceof ASTOrNode) {
++		if (node instanceof OrLogic) {
 +			Map a = new HashMap();
 +			Map b = new HashMap();
-+			extractVariableFunctions(((ASTOrNode)node).getLeftExpression(), a);
-+			extractVariableFunctions(((ASTOrNode)node).getRightExpression(), b);
++			extractVariableFunctions(((OrLogic)node).getLeftExpression(), a);
++			extractVariableFunctions(((OrLogic)node).getRightExpression(), b);
 +			for (Iterator i = a.keySet().iterator(); i.hasNext(); ) {
 +				Variable v = (Variable)i.next();
 +				if (b.containsKey(v)) {
@@ -3224,9 +3070,9 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
 +				}
 +			}
 +		}
-+		if (node instanceof ASTEqualsNode) {
-+			extractVariableFunctions(((ASTEqualsNode)node).getLeftExpression(), ((ASTEqualsNode)node).getRightExpression(), knownValues);
-+			extractVariableFunctions(((ASTEqualsNode)node).getRightExpression(), ((ASTEqualsNode)node).getLeftExpression(), knownValues);
++		if (node instanceof EqualsLogic) {
++			extractVariableFunctions(((EqualsLogic)node).getLeftExpression(), ((EqualsLogic)node).getRightExpression(), knownValues);
++			extractVariableFunctions(((EqualsLogic)node).getRightExpression(), ((EqualsLogic)node).getLeftExpression(), knownValues);
 +		}
 +	}
 +	
@@ -3242,7 +3088,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
 +			// to all of the variables values.  (if it's of more than one variable, we could
 +			// permute through the variables...)
 +			ExternalFunctionLogic f = (ExternalFunctionLogic)b;
-+			Set varargs =  getFilterVariables((SimpleNode)b);
++			Set varargs =  f.getVariables();
 +			
 +			if (varargs.size() == 0) { // a constant, ok
 +				Value v = f.evaluate(new MyBindingRow(new HashMap()));
@@ -3357,19 +3203,19 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
 +	}
 +	
 +   /**
-+     * Gets a variable for the filter.  If the filter is a ASTEqualsNode,
++     * Gets a variable for the filter.  If the filter is a EqualsLogic,
 +	 * return the variable on the left hand side.  If the filter is a
-+	 * ASTOrNode, return the variable if its the same on both sides,
++	 * OrLogic, return the variable if its the same on both sides,
 +	 * or else null.
 +     */
-+	private Variable getFilterPrimaryVariable(BinaryExpressionNode expr) {
-+		if (expr instanceof ASTOrNode
-+			&& expr.getLeftExpression() instanceof BinaryExpressionNode
-+			&& expr.getRightExpression() instanceof BinaryExpressionNode) {
-+			Variable left = getFilterPrimaryVariable((BinaryExpressionNode)expr.getLeftExpression());
-+			Variable right = getFilterPrimaryVariable((BinaryExpressionNode)expr.getRightExpression());
++	private Variable getFilterPrimaryVariable(BinaryLogic expr) {
++		if (expr instanceof OrLogic
++			&& expr.getLeftExpression() instanceof BinaryLogic
++			&& expr.getRightExpression() instanceof BinaryLogic) {
++			Variable left = getFilterPrimaryVariable((BinaryLogic)expr.getLeftExpression());
++			Variable right = getFilterPrimaryVariable((BinaryLogic)expr.getRightExpression());
 +			if (left != null && right != null && left.equals(right)) return left;
-+		} else if (expr instanceof ASTEqualsNode
++		} else if (expr instanceof EqualsLogic
 +			&& expr.getLeftExpression() instanceof Variable && (expr.getRightExpression() instanceof URI || expr.getRightExpression() instanceof BNode || expr.getRightExpression() instanceof Literal)) {
 +			return (Variable)expr.getLeftExpression(); 
 +		}
@@ -3380,26 +3226,15 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
 +     * Gets the values for a filter.  For an ASTEqualsNode, returns
 +	 * the right hand side.  For an ASTOrNode, returns the values of its parts.
 +     */
-+	private void getFilterValues(BinaryExpressionNode expr, Set set) {
-+		if (expr instanceof ASTOrNode) {
-+			getFilterValues((BinaryExpressionNode)expr.getLeftExpression(), set);
-+			getFilterValues((BinaryExpressionNode)expr.getRightExpression(), set);
-+		} else if (expr instanceof ASTEqualsNode && (expr.getRightExpression() instanceof URI || expr.getRightExpression() instanceof BNode || expr.getRightExpression() instanceof Literal)) {
++	private void getFilterValues(BinaryLogic expr, Set set) {
++		if (expr instanceof OrLogic) {
++			getFilterValues((BinaryLogic)expr.getLeftExpression(), set);
++			getFilterValues((BinaryLogic)expr.getRightExpression(), set);
++		} else if (expr instanceof EqualsLogic && (expr.getRightExpression() instanceof URI || expr.getRightExpression() instanceof BNode || expr.getRightExpression() instanceof Literal)) {
 +			set.add(expr.getRightExpression());
 +		}
 +	}
 +
-+	private Set getFilterVariables(SimpleNode filter) {
-+		final HashSet ret = new HashSet();
-+		filter.jjtAccept(
-+			new EmptyVisitor() {
-+				public void visit(ASTVar node) {
-+					ret.add(node);
-+				}
-+			}
-+			);
-+		return ret;
-+	}
 +}
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/logic/streamed/IndexedSetIntersectLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/streamed/IndexedSetIntersectLogic.java
 --- upstream/src/main/name/levering/ryan/sparql/logic/streamed/IndexedSetIntersectLogic.java	2007-10-07 07:19:19.000000000 -0400
@@ -3430,8 +3265,16 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
  
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/logic/streamed/IndexedSetJoinLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/streamed/IndexedSetJoinLogic.java
 --- upstream/src/main/name/levering/ryan/sparql/logic/streamed/IndexedSetJoinLogic.java	2007-10-07 07:19:19.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/logic/streamed/IndexedSetJoinLogic.java	2007-10-21 12:35:15.000000000 -0400
-@@ -81,7 +81,7 @@
++++ work-copy/src/main/name/levering/ryan/sparql/logic/streamed/IndexedSetJoinLogic.java	2008-02-05 17:40:48.000000000 -0500
+@@ -10,6 +10,7 @@
+ import java.util.Collection;
+ import java.util.Collections;
+ import java.util.HashMap;
++import java.util.HashSet;
+ import java.util.Iterator;
+ import java.util.List;
+ import java.util.Map;
+@@ -81,7 +82,7 @@
  		final List variables;
  
  		final List commonVariables;
@@ -3440,7 +3283,16 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
  		RdfBindingJoin(RdfBindingSet set1, RdfBindingSet set2, Collection filters) {
  			this.set1 = set1;
  			this.set2 = set2;
-@@ -293,14 +293,11 @@
+@@ -206,7 +207,7 @@
+ 									retainedMatches.addAll((Collection) this.indexMap[varPos].get(null));
+ 								}
+ 							} else {
+-								ArrayList matchesWithNull = new ArrayList();
++								HashSet matchesWithNull = new HashSet();
+ 								if (this.indexMap[varPos].containsKey(value)) {
+ 									matchesWithNull.addAll((Collection) this.indexMap[varPos].get(value));
+ 								}
+@@ -293,14 +294,11 @@
  			}
  
  			public Value getValue(Variable variable) {
@@ -3462,7 +3314,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
  
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/logic/streamed/StreamedFilterConstraintLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/streamed/StreamedFilterConstraintLogic.java
 --- upstream/src/main/name/levering/ryan/sparql/logic/streamed/StreamedFilterConstraintLogic.java	2007-10-07 07:19:19.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/logic/streamed/StreamedFilterConstraintLogic.java	2007-10-21 12:35:15.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/logic/streamed/StreamedFilterConstraintLogic.java	2008-02-09 15:22:14.000000000 -0500
 @@ -10,6 +10,7 @@
  import java.util.Iterator;
  import java.util.LinkedList;
@@ -3483,6 +3335,23 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
  	}
  
  	private class FilterBindingSet extends AbstractRdfBindingSet implements StackedRdfBindingSet {
+@@ -155,16 +155,4 @@
+ 
+ 
+ 	}
+-
+-	/**
+-	 * Currently does nothing, as I'm not even sure what this method is used for
+-	 * and the filter constraint doesn't really change the variable bindings at
+-	 * all.
+-	 * 
+-	 * @return an empty list always
+-	 */
+-	public Collection getVariables() {
+-		return new LinkedList();
+-	}
+-
+ }
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/logic/streamed/StreamedGraphConstraintLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/streamed/StreamedGraphConstraintLogic.java
 --- upstream/src/main/name/levering/ryan/sparql/logic/streamed/StreamedGraphConstraintLogic.java	2007-10-07 07:19:19.000000000 -0400
 +++ work-copy/src/main/name/levering/ryan/sparql/logic/streamed/StreamedGraphConstraintLogic.java	2007-10-21 12:35:15.000000000 -0400
@@ -3628,7 +3497,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
  			public List getVariables() {
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/logic/streamed/StreamedTripleConstraintLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/streamed/StreamedTripleConstraintLogic.java
 --- upstream/src/main/name/levering/ryan/sparql/logic/streamed/StreamedTripleConstraintLogic.java	2007-10-07 07:19:19.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/logic/streamed/StreamedTripleConstraintLogic.java	2007-10-21 12:35:15.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/logic/streamed/StreamedTripleConstraintLogic.java	2008-02-05 15:55:21.000000000 -0500
 @@ -10,11 +10,14 @@
  import java.util.Iterator;
  import java.util.List;
@@ -3684,7 +3553,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
  		} else {
  			verb = (URI) predExpr;
  		}
-@@ -99,46 +101,58 @@
+@@ -99,90 +101,132 @@
  		Value object = null;
  		if (objExpr instanceof Variable && flags[2] == 0) {
  			variables.add(objExpr);
@@ -3713,12 +3582,14 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
 +			if (p.source != null) {
 +				StatementBindingSet bindingSet = new StatementBindingSet(query);
  				bindingSet.addIterator(new StatementImpl(subject, verb, object));
- 				return bindingSet;
+-				return bindingSet;
++				return p.projectOrderDistinctLimit(bindingSet);
  			} else {
 -				StreamedTripleBindingSet bindingSet = new StreamedTripleBindingSet(variables, flags, true);
 +				StreamedTripleBindingSet bindingSet = new StreamedTripleBindingSet(query);
  				bindingSet.addIterator(new StatementImpl(subject, verb, object));
- 				return bindingSet;
+-				return bindingSet;
++				return p.projectOrderDistinctLimit(bindingSet);
  			}
  		} else {
 -			if (source != null) {
@@ -3739,7 +3610,8 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
  						bindingSet.addIterator(new StatementImpl(subject, verb, object, (URI) i.next()));
  					}
  				}
- 				return bindingSet;
+-				return bindingSet;
++				return p.projectOrderDistinctLimit(bindingSet);
  			} else {
 -				StreamedTripleBindingSet bindingSet = new StreamedTripleBindingSet(variables, flags, false);
 -				if (defaultDatasets.isEmpty()) {
@@ -3755,7 +3627,8 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
  						bindingSet.addIterator(new StatementImpl(subject, verb, object, (URI) i.next()));
  					}
  				}
-@@ -146,43 +160,73 @@
+-				return bindingSet;
++				return p.projectOrderDistinctLimit(bindingSet);
  			}
  		}
  	}
@@ -4039,8 +3912,28 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
 +  import name.levering.ryan.sparql.common.impl.AbstractRdfBindingSet;
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/logic/StreamedLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/StreamedLogic.java
 --- upstream/src/main/name/levering/ryan/sparql/logic/StreamedLogic.java	2007-10-07 07:19:19.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/logic/StreamedLogic.java	2007-10-21 12:35:15.000000000 -0400
-@@ -377,8 +377,8 @@
++++ work-copy/src/main/name/levering/ryan/sparql/logic/StreamedLogic.java	2008-02-10 07:51:31.000000000 -0500
+@@ -248,7 +248,7 @@
+ 	 * @return the logic handling the ask query
+ 	 */
+ 	public AskQueryLogic getAskQueryLogic(AskQueryData data) {
+-		return new DefaultAskQueryLogic(data);
++		return new DefaultAskQueryLogic(data, new StreamedSetRangeLogic());
+ 	}
+ 
+ 	/**
+@@ -339,9 +339,7 @@
+ 	 * @return the logic handling the OPTIONAL constraint
+ 	 */
+ 	public ConstraintLogic getOptionalConstraintLogic(OptionalConstraintData data, SPARQLValueFactory valueFactory) {
+-		return new DefaultOptionalConstraintLogic(data, new IndexedSetIntersectLogic(), new DefaultIntersectOrderLogic(
+-				new IndexedSetIntersectLogic()), new IndexedSetJoinLogic(getValueConversionLogic(valueFactory),
+-				getEffectiveBooleanLogic(valueFactory)));
++		return new DefaultOptionalConstraintLogic(data, new IndexedSetJoinLogic(getValueConversionLogic(valueFactory), getEffectiveBooleanLogic(valueFactory)), this);
+ 	}
+ 
+ 	/**
+@@ -377,8 +375,8 @@
  	 *            direction
  	 * @return the logic handling the ordering of an expression
  	 */
@@ -4053,8 +3946,29 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
  	/**
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/logic/StreamedStrictLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/StreamedStrictLogic.java
 --- upstream/src/main/name/levering/ryan/sparql/logic/StreamedStrictLogic.java	2007-10-07 07:19:19.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/logic/StreamedStrictLogic.java	2007-10-21 12:35:15.000000000 -0400
-@@ -269,8 +269,8 @@
++++ work-copy/src/main/name/levering/ryan/sparql/logic/StreamedStrictLogic.java	2008-02-10 07:51:45.000000000 -0500
+@@ -140,7 +140,7 @@
+ 	 * @return the logic handling the ask query
+ 	 */
+ 	public AskQueryLogic getAskQueryLogic(AskQueryData data) {
+-		return new DefaultAskQueryLogic(data);
++		return new DefaultAskQueryLogic(data, new StreamedSetRangeLogic());
+ 	}
+ 
+ 	/**
+@@ -231,9 +231,8 @@
+ 	 * @return the logic handling the OPTIONAL constraint
+ 	 */
+ 	public ConstraintLogic getOptionalConstraintLogic(OptionalConstraintData data, SPARQLValueFactory valueFactory) {
+-		return new DefaultOptionalConstraintLogic(data, new IndexedSetIntersectLogic(), new DefaultIntersectOrderLogic(
+-				new IndexedSetIntersectLogic()), new IndexedSetJoinLogic(getValueConversionLogic(valueFactory),
+-				getEffectiveBooleanLogic(valueFactory)));
++		return new DefaultOptionalConstraintLogic(data, new IndexedSetJoinLogic(getValueConversionLogic(valueFactory),
++				getEffectiveBooleanLogic(valueFactory)), this);
+ 	}
+ 
+ 	/**
+@@ -269,8 +268,8 @@
  	 *            direction
  	 * @return the logic handling the ordering of an expression
  	 */
@@ -4098,16 +4012,27 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
       * 
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/model/logic/ConstraintLogic.java work-copy/src/main/name/levering/ryan/sparql/model/logic/ConstraintLogic.java
 --- upstream/src/main/name/levering/ryan/sparql/model/logic/ConstraintLogic.java	2006-08-20 20:00:59.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/model/logic/ConstraintLogic.java	2007-10-21 12:35:15.000000000 -0400
-@@ -6,6 +6,7 @@
++++ work-copy/src/main/name/levering/ryan/sparql/model/logic/ConstraintLogic.java	2008-02-10 07:49:35.000000000 -0500
+@@ -6,10 +6,18 @@
  package name.levering.ryan.sparql.model.logic;
  
  import java.util.Collection;
++import java.util.HashSet;
++import java.util.List;
 +import java.util.Map;
++import java.util.Set;
  
  import name.levering.ryan.sparql.common.RdfBindingSet;
  import name.levering.ryan.sparql.common.RdfSource;
-@@ -27,16 +28,58 @@
+ 
++import name.levering.ryan.sparql.model.logic.helper.SetRangeLogic;
++import name.levering.ryan.sparql.model.logic.helper.SetProjectionLogic;
++import name.levering.ryan.sparql.model.logic.helper.SetDistinctionLogic;
++
+ /**
+  * The logic that every constraint satisfies. It currently can be used two ways.
+  * If the logic is dependent on current evaluated bindings (FILTER and
+@@ -27,16 +35,134 @@
       * Constrains the value bindings by either constraining the current value
       * bindings or returning a set that will be constrained via intersection
       * with the current set.
@@ -4123,7 +4048,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
 -    public RdfBindingSet constrain(RdfBindingSet bindings, RdfSource source,
 -            Collection defaultDatasets, Collection namedDatasets);
 +    public RdfBindingSet constrain(CallParams p);
- 
++	 
 +	 public static class CallParams {
 +		 /**
 +		  * The set of current bindings to evaluate against, for
@@ -4145,7 +4070,48 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
 +		  * The datasets that are used in the GRAPH constraint for unbound variables
 +		  */
 +		 public Collection namedDatasets;
++		 
++		 /**
++		  * A List of OrderExpressionLogic objects that control how the
++		  * results should be ordered, or null if no order is specified.
++		  */
++		 public List orderExpressions;
 +		
++		 /**
++		  * The most number of binding rows that is being requested, or -1
++		  * if all rows are requested. If set to something other than -1,
++		  * rangeLogic must be set.
++		  */
++		 public int limit = -1;
++		 
++		 /**
++		  * The first row of results to be returned. Zero means the first row
++		  * from the data set. If set to something other than set, rangeLogic
++		  * must also be set.
++		  */
++		 public int offset = 0;
++
++		 public static class DistinctType {
++			 public static final int ALL_BINDINGS = 0;
++			 public static final int REDUCED = 1;
++			 public static final int DISTINCT = 2;
++		 }
++		 
++		 /**
++		  * Whether REDUCED or DISTINCT results are requested.
++		  * A value from DistinctType. If something other than
++		  * ALL_BINDINGS is used, distinctionLogic must be set.
++		  */
++		 public int distinct = DistinctType.ALL_BINDINGS;
++		 
++		 /**
++		  * A set of distinguished variables: variables whose bindings are
++		  * to be returned to the caller. If null, all variables whose scope
++		  * is larger than the ConstraintLogic are to be returned. If this
++		  * field is not null, projectionLogic must be set.
++		  */
++		 public Set distinguishedVariables;
++
 +		 /**
 +		  * A mapping from variables to Sets of values that the variable must be drawn from
 +		  */
@@ -4157,11 +4123,9 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
 +		  */
 +		 public Map knownFilters;
 +		 
-+		 /**
-+		  * The most number of binding rows that is being requested, or -1
-+		  * if all rows are requested. Can be freely ignored by the callee.
-+		  */
-+		 public int limit = -1;
++		 public SetRangeLogic rangeLogic;
++		 public SetProjectionLogic projectionLogic;
++		 public SetDistinctionLogic distinctionLogic;
 +		 
 +		 public CallParams clone() {
 +			 CallParams p = new CallParams();
@@ -4169,16 +4133,76 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
 +			 p.source = source;
 +			 p.defaultDatasets = defaultDatasets == null ? null : new java.util.ArrayList(defaultDatasets);
 +			 p.namedDatasets = namedDatasets == null ? null : new java.util.ArrayList(namedDatasets);
++			 p.distinguishedVariables = distinguishedVariables == null ? null : new java.util.HashSet(distinguishedVariables);
++			 p.orderExpressions = orderExpressions == null ? null : new java.util.ArrayList(orderExpressions);
++			 p.limit = limit;
++			 p.offset = offset;
++			 p.distinct = distinct;
 +			 p.knownValues = knownValues == null ? null : new java.util.HashMap(knownValues);
 +			 p.knownFilters = knownFilters == null ? null : new java.util.HashMap(knownFilters);
-+			 p.limit = limit;
++			 p.rangeLogic = rangeLogic;
++			 p.projectionLogic = projectionLogic;
++			 p.distinctionLogic = distinctionLogic;
 +			 return p;
 +		 }
+ 
++		 public RdfBindingSet projectOrderDistinctLimit(RdfBindingSet results) {
++			 if (distinguishedVariables != null) {
++				 Set select = new HashSet(distinguishedVariables);
++				 select.retainAll(results.getVariables());
++					results = projectionLogic.project(results, select);
++			 }
++	
++				if (orderExpressions != null && !results.isOrdered()) {
++				  // Apply ordering in reverse order to give priority to the first
++				  // variable.
++				  for (int i = orderExpressions.size() - 1; i >= 0; i--) {
++						OrderExpressionLogic orderer = (OrderExpressionLogic) orderExpressions.get(i);
++						orderer.order(results);
++				  }
++				}
++			 
++				// What's better, to do the distinction before or after the ordering?
++				if (distinct == CallParams.DistinctType.DISTINCT && !results.isDistinct())
++					results = this.distinctionLogic.makeDistinct(results);
++				
++			  // Now apply limiting and offsetting
++			  if (offset > 0)
++					results = rangeLogic.offset(results, offset);
++				if (limit >= 0)
++					results = rangeLogic.limit(results, limit);
++			  
++				return results;
++		 }
++	
 +	 }
  }
+diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/model/logic/ExpressionLogic.java work-copy/src/main/name/levering/ryan/sparql/model/logic/ExpressionLogic.java
+--- upstream/src/main/name/levering/ryan/sparql/model/logic/ExpressionLogic.java	2007-10-07 07:19:17.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/model/logic/ExpressionLogic.java	2008-02-07 16:44:35.000000000 -0500
+@@ -5,6 +5,8 @@
+  */
+ package name.levering.ryan.sparql.model.logic;
+ 
++import java.util.Set;
++
+ import name.levering.ryan.sparql.common.RdfBindingRow;
+ import name.levering.ryan.sparql.common.Value;
+ 
+@@ -29,4 +31,9 @@
+      */
+     public Value evaluate(RdfBindingRow bindings);
+ 
++    /**
++     * Returns a Set of variables used by the expression.
++     * @return a Set of variables used by the expression
++     */
++    public Set getVariables();
+ }
+\ No newline at end of file
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/model/logic/LogicFactory.java work-copy/src/main/name/levering/ryan/sparql/model/logic/LogicFactory.java
 --- upstream/src/main/name/levering/ryan/sparql/model/logic/LogicFactory.java	2007-10-07 07:19:17.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/model/logic/LogicFactory.java	2007-10-21 12:35:15.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/model/logic/LogicFactory.java	2008-02-09 10:19:02.000000000 -0500
 @@ -63,7 +63,7 @@
  
  	public ConstraintLogic getOptionalConstraintLogic(OptionalConstraintData data, SPARQLValueFactory valueFactory);
@@ -4188,7 +4212,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
  
  	public ExpressionLogic getAdditionLogic(BinaryExpressionData data, SPARQLValueFactory valueFactory);
  
-@@ -109,8 +109,6 @@
+@@ -109,19 +109,15 @@
  
  	public ExpressionLogic getLangMatchesLogic(CallExpressionData data, SPARQLValueFactory valueFactory);
  
@@ -4197,8 +4221,11 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
  	public ExpressionLogic getRegexLogic(CallExpressionData data, SPARQLValueFactory valueFactory);
  
  	public ExpressionLogic getStringLogic(CallExpressionData data, SPARQLValueFactory valueFactory);
-@@ -121,7 +119,7 @@
  
+ 	public ExpressionLogic getExternalFunctionLogic(CallExpressionData data, SPARQLValueFactory valueFactory);
+ 
+-	public ExpressionLogic getVariableLogic(Variable data);
+-
  	public ValueConversionLogic getValueConversionLogic(SPARQLValueFactory valueFactory);
  
 -	public ValueOrderingLogic getValueOrderingLogic();
@@ -4307,7 +4334,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
       ReInit(dstream, 1, 1, 4096);
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/parser/model/ASTFilterConstraint.java work-copy/src/main/name/levering/ryan/sparql/parser/model/ASTFilterConstraint.java
 --- upstream/src/main/name/levering/ryan/sparql/parser/model/ASTFilterConstraint.java	2006-08-20 20:01:00.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/parser/model/ASTFilterConstraint.java	2007-10-21 12:35:16.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/parser/model/ASTFilterConstraint.java	2008-02-09 15:25:05.000000000 -0500
 @@ -4,6 +4,7 @@
  
  import java.util.Collection;
@@ -4316,8 +4343,12 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
  import java.util.Set;
  
  import name.levering.ryan.sparql.common.RdfBindingSet;
-@@ -24,8 +25,8 @@
-         return (ExpressionLogic) this.jjtGetChild(0);
+@@ -21,15 +22,15 @@
+     }
+ 
+     public ExpressionLogic getExpression() {
+-        return (ExpressionLogic) this.jjtGetChild(0);
++        return ((ExpressionNode) this.jjtGetChild(0)).getExpressionLogic();
      }
  
 -    public RdfBindingSet constrain(RdfBindingSet bindings, RdfSource source, Collection defaultDatasets, Collection namedDatasets) {
@@ -4327,6 +4358,11 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
      }
  
      public Set getVariables() {
+-        return Collections.EMPTY_SET;
++        return getExpression().getVariables();
+     }
+     
+     public String toString() {
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/parser/model/ASTGraphConstraint.java work-copy/src/main/name/levering/ryan/sparql/parser/model/ASTGraphConstraint.java
 --- upstream/src/main/name/levering/ryan/sparql/parser/model/ASTGraphConstraint.java	2006-08-20 20:01:00.000000000 -0400
 +++ work-copy/src/main/name/levering/ryan/sparql/parser/model/ASTGraphConstraint.java	2007-10-21 12:35:16.000000000 -0400
@@ -4374,8 +4410,8 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
      public Set getVariables() {
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/parser/model/ASTLiteral.java work-copy/src/main/name/levering/ryan/sparql/parser/model/ASTLiteral.java
 --- upstream/src/main/name/levering/ryan/sparql/parser/model/ASTLiteral.java	2007-10-07 07:19:18.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/parser/model/ASTLiteral.java	2007-10-21 12:35:16.000000000 -0400
-@@ -60,4 +60,15 @@
++++ work-copy/src/main/name/levering/ryan/sparql/parser/model/ASTLiteral.java	2008-02-07 16:52:55.000000000 -0500
+@@ -60,4 +60,19 @@
          }
      }
      
@@ -4390,6 +4426,10 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
 +			&& ((language == null && lit.getLanguage() == null) || (language != null && lit.getLanguage() != null && language.equals(lit.getLanguage())))
 +			&& ((datatype == null && lit.getDatatype() == null) || (datatype != null && lit.getDatatype() != null && datatype.equals(lit.getDatatype()))); 
 +	}
++	
++	 public java.util.Set getVariables() {
++		 return new java.util.HashSet();
++	 }
  }
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/parser/model/ASTOptionalConstraint.java work-copy/src/main/name/levering/ryan/sparql/parser/model/ASTOptionalConstraint.java
 --- upstream/src/main/name/levering/ryan/sparql/parser/model/ASTOptionalConstraint.java	2006-08-20 20:01:00.000000000 -0400
@@ -4508,6 +4548,48 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
      }
  
      public Set getVariables() {
+diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/parser/model/ASTVar.java work-copy/src/main/name/levering/ryan/sparql/parser/model/ASTVar.java
+--- upstream/src/main/name/levering/ryan/sparql/parser/model/ASTVar.java	2007-10-07 07:19:18.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/parser/model/ASTVar.java	2008-02-09 10:22:11.000000000 -0500
+@@ -8,9 +8,8 @@
+ 
+ import name.levering.ryan.sparql.common.Value;
+ 
+-public class ASTVar extends SimpleNode implements Variable {
++public class ASTVar extends SimpleNode implements ExpressionNode, Variable {
+     
+-    private ExpressionLogic logic;
+     private String name;
+     
+     public ASTVar(int id) {
+@@ -20,9 +19,13 @@
+     public String getName() {
+         return this.name;
+     }
++    
++    public ExpressionLogic getExpressionLogic() {
++    	return this;
++    }
+ 
+     public Value evaluate(RdfBindingRow bindings) {
+-        return this.logic.evaluate(bindings);
++        return bindings.getValue(this);
+     }
+     
+     public void setName(String name) {
+@@ -45,7 +48,11 @@
+     }
+     
+     public void applyLogic(LogicBinder binder) {
+-        this.logic = binder.getLogicFactory().getVariableLogic(this);
+     }
+ 
++	 public java.util.Set getVariables() {
++		 java.util.HashSet ret = new java.util.HashSet();
++		 ret.add(this);
++		 return ret;
++	 }
+ }
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/parser/model/ASTWithExtension.java work-copy/src/main/name/levering/ryan/sparql/parser/model/ASTWithExtension.java
 --- upstream/src/main/name/levering/ryan/sparql/parser/model/ASTWithExtension.java	2007-10-07 07:19:18.000000000 -0400
 +++ work-copy/src/main/name/levering/ryan/sparql/parser/model/ASTWithExtension.java	2007-10-21 12:35:16.000000000 -0400
@@ -4530,6 +4612,56 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
      }
  
      public URI getName() {
+diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/parser/model/BinaryExpressionNode.java work-copy/src/main/name/levering/ryan/sparql/parser/model/BinaryExpressionNode.java
+--- upstream/src/main/name/levering/ryan/sparql/parser/model/BinaryExpressionNode.java	2007-10-07 07:19:18.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/parser/model/BinaryExpressionNode.java	2008-02-09 15:10:39.000000000 -0500
+@@ -16,7 +16,7 @@
+  * @version 1.0
+  */
+ public abstract class BinaryExpressionNode extends SimpleNode implements
+-        BinaryExpressionData,ExpressionLogic {
++        ExpressionNode, BinaryExpressionData {
+ 
+     private ExpressionLogic logic;
+     
+@@ -25,18 +25,18 @@
+     }
+ 
+     public ExpressionLogic getLeftExpression() {
+-        return (ExpressionLogic) this.jjtGetChild(0);
++        return ((ExpressionNode) this.jjtGetChild(0)).getExpressionLogic();
+     }
+ 
+     public ExpressionLogic getRightExpression() {
+-        return (ExpressionLogic) this.jjtGetChild(1);
++        return ((ExpressionNode) this.jjtGetChild(1)).getExpressionLogic();
+     }
+     
+-    public Value evaluate(RdfBindingRow bindings) {
+-        return this.logic.evaluate(bindings);
++    public ExpressionLogic getExpressionLogic() {
++        return logic;
+     }
+     
+-    public abstract ExpressionLogic getLogic(LogicBinder binder);
++    protected abstract ExpressionLogic getLogic(LogicBinder binder);
+     
+     public String toString() {
+         return "(" + getLeftExpression() + " " + getOperator() + " " + getRightExpression() + ")";
+diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/parser/model/BNodeNode.java work-copy/src/main/name/levering/ryan/sparql/parser/model/BNodeNode.java
+--- upstream/src/main/name/levering/ryan/sparql/parser/model/BNodeNode.java	2007-10-07 07:19:18.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/parser/model/BNodeNode.java	2008-02-07 16:52:14.000000000 -0500
+@@ -25,4 +25,10 @@
+     public String getName() {
+         return getID();
+     }
++
++	 public java.util.Set getVariables() {
++		 java.util.HashSet ret = new java.util.HashSet();
++		 ret.add(this);
++		 return ret;
++	 }
+ }
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/parser/model/DelegatingTripleConstraint.java work-copy/src/main/name/levering/ryan/sparql/parser/model/DelegatingTripleConstraint.java
 --- upstream/src/main/name/levering/ryan/sparql/parser/model/DelegatingTripleConstraint.java	2006-08-20 20:01:00.000000000 -0400
 +++ work-copy/src/main/name/levering/ryan/sparql/parser/model/DelegatingTripleConstraint.java	2007-10-21 12:35:16.000000000 -0400
@@ -4559,6 +4691,64 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
 -
 +	
  }
+diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/parser/model/ExpressionNode.java work-copy/src/main/name/levering/ryan/sparql/parser/model/ExpressionNode.java
+--- upstream/src/main/name/levering/ryan/sparql/parser/model/ExpressionNode.java	1969-12-31 19:00:00.000000000 -0500
++++ work-copy/src/main/name/levering/ryan/sparql/parser/model/ExpressionNode.java	2008-02-09 10:15:22.000000000 -0500
+@@ -0,0 +1,17 @@
++/*
++ * SPARQL Engine
++ */
++package name.levering.ryan.sparql.parser.model;
++
++import name.levering.ryan.sparql.model.logic.ExpressionLogic;
++
++/**
++ * A node that is part of a expression and can return an
++ * ExpressionLogic object that encapsulates how to evaluate
++ * this type of expression.
++ */
++public interface ExpressionNode {
++
++	public ExpressionLogic getExpressionLogic();
++
++}
+diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/parser/model/FunctionNode.java work-copy/src/main/name/levering/ryan/sparql/parser/model/FunctionNode.java
+--- upstream/src/main/name/levering/ryan/sparql/parser/model/FunctionNode.java	2007-10-07 07:19:18.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/parser/model/FunctionNode.java	2008-02-09 10:29:45.000000000 -0500
+@@ -21,8 +21,7 @@
+  * @author Ryan Levering
+  * @version 1.0
+  */
+-public abstract class FunctionNode extends SimpleNode implements ExpressionLogic,
+-        CallExpressionData {
++public abstract class FunctionNode extends SimpleNode implements ExpressionNode, CallExpressionData {
+ 
+     private ExpressionLogic logic;
+     
+@@ -32,19 +31,19 @@
+         super(i);
+     }
+ 
+-    public Value evaluate(RdfBindingRow bindings) {
+-        return this.logic.evaluate(bindings);
++    public ExpressionLogic getExpressionLogic() {
++        return logic;
+     }
+ 
+     public List getArguments() {
+         List arguments = new ArrayList();
+         for (int i = 0; i < this.jjtGetNumChildren(); i++) {
+-            arguments.add(this.jjtGetChild(i));
++            arguments.add(((ExpressionNode)this.jjtGetChild(i)).getExpressionLogic());
+         }
+         return arguments;
+     }
+     
+-    public abstract ExpressionLogic getLogic(LogicBinder binder);
++    protected abstract ExpressionLogic getLogic(LogicBinder binder);
+     
+     public abstract URI getName(SPARQLValueFactory factory);
+ 
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/parser/model/JJTSPARQLParserState.java work-copy/src/main/name/levering/ryan/sparql/parser/model/JJTSPARQLParserState.java
 --- upstream/src/main/name/levering/ryan/sparql/parser/model/JJTSPARQLParserState.java	2006-08-20 20:05:43.000000000 -0400
 +++ work-copy/src/main/name/levering/ryan/sparql/parser/model/JJTSPARQLParserState.java	2007-10-21 12:35:16.000000000 -0400
@@ -4854,9 +5044,35 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
  	}
  
  	public String toString() {
+diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/parser/model/SPARQLBNode.java work-copy/src/main/name/levering/ryan/sparql/parser/model/SPARQLBNode.java
+--- upstream/src/main/name/levering/ryan/sparql/parser/model/SPARQLBNode.java	2007-10-07 07:19:18.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/parser/model/SPARQLBNode.java	2008-02-07 16:48:39.000000000 -0500
+@@ -92,4 +92,10 @@
+ 		return this.baseNode.getNative();
+ 	}
+ 
++
++	 public java.util.Set getVariables() {
++		 java.util.HashSet ret = new java.util.HashSet();
++		 ret.add(this);
++		 return ret;
++	 }
+ }
+diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/parser/model/SPARQLLiteral.java work-copy/src/main/name/levering/ryan/sparql/parser/model/SPARQLLiteral.java
+--- upstream/src/main/name/levering/ryan/sparql/parser/model/SPARQLLiteral.java	2007-10-07 07:19:18.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/parser/model/SPARQLLiteral.java	2008-02-07 16:48:15.000000000 -0500
+@@ -101,4 +101,8 @@
+ 		return this.baseLiteral.getNative();
+ 	}
+ 
++
++	 public java.util.Set getVariables() {
++		 return new java.util.HashSet();
++	 }
+ }
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/parser/model/SPARQLParserTreeConstants.java work-copy/src/main/name/levering/ryan/sparql/parser/model/SPARQLParserTreeConstants.java
 --- upstream/src/main/name/levering/ryan/sparql/parser/model/SPARQLParserTreeConstants.java	2007-10-07 07:19:57.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/parser/model/SPARQLParserTreeConstants.java	2008-01-26 19:24:42.000000000 -0500
++++ work-copy/src/main/name/levering/ryan/sparql/parser/model/SPARQLParserTreeConstants.java	2008-03-06 07:59:53.000000000 -0500
 @@ -1,141 +1,139 @@
 -/* Generated By:JJTree: Do not edit this line. C:/workspaces/sparql/SPARQL Engine Trunk/src/main/name/levering/ryan/sparql/parser/model\SPARQLParserTreeConstants.java */
 -
@@ -5155,7 +5371,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
 +  
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/parser/model/SPARQLURI.java work-copy/src/main/name/levering/ryan/sparql/parser/model/SPARQLURI.java
 --- upstream/src/main/name/levering/ryan/sparql/parser/model/SPARQLURI.java	2007-10-07 07:19:18.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/parser/model/SPARQLURI.java	2007-10-21 12:35:16.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/parser/model/SPARQLURI.java	2008-02-07 16:47:59.000000000 -0500
 @@ -30,21 +30,12 @@
      }
  
@@ -5182,9 +5398,44 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
      }
  
      /**
+@@ -91,4 +82,7 @@
+ 		return this.baseURI.getNative();
+ 	}
+ 
++	 public java.util.Set getVariables() {
++		 return new java.util.HashSet();
++	 }
+ }
+diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/parser/model/UnaryExpressionNode.java work-copy/src/main/name/levering/ryan/sparql/parser/model/UnaryExpressionNode.java
+--- upstream/src/main/name/levering/ryan/sparql/parser/model/UnaryExpressionNode.java	2007-10-07 07:19:18.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/parser/model/UnaryExpressionNode.java	2008-02-09 15:10:54.000000000 -0500
+@@ -16,7 +16,7 @@
+  * @version 1.0
+  */
+ public abstract class UnaryExpressionNode extends SimpleNode implements
+-        UnaryExpressionData, ExpressionLogic {
++        ExpressionNode, UnaryExpressionData {
+     
+     private ExpressionLogic logic;
+     
+@@ -25,11 +25,11 @@
+     }
+ 
+     public ExpressionLogic getExpression() {
+-        return (ExpressionLogic) this.jjtGetChild(0);
++        return ((ExpressionNode) this.jjtGetChild(0)).getExpressionLogic();
+     }
+ 
+-    public Value evaluate(RdfBindingRow bindings) {
+-        return this.logic.evaluate(bindings);
++    public ExpressionLogic getExpressionLogic() {
++        return logic;
+     }
+     
+     public abstract ExpressionLogic getLogic(LogicBinder binder);
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/parser/model/URINode.java work-copy/src/main/name/levering/ryan/sparql/parser/model/URINode.java
 --- upstream/src/main/name/levering/ryan/sparql/parser/model/URINode.java	2007-10-07 07:19:18.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/parser/model/URINode.java	2007-10-21 12:35:16.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/parser/model/URINode.java	2008-02-07 16:49:08.000000000 -0500
 @@ -21,15 +21,13 @@
  		super(i);
  	}
@@ -5206,18 +5457,52 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
  		try {
  			return new SPARQLURI(binder.getFactory().createURI(this.getURI(binder)));
  		} catch (RuntimeException e) {
-@@ -37,6 +35,6 @@
+@@ -37,6 +35,9 @@
  		}
  	}
  
 -	public abstract String getURI(ValueBinder binder);
 +	protected abstract String getURI(ValueBinder binder);
  
++	 public java.util.Set getVariables() {
++		 return new java.util.HashSet();
++	 }
  }
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/parser/model/ValueNode.java work-copy/src/main/name/levering/ryan/sparql/parser/model/ValueNode.java
 --- upstream/src/main/name/levering/ryan/sparql/parser/model/ValueNode.java	2007-10-07 07:19:18.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/parser/model/ValueNode.java	2007-10-21 12:35:16.000000000 -0400
-@@ -41,7 +41,9 @@
++++ work-copy/src/main/name/levering/ryan/sparql/parser/model/ValueNode.java	2008-02-09 10:15:57.000000000 -0500
+@@ -5,15 +5,18 @@
+  */
+ package name.levering.ryan.sparql.parser.model;
+ 
++import java.util.Set;
++
+ import name.levering.ryan.sparql.common.RdfBindingRow;
+ import name.levering.ryan.sparql.common.Value;
+ import name.levering.ryan.sparql.common.impl.ValueExpression;
++import name.levering.ryan.sparql.model.logic.ExpressionLogic;
+ 
+ /**
+  * @author Ryan Levering
+  * @version 1.0
+  */
+-public abstract class ValueNode extends SimpleNode implements ValueExpression {
++public abstract class ValueNode extends SimpleNode implements ExpressionNode, ValueExpression {
+     
+     protected ValueExpression boundValue;
+     
+@@ -21,6 +24,10 @@
+         super(i);
+     }
+ 
++    public ExpressionLogic getExpressionLogic() {
++        return this;
++    }
++
+     public Value evaluate(RdfBindingRow bindings) {
+         return this.boundValue.evaluate(bindings);
+     }
+@@ -41,7 +48,9 @@
      }
      
      public void applyBinding(ValueBinder binder) {
@@ -5228,9 +5513,16 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
      }
      
      public Object getNative() {
+@@ -51,4 +60,6 @@
+     protected abstract ValueExpression getBoundValue(ValueBinder binder);
+     
+     protected abstract String toQueryString();
++    
++    public abstract Set getVariables();
+ }
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/parser/SPARQLParserConstants.java work-copy/src/main/name/levering/ryan/sparql/parser/SPARQLParserConstants.java
 --- upstream/src/main/name/levering/ryan/sparql/parser/SPARQLParserConstants.java	2007-10-07 07:19:57.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/parser/SPARQLParserConstants.java	2008-01-26 19:24:44.000000000 -0500
++++ work-copy/src/main/name/levering/ryan/sparql/parser/SPARQLParserConstants.java	2008-03-06 07:59:54.000000000 -0500
 @@ -1,139 +1,136 @@
 -/* Generated By:JJTree&JavaCC: Do not edit this line. SPARQLParserConstants.java */
 -package name.levering.ryan.sparql.parser;
@@ -5509,7 +5801,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
 +}
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/parser/SPARQLParser.java work-copy/src/main/name/levering/ryan/sparql/parser/SPARQLParser.java
 --- upstream/src/main/name/levering/ryan/sparql/parser/SPARQLParser.java	2007-10-07 07:19:39.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/parser/SPARQLParser.java	2008-01-26 19:24:44.000000000 -0500
++++ work-copy/src/main/name/levering/ryan/sparql/parser/SPARQLParser.java	2008-03-06 07:59:54.000000000 -0500
 @@ -1,4422 +1,3182 @@
 -/* Generated By:JJTree&JavaCC: Do not edit this line. SPARQLParser.java */
 -package name.levering.ryan.sparql.parser;
@@ -13114,7 +13406,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
 +}
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/parser/SPARQLParserTokenManager.java work-copy/src/main/name/levering/ryan/sparql/parser/SPARQLParserTokenManager.java
 --- upstream/src/main/name/levering/ryan/sparql/parser/SPARQLParserTokenManager.java	2007-10-07 07:19:57.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/parser/SPARQLParserTokenManager.java	2008-01-26 19:24:44.000000000 -0500
++++ work-copy/src/main/name/levering/ryan/sparql/parser/SPARQLParserTokenManager.java	2008-03-06 07:59:54.000000000 -0500
 @@ -1,3660 +1,3997 @@
 -/* Generated By:JJTree&JavaCC: Do not edit this line. SPARQLParserTokenManager.java */
 -package name.levering.ryan.sparql.parser;
