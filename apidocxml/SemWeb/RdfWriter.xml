@@ -2,7 +2,7 @@
   <TypeSignature Language="C#" Value="public abstract class RdfWriter : IDisposable, SemWeb.StatementSink" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
-    <AssemblyVersion>1.0.2.1</AssemblyVersion>
+    <AssemblyVersion>1.0.3.0</AssemblyVersion>
   </AssemblyInfo>
   <Base>
     <BaseTypeName>System.Object</BaseTypeName>
@@ -140,26 +140,7 @@
         <summary>Creates a new RdfWriter whose type is specified by a string constant.</summary>
         <returns>A new RdfWriter.</returns>
         <remarks>The possible values for <paramref name="type" /> are:
-          <list type="table">
-            <listheader>
-              <term>
-                <paramref name="type" />
-              </term>
-              <description>Reader</description>
-            </listheader>
-            <item>
-              <term>"xml", "text/xml", "application/xml", "application/rdf+xml"</term>
-              <description>
-                <see cref="T:SemWeb.RdfXmlWriter" />
-              </description>
-            </item>
-            <item>
-              <term>"n3", "text/n3", "application/n3", "application/turtle", "application/x-turtle"</term>
-              <description>
-                <see cref="T:SemWeb.N3Writer" />
-              </description>
-            </item>
-          </list></remarks>
+          <list type="table"><listheader><term><paramref name="type" /></term><description>Reader</description></listheader><item><term>"xml", "text/xml", "application/xml", "application/rdf+xml"</term><description><see cref="T:SemWeb.RdfXmlWriter" /></description></item><item><term>"n3", "text/n3", "application/n3", "application/turtle", "application/x-turtle"</term><description><see cref="T:SemWeb.N3Writer" /></description></item></list></remarks>
       </Docs>
     </Member>
     <Member MemberName="Create">

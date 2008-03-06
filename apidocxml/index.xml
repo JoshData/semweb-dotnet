@@ -35,6 +35,7 @@
       <Type Name="Variable" />
       <Type Name="RdfXmlWriter+Options" />
       <Type Name="StaticSource" />
+      <Type Name="CanForgetBNodes" />
     </Namespace>
     <Namespace Name="SemWeb.Query">
       <Type Name="QueryResultSink" />
@@ -99,7 +100,7 @@
     </Namespace>
   </Types>
   <Assemblies>
-    <Assembly Name="SemWeb" Version="1.0.2.1">
+    <Assembly Name="SemWeb" Version="1.0.3.0">
       <Attributes>
         <Attribute>
           <AttributeName>System.Runtime.CompilerServices.RuntimeCompatibility(WrapNonExceptionThrows=true)</AttributeName>
@@ -111,7 +112,7 @@
           <AttributeName>System.Reflection.AssemblyTrademark("")</AttributeName>
         </Attribute>
         <Attribute>
-          <AttributeName>System.Reflection.AssemblyCopyright("Copyright (c) 2007 Joshua Tauberer &lt;http://razor.occams.info&gt;")</AttributeName>
+          <AttributeName>System.Reflection.AssemblyCopyright("Copyright (c) 2008 Joshua Tauberer &lt;http://razor.occams.info&gt;")</AttributeName>
         </Attribute>
         <Attribute>
           <AttributeName>System.Reflection.AssemblyProduct("")</AttributeName>

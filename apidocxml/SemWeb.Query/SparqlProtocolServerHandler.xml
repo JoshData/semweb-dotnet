@@ -33,17 +33,6 @@
         <remarks>Set to -1, the default, to have no limit.</remarks>
       </Docs>
     </Member>
-    <Member MemberName="MimeType">
-      <MemberSignature Language="C#" Value="public string MimeType;" />
-      <MemberType>Field</MemberType>
-      <ReturnValue>
-        <ReturnType>System.String</ReturnType>
-      </ReturnValue>
-      <Docs>
-        <summary>The MIME type of query responses.</summary>
-        <remarks>The default MIME type is "application/sparql-results+xml".</remarks>
-      </Docs>
-    </Member>
     <Member MemberName="ProcessRequest">
       <MemberSignature Language="C#" Value="public virtual void ProcessRequest (System.Web.HttpContext context);" />
       <MemberType>Method</MemberType>
