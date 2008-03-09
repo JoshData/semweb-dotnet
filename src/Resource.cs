@@ -4,11 +4,9 @@ using System.Xml;
 
 namespace SemWeb {
 	
-	public abstract class Resource :
+	public abstract class Resource : IComparable
 #if DOTNET2
-	IComparable<Resource>
-#else
-	IComparable
+	, IComparable<Resource>
 #endif
 	{
 		internal object ekKey, ekValue;
@@ -72,6 +70,9 @@ namespace SemWeb {
 		}
 
 #if DOTNET2
+		int IComparable.CompareTo(object other) {
+			return CompareTo((Resource)other);
+		}
 		public int CompareTo(Resource other) {
 #else
 		public int CompareTo(object other) {

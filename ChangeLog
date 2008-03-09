@@ -19,6 +19,9 @@
 	  library to push processing as deep into the queries as
 	  possible. Which variables are "locally" distinguished are now
 	  available at the level of SemWeb's Query() method.
+	* Resource: In the .NET 2.0 profile, implements IComparable now
+	  in addition to IComparable<Resource>, since ArrayList.Sort
+	  expects the former interface to be implemented.
 
 2008-02-02 Version 1.03
 
