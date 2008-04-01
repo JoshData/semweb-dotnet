@@ -1,3 +1,5 @@
+2008-04-01 Version 1.05
+
 	* N3Reader: Correct the class of characters allowed in variable
 	  names, and fix reading ( ) lists.
 	* N3Reader: Parse true/false as xsd:boolean. Patch from Mark
