@@ -6,6 +6,12 @@
 	  the N3Writer when a [] bnode goes out of scope, so the writer
 	  can remove from memory the association from the bnode object
 	  to the local name it gives it in the output.
+	* Store: Correct a bug in Clear() and recognize the "sqlstore:"
+	  spec string for creating data sources. (Khaled Hammouda)
+	* SQLStore: Allow both LIMIT and TOP clauses, for SqlServer, and
+	  escape apostrophes in string values too (Khaled Hammouda).
+	* New SQLServerStore class (Khaled Hammouda).
+	* Makefile: Build SemWeb.SQLServerStore.dll.
 	* SQLStore: Query: Make sure to add JOINs for variables with literal
 	  value filters, and to not add WHERE expressions for filters
 	  that did not get a JOIN. If we create a VIEW in order to do

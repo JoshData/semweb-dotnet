@@ -348,6 +348,10 @@ Example:  "n3:mydata.n3"</description>
               <description>A <see cref="T:SemWeb.Stores.SQLStore" /> connected to the PostgreSQL database given in the connection string, using the tables prefixed by the table parameter.  The returned store can be both read from and written to, despite the name of this method.  Example:  "postgresql:rdf:Server=localhost;Port=5432;Database=SemanticWeb;User Id=user"</description>
             </item>
             <item>
+              <term>sqlserver:[table]:[connection string]</term>
+              <description>A <see cref="T:SemWeb.Stores.SQLStore" /> connected to the MS SQL Server database given in the connection string, using the tables prefixed by the table parameter.  The returned store can be both read from and written to, despite the name of this method.  Example:  "sqlserver:rdf:Database=databasename;Server=localhost;User Id=username"</description>
+            </item>
+            <item>
               <term>sparql-http:[URL]</term>
               <description>A <see cref="T:SemWeb.Remote.SparqlHttpSource" />, which accesses a remote data source using the SPARQL Protocol.  Example: "sparql-http:http://www.govtrack.us/sparql"</description>
             </item>
@@ -796,7 +800,7 @@ n3:file1.n3|n3:file2.n3|...  (loads each of the files into memory and returns a 
         <param name="source">To be added.</param>
         <param name="find">To be added.</param>
         <param name="replacement">To be added.</param>
-        <summary>To be added.</summary>
+        <summary>A default implementation of the <see cref="M:SemWeb.ModifiableSource.Replace(SemWeb.Resource,SemWeb.Resource)" /> method for implementors of <see cref="T:SemWeb.ModifiableSource" />.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -815,7 +819,7 @@ n3:file1.n3|n3:file2.n3|...  (loads each of the files into memory and returns a 
         <param name="source">To be added.</param>
         <param name="find">To be added.</param>
         <param name="replacement">To be added.</param>
-        <summary>To be added.</summary>
+        <summary>A default implementation of the <see cref="M:SemWeb.ModifiableSource.Replace(SemWeb.Statement,SemWeb.Statement)" /> method for implementors of <see cref="T:SemWeb.ModifiableSource" />.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -880,8 +884,8 @@ n3:file1.n3|n3:file2.n3|...  (loads each of the files into memory and returns a 
         <ReturnType>System.Collections.Generic.IList&lt;SemWeb.SelectableSource&gt;</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <value>To be added.</value>
+        <summary>A list of all data sources aggregated by the Store.</summary>
+        <value>A list of all data sources aggregated by the store through calls to <see cref="M:SemWeb.Store.AddSource(SemWeb.SelectableSource)" />, <see cref="M:SemWeb.Store.AddSource(SemWeb.SelectableSource,string)" />, or added implicitly through the constructors <see cref="C:SemWeb.Store(SemWeb.StatementSource)" /> and <see cref="C:SemWeb.Store(SemWeb.SelectableSource)" />.</value>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>

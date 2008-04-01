@@ -9,7 +9,7 @@
 <p><a href="index.html">SemWeb Documentation</a></p>
 <h1>SemWeb: Using Databases</h1>
 
-<p>Besides the <tt>MemoryStore</tt>, SemWeb provides three SQL-backed persistent stores: for MySQL, PostgreSQL, and Sqlite.  Since Sqlite is the simplest to get going, I'll use it as an example.</p>
+<p>Besides the <tt>MemoryStore</tt>, SemWeb provides four SQL-backed persistent stores: for MySQL, PostgreSQL, SQL Server, and Sqlite.  Since Sqlite is the simplest to get going, I'll use it as an example.</p>
 
 <h3>Overview of database storage</h3>
 
@@ -102,10 +102,12 @@ public class Sqlite {
 
 <h3>Other Database Notes</h3>
 
-<p>Besides Sqlite, MySQL and PostgreSQL are also supported.  To use those databases,
+<p>Besides Sqlite, MySQL, PostgreSQL, and SQL Server are also supported.  To use those databases,
 just replace the &ldquo;spec&rdquo; string ("sqlite:rdf:...") with something like:</p>
 
 <pre>"mysql:rdf:Database=rdf; . . ."</pre>
+<pre>"postgresql:rdf:Database=rdf; . . ."</pre>
+<pre>"sqlserver:rdf:Database=rdf; . . ."</pre>
 
 <p>Everything after the second colon is a MySQL connection string to make the connection.
 You'll have to consult the MySQL/Connector.Net documentation for more information

@@ -127,7 +127,8 @@ namespace SemWeb {
 				case "sqlite":
 				case "mysql":
 				case "postgresql":
-					if (spec == "") throw new ArgumentException("Use: sqlite|mysql|postgresql:table:connection-string");
+				case "sqlserver":
+					if (spec == "") throw new ArgumentException("Use: sqlite|mysql|postgresql|sqlserver:table:connection-string");
 				
 					c = spec.IndexOf(':');
 					if (c == -1) throw new ArgumentException("Invalid format for SQL spec parameter (table:constring).");
@@ -142,6 +143,8 @@ namespace SemWeb {
 						classtype = "SemWeb.Stores.MySQLStore, SemWeb.MySQLStore";
 					} else if (type == "postgresql") {
 						classtype = "SemWeb.Stores.PostgreSQLStore, SemWeb.PostgreSQLStore";
+					} else if( type == "sqlserver" ) {
+						classtype = "SemWeb.Stores.SQLServerStore, SemWeb.SQLServerStore";
 					}
 					ttype = Type.GetType(classtype);
 					if (ttype == null)
@@ -736,7 +739,7 @@ namespace SemWeb {
 		// ModifiableSource
 		
 		public void Clear() {
-			if (allsources.Count > 0) throw new InvalidOperationException("The Clear() method is not supported when multiple data sources are added to a Store.");
+			if (allsources.Count > 1) throw new InvalidOperationException("The Clear() method is not supported when multiple data sources are added to a Store.");
 			if (!(allsources[0] is ModifiableSource)) throw new InvalidOperationException("The data source is not modifiable.");
 			((ModifiableSource)allsources[0]).Clear();
 		}

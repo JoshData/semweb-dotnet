@@ -48,7 +48,7 @@ BIN=bin_silverlight
 MCS=smcs -d:SILVERLIGHT
 endif
 
-all: $(BIN)/SemWeb.dll $(BIN)/SemWeb.PostgreSQLStore.dll $(BIN)/SemWeb.MySQLStore.dll $(BIN)/SemWeb.SqliteStore.dll $(BIN)/SemWeb.Sparql.dll $(BIN)/rdfstorage.exe $(BIN)/rdfquery.exe $(BIN)/euler.exe
+all: $(BIN)/SemWeb.dll $(BIN)/SemWeb.PostgreSQLStore.dll $(BIN)/SemWeb.MySQLStore.dll $(BIN)/SemWeb.SqliteStore.dll $(BIN)/SemWeb.SQLServerStore.dll $(BIN)/SemWeb.Sparql.dll $(BIN)/rdfstorage.exe $(BIN)/rdfquery.exe $(BIN)/euler.exe
 
 # Core Library
 	
@@ -103,6 +103,10 @@ else
 	@echo "SKIPPING compilation of SemWeb.MySQLStore.dll because MySql.Data assembly seems to be not available in the GAC.";
 endif
 endif
+
+$(BIN)/SemWeb.SQLServerStore.dll: src/SQLServerStore.cs
+	$(MCS) -debug src/SQLServerStore.cs -out:$(BIN)/SemWeb.SQLServerStore.dll -t:library\
+		 -r:$(BIN)/SemWeb.dll -r:System.Data
 
 # Utility programs
 

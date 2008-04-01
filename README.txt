@@ -90,21 +90,21 @@ advantage of generics.
 LICENSE
 -------
 
-The portions of this library not written by someone else are Copyright 2007
-Joshua Tauberer, and are dual-licensed under both the GNU GPL (version 2
-or later) and the Creative Commons Attribution license. See below for
-licensing information on the 3rd-party components of the library. Everything
-not listed below was written originally by me.
+The source files and binaries are all GPL-compatible.
 
-In short, you can use the library if the program it is incorporated
-into either 1) is licensed under the GNU GPL, or 2) credits me for
-the use of the SemWeb library. However, this does not cover any obligations
-you may have for using the components of the library derived from
-other projects.
+Most of the source files were written by me, some source files were 
+written by or are derived from other work, and the binaries are a mix of 
+the above. So the particular license that applies in each case may be
+different. However, everything included can be reused under the terms
+of the GPL (if not something more permissive, depending on what it is).
 
+The portions of this library not written by someone else are Copyright 
+2005-2008 Joshua Tauberer, and are dual-licensed under both the GNU GPL 
+(version 2 or later) and the Creative Commons Attribution License. All 
+source files not listed below were written originally by me. Thus for 
+those source files written by me, you have two license options.
 
-IMPORTED FILES FROM OTHER PROJECTS & CREDITS
---------------------------------------------
+The following components of this library are derived from other works:
 
 sparql-core.dll is based on the SPARQL Engine by Ryan Levering,
 which is covered by the GNU LGPL.  The original Java JAR was
@@ -120,6 +120,7 @@ The IVKM license is the zlib license, which is GPL compatible.
 Euler.cs is adapted from Jos De Roo's JavaScript Euler inferencing
 engine.  See: http://www.agfa.com/w3c/euler/ The original source
 code (and thus this derived file) was licensed under the W3C Software
-License, which is GPL compatible. The packaged SemWeb.dll contains
-this source code, and is thus (as is) released under the GPL license
-only (not the CC license).
+License, which is GPL compatible. 
+
+SQLServerStore.cs was contributed by Khaled Hammouda and is licensed
+under the GPL.

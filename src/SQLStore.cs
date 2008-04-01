@@ -183,6 +183,7 @@ namespace SemWeb.Stores {
 		protected abstract string InsertIgnoreCommand { get; }
 		protected abstract bool SupportsInsertCombined { get; }
 		protected abstract bool SupportsSubquery { get; }
+		protected virtual bool SupportsLimitClause { get { return true; } }
 		protected virtual bool SupportsViews { get { return false; } }
 		protected virtual int MaximumUriLength { get { return -1; } }
 		
@@ -368,13 +369,18 @@ namespace SemWeb.Stores {
 				if (ret != null) return (int)ret;
 			} else {
 				StringBuilder b = cmdBuffer; cmdBuffer.Length = 0;
-				b.Append("SELECT id FROM ");
+				b.Append("SELECT ");
+				if (!SupportsLimitClause)
+					b.Append("TOP 1 ");
+				b.Append("id FROM ");
 				b.Append(table);
 				b.Append("_literals WHERE hash =");
 				b.Append(quote);
 				b.Append(GetLiteralHash(literal));
 				b.Append(quote);
-				b.Append(" LIMIT 1;");
+				if (SupportsLimitClause)
+					b.Append(" LIMIT 1");
+				b.Append(';');
 				
 				object id = RunScalar(b.ToString());
 				if (id != null) return AsInt(id);
@@ -1272,6 +1278,11 @@ namespace SemWeb.Stores {
 			// exclude the results of the join.
 						
 			System.Text.StringBuilder cmd = new System.Text.StringBuilder("SELECT ");
+			if (!SupportsLimitClause && limit >= 1) {
+				cmd.Append("TOP ");
+				cmd.Append(limit);
+				cmd.Append(' ');
+			}
 			if (!HasUniqueStatementsConstraint)
 				cmd.Append("DISTINCT ");
 			SelectFilterColumns(columns, cmd);
@@ -1297,7 +1308,7 @@ namespace SemWeb.Stores {
 				}
 			}
 			
-			if (limit >= 1) {
+			if (SupportsLimitClause && limit >= 1) {
 				cmd.Append(" LIMIT ");
 				cmd.Append(limit);
 			}
@@ -1647,6 +1658,12 @@ namespace SemWeb.Stores {
 				outercmd.Append("SELECT ");
 			}
 			cmd.Append("SELECT ");
+
+			if (!SupportsLimitClause && options.Limit > 0) {
+				cmd.Append("TOP ");
+				cmd.Append(options.Limit);
+				cmd.Append(' ');
+			}
 			
 			if (useDistinct) cmd.Append("DISTINCT ");
 			
@@ -1679,7 +1696,7 @@ namespace SemWeb.Stores {
 				cmd.Append(" WHERE ");
 			cmd.Append(whereClause.ToString());
 			
-			if (options.Limit > 0) {
+			if (SupportsLimitClause && options.Limit > 0) {
 				cmd.Append(" LIMIT ");
 				cmd.Append(options.Limit);
 			}
@@ -1844,6 +1861,7 @@ namespace SemWeb.Stores {
 					case '\\':
 					case '\"':
 					case '*':
+					case '\'':
 						b.Append('\\');
 						b.Append(c);
 						break;
