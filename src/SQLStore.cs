@@ -1259,8 +1259,11 @@ namespace SemWeb.Stores {
 			}*/
 			
 			// Have to select something
-			if (!columns.SubjectId && !columns.PredicateId && !columns.ObjectId && !columns.MetaId)
+			bool fakeSubjectIdSelect = false;
+			if (!columns.SubjectId && !columns.PredicateId && !columns.ObjectId && !columns.MetaId) {
 				columns.SubjectId = true;
+				fakeSubjectIdSelect = true;
+			}
 				
 			// Pre-cache the IDs of resources in a MultiRes. TODO: Pool these into one array.
 			foreach (Resource r in new Resource[] { templateSubject, templatePredicate, templateObject, templateMeta }) {
@@ -1348,7 +1351,7 @@ namespace SemWeb.Stores {
 					if (columns.ObjectData) { ot = reader.GetInt32(col++); ouri = AsString(reader[col++]); lv = AsString(reader[col++]); ll = AsString(reader[col++]); ld = AsString(reader[col++]);}
 					if (columns.MetaUri) { muri = AsString(reader[col++]); }
 					
-					Entity subject = GetSelectedEntity(sid, suri, templateSubject, columns.SubjectId, columns.SubjectUri, entMap);
+					Entity subject = GetSelectedEntity(sid, suri, templateSubject, columns.SubjectId && !fakeSubjectIdSelect, columns.SubjectUri, entMap);
 					Entity predicate = GetSelectedEntity(pid, puri, templatePredicate, columns.PredicateId, columns.PredicateUri, entMap);
 					Resource objec = GetSelectedResource(oid, ot, ouri, lv, ll, ld, templateObject, columns.ObjectId, columns.ObjectData, entMap);
 					Entity meta = GetSelectedEntity(mid, muri, templateMeta, columns.MetaId, columns.MetaUri, templateMeta != null ? entMap : null);
