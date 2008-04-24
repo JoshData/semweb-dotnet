@@ -120,14 +120,17 @@ namespace SemWeb.Stores {
 		}
 		static ArrayList GetCreateIndexCommands(string table, int ver) {
 			ArrayList ret = new ArrayList();
+			string ine = "";
+			if (ver == 3)
+				ine = "IF NOT EXISTS";
 			ret.AddRange(new string[] {
-				"CREATE INDEX IF NOT EXISTS subject_index ON " + table + "_statements(subject);",
-				"CREATE INDEX IF NOT EXISTS predicate_index ON " + table + "_statements(predicate);",
-				"CREATE INDEX IF NOT EXISTS object_index ON " + table + "_statements(object);",
-				"CREATE INDEX IF NOT EXISTS meta_index ON " + table + "_statements(meta);",
+				"CREATE INDEX " + ine + " subject_index ON " + table + "_statements(subject);",
+				"CREATE INDEX " + ine + " predicate_index ON " + table + "_statements(predicate);",
+				"CREATE INDEX " + ine + " object_index ON " + table + "_statements(object);",
+				"CREATE INDEX " + ine + " meta_index ON " + table + "_statements(meta);",
 			
-				"CREATE UNIQUE INDEX IF NOT EXISTS literal_index ON " + table + "_literals(hash);",
-				"CREATE UNIQUE INDEX IF NOT EXISTS entity_index ON " + table + "_entities(value);"
+				"CREATE UNIQUE INDEX " + ine + " literal_index ON " + table + "_literals(hash);",
+				"CREATE UNIQUE INDEX " + ine + " entity_index ON " + table + "_entities(value);"
 					});
 			if (ver == 3)
 				ret.Add("CREATE UNIQUE INDEX IF NOT EXISTS full_index ON " + table + "_statements(subject,predicate,object,meta);");

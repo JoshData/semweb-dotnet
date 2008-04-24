@@ -1,6 +1,7 @@
 	* SQLStore: When Select(stmt)'ing with a statement with no null
 	  fields, the subject came back as a bnode. Patch from Peter
 	  Ansell-- thanks!
+	* SqliteStore: Fix table and index creation to work with Sqlite2.
 
 2008-04-01 Version 1.05
 
