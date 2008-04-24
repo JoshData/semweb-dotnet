@@ -139,6 +139,7 @@ package: all
 	mkdir -p package-workspace/semweb-$(VERSION)
 	cp -R bin bin_generics bin_silverlight src tools apidocs doc \
 		ChangeLog Makefile README.txt semweb.mds semweb.sln \
+		sparql/README.txt sparql/Makefile sparql/local-changes.diff \
 		package-workspace/semweb-$(VERSION)
 	mkdir package-workspace/semweb-$(VERSION)/examples
 	cp examples/*.cs examples/Makefile examples/README.txt examples/getsomedata.sh \
@@ -155,5 +156,5 @@ deploy: package
 
 clean:
 	rm bin*/SemWeb.dll* bin*/SemWeb.Sparql.dll* \
-	bin*/SemWeb.PostgreSQLStore.dll* bin*/SemWeb.SqliteStore.dll* bin*/SemWeb.MySQLStore.dll* \
+	bin*/SemWeb.PostgreSQLStore.dll* bin*/SemWeb.SqliteStore.dll* bin*/SemWeb.MySQLStore.dll* bin/SemWeb.SQLServerStore.dll* \
 	bin*/rdfstorage.exe* bin*/rdfquery.exe* bin*/euler.exe*

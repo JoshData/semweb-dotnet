@@ -1,7 +1,7 @@
 SPARQL=work-copy
 SPARQL_RELEASE=upstream
 
-JAVA_HOME=/usr/java/jdk1.6.0_03/
+JAVA_HOME=/usr/lib/jvm/java-6-sun-1.6.0.03
 IKVM_BIN=ikvm-0.34.0.2/bin
 IKVM=$(IKVM_BIN)/ikvmc.exe
 ANT=JAVA_HOME=$(JAVA_HOME) /usr/bin/ant
@@ -20,7 +20,6 @@ build-sparql:
 		$(SPARQL)/dist/sparql-core.jar 
 	MONO_PATH=.:$(IKVM_BIN) mono --aot -O=all sparql-core.dll
 	cp sparql-core.dll* ../bin
-	cp sparql-core.dll* ../bin_generics
 
 linked-libs/sparql-core.dll: sparql-core.dll
 	echo "<linker>" > sparql-linker.xml

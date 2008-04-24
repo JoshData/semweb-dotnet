@@ -2,6 +2,8 @@
 	  fields, the subject came back as a bnode. Patch from Peter
 	  Ansell-- thanks!
 	* SqliteStore: Fix table and index creation to work with Sqlite2.
+	* Makefile: Include SPARQL build files in the release package,
+	  added SemWeb.SQLServerStore.dll to clean target.
 
 2008-04-01 Version 1.05
 
