@@ -218,9 +218,9 @@
       </Parameters>
       <Docs>
         <param name="list">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
+        <summary>An implicit operator conversion to an array of statements.</summary>
+        <returns>A new array of statements containing the statements in the StatementList.</returns>
+        <remarks>This just calls ToArray.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Sort">
@@ -231,8 +231,8 @@
       </ReturnValue>
       <Parameters />
       <Docs>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
+        <summary>Sorts the statements in the list.</summary>
+        <remarks>The statements are sorted according to the sort order implemented in Statement's implementation of IComparable.</remarks>
       </Docs>
     </Member>
     <Member MemberName=".ctor">
@@ -242,14 +242,14 @@
         <Parameter Name="statements" Type="SemWeb.Statement[]" />
       </Parameters>
       <Docs>
-        <param name="statements">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
+        <param name="statements">An array of statements.</param>
+        <summary>Creates a new StatementList and adds the statements in an array to the list.</summary>
+        <remarks>None.</remarks>
       </Docs>
     </Member>
   </Members>
   <Docs>
-    <summary>An expandable array of Statements.</summary>
-    <remarks>This utility class is for manipulating an expandable array of <see cref="T:SemWeb.Statement" />s.</remarks>
+    <summary>An expandable array of Statements; i.e. an ArrayList specialized for statements.</summary>
+    <remarks>This utility class is for manipulating an expandable array of <see cref="T:SemWeb.Statement" />s. Since the Statement type is a struct, and the .NET 1.1 build of this library does not use generics, this class is provided to avoid needing to box statements in ArrayLists.</remarks>
   </Docs>
 </Type>

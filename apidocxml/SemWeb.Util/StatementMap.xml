@@ -19,8 +19,8 @@
       <MemberType>Constructor</MemberType>
       <Parameters />
       <Docs>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
+        <summary>Creates a new instance of this class.</summary>
+        <remarks>None.</remarks>
       </Docs>
     </Member>
     <Member MemberName=".ctor">
@@ -31,10 +31,10 @@
         <Parameter Name="loadFactor" Type="System.Single" />
       </Parameters>
       <Docs>
-        <param name="capacity">To be added.</param>
-        <param name="loadFactor">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
+        <param name="capacity">See the documentation for System.Collections.Hashtable.</param>
+        <param name="loadFactor">See the documentation for System.Collections.Hashtable.</param>
+        <summary>Creates a new instance of this class specifying a capacity and load factor.</summary>
+        <remarks>None.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Clear">
@@ -45,8 +45,8 @@
       </ReturnValue>
       <Parameters />
       <Docs>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
+        <summary>Clears the contents of the StatementMap.</summary>
+        <remarks>None.</remarks>
       </Docs>
     </Member>
     <Member MemberName="ContainsKey">
@@ -59,10 +59,10 @@
         <Parameter Name="key" Type="SemWeb.Statement" />
       </Parameters>
       <Docs>
-        <param name="key">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
+        <param name="key">A statement.</param>
+        <summary>Returns whether a statement is a key in the StatementMap.</summary>
+        <returns>Whether the statement is a key that has been added to the StatementMap.</returns>
+        <remarks>None.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Remove">
@@ -75,9 +75,9 @@
         <Parameter Name="key" Type="SemWeb.Statement" />
       </Parameters>
       <Docs>
-        <param name="key">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
+        <param name="key">A statement.</param>
+        <summary>Removes a mapping from the StatementMap using the key of the mapping.</summary>
+        <remarks>None.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Count">
@@ -87,9 +87,9 @@
         <ReturnType>System.Int32</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
+        <summary>The number of mappings in the StatementMap.</summary>
+        <value>The number of key-value pairs in the StatementMap.</value>
+        <remarks>None.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Keys">
@@ -99,9 +99,9 @@
         <ReturnType>SemWeb.Util.StatementList</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
+        <summary>Returns a collection of all of the keys in the StatementMap.</summary>
+        <value>A StatementList containing the keys in the StatementMap.</value>
+        <remarks>The returned object may not be a new instance; that is, the same instance may be returned by future calls to Keys, and so it should not be modified by the caller.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Values">
@@ -111,9 +111,9 @@
         <ReturnType>System.Collections.IEnumerable</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
+        <summary>Returns a collection of all of the values in the StatementMap.</summary>
+        <value>A collection of all of the values in the StatementMap.</value>
+        <remarks>The returned object may not be a new instance; that is, the same instance may be returned by future calls to Values, and so it should not be modified by the caller.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Item">
@@ -126,15 +126,15 @@
         <Parameter Name="key" Type="SemWeb.Statement" />
       </Parameters>
       <Docs>
-        <param name="key">To be added.</param>
-        <summary>To be added.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
+        <param name="key">A statement.</param>
+        <summary>Gets or sets a key-value pair.</summary>
+        <value>The corresponding value for the key.</value>
+        <remarks>None.</remarks>
       </Docs>
     </Member>
   </Members>
   <Docs>
     <summary>A hashtable specialized for statements.</summary>
-    <remarks>Since the Statement type is a struct, and this library does not use generics, this class is provided to avoid needing to box statements in Hashtables.</remarks>
+    <remarks>Since the Statement type is a struct, and the .NET 1.1 build of this library does not use generics, this class is provided to avoid needing to box statements in Hashtables.</remarks>
   </Docs>
 </Type>

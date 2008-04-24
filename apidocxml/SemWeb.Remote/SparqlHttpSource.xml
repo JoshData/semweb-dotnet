@@ -38,10 +38,10 @@
         <Parameter Name="template" Type="SemWeb.Statement" />
       </Parameters>
       <Docs>
-        <param name="template">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
+        <param name="template">A statement with possibly null fields to turn into an ASK query.</param>
+        <summary>Issues an ASK query to see whether any statements matching a template are contained within the endpoint.</summary>
+        <returns>A boolean indicating whether any statements matching the template are contained in the endpoint.</returns>
+        <remarks>An ASK query of the following form is used: "ASK WHERE { ?subject ?predicate ?object }" where any of the variables is the resource in the statement template if the template has a corresponding non-null field</remarks>
       </Docs>
       <ImplementsInterfaceMethods>
         <InterfaceImpl Type="SemWeb.SelectableSource" Member="Contains" cref="M:SemWeb.SelectableSource.Contains(SemWeb.Statement)" />
@@ -57,9 +57,9 @@
         <Parameter Name="sink" Type="SemWeb.StatementSink" />
       </Parameters>
       <Docs>
-        <param name="sink">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
+        <param name="sink">A StatementSink.</param>
+        <summary>Selects all of the statements in the endpoint.</summary>
+        <remarks>Issues a "SELECT ?subject ?predicate ?object WHERE { ?subject ?predicate ?object }" query to retreive all statements in the endpoint.</remarks>
       </Docs>
       <ImplementsInterfaceMethods>
         <InterfaceImpl Type="SemWeb.StatementSource" Member="Select" cref="M:SemWeb.StatementSource.Select(SemWeb.StatementSink)" />
@@ -76,10 +76,10 @@
         <Parameter Name="sink" Type="SemWeb.StatementSink" />
       </Parameters>
       <Docs>
-        <param name="template">To be added.</param>
-        <param name="sink">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
+        <param name="template">A statement template.</param>
+        <param name="sink">A StatementSink to receive the matching statements.</param>
+        <summary>Selects matching statements from the endpoint.</summary>
+        <remarks>Issues a "SELECT ?subject ?predicate ?object WHERE { ?subject ?predicate ?object }" query, where the variables may be replaced by values from the template if the template has a corresponding non-null field, to retreive matching statements in the endpoint.</remarks>
       </Docs>
       <ImplementsInterfaceMethods>
         <InterfaceImpl Type="SemWeb.SelectableSource" Member="Select" cref="M:SemWeb.SelectableSource.Select(SemWeb.Statement,SemWeb.StatementSink)" />
@@ -112,9 +112,9 @@
         <ReturnType>System.Boolean</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
+        <summary>Returns whether Select calls return only unique statements.</summary>
+        <value>False.</value>
+        <remarks>This method always returns false.</remarks>
       </Docs>
       <ImplementsInterfaceMethods>
         <InterfaceImpl Type="SemWeb.StatementSource" Member="Distinct" cref="P:SemWeb.StatementSource.Distinct" />
@@ -130,10 +130,11 @@
         <Parameter Name="resource" Type="SemWeb.Resource" />
       </Parameters>
       <Docs>
-        <param name="resource">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
+        <param name="resource">An entity or literal.</param>
+        <summary>Returns whether the endpoint mentions a resource.</summary>
+        <returns>Whether the endpoint has any statements mentioning the given resource.</returns>
+        <remarks><para>Due to the nature of RDF and the limitations of SPARQL, passing a BNode to this method will immediately return false. There is no way to include a BNode from the remote store inside a query.</para>
+<para>This method currently throws NotImplementedException. Sorry! (If you want the method, feel free to submit a patch!)</para></remarks>
       </Docs>
       <ImplementsInterfaceMethods>
         <InterfaceImpl Type="SemWeb.SelectableSource" Member="Contains" cref="M:SemWeb.SelectableSource.Contains(SemWeb.Resource)" />
