@@ -2,7 +2,7 @@
   <TypeSignature Language="C#" Value="public class SparqlHttpSource : SemWeb.QueryableSource, SemWeb.Remote.SparqlSource" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
-    <AssemblyVersion>1.0.3.0</AssemblyVersion>
+    <AssemblyVersion>1.0.5.0</AssemblyVersion>
   </AssemblyInfo>
   <Base>
     <BaseTypeName>System.Object</BaseTypeName>
@@ -133,8 +133,10 @@
         <param name="resource">An entity or literal.</param>
         <summary>Returns whether the endpoint mentions a resource.</summary>
         <returns>Whether the endpoint has any statements mentioning the given resource.</returns>
-        <remarks><para>Due to the nature of RDF and the limitations of SPARQL, passing a BNode to this method will immediately return false. There is no way to include a BNode from the remote store inside a query.</para>
-<para>This method currently throws NotImplementedException. Sorry! (If you want the method, feel free to submit a patch!)</para></remarks>
+        <remarks>
+          <para>Due to the nature of RDF and the limitations of SPARQL, passing a BNode to this method will immediately return false. There is no way to include a BNode from the remote store inside a query.</para>
+          <para>This method currently throws NotImplementedException. Sorry! (If you want the method, feel free to submit a patch!)</para>
+        </remarks>
       </Docs>
       <ImplementsInterfaceMethods>
         <InterfaceImpl Type="SemWeb.SelectableSource" Member="Contains" cref="M:SemWeb.SelectableSource.Contains(SemWeb.Resource)" />
