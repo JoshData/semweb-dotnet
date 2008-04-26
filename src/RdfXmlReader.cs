@@ -36,8 +36,16 @@ namespace SemWeb {
 		#endif
 		
 		public RdfXmlReader(XmlReader document) {
-			XmlValidatingReader reader = new XmlValidatingReader(document); // decodes entity definitions
-			reader.ValidationType = ValidationType.None;
+			#if !DOTNET2
+				XmlValidatingReader reader = new XmlValidatingReader(document); // decodes entity definitions
+				reader.ValidationType = ValidationType.None;
+			#else
+				XmlReaderSettings settings = new XmlReaderSettings();
+				settings.ValidationType = ValidationType.None;
+				settings.ProhibitDtd = false;
+				XmlReader reader = XmlReader.Create(document, settings);
+			#endif
+        
 			xml = new XmlBaseAwareReader(reader);
 			LoadNamespaces();
 		}
