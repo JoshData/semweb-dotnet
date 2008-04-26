@@ -72,7 +72,11 @@ namespace SemWeb {
 
 		public abstract void Select(StatementSink sink);
 		
-		public virtual void Dispose() {
+		protected virtual void Dispose() {
+		}
+		
+		void IDisposable.Dispose() {
+			Dispose();
 		}
 		
 		internal static string NormalizeMimeType(string type) {

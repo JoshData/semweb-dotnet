@@ -14,6 +14,8 @@ namespace SemWeb {
 		Resource BaseResource = new Literal("@base");
 		
 		TextReader sourcestream;
+		bool closed;
+
 		NamespaceManager namespaces = new NamespaceManager();
 
 		Entity entRDFTYPE = "http://www.w3.org/1999/02/22-rdf-syntax-ns#type";
@@ -32,6 +34,12 @@ namespace SemWeb {
 		public N3Reader(string sourcefile) {
 			this.sourcestream = GetReader(sourcefile);
 			BaseUri = "file:" + sourcefile + "#";
+		}
+
+		protected override void Dispose() {
+			if (!closed)
+				sourcestream.Close();
+			closed = true;
 		}
 
 		private struct ParseContext {

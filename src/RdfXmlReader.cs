@@ -11,6 +11,7 @@ namespace SemWeb {
 		// TODO: Make some of the errors warnings.
 	
 		XmlReader xml;
+		bool closed;
 		
 		Hashtable blankNodes = new Hashtable();
 		UriMap namedNodes = new UriMap();
@@ -43,6 +44,7 @@ namespace SemWeb {
 				XmlReaderSettings settings = new XmlReaderSettings();
 				settings.ValidationType = ValidationType.None;
 				settings.ProhibitDtd = false;
+				settings.CloseInput = true;
 				XmlReader reader = XmlReader.Create(document, settings);
 			#endif
         
@@ -69,6 +71,12 @@ namespace SemWeb {
 		public RdfXmlReader(string file) : this(GetReader(file), "file:///" + file) {
 		}
 		
+		protected override void Dispose() {
+			if (!closed)
+				xml.Close();
+			closed = true;
+		}
+
 		private void LoadNamespaces() {
 			// Move to the document element and load any namespace
 			// declarations on the node.
@@ -122,8 +130,6 @@ namespace SemWeb {
 				}
 				break;
 			}
-
-			xml.Close();
 		}
 		
 		private string CurNode() {
