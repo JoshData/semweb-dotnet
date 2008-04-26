@@ -138,6 +138,8 @@ namespace SemWeb {
 				}
 				break;
 			}
+			
+			Dispose();
 		}
 		
 		private string CurNode() {

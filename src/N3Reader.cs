@@ -68,6 +68,8 @@ namespace SemWeb {
 			context.meta = Meta;
 			
 			while (ReadStatement(context)) { }
+			
+			Dispose();
 		}
 		
 		private bool ReadStatement(ParseContext context) {
