@@ -38,6 +38,10 @@ namespace SemWeb.Stores {
 			: base(table) {
 			this.connectionString = connectionString;
 		}
+		
+		public override string ToString() {
+			return "mysql:" + TableName + ":" + connectionString;
+		}
 
 		protected override bool HasUniqueStatementsConstraint { get { return true; } }
 		protected override string InsertIgnoreCommand { get { return "IGNORE"; } }
