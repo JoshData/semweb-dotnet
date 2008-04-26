@@ -121,13 +121,23 @@ namespace SemWeb.Query {
 		}
 		
 		public override void Run(SelectableSource targetModel, QueryResultSink result) {
-			QueryPart[] parts = new QueryPart[graph.Count];
-			for (int i = 0; i < graph.Count; i++)
-				parts[i] = new QueryPart(graph[i], targetModel);
+			Statement[] newgraph = ReorderQuery(graph.ToArray(), toArray(knownValues), targetModel, null);
+		
+			QueryPart[] parts = new QueryPart[newgraph.Length];
+			for (int i = 0; i < newgraph.Length; i++)
+				parts[i] = new QueryPart(newgraph[i], targetModel);
 			
 			RunGeneralQuery(parts, knownValues, litFilters, distinguishedVars.Count == 0 ? null : distinguishedVars, ReturnStart, ReturnLimit, false, result);
 		}
 		
+		internal static Variable[] toArray(VarKnownValuesType2 kv) {
+			Variable[] ret = new Variable[kv.Count];
+			int ctr = 0;
+			foreach (Variable v in kv.Keys)
+				ret[ctr++] = v;
+			return ret;
+		}
+
 		internal struct QueryPart {
 			public readonly Statement[] Graph;
 			public readonly SelectableSource[] Sources;
@@ -369,7 +379,11 @@ namespace SemWeb.Query {
 					
 					vars = null;
 					matches = null;
+					string src = "";
 					foreach (QueryableSource source in part.Sources) {
+						if (src != "") src += ", ";
+						src += source;
+					
 						if (localLimit > 0) {
 							opts.Limit = localLimit - (matches == null ? 0 : matches.Count);
 							if (opts.Limit <= 0)
@@ -407,7 +421,7 @@ namespace SemWeb.Query {
 					foreach (Statement s in part.Graph)
 						qs += "\n\t" + s;
 
-					result.AddComments("QUERY: " + qs + (returnLimit > 0 ? " [limit " + returnLimit + "/" + localLimit + "]" : "") + "  => " + matches.Count);
+					result.AddComments("QUERY: " + src + qs + (returnLimit > 0 ? " [limit " + returnLimit + "/" + localLimit + "]" : "") + "  => " + matches.Count);
 					
 					// If we got back at least as many rows as our local (adaptive) limit,
 					// then we know that the limiting (possibly) had an effect and we may
@@ -676,5 +690,96 @@ namespace SemWeb.Query {
 			}
 			return false;
 		}
+
+		public static Statement[] ReorderQuery(Statement[] graph, Variable[] fixedVariables, SelectableSource schema, bool[,] groupingPreference) {
+			// Find an optimal order of the statements in the graph to run the
+			// query in, assuming each statement is executed one at a time.
+			// This is a greedy algorithm: at each step, choose the statement
+			// that has the fewest unseen variables, or failing that, if we have
+			// schema information, the statement that is expected to have the
+			// fewest results based on functional and inverse functional property
+			// typing, and failing that if we have a preference for which statements
+			// to group together (because they will be answered by the same data source),
+			// then grouping that way.
+			
+			bool[] used = new bool[graph.Length];
+			int[] permutation = new int[graph.Length];
+			
+			ResSet selectedVars = new ResSet();
+			selectedVars.AddRange(fixedVariables);
+			
+			Entity rdf_type = "http://www.w3.org/1999/02/22-rdf-syntax-ns#type";
+			Entity owl_inversefunctional = "http://www.w3.org/2002/07/owl#InverseFunctionalProperty";
+			Entity owl_functional = "http://www.w3.org/2002/07/owl#FunctionalProperty";
+			
+			for (int i = 0; i < graph.Length; i++) {
+				// Choose the best alternative.
+				int best_index = -1, best_score = -1;
+				
+				for (int j = 0; j < graph.Length; j++) {
+					if (used[j]) continue;
+					
+					// Compute a 'data complexity' for the graph statement.
+					int score = 1;
+					
+					// For each component of the graph statement...
+					for (int k = 0; k < 4; k++) {
+						Resource v = graph[j].GetComponent(k);
+						if (!(v is Variable)) continue;
+						if (selectedVars.Contains(v)) continue;
+						
+						int cscore = 3;
+						if (schema != null) {
+							// Don't penalize so much if the predicate is functional or inverse functional and
+							// the other side of the statement has already been selected.
+							Entity predicate = (Entity)graph[j].GetComponent(1);
+							if (k == 0 && selectedVars.Contains(graph[j].GetComponent(2)) && schema.Contains(new Statement(predicate, rdf_type, owl_inversefunctional)))
+								cscore = 2;
+							if (k == 2 && selectedVars.Contains(graph[j].GetComponent(0)) && schema.Contains(new Statement(predicate, rdf_type, owl_functional)))
+								cscore = 2;
+						}
+						
+						score *= cscore;
+					}
+					
+					//Console.WriteLine(j + ") " + score + " " + graph[j] + " " + ((i > 0 && groupingPreference != null
+					//	&& groupingPreference[permutation[i-1], j]) ? "GROUP" : ""));
+					
+					// If we found something with a better score, than use this statement next.
+					if (score < best_score || best_index == -1) {
+						best_score = score;
+						best_index = j;
+					}
+					
+					// If we found something with the same score, but we have a preference for
+					// grouping this statement with the previous, than use this statement next.
+					if (score == best_score && i > 0 && groupingPreference != null
+						&& !groupingPreference[permutation[i-1], best_index]
+						&& groupingPreference[permutation[i-1], j]) {
+						best_score = score;
+						best_index = j;
+					}
+				}
+				
+				// At this point we've picked the best statement to use next.
+				//Console.WriteLine("Chose " + best_index);
+				used[best_index] = true;
+				permutation[i] = best_index;
+				for (int k = 0; k < 4; k++) {
+					Resource v = graph[best_index].GetComponent(k);
+					if (!(v is Variable)) continue;
+					selectedVars.Add(v);
+				}
+			}
+			
+			// We've chosen a new permutation.
+			Statement[] neworder = new Statement[graph.Length];
+			for (int i = 0; i < graph.Length; i++) {
+				neworder[i] = graph[permutation[i]];
+			}
+			
+			return neworder;
+		}
+		
 	}
 }

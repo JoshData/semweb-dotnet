@@ -3,6 +3,11 @@
 	* RdfXmlReader, N3Reader: Override Dispose so that the underlying
 	  streams are closed after the completion of a using block. (Reported
 	  by Mikhail Navernyuk.)
+	* GraphMatch: Reorder the statements of a query in a smart way to
+	  queries are more efficient. Added public static ReorderQuery method
+	  so it can be called from elsewhere.
+	* Store: When multiple data sources are included in the Store,
+	  use GraphMatch.ReorderQuery to chunk the parts of the query better.
 	* SQLStore: When Select(stmt)'ing with a statement with no null
 	  fields, the subject came back as a bnode. Patch from Peter
 	  Ansell-- thanks!
