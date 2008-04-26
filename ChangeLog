@@ -11,6 +11,10 @@
 	* SQLStore: When Select(stmt)'ing with a statement with no null
 	  fields, the subject came back as a bnode. Patch from Peter
 	  Ansell-- thanks!
+	* SQLStore: In a Query, when not all of the variables are distinguished,
+	  instead of using a VIEW in MySQL, now for all database providers
+	  do the query in two steps, first using SELECT DISTINCT and then
+	  after getting the resource URIs and literal text values.
 	* SqliteStore: Fix table and index creation to work with Sqlite2.
 	* MySQLStore: Implement ToString().
 	* Makefile: Include SPARQL build files in the release package,
