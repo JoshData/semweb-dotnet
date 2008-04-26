@@ -124,7 +124,6 @@ namespace SemWeb.Stores {
 		// Debugging flags from environment variables.
 		static bool Debug = System.Environment.GetEnvironmentVariable("SEMWEB_DEBUG_SQL") != null;
 		static bool DebugLogSpeed = System.Environment.GetEnvironmentVariable("SEMWEB_DEBUG_SQL_LOG_SPEED") != null;
-		static bool NoSQLView = System.Environment.GetEnvironmentVariable("SEMWEB_SQL_NOVIEWS") != null;
 		static string InitCommands = System.Environment.GetEnvironmentVariable("SEMWEB_SQL_INIT_COMMANDS");
 		
 		// This guy is reused in various calls to avoid allocating a new one of
@@ -1373,7 +1372,48 @@ namespace SemWeb.Stores {
 		
 		public void Query(Statement[] graph, SemWeb.Query.QueryOptions options, SemWeb.Query.QueryResultSink sink) {
 			if (graph.Length == 0) throw new ArgumentException("graph array must have at least one element");
-
+			
+			// This method translates the graph pattern into a single SQL statement. Each graph statement
+			// corresponds to a new use of the _statements table in the FROM clause. For instance:
+			//     ?a foaf:knows ?b . ?b foaf:name ?c .
+			// translates to
+			//     SELECT
+			//       g0.subject, v0.value,
+			//       g0.object, v1.value,
+			//       g1.object, v2.value, v2lit.value, v2lit.language, v2lit.datatype
+			//     FROM
+			//       db_tables as g0 LEFT JOIN db_entities AS v0 ON g0.subject=v0.id LEFT JOIN db_entities AS v1 ON g0.object=v1.id,
+			//       db_tables as g1 LEFT JOIN db_entities AS v2 ON g1.object=v2.id LEFT JOIN db_literals AS v2lit ON g1.object=v2lit.id
+			//     WHERE
+			//       g0.predicate = <the id of the foaf:knows entity> AND
+			//       g1.predicate = <the id of the foaf:name entity> AND
+			//       g0.object = g1.subject
+			//
+			// If any variable column is an *undistinguished* variable --- which is to say that the caller
+			// says it is a variable, but is not concerned with its values --- then we want to apply
+			// DISTINCT to the SELECT statement. This is because while in the normal case we may get
+			// duplicates, we expect that to not occur more than the caller expects, but in the latter
+			// case there will often be many duplicates. Consider the SPARQL query:
+			//      SELECT DISTINCT ?p WHERE { ?s ?p ?o }
+			// to get a list of predicates in the dataset, which corresponds to the graph query
+			//      ?s ?p ?o
+			// where only ?p is distinguished.
+			// This normally translates to:
+			//     SELECT
+			//       g0.predicate, v0.value,
+			//     FROM
+			//       db_tables as g0 LEFT JOIN db_entities AS v0 ON g0.predicate=v0.id
+			// which of course is going to return a result for every triple in the database.
+			// So we add DISTINCT to beginning ("SELECT DISTINCT").
+			// Unfortunately, MySQL performs the DISTINCT bit only after the LEFT JOINs (which makes sense normally).
+			// That means that MySQL is repeatedly fetching the URI values of the predicates and checking
+			// if a new unique row has been created, and this is very slow. What we want is to get the distinct
+			// IDs of the predicates first, and then get their URIs.
+			// I first tried implementing this with VIEWs, but it didn't always speed things up, and it was
+			// difficult to manage the creation and deletion of VIEWs.
+			// So instead, in this case, we do the query in two parts. First we get the IDs of the variables,
+			// and then we get their URIs.
+			
 			options = options.Clone(); // because we modify the knownvalues array
 			
 			// Order the variables mentioned in the graph.
@@ -1419,8 +1459,6 @@ namespace SemWeb.Stores {
 				foreach (Variable v in seenvars.Keys)
 					varOrder[ctr++] = v;
 			}
-			
-			bool useView = useDistinct && SupportsViews && !NoSQLView;
 			
 			// Set the initial bindings to the result sink
 
@@ -1497,15 +1535,12 @@ namespace SemWeb.Stores {
 			
 			// Compile the SQL statement.
 
-			Hashtable varRef_Inner = new Hashtable(); // the column name representing the variable: if we're using VIEWs, then within the VIEW (i.e. name of column in underlying table)
-			Hashtable varRef_Outer = new Hashtable(); // if we're using VIEWs, then the column name representing the variable of the VIEW itself 
-			Hashtable varRef2 = new Hashtable();
-			Hashtable varSelectedLiteral = new Hashtable();
+			Hashtable varRef = new Hashtable(); // the column name representing the variable, as in "g0.subject"
+			Hashtable varRef2 = new Hashtable(); // the index of the variable, for accessing the entities and literals joined tables
+			Hashtable varSelectedLiteral = new Hashtable(); // whether the variable is in a literal column and a LEFT JOIN for the literals table was used for it
 			
 			StringBuilder fromClause = new StringBuilder();
 			StringBuilder whereClause = new StringBuilder();
-			StringBuilder outerSelectJoins = new StringBuilder();
-			StringBuilder outerWhereClause = new StringBuilder();
 			
 			for (int f = 0; f < graph.Length; f++) {
 				// For each filter, we select FROM the statements table with an
@@ -1534,11 +1569,10 @@ namespace SemWeb.Stores {
 						// that the proper columns here and in a previous
 						// filter are forced to have the same value.
 					
-						if (!varRef_Inner.ContainsKey(v)) {
-							varRef_Inner[v] = myRef;
-							varRef_Outer[v] = "v" + Array.IndexOf(varOrder, v);
+						if (!varRef.ContainsKey(v)) {
+							varRef[v] = myRef;
 							
-							int vIndex = varRef_Inner.Count;
+							int vIndex = varRef.Count;
 							varRef2[v] = vIndex;
 							
 							#if !DOTNET2
@@ -1547,31 +1581,28 @@ namespace SemWeb.Stores {
 							bool hasLitFilter = (options.VariableLiteralFilters != null && options.VariableLiteralFilters.ContainsKey(v));
 							#endif
 							if (distinguishedVars.Contains(v) || hasLitFilter) {
-								StringBuilder joinTarget = fromClause;
-								if (useView) joinTarget = outerSelectJoins;
+								string onRef = (string)varRef[v];
 								
-								string onRef = (string)(!useView ? varRef_Inner : varRef_Outer)[v];
-								
-								joinTarget.Append(" LEFT JOIN ");
-								joinTarget.Append(table);
-								joinTarget.Append("_entities AS vent");
-								joinTarget.Append(vIndex);
-								joinTarget.Append(" ON ");
-								joinTarget.Append(onRef);
-								joinTarget.Append("=");
-								joinTarget.Append("vent" + vIndex + ".id ");
+								fromClause.Append(" LEFT JOIN ");
+								fromClause.Append(table);
+								fromClause.Append("_entities AS vent");
+								fromClause.Append(vIndex);
+								fromClause.Append(" ON ");
+								fromClause.Append(onRef);
+								fromClause.Append("=");
+								fromClause.Append("vent" + vIndex + ".id ");
 								
 								varSelectedLiteral[v] = (i == 2);
 								
 								if (i == 2) { // literals cannot be in any other column
-									joinTarget.Append(" LEFT JOIN ");
-									joinTarget.Append(table);
-									joinTarget.Append("_literals AS vlit");
-									joinTarget.Append(vIndex);
-									joinTarget.Append(" ON ");
-									joinTarget.Append(onRef);
-									joinTarget.Append("=");
-									joinTarget.Append("vlit" + vIndex + ".id ");
+									fromClause.Append(" LEFT JOIN ");
+									fromClause.Append(table);
+									fromClause.Append("_literals AS vlit");
+									fromClause.Append(vIndex);
+									fromClause.Append(" ON ");
+									fromClause.Append(onRef);
+									fromClause.Append("=");
+									fromClause.Append("vlit" + vIndex + ".id ");
 								}
 							}
 							
@@ -1598,7 +1629,7 @@ namespace SemWeb.Stores {
 						} else {
 							if (whereClause.Length != 0) whereClause.Append(" AND ");
 							whereClause.Append('(');
-							whereClause.Append((string)varRef_Inner[v]);
+							whereClause.Append((string)varRef[v]);
 							whereClause.Append('=');
 							whereClause.Append(myRef);
 							whereClause.Append(')');
@@ -1637,29 +1668,15 @@ namespace SemWeb.Stores {
 					string s = FilterToSQL(filter, "vlit" + (int)varRef2[v] + ".value");
 					if (s == null) continue;
 
-					StringBuilder where = whereClause;
-					if (useView) where = outerWhereClause;
-					
-					if (where.Length != 0) where.Append(" AND ");
-					where.Append(s);
+					if (whereClause.Length != 0) whereClause.Append(" AND ");
+					whereClause.Append(s);
 				}
 			}
 
 			// Put the parts of the SQL statement together
 
 			StringBuilder cmd = new StringBuilder();
-			StringBuilder outercmd = new StringBuilder();
 			
-			string viewname = "queryview" + Math.Abs(GetHashCode());
-			if (useView) {
-				cmd.Append("DROP VIEW IF EXISTS ");
-				cmd.Append(viewname);
-				cmd.Append("; CREATE VIEW ");
-				cmd.Append(viewname);
-				cmd.Append(" AS ");
-				
-				outercmd.Append("SELECT ");
-			}
 			cmd.Append("SELECT ");
 
 			if (!SupportsLimitClause && options.Limit > 0) {
@@ -1672,23 +1689,13 @@ namespace SemWeb.Stores {
 			
 			for (int i = 0; i < varOrder.Length; i++) {
 				if (i > 0) cmd.Append(',');
-				cmd.Append((string)varRef_Inner[varOrder[i]]);
+				cmd.Append((string)varRef[varOrder[i]]);
 				
-				StringBuilder c = cmd;
-				if (useView) {
-					cmd.Append(" AS ");
-					cmd.Append((string)varRef_Outer[varOrder[i]]);
-
-					if (i > 0) outercmd.Append(',');
-					outercmd.Append((string)varRef_Outer[varOrder[i]]);
-					c = outercmd;
-				}
-				
-				c.Append(", vent" + (int)varRef2[varOrder[i]] + ".value");
+				cmd.Append(", vent" + (int)varRef2[varOrder[i]] + ".value");
 				if ((bool)varSelectedLiteral[varOrder[i]]) {
-					c.Append(", vlit" + (int)varRef2[varOrder[i]] + ".value");
-					c.Append(", vlit" + (int)varRef2[varOrder[i]] + ".language");
-					c.Append(", vlit" + (int)varRef2[varOrder[i]] + ".datatype");
+					cmd.Append(", vlit" + (int)varRef2[varOrder[i]] + ".value");
+					cmd.Append(", vlit" + (int)varRef2[varOrder[i]] + ".language");
+					cmd.Append(", vlit" + (int)varRef2[varOrder[i]] + ".datatype");
 				}
 			}
 			
@@ -1706,33 +1713,15 @@ namespace SemWeb.Stores {
 			
 			cmd.Append(';');
 
-			if (useView) {
-				outercmd.Append(" FROM ");
-				outercmd.Append(viewname);
-				outercmd.Append(outerSelectJoins);
-				
-				if (outerWhereClause.Length > 0)
-					outercmd.Append(" WHERE ");
-				outercmd.Append(outerWhereClause.ToString());
-			}
-			
-			
 			if (Debug) {
 				string cmd2 = cmd.ToString();
 				//if (cmd2.Length > 80) cmd2 = cmd2.Substring(0, 80);
 				Console.Error.WriteLine(cmd2);
-				if (useView)
-					Console.Error.WriteLine(outercmd.ToString());
 			}
 			
 			// Execute the query
 			
 			Hashtable entityCache = new Hashtable();
-			
-			if (useView) {
-				RunCommand(cmd.ToString());
-				cmd = outercmd;
-			}
 			
 			try {
 			using (IDataReader reader = RunReader(cmd.ToString())) {
@@ -1769,9 +1758,6 @@ namespace SemWeb.Stores {
 				}
 			}
 			} finally {
-				if (useView)
-					RunCommand("DROP VIEW " + viewname);
-
 				sink.Finished();
 			}
 				
