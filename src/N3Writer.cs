@@ -59,9 +59,11 @@ namespace SemWeb {
 		}
 
 		private string Literal(Literal literal) {
+			#if !SILVERLIGHT
 			if (format == Formats.NTriples || literal.DataType == null) return literal.ToString();
 			if (literal.DataType == xsdInteger) return literal.ParseValue().ToString();
 			if (literal.DataType == xsdDouble && format == Formats.Notation3) return literal.ParseValue().ToString();
+			#endif
 			return literal.ToString();
 		}
 		

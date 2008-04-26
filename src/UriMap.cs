@@ -145,7 +145,11 @@ namespace SemWeb.Util {
 				}
 				
 				if (Children == null)
+					#if !SILVERLIGHT
 					Children = new HybridDictionary();
+					#else
+					Children = new Hashtable();
+					#endif
 				
 				Node ret = (Node)Children[name];
 				if (ret != null || !create) {

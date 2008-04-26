@@ -5,7 +5,6 @@ using System.Collections.Generic;
 #endif
 using System.IO;
 using System.Text;
-using System.Web;
 using System.Xml;
  
 using SemWeb;
@@ -21,6 +20,7 @@ namespace SemWeb.Remote {
 		void RunSparqlQuery(string sparqlQuery, QueryResultSink selectResults);
 	}
 
+	#if !SILVERLIGHT
 	public class SparqlHttpSource : QueryableSource, SparqlSource {
 		static bool Debug = System.Environment.GetEnvironmentVariable("SEMWEB_DEBUG_HTTP") != null;
 	
@@ -679,5 +679,6 @@ namespace SemWeb.Query {
 			output.Flush();
 		}
 	}
-
+	#endif
+	
 }	

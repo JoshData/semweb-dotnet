@@ -218,8 +218,7 @@ namespace SemWeb.Util {
 
 		public virtual void RemoveAt(int index) { 
 			if (index < 0 || index >= _size) 
-				throw new ArgumentOutOfRangeException("index", index,
-					"Less than 0 or more than list count.");
+				throw new ArgumentOutOfRangeException();
 			Shift(index, -1);
 			_size--;
 		}

@@ -17,7 +17,11 @@ namespace SemWeb.Inference {
 	
 	public class Euler : Reasoner {
 	
+		#if !SILVERLIGHT
 		static bool Debug = System.Environment.GetEnvironmentVariable("SEMWEB_DEBUG_EULER") != null;
+		#else
+		static bool Debug = false;
+		#endif
 
 		Hashtable rules;
 		
@@ -25,12 +29,14 @@ namespace SemWeb.Inference {
 		
 		static Euler() {
 			RdfRelation[] rs = new RdfRelation[] {
+				#if !SILVERLIGHT
 				new SemWeb.Inference.Relations.MathAbsoluteValueRelation(), new SemWeb.Inference.Relations.MathCosRelation(), new SemWeb.Inference.Relations.MathDegreesRelation(), new SemWeb.Inference.Relations.MathEqualToRelation(),
 				new SemWeb.Inference.Relations.MathNegationRelation(), new SemWeb.Inference.Relations.MathRoundedRelation(), new SemWeb.Inference.Relations.MathSinRelation(), new SemWeb.Inference.Relations.MathSinhRelation(), new SemWeb.Inference.Relations.MathTanRelation(), new SemWeb.Inference.Relations.MathTanhRelation(),
 				new SemWeb.Inference.Relations.MathAtan2Relation(), new SemWeb.Inference.Relations.MathDifferenceRelation(), new SemWeb.Inference.Relations.MathExponentiationRelation(), new SemWeb.Inference.Relations.MathIntegerQuotientRelation(),
 				new SemWeb.Inference.Relations.MathQuotientRelation(), new SemWeb.Inference.Relations.MathRemainderRelation(),
 				new SemWeb.Inference.Relations.MathSumRelation(), new SemWeb.Inference.Relations.MathProductRelation(),
 				new SemWeb.Inference.Relations.MathGreaterThanRelation(), new SemWeb.Inference.Relations.MathLessThanRelation(), new SemWeb.Inference.Relations.MathNotGreaterThanRelation(), new SemWeb.Inference.Relations.MathNotLessThanRelation(), new SemWeb.Inference.Relations.MathNotEqualToRelation()
+				#endif
 			};
 		
 			builtInRelations = new Hashtable();

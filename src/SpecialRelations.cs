@@ -15,6 +15,7 @@ namespace SemWeb.Inference {
 	}
 	
 	namespace Relations {
+		#if !SILVERLIGHT
 		internal abstract class MathUnaryRelation : RdfRelation {
 			protected abstract Decimal EvaluateForward(Decimal left);
 			protected abstract Decimal EvaluateReverse(Decimal right);
@@ -249,6 +250,7 @@ namespace SemWeb.Inference {
 				return !(left == right);
 			}
 		}
+		#endif
 	}
 	
 }

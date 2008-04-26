@@ -40,6 +40,8 @@ namespace SemWeb {
 			#if !DOTNET2
 				XmlValidatingReader reader = new XmlValidatingReader(document); // decodes entity definitions
 				reader.ValidationType = ValidationType.None;
+			#elif SILVERLIGHT
+				XmlReader reader = document;
 			#else
 				XmlReaderSettings settings = new XmlReaderSettings();
 				settings.ValidationType = ValidationType.None;
@@ -52,8 +54,14 @@ namespace SemWeb {
 			LoadNamespaces();
 		}
 		
+		#if !SILVERLIGHT
 		public RdfXmlReader(TextReader document) : this(new XmlTextReader(document)) {
 		}
+		#else
+		public RdfXmlReader(TextReader document) {
+			throw new NotSupportedException("Reading RDF/XML from a TextReader is not supported in the Silverlight build of the SemWeb library. Someone needs to fix this.");
+		}
+		#endif
 
 		public RdfXmlReader(Stream document) : this(new StreamReader(document)) {
 		}
@@ -428,7 +436,11 @@ namespace SemWeb {
 				if (xml.IsEmptyElement) {
 					objct = new Literal("", null, datatype);
 				} else {
+					#if !DOTNET2
 					objct = new Literal(xml.ReadString(), null, datatype);
+					#else
+					objct = new Literal(xml.ReadElementContentAsString(), null, datatype);
+					#endif
 					if (xml.NodeType != XmlNodeType.EndElement)
 						OnError("XML markup may not appear in a datatyped literal property.");
 				}
@@ -610,26 +622,27 @@ namespace SemWeb {
 			public override bool MoveToElement () { return _reader.MoveToElement(); }
 			public override bool MoveToFirstAttribute () { return _reader.MoveToFirstAttribute(); }
 			public override bool MoveToNextAttribute () { return _reader.MoveToNextAttribute(); }
-			public override bool ReadAttributeValue () { return _reader.ReadAttributeValue(); }
-			public override string ReadElementString () { return _reader.ReadElementString(); }
-			public override string ReadElementString (string name) { return _reader.ReadElementString(name); }
-			public override string ReadElementString (string localName, string namespaceName) { return _reader.ReadElementString(localName, namespaceName); }
 			public override void ReadEndElement () { _reader.ReadEndElement(); }
 			public override string ReadInnerXml () { return _reader.ReadInnerXml(); }
 			public override string ReadOuterXml () { return _reader.ReadOuterXml(); }
 			public override void ReadStartElement () { _reader.ReadStartElement(); }
 			public override void ReadStartElement (string name) { _reader.ReadStartElement(name); }
 			public override void ReadStartElement (string localName, string namespaceName) { _reader.ReadStartElement(localName, namespaceName); }
+			public override void Skip () { _reader.Skip(); }
+
+			#if !SILVERLIGHT
+			public override bool ReadAttributeValue () { return _reader.ReadAttributeValue(); }
+			public override string ReadElementString () { return _reader.ReadElementString(); }
+			public override string ReadElementString (string name) { return _reader.ReadElementString(name); }
+			public override string ReadElementString (string localName, string namespaceName) { return _reader.ReadElementString(localName, namespaceName); }
 			public override string ReadString () { return _reader.ReadString(); }
 			public override void ResolveEntity () { _reader.ResolveEntity(); }
-			public override void Skip () { _reader.Skip(); }
+			#endif
 			
 			public override int AttributeCount { get { return _reader.AttributeCount; } }
-			public override bool CanResolveEntity { get { return _reader.CanResolveEntity; } }
 			public override int Depth { get { return _reader.Depth; } }
 			public override bool EOF { get { return _reader.EOF; } }
 			public override bool HasAttributes { get { return _reader.HasAttributes; } }
-			public override bool HasValue { get { return _reader.HasValue; } }
 			public override bool IsDefault { get { return _reader.IsDefault; } }
 			public override bool IsEmptyElement { get { return _reader.IsEmptyElement; } }
 			public override string this [int i] { get { return _reader[i]; } }
@@ -641,11 +654,16 @@ namespace SemWeb {
 			public override XmlNameTable NameTable { get { return _reader.NameTable; } }
 			public override XmlNodeType NodeType { get { return _reader.NodeType; } }
 			public override string Prefix { get { return _reader.Prefix; } }
-			public override char QuoteChar { get { return _reader.QuoteChar; } }
 			public override ReadState ReadState { get { return _reader.ReadState; } }
 			public override string Value { get { return _reader.Value; } }
 			public override string XmlLang { get { return _reader.XmlLang; } }
 			public override XmlSpace XmlSpace { get { return _reader.XmlSpace; } }
+			
+			#if !SILVERLIGHT
+			public override bool CanResolveEntity { get { return _reader.CanResolveEntity; } }
+			public override bool HasValue { get { return _reader.HasValue; } }
+			public override char QuoteChar { get { return _reader.QuoteChar; } }
+			#endif
 		}		
 	}
 }

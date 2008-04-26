@@ -1,6 +1,5 @@
 using System;
 using System.Collections;
-using System.Data;
 
 using SemWeb.Util;
 

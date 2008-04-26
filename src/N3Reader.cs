@@ -620,13 +620,13 @@ namespace SemWeb {
 			
 			if (str[0] == '?') {
 				string name = str.Substring(1);
-				Entity var = (Entity)context.variables[name];
-				if (var == null) {
-					var = new Variable(name);
-					AddVariable((Variable)var);
-					context.variables[name] = var;
+				Entity varb = (Entity)context.variables[name];
+				if (varb == null) {
+					varb = new Variable(name);
+					AddVariable((Variable)varb);
+					context.variables[name] = varb;
 				}
-				return var;
+				return varb;
 			}
 			
 			// QNAME
@@ -715,7 +715,18 @@ namespace SemWeb {
 			
 			// In Turtle, numbers are restricted to [0-9]+, and are datatyped xsd:integer.
 			double numval;
+			#if !SILVERLIGHT
 			if (double.TryParse(str, System.Globalization.NumberStyles.Any, null, out numval)) {
+			#else
+			bool ok = true;
+			numval = 0;
+			try {
+				numval = double.Parse(str);
+			} catch (Exception) {
+				ok = false;
+			}
+			if (ok) {
+			#endif
 				if (numval >= long.MinValue && numval <= long.MaxValue && numval == (double)(long)numval)
 					return new Literal(((long)numval).ToString(), null, NS.XMLSCHEMA + "integer");
 				else

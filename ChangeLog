@@ -19,6 +19,7 @@
 	* MySQLStore: Implement ToString().
 	* Makefile: Include SPARQL build files in the release package,
 	  added SemWeb.SQLServerStore.dll to clean target.
+	* Various changes to make the Silverlight build work.
 
 2008-04-01 Version 1.05
 

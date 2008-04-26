@@ -4,7 +4,6 @@ using System.Collections;
 #else
 using System.Collections.Generic;
 #endif
-using System.Data;
 
 using SemWeb.Inference;
 using SemWeb.Util;
@@ -153,7 +152,11 @@ namespace SemWeb {
 				/*case "bdb":
 					return new SemWeb.Stores.BDBStore(spec);*/
 				case "sparql-http":
+					#if !SILVERLIGHT
 					return new SemWeb.Remote.SparqlHttpSource(spec);
+					#else
+					throw new NotSupportedException("The SparqlHttpSource class is not available in the Silverlight build of SemWeb.");
+					#endif
 				case "class":
 					ttype = Type.GetType(spec);
 					if (ttype == null)

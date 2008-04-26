@@ -44,6 +44,8 @@
  * not in this table or in the _literals table.
  */
 
+#if !SILVERLIGHT
+
 using System;
 using System.Collections;
 using System.Collections.Specialized;
@@ -2197,3 +2199,5 @@ namespace SemWeb.Stores {
 	}
 	
 }
+
+#endif

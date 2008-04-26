@@ -22,7 +22,7 @@ ifeq "$(PROFILE)" ""
 all:
 	PROFILE=DOTNET1 make
 	PROFILE=DOTNET2 make
-#	PROFILE=SILVERLIGHT make
+	PROFILE=SILVERLIGHT make
 #	PROFILE=DOTNET3 make
 
 # If we have a PROFILE specified.
@@ -31,24 +31,32 @@ else
 ifeq "$(PROFILE)" "DOTNET1"
 BIN=bin
 MCS=mcs -d:DOTNET1
+MCS_LIBS=-r:System.Data -r:System.Web
 endif
 
 ifeq "$(PROFILE)" "DOTNET2"
 BIN=bin_generics
 MCS=gmcs -d:DOTNET2
+MCS_LIBS=-r:System.Data -r:System.Web
 endif
 
 ifeq "$(PROFILE)" "DOTNET3"
 BIN=bin_linq
-MCS=gmcs -d:DOTNET3 -langversion:linq
+MCS=gmcs -d:DOTNET2 -d:DOTNET3 -langversion:linq
+MCS_LIBS=-r:System.Data -r:System.Web
 endif
 
 ifeq "$(PROFILE)" "SILVERLIGHT"
 BIN=bin_silverlight
-MCS=smcs -d:SILVERLIGHT
+MCS=smcs -d:DOTNET2 -d:SILVERLIGHT
+MCS_LIBS=
 endif
 
+ifneq "$(PROFILE)" "SILVERLIGHT"  # auxiliary assemblies aren't compiled in the Silverlight build
 all: $(BIN)/SemWeb.dll $(BIN)/SemWeb.PostgreSQLStore.dll $(BIN)/SemWeb.MySQLStore.dll $(BIN)/SemWeb.SqliteStore.dll $(BIN)/SemWeb.SQLServerStore.dll $(BIN)/SemWeb.Sparql.dll $(BIN)/rdfstorage.exe $(BIN)/rdfquery.exe $(BIN)/euler.exe
+else
+all: $(BIN)/SemWeb.dll
+endif
 
 # Core Library
 	
@@ -66,10 +74,11 @@ MAIN_SOURCES = \
 
 $(BIN)/SemWeb.dll: $(MAIN_SOURCES) Makefile
 	mkdir -p $(BIN)
-	$(MCS) -debug $(MAIN_SOURCES) -out:$(BIN)/SemWeb.dll -t:library \
-		-r:System.Data -r:System.Web
+	$(MCS) -debug $(MAIN_SOURCES) $(MCS_LIBS) -out:$(BIN)/SemWeb.dll -t:library
 
 # Auxiliary Assemblies
+
+ifneq "$(PROFILE)" "SILVERLIGHT"  # auxiliary assemblies aren't compiled in the Silverlight build
 
 $(BIN)/SemWeb.Sparql.dll: src/SparqlEngine.cs src/SparqlProtocol.cs
 	$(MCS) -debug src/SparqlEngine.cs src/SparqlProtocol.cs -out:$(BIN)/SemWeb.Sparql.dll \
@@ -107,6 +116,7 @@ endif
 $(BIN)/SemWeb.SQLServerStore.dll: src/SQLServerStore.cs
 	$(MCS) -debug src/SQLServerStore.cs -out:$(BIN)/SemWeb.SQLServerStore.dll -t:library\
 		 -r:$(BIN)/SemWeb.dll -r:System.Data
+endif
 
 # Utility programs
 

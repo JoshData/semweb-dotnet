@@ -149,7 +149,11 @@ namespace SemWeb.Query {
 		
 		public virtual string MimeType {
 			get {
+				#if !SILVERLIGHT
 				return SparqlXmlQuerySink.MimeType;
+				#else
+				throw new NotSupportedException();
+				#endif
 			}
 			set {
 				throw new NotSupportedException();
@@ -157,7 +161,11 @@ namespace SemWeb.Query {
 		}
 		
 		public virtual void Run(SelectableSource source, TextWriter output) {
+			#if !SILVERLIGHT
 			Run(source, new SparqlXmlQuerySink(output));
+			#else
+			throw new NotSupportedException();
+			#endif
 		}
 
 		public abstract void Run(SelectableSource source, QueryResultSink resultsink);

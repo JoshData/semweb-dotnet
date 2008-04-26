@@ -519,6 +519,7 @@ namespace SemWeb {
 			return new Literal(value, lang, datatype);
 		}
 		
+		#if !SILVERLIGHT
 		public object ParseValue() {
 			string dt = DataType;
 			if (dt == null || !dt.StartsWith(NS.XMLSCHEMA)) return Value;
@@ -551,6 +552,7 @@ namespace SemWeb {
 			if (DataType == null) return this;
 			return new Literal(ParseValue().ToString(), Language, DataType);
 		}
+		#endif
 		
 		public static Literal FromValue(float value) {
 			return new Literal(value.ToString(), null, NS.XMLSCHEMA + "float");
