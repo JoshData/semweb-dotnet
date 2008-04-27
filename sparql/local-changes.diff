@@ -1090,10 +1090,60 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
  							}
  						}
  						// And check to make sure this wasn't a final set, so we
+diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/logic/DefaultNumericPromotionLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/DefaultNumericPromotionLogic.java
+--- upstream/src/main/name/levering/ryan/sparql/logic/DefaultNumericPromotionLogic.java	2007-10-07 07:19:19.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/logic/DefaultNumericPromotionLogic.java	2008-04-27 11:00:37.000000000 -0400
+@@ -83,7 +83,7 @@
+         try {
+             result = Double.valueOf(numeral.getLabel());
+         } catch (NumberFormatException e) {
+-            throw new TypeError("Cannot promote non-numeral to a double value");
++            throw new TypeError("Cannot promote non-numeral (" + numeral.getLabel() + "^^" + numeral.getDatatype() + ") to a double value");
+         }
+         return this.factory.createLiteral(result.toString(), SPARQLConstants.DOUBLE_TYPE);
+     }
+@@ -99,7 +99,7 @@
+         try {
+             result = Float.valueOf(numeral.getLabel());
+         } catch (NumberFormatException e) {
+-            throw new TypeError("Cannot promote non-numeral to a float value");
++            throw new TypeError("Cannot promote non-numeral (" + numeral.getLabel() + "^^" + numeral.getDatatype() + ") to a float value");
+         }
+         return this.factory.createLiteral(result.toString(), SPARQLConstants.FLOAT_TYPE);
+     }
+@@ -115,7 +115,7 @@
+         try {
+             result = Long.valueOf(numeral.getLabel());
+         } catch (NumberFormatException e) {
+-            throw new TypeError("Cannot promote non-numeral to a decimal value");
++            throw new TypeError("Cannot promote non-numeral (" + numeral.getLabel() + "^^" + numeral.getDatatype() + ") to a decimal value");
+         }
+         return this.factory.createLiteral(result.toString(), SPARQLConstants.DECIMAL_TYPE);
+     }
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/logic/DefaultOrderExpressionLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/DefaultOrderExpressionLogic.java
 --- upstream/src/main/name/levering/ryan/sparql/logic/DefaultOrderExpressionLogic.java	2006-08-20 20:01:01.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/logic/DefaultOrderExpressionLogic.java	2008-01-26 19:24:39.000000000 -0500
-@@ -67,6 +67,9 @@
++++ work-copy/src/main/name/levering/ryan/sparql/logic/DefaultOrderExpressionLogic.java	2008-04-27 11:18:16.000000000 -0400
+@@ -10,6 +10,7 @@
+ import java.util.Comparator;
+ import java.util.Iterator;
+ import java.util.List;
++import java.util.Set;
+ 
+ import name.levering.ryan.sparql.common.RdfBindingRow;
+ import name.levering.ryan.sparql.common.RdfBindingSet;
+@@ -51,6 +52,11 @@
+ 		this.data = data;
+ 		this.orderingLogic = orderingLogic;
+ 	}
++	
++	public Set getVariables() {
++		return this.data.getExpression().getVariables();
++	}
++
+ 
+ 	/**
+ 	 * Orders the binding set, by comparing the Value result of each expression
+@@ -67,6 +73,9 @@
  			sortedList.add(row);
  		}
  		Collections.sort(sortedList, new ExpressionComparator(this.data.getExpression()));
@@ -1105,7 +1155,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
  		newSet.setOrdered(true);
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/logic/DefaultSelectQueryLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/DefaultSelectQueryLogic.java
 --- upstream/src/main/name/levering/ryan/sparql/logic/DefaultSelectQueryLogic.java	2006-08-20 20:01:01.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/logic/DefaultSelectQueryLogic.java	2008-02-05 17:06:58.000000000 -0500
++++ work-copy/src/main/name/levering/ryan/sparql/logic/DefaultSelectQueryLogic.java	2008-04-27 11:05:53.000000000 -0400
 @@ -6,12 +6,14 @@
  package name.levering.ryan.sparql.logic;
  
@@ -1142,7 +1192,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
          this.distinctLogic = distinctLogic;
          this.rangeLogic = rangeLogic;
      }
-@@ -74,45 +76,29 @@
+@@ -74,46 +76,30 @@
       * @return an RDF graph containing the formed triples
       */
      public RdfBindingSet execute(RdfSource source) {
@@ -1204,16 +1254,19 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
 -        if (offset >= 0) {
 -            results = this.rangeLogic.offset(results, offset);
 -        }
+-
 +        RdfBindingSet results = constraint.constrain(p);
- 
++		  
          return results;
      }
+ 
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/logic/DefaultValueOrderingLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/DefaultValueOrderingLogic.java
 --- upstream/src/main/name/levering/ryan/sparql/logic/DefaultValueOrderingLogic.java	2007-10-07 07:19:19.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/logic/DefaultValueOrderingLogic.java	2007-10-21 12:35:15.000000000 -0400
-@@ -1,5 +1,9 @@
++++ work-copy/src/main/name/levering/ryan/sparql/logic/DefaultValueOrderingLogic.java	2008-04-27 11:02:32.000000000 -0400
+@@ -1,5 +1,10 @@
  package name.levering.ryan.sparql.logic;
  
++import name.levering.ryan.sparql.common.SPARQLConstants;
 +import name.levering.ryan.sparql.common.impl.DateTime;
 +
 +import name.levering.ryan.sparql.model.logic.NumericPromotionLogic;
@@ -1221,7 +1274,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
  import name.levering.ryan.sparql.model.logic.helper.ValueOrderingLogic;
  
  import name.levering.ryan.sparql.common.BNode;
-@@ -22,6 +26,13 @@
+@@ -22,6 +27,13 @@
   * @version 1.0
   */
  public class DefaultValueOrderingLogic implements ValueOrderingLogic {
@@ -1235,7 +1288,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
  
  	/**
  	 * Compares two value objects according to section 10.1.
-@@ -64,14 +75,41 @@
+@@ -64,14 +76,44 @@
  			return -1;
  		}
  
@@ -1256,6 +1309,9 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
 +				if (((Literal) value2).getDatatype() == null)
 +					return 1;
 +				
++				if (((Literal) value1).getDatatype().equals(SPARQLConstants.STRING_TYPE) && ((Literal) value2).getDatatype().equals(SPARQLConstants.STRING_TYPE))
++					return ((Literal) value1).getLabel().compareTo(((Literal) value2).getLabel());
++
 +				Literal[] promoted = promoter.promote(new Literal[] { (Literal) value1, (Literal) value2 } );
 +				
 +				Object v1 = converter.convertLiteral(promoted[0]);
@@ -2179,7 +2235,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
  }
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/logic/naive/DefaultGroupConstraintLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/naive/DefaultGroupConstraintLogic.java
 --- upstream/src/main/name/levering/ryan/sparql/logic/naive/DefaultGroupConstraintLogic.java	2006-08-20 20:01:01.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/logic/naive/DefaultGroupConstraintLogic.java	2008-02-05 16:35:39.000000000 -0500
++++ work-copy/src/main/name/levering/ryan/sparql/logic/naive/DefaultGroupConstraintLogic.java	2008-04-27 11:31:38.000000000 -0400
 @@ -9,6 +9,7 @@
  import java.util.Iterator;
  import java.util.LinkedList;
@@ -2264,6 +2320,161 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
  		return current;
  	}
  
+diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/logic/naive/DefaultGroupConstraintLogic.java~ work-copy/src/main/name/levering/ryan/sparql/logic/naive/DefaultGroupConstraintLogic.java~
+--- upstream/src/main/name/levering/ryan/sparql/logic/naive/DefaultGroupConstraintLogic.java~	1969-12-31 19:00:00.000000000 -0500
++++ work-copy/src/main/name/levering/ryan/sparql/logic/naive/DefaultGroupConstraintLogic.java~	2008-02-05 16:35:39.000000000 -0500
+@@ -0,0 +1,151 @@
++/*
++ * SPARQL Engine
++ * Copyright (C) 2005 Ryan Levering, All rights reserved.
++ * See LICENSE for full license information
++ */
++package name.levering.ryan.sparql.logic.naive;
++
++import java.util.Collection;
++import java.util.Iterator;
++import java.util.LinkedList;
++import java.util.List;
++import java.util.Map;
++
++import name.levering.ryan.sparql.common.RdfBindingSet;
++import name.levering.ryan.sparql.common.RdfSource;
++import name.levering.ryan.sparql.common.impl.RdfBindingSetImpl;
++import name.levering.ryan.sparql.model.data.FilterConstraintData;
++import name.levering.ryan.sparql.model.data.GraphConstraintData;
++import name.levering.ryan.sparql.model.data.GroupConstraintData;
++import name.levering.ryan.sparql.model.data.OptionalConstraintData;
++import name.levering.ryan.sparql.model.logic.ConstraintLogic;
++import name.levering.ryan.sparql.model.logic.helper.IntersectOrderLogic;
++import name.levering.ryan.sparql.model.logic.helper.SetIntersectLogic;
++
++/**
++ * This logic is the default logic for the main constraint that is used as an
++ * aggregate of other constraints. TripleConstraints, UnionConstraints, and
++ * GraphConstraints all are intersected with the running binding set. After
++ * that, OptionalConstraints and FilterConstraints modify the set themselves.
++ * 
++ * @author Ryan Levering
++ * @version 1.0
++ */
++public class DefaultGroupConstraintLogic implements ConstraintLogic {
++
++	/**
++	 * The data that holds the constraints that this group constraint
++	 * aggregates.
++	 */
++	private final GroupConstraintData data;
++
++	/**
++	 * This logic that intersects the parts of the graph pattern.
++	 */
++	private final SetIntersectLogic logic;
++
++	/**
++	 * This logic determines the order of set intersection to maximize variable
++	 * intersection.
++	 */
++	private final IntersectOrderLogic orderLogic;
++
++	/**
++	 * Creates a new default group logic, with the given subconstraints found in
++	 * the data.
++	 * 
++	 * @param data the data holding the subconstraints to bind
++	 */
++	public DefaultGroupConstraintLogic(GroupConstraintData data, SetIntersectLogic logic, IntersectOrderLogic orderLogic) {
++		this.data = data;
++		this.logic = logic;
++		this.orderLogic = orderLogic;
++	}
++
++	/**
++	 * Applies each subconstraint in turn, saving filter and optional
++	 * constraints for last, as according to specification.
++	 * 
++	 * @param bindings the current running bindings, ignored here
++	 * @param source the source to query RDF triples, passed on to
++	 *            subconstraints
++	 * @param defaultDatasets the datasets to query by default, passed on to
++	 *            subconstraints
++	 * @param namedDatasets the named datasets to query in an unbound graph
++	 *            query, passed on to subconstraints
++	 */
++	public RdfBindingSet constrain(ConstraintLogic.CallParams p) {
++		return this.constrain(p, true);
++	}
++
++	private RdfBindingSet constrain(ConstraintLogic.CallParams p, boolean withFilter) {
++
++		List filterQueue = new LinkedList();
++		List optionalQueue = new LinkedList();
++		List graphQueue = new LinkedList();
++
++		ConstraintLogic.CallParams p2 = p.clone();
++		p2.bindings = null;
++
++		RdfBindingSet current = null;
++		// Constrain in order, unless we hit an optional, graph, or value filter
++		// These things all kind of depend on the previous bindings
++		// Graph probably shouldn't technically, but I think in this
++		// implementation it does
++		for (Iterator cons = this.data.getConstraints().iterator(); cons.hasNext();) {
++			ConstraintLogic c = (ConstraintLogic) cons.next();
++			if (c instanceof OptionalConstraintData) {
++				optionalQueue.add(c);
++			} else if (c instanceof FilterConstraintData) {
++				filterQueue.add(c);
++			} else if (c instanceof GraphConstraintData) {
++				graphQueue.add(c);
++			} else {
++				this.orderLogic.addBindingSet(c.constrain(p2));
++			}
++
++		}
++		current = this.orderLogic.removeIntersectedSet();
++
++		// This scoped graphing isn't required by the spec, but it's allowed
++		for (Iterator graphs = graphQueue.iterator(); graphs.hasNext();) {
++			ConstraintLogic c = (ConstraintLogic) graphs.next();
++			p2.bindings = current;
++			
++			// we would have to do more to pass these down reliably/usefully
++			p2.offset = 0;
++			p2.limit = -1;
++			p2.distinguishedVariables = null;
++			p2.orderExpressions = null;
++				
++			if (current == null) {
++				current = c.constrain(p2);
++			} else {
++				current = this.logic.intersect(current, c.constrain(p2));
++			}
++		}
++
++		// At this point, we don't have any constraints so just bring the whole
++		// set in
++		if (current == null) {
++			current = RdfBindingSetImpl.EMPTY_SET;
++		}
++
++		for (Iterator optionals = optionalQueue.iterator(); optionals.hasNext();) {
++			ConstraintLogic c = (ConstraintLogic) optionals.next();
++			p2.bindings = current;
++			// note that we pass down the limit
++			current = c.constrain(p2);
++		}
++		for (Iterator filters = filterQueue.iterator(); filters.hasNext();) {
++			ConstraintLogic c = (ConstraintLogic) filters.next();
++			p2.bindings = current;
++			current = c.constrain(p2);
++		}
++		
++		current = p.projectOrderDistinctLimit(current);
++		
++		return current;
++	}
++
++}
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/logic/naive/DefaultOptionalConstraintLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/naive/DefaultOptionalConstraintLogic.java
 --- upstream/src/main/name/levering/ryan/sparql/logic/naive/DefaultOptionalConstraintLogic.java	2006-08-20 20:01:01.000000000 -0400
 +++ work-copy/src/main/name/levering/ryan/sparql/logic/naive/DefaultOptionalConstraintLogic.java	2008-02-09 15:26:55.000000000 -0500
@@ -2470,7 +2681,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
      /**
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/logic/naive/DefaultUnionConstraintLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/naive/DefaultUnionConstraintLogic.java
 --- upstream/src/main/name/levering/ryan/sparql/logic/naive/DefaultUnionConstraintLogic.java	2007-10-07 07:19:19.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/logic/naive/DefaultUnionConstraintLogic.java	2008-03-11 08:04:14.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/logic/naive/DefaultUnionConstraintLogic.java	2008-04-27 11:28:59.000000000 -0400
 @@ -7,9 +7,12 @@
  
  import java.util.Collection;
@@ -2484,7 +2695,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
  import name.levering.ryan.sparql.model.data.UnionConstraintData;
  import name.levering.ryan.sparql.model.logic.ConstraintLogic;
  import name.levering.ryan.sparql.model.logic.helper.SetUnionLogic;
-@@ -60,18 +63,74 @@
+@@ -60,18 +63,76 @@
  	 * @return a set containing the union of all the bound values of all the sub
  	 *         constraints
  	 */
@@ -2512,6 +2723,8 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
 +				ConstraintLogic group = (ConstraintLogic) groupOrUnions.next();
 +				
 +				ConstraintLogic.CallParams p2 = p.clone();
++				if (p2.distinguishedVariables != null)
++					p2.distinguishedVariables.addAll(p2.getOrderVariables());
 +				
 +				if (current == null) {
 +					// If an offset is specified for the global results, I'm not
@@ -2568,6 +2781,147 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
  		return current;
  	}
  
+diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/logic/naive/DefaultUnionConstraintLogic.java~ work-copy/src/main/name/levering/ryan/sparql/logic/naive/DefaultUnionConstraintLogic.java~
+--- upstream/src/main/name/levering/ryan/sparql/logic/naive/DefaultUnionConstraintLogic.java~	1969-12-31 19:00:00.000000000 -0500
++++ work-copy/src/main/name/levering/ryan/sparql/logic/naive/DefaultUnionConstraintLogic.java~	2008-03-11 08:04:14.000000000 -0400
+@@ -0,0 +1,137 @@
++/*
++ * SPARQL Engine
++ * Copyright (C) 2005 Ryan Levering, All rights reserved.
++ * See LICENSE for full license information
++ */
++package name.levering.ryan.sparql.logic.naive;
++
++import java.util.Collection;
++import java.util.Iterator;
++import java.util.Map;
++
++import name.levering.ryan.sparql.common.RdfBindingSet;
++import name.levering.ryan.sparql.common.RdfSource;
++import name.levering.ryan.sparql.common.impl.RdfBindingSetImpl;
++import name.levering.ryan.sparql.model.GroupConstraint;
++import name.levering.ryan.sparql.model.data.UnionConstraintData;
++import name.levering.ryan.sparql.model.logic.ConstraintLogic;
++import name.levering.ryan.sparql.model.logic.helper.SetUnionLogic;
++
++/**
++ * This constraint logic represents the UNION constraint logic found in the
++ * SPARQL specification. The constraint essentially merges two or more binding
++ * sets into one, forming null values where variables are not bound in certain
++ * sets.
++ * 
++ * @author Ryan Levering
++ * @version 1.0
++ */
++public class DefaultUnionConstraintLogic implements ConstraintLogic {
++
++	/**
++	 * The data holding the collection of subconstraints.
++	 */
++	private final UnionConstraintData data;
++
++	/**
++	 * The logic to use for the combinatory set union.
++	 */
++	private final SetUnionLogic logic;
++
++	/**
++	 * Creates a new logic object that forms the union of several value binding
++	 * sets.
++	 * 
++	 * @param data the data to form a union with
++	 * @param logic the logic to use for the combinatory set union
++	 */
++	public DefaultUnionConstraintLogic(UnionConstraintData data, SetUnionLogic logic) {
++		this.data = data;
++		this.logic = logic;
++	}
++
++	/**
++	 * Iterates over the collection of binding sets returned by the group
++	 * constraints and forms the aggregate union of all of them.
++	 * 
++	 * @param bindings the current bindings, not used in this constraint
++	 * @param source the RDF triple source, passed onto the sub constraints
++	 * @param defaultDatasets the default graphs to query, passed on to the sub
++	 *            constraints
++	 * @param namedDatasets the named graphs to query, passed on to the sub
++	 *            constraints
++	 * @return a set containing the union of all the bound values of all the sub
++	 *         constraints
++	 */
++	public RdfBindingSet constrain(ConstraintLogic.CallParams p) {
++		RdfBindingSet current = null;
++		
++		// Because of DISTINCT, we can't quite know how
++		// many rows to ask from each part to reach our limit.
++		// So we do something adaptive.
++		
++		int lastCount = 0;
++		int limitFactor = 1;
++		while (limitFactor < 10000) {
++			current = null;
++			
++			for (Iterator groupOrUnions = this.data.getConstraints().iterator(); groupOrUnions.hasNext();) {
++				ConstraintLogic group = (ConstraintLogic) groupOrUnions.next();
++				
++				ConstraintLogic.CallParams p2 = p.clone();
++				
++				if (current == null) {
++					// If an offset is specified for the global results, I'm not
++					// sure how to pass down the limit, especially if the results
++					// are ordered.
++					if (p.offset != 0) {
++						// TODO
++						p2.offset = 0;
++						p2.limit = -1;
++					} else {
++						p2.limit *= limitFactor;
++					}
++					
++					current = group.constrain(p2);
++				} else {
++					// If a limit is provided, subtract from the limit the number
++					// of rows found already, and if we don't need any more, stop.
++					if (p.offset == 0 && p.limit >= 0) {
++						p2.limit = p.limit - current.size();
++						
++						if (p2.limit <= 0)
++							break;
++						
++						// But because of DISTINCT, it might be that none of the rows
++						// we get are new. So, we multiple our request by the limitFactor
++						// which increases adaptively.
++						p2.limit *= limitFactor;
++						
++					} else if (p.offset != 0) {
++						// TODO
++						p2.offset = 0;
++						p2.limit = -1;
++					}
++
++					current = this.logic.union(current, group.constrain(p2));
++				}
++			}
++	
++			current = p.projectOrderDistinctLimit(current);
++			
++			// When we've reached our limit, or if there is no limit,
++			// or if we didn't get any more bindings than with the last
++			// adaptive limit, we're done.
++			if (p.limit == -1 || current.size() >= p.limit || current.size() == lastCount)
++				break;
++			
++			lastCount = current.size();
++			
++			// Increase the factor to get more results next time.
++			limitFactor *= 3;
++		}
++		
++		return current;
++	}
++
++}
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/logic/naive/NaiveSetJoinLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/naive/NaiveSetJoinLogic.java
 --- upstream/src/main/name/levering/ryan/sparql/logic/naive/NaiveSetJoinLogic.java	2007-10-07 07:19:19.000000000 -0400
 +++ work-copy/src/main/name/levering/ryan/sparql/logic/naive/NaiveSetJoinLogic.java	2007-10-21 12:35:15.000000000 -0400
@@ -2616,8 +2970,8 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
   * is the aggregation of two other binding sets. This implementation does this
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/logic/streamed/AdvancedGroupConstraintLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/streamed/AdvancedGroupConstraintLogic.java
 --- upstream/src/main/name/levering/ryan/sparql/logic/streamed/AdvancedGroupConstraintLogic.java	1969-12-31 19:00:00.000000000 -0500
-+++ work-copy/src/main/name/levering/ryan/sparql/logic/streamed/AdvancedGroupConstraintLogic.java	2008-02-09 15:07:39.000000000 -0500
-@@ -0,0 +1,623 @@
++++ work-copy/src/main/name/levering/ryan/sparql/logic/streamed/AdvancedGroupConstraintLogic.java	2008-04-27 11:25:16.000000000 -0400
+@@ -0,0 +1,629 @@
 +/*
 + * SPARQL Engine
 + * Copyright (C) 2005 Ryan Levering, All rights reserved.
@@ -2737,6 +3091,8 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
 +			p2.limit = -1;
 +		}
 +		
++		if (p2.distinguishedVariables != null)
++			p2.distinguishedVariables.addAll(p2.getOrderVariables());
 +		p2.orderExpressions = null; // There is no reason to order the results either.
 +		
 +		// Get a list of variables that have known values, and of those the ones that are really cheap
@@ -2815,6 +3171,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
 +		// after some of their variables have already been evaluated.  This is
 +		// a bit N^2-ish in the number of triple constraints, but it can be improved.
 +		List constraintOrder = new LinkedList();
++		if (true) {
 +		Set selectedVars = new HashSet();
 +		while (tripleConstraints.size() > 0) {
 +			TripleConstraint leastConstraint = null;
@@ -2879,6 +3236,9 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
 +	            }*/
 +	        }
 +        }
++        } else {
++        constraintOrder.addAll(tripleConstraints);
++		}
 +		
 +		// Add the otherQueue back in.
 +		constraintOrder.addAll(otherQueue);
@@ -4017,7 +4377,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
       * 
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/model/logic/ConstraintLogic.java work-copy/src/main/name/levering/ryan/sparql/model/logic/ConstraintLogic.java
 --- upstream/src/main/name/levering/ryan/sparql/model/logic/ConstraintLogic.java	2006-08-20 20:00:59.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/model/logic/ConstraintLogic.java	2008-02-10 07:49:35.000000000 -0500
++++ work-copy/src/main/name/levering/ryan/sparql/model/logic/ConstraintLogic.java	2008-04-27 11:15:14.000000000 -0400
 @@ -6,10 +6,18 @@
  package name.levering.ryan.sparql.model.logic;
  
@@ -4037,7 +4397,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
  /**
   * The logic that every constraint satisfies. It currently can be used two ways.
   * If the logic is dependent on current evaluated bindings (FILTER and
-@@ -27,16 +35,134 @@
+@@ -27,16 +35,148 @@
       * Constrains the value bindings by either constraining the current value
       * bindings or returning a set that will be constrained via intersection
       * with the current set.
@@ -4132,6 +4492,17 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
 +		 public SetProjectionLogic projectionLogic;
 +		 public SetDistinctionLogic distinctionLogic;
 +		 
++		public Set getOrderVariables() {
++			Set ret = new HashSet();
++			if (orderExpressions != null) {
++				for (int i = orderExpressions.size() - 1; i >= 0; i--) {
++					OrderExpressionLogic orderer = (OrderExpressionLogic) orderExpressions.get(i);
++					ret.addAll(orderer.getVariables());
++				}
++			}
++			return ret;
++		 }
++		 
 +		 public CallParams clone() {
 +			 CallParams p = new CallParams();
 +			 p.bindings = bindings;
@@ -4151,34 +4522,37 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
 +			 return p;
 +		 }
  
-+		 public RdfBindingSet projectOrderDistinctLimit(RdfBindingSet results) {
-+			 if (distinguishedVariables != null) {
-+				 Set select = new HashSet(distinguishedVariables);
-+				 select.retainAll(results.getVariables());
-+					results = projectionLogic.project(results, select);
-+			 }
-+	
-+				if (orderExpressions != null && !results.isOrdered()) {
-+				  // Apply ordering in reverse order to give priority to the first
-+				  // variable.
-+				  for (int i = orderExpressions.size() - 1; i >= 0; i--) {
-+						OrderExpressionLogic orderer = (OrderExpressionLogic) orderExpressions.get(i);
-+						orderer.order(results);
-+				  }
++		public RdfBindingSet projectOrderDistinctLimit(RdfBindingSet results) {
++			// Ordering must be done before projection because the ordering may
++			// make use of variables that are not distinguished.
++			if (orderExpressions != null && !results.isOrdered()) {
++				// Apply ordering in reverse order to give priority to the first
++				// variable.
++				for (int i = orderExpressions.size() - 1; i >= 0; i--) {
++					OrderExpressionLogic orderer = (OrderExpressionLogic) orderExpressions.get(i);
++					results = orderer.order(results);
 +				}
-+			 
-+				// What's better, to do the distinction before or after the ordering?
-+				if (distinct == CallParams.DistinctType.DISTINCT && !results.isDistinct())
-+					results = this.distinctionLogic.makeDistinct(results);
-+				
-+			  // Now apply limiting and offsetting
-+			  if (offset > 0)
-+					results = rangeLogic.offset(results, offset);
-+				if (limit >= 0)
-+					results = rangeLogic.limit(results, limit);
-+			  
-+				return results;
-+		 }
++			}
++			
++			if (distinguishedVariables != null) {
++				Set select = new HashSet(distinguishedVariables);
++				select.retainAll(results.getVariables());
++				results = projectionLogic.project(results, select);
++			}
++			
++			// It would be nice to do the distinct logic before ordering, but we have to do
++			// it after the projection.
++			if (distinct == CallParams.DistinctType.DISTINCT && !results.isDistinct())
++			results = this.distinctionLogic.makeDistinct(results);
++			
++			// Now apply limiting and offsetting
++			if (offset > 0)
++				results = rangeLogic.offset(results, offset);
++			if (limit >= 0)
++				results = rangeLogic.limit(results, limit);
++			
++			return results;
++		}
 +	
 +	 }
  }
@@ -4238,6 +4612,29 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
  
  	public void registerExternalFunction(URI functionIRI, ExternalFunctionFactory functionFactory);
  
+diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/model/logic/OrderExpressionLogic.java work-copy/src/main/name/levering/ryan/sparql/model/logic/OrderExpressionLogic.java
+--- upstream/src/main/name/levering/ryan/sparql/model/logic/OrderExpressionLogic.java	2006-08-20 20:00:59.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/model/logic/OrderExpressionLogic.java	2008-04-27 11:14:20.000000000 -0400
+@@ -5,6 +5,8 @@
+  */
+ package name.levering.ryan.sparql.model.logic;
+ 
++import java.util.Set;
++
+ import name.levering.ryan.sparql.common.RdfBindingSet;
+ 
+ /**
+@@ -26,4 +28,10 @@
+      */
+     public RdfBindingSet order(RdfBindingSet set);
+ 
++    /**
++     * Gets the variables used in the order expression.
++     * 
++     * @return a set of variables
++     */
++    public Set getVariables();
+ }
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/parser/JavaCharStream.java work-copy/src/main/name/levering/ryan/sparql/parser/JavaCharStream.java
 --- upstream/src/main/name/levering/ryan/sparql/parser/JavaCharStream.java	2007-10-07 07:19:57.000000000 -0400
 +++ work-copy/src/main/name/levering/ryan/sparql/parser/JavaCharStream.java	2007-10-21 12:35:16.000000000 -0400
@@ -5006,14 +5403,32 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
 +}
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/parser/model/OrderExpressionNode.java work-copy/src/main/name/levering/ryan/sparql/parser/model/OrderExpressionNode.java
 --- upstream/src/main/name/levering/ryan/sparql/parser/model/OrderExpressionNode.java	2006-08-20 20:01:00.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/parser/model/OrderExpressionNode.java	2007-10-21 12:35:16.000000000 -0400
-@@ -31,6 +31,6 @@
++++ work-copy/src/main/name/levering/ryan/sparql/parser/model/OrderExpressionNode.java	2008-04-27 11:17:35.000000000 -0400
+@@ -5,6 +5,8 @@
+  */
+ package name.levering.ryan.sparql.parser.model;
+ 
++import java.util.Set;
++
+ import name.levering.ryan.sparql.common.RdfBindingSet;
+ import name.levering.ryan.sparql.model.OrderExpression;
+ import name.levering.ryan.sparql.model.logic.ExpressionLogic;
+@@ -27,10 +29,14 @@
+     }
+ 
+     public ExpressionLogic getExpression() {
+-        return (ExpressionLogic) this.jjtGetChild(0);
++        return ((ExpressionNode) this.jjtGetChild(0)).getExpressionLogic();
      }
  
      public void applyLogic(LogicBinder binder) {
 -        this.logic = binder.getLogicFactory().getOrderExpressionLogic(this);
 +        this.logic = binder.getLogicFactory().getOrderExpressionLogic(this, binder.getValueFactory());
      }
++
++	public Set getVariables() {
++		return this.getExpression().getVariables();
++	}
  }
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/parser/model/QueryNode.java work-copy/src/main/name/levering/ryan/sparql/parser/model/QueryNode.java
 --- upstream/src/main/name/levering/ryan/sparql/parser/model/QueryNode.java	2007-10-07 07:19:18.000000000 -0400
@@ -5077,7 +5492,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
  }
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/parser/model/SPARQLParserTreeConstants.java work-copy/src/main/name/levering/ryan/sparql/parser/model/SPARQLParserTreeConstants.java
 --- upstream/src/main/name/levering/ryan/sparql/parser/model/SPARQLParserTreeConstants.java	2007-10-07 07:19:57.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/parser/model/SPARQLParserTreeConstants.java	2008-03-11 08:04:37.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/parser/model/SPARQLParserTreeConstants.java	2008-04-27 11:26:28.000000000 -0400
 @@ -1,141 +1,139 @@
 -/* Generated By:JJTree: Do not edit this line. C:/workspaces/sparql/SPARQL Engine Trunk/src/main/name/levering/ryan/sparql/parser/model\SPARQLParserTreeConstants.java */
 -
@@ -5527,7 +5942,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
  }
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/parser/SPARQLParserConstants.java work-copy/src/main/name/levering/ryan/sparql/parser/SPARQLParserConstants.java
 --- upstream/src/main/name/levering/ryan/sparql/parser/SPARQLParserConstants.java	2007-10-07 07:19:57.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/parser/SPARQLParserConstants.java	2008-03-11 08:04:38.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/parser/SPARQLParserConstants.java	2008-04-27 11:26:29.000000000 -0400
 @@ -1,139 +1,136 @@
 -/* Generated By:JJTree&JavaCC: Do not edit this line. SPARQLParserConstants.java */
 -package name.levering.ryan.sparql.parser;
@@ -5806,7 +6221,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
 +}
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/parser/SPARQLParser.java work-copy/src/main/name/levering/ryan/sparql/parser/SPARQLParser.java
 --- upstream/src/main/name/levering/ryan/sparql/parser/SPARQLParser.java	2007-10-07 07:19:39.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/parser/SPARQLParser.java	2008-03-11 08:04:39.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/parser/SPARQLParser.java	2008-04-27 11:26:29.000000000 -0400
 @@ -1,4422 +1,3182 @@
 -/* Generated By:JJTree&JavaCC: Do not edit this line. SPARQLParser.java */
 -package name.levering.ryan.sparql.parser;
@@ -13411,7 +13826,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
 +}
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/parser/SPARQLParserTokenManager.java work-copy/src/main/name/levering/ryan/sparql/parser/SPARQLParserTokenManager.java
 --- upstream/src/main/name/levering/ryan/sparql/parser/SPARQLParserTokenManager.java	2007-10-07 07:19:57.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/parser/SPARQLParserTokenManager.java	2008-03-11 08:04:39.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/parser/SPARQLParserTokenManager.java	2008-04-27 11:26:29.000000000 -0400
 @@ -1,3660 +1,3997 @@
 -/* Generated By:JJTree&JavaCC: Do not edit this line. SPARQLParserTokenManager.java */
 -package name.levering.ryan.sparql.parser;
