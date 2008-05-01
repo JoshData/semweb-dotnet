@@ -1146,6 +1146,7 @@ namespace SemWeb.Stores {
 		void PrefetchResourceIds(IList resources) {
 			Hashtable seen_e = new Hashtable();
 			Hashtable seen_l = new Hashtable();
+			Hashtable res_map = new Hashtable();
 			
 			int resStart = 0;
 			while (resStart < resources.Count) {
@@ -1172,7 +1173,14 @@ namespace SemWeb.Stores {
 				ctr++;
 			
 				if (r.Uri != null) {
-					if (seen_e.ContainsKey(r.Uri)) continue;
+					if (seen_e.ContainsKey(r.Uri)) {
+						// We can only query for a URI once, but it might be that multiple objects
+						// coming in have the same URI, so when we see a duplicate, associate the
+						// duplicate with the first instance of the URI we saw.
+						if ((object)r != (object)seen_e[r.Uri])
+							res_map[r] = seen_e[r.Uri];
+						continue;
+					}
 					if (hasEnts)
 						cmd_e.Append(" , ");
 					EscapedAppend(cmd_e, r.Uri);
@@ -1183,7 +1191,14 @@ namespace SemWeb.Stores {
 				Literal lit = r as Literal;
 				if (lit != null) {
 					string hash = GetLiteralHash(lit);
-					if (seen_l.ContainsKey(hash)) continue;
+					if (seen_l.ContainsKey(hash)) {
+						// We can only query for a literal value once, but it might be that multiple objects
+						// coming in have the same value, so when we see a duplicate, associate the
+						// duplicate with the first instance of the value we saw.
+						if ((object)lit != (object)seen_l[hash])
+							res_map[lit] = seen_l[hash];
+						continue;
+					}
 					
 					if (hasLiterals)
 						cmd_l.Append(" , ");
@@ -1217,6 +1232,10 @@ namespace SemWeb.Stores {
 				}
 			}
 			
+			}
+			
+			foreach (Resource r in res_map.Keys) {
+				SetResourceKey(r, GetResourceKey((Resource)res_map[r]));
 			}
 		}
 		

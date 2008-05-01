@@ -17,6 +17,8 @@
 	  instead of using a VIEW in MySQL, now for all database providers
 	  do the query in two steps, first using SELECT DISTINCT and then
 	  after getting the resource URIs and literal text values.
+	* SQLStore: When two equivalent resources (but different object instances)
+	  were used in a query, the query would fail.
 	* SqliteStore: Fix table and index creation to work with Sqlite2.
 	* MySQLStore: Implement ToString().
 	* Makefile: Include SPARQL build files in the release package,
