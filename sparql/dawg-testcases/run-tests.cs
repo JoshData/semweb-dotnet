@@ -118,6 +118,12 @@ public class RunTests {
 			MemoryStore data_store = new MemoryStore(new N3Reader(data.Uri));
 			string q = ReadFile(query.Uri);
 			
+			if (q.IndexOf("ASK") >= 0) {
+				Console.WriteLine("ASK Test Skipped: " + test);
+				skip++;
+				return;
+			}
+			
 			string run_individual_test = "mono ../../bin/rdfquery.exe -type sparql n3:" + data.Uri + " < " + query.Uri;
 
 			SparqlEngine sp;
@@ -153,73 +159,115 @@ public class RunTests {
 			bool failed = false;
 			StringBuilder info = new StringBuilder();
 
-			if (result.Uri.EndsWith(".ttl")) {
-				//MemoryStore result_store = new MemoryStore(new N3Reader(result.Uri));
-				skip++;
-				return;
-
-			} else if (result.Uri.EndsWith(".srx")) {
-				skip++;
-				return;
-
-			} else if (result.Uri.EndsWith(".rdf")) {
-				MemoryStore result_store = new MemoryStore(new RdfXmlReader(result.Uri));
+			if (result.Uri.EndsWith(".ttl") || result.Uri.EndsWith(".srx") || result.Uri.EndsWith(".rdf")) {
+			
+				bool sorted = false;
+				QueryResultBuffer results2 = new QueryResultBuffer();
 				
-				string rs = "http://www.w3.org/2001/sw/DataAccess/tests/result-set#";
-				Entity rsResultSet = rs + "ResultSet";
-				Entity rsresultVariable = rs + "resultVariable";
-				Entity rssolution = rs + "solution";
-				Entity rsindex = rs + "index";
-				Entity rsbinding = rs + "binding";
-				Entity rsvariable = rs + "variable";
-				Entity rsvalue = rs + "value";
+				if (result.Uri.EndsWith(".srx")) {
+						using (FileStream fs = new FileStream(result.Uri, FileMode.Open))
+							SemWeb.Remote.SparqlHttpSource.ParseSparqlResponse(fs, results2);
+							
+				} else if (result.Uri.EndsWith(".rdf") || result.Uri.EndsWith(".ttl")) {
+					RdfReader reader = null;
+					if (result.Uri.EndsWith(".rdf"))
+						reader = new RdfXmlReader(result.Uri);
+					else if (result.Uri.EndsWith(".ttl"))
+						reader = new N3Reader(result.Uri);
+					MemoryStore result_store = new MemoryStore(reader);
+					
+					string rs = "http://www.w3.org/2001/sw/DataAccess/tests/result-set#";
+					Entity rsResultSet = rs + "ResultSet";
+					Entity rsresultVariable = rs + "resultVariable";
+					Entity rssolution = rs + "solution";
+					Entity rsindex = rs + "index";
+					Entity rsbinding = rs + "binding";
+					Entity rsvariable = rs + "variable";
+					Entity rsvalue = rs + "value";
+				
+					// get a list of variables in the query output
+					Entity resultset = result_store.GetEntitiesOfType(rsResultSet)[0];
+					ArrayList vars = new ArrayList();
+					foreach (Literal var in result_store.SelectObjects(resultset, rsresultVariable))
+						vars.Add(new Variable(var.Value));
+					Variable[] varsarray = (Variable[])vars.ToArray(typeof(Variable));
+					
+					// try to order as best we can to our own output, so we sort the results the same way
+					for (int i = 0; i < results.Variables.Length; i++) {
+						if (i >= varsarray.Length) break;
+						for (int j = i; j < varsarray.Length; j++) {
+							if (varsarray[j].LocalName == results.Variables[i].LocalName) {
+								Variable temp = varsarray[i];
+								varsarray[i] = varsarray[j];
+								varsarray[j] = temp;
+								break;
+							}
+						}
+					}
+					
+					Hashtable varmap = new Hashtable();
+					foreach (Variable v in varsarray)
+							varmap[v.LocalName] = varmap.Count;
+					
+					results2.Init(varsarray);
+					
+					Resource[] resultbindings = result_store.SelectObjects(resultset, rssolution);
+					
+					// Try sorting by index
+					int[] indexes = new int[resultbindings.Length];
+					for (int i = 0; i < resultbindings.Length; i++) {
+						Entity binding = (Entity)resultbindings[i];
+						Literal index = (Literal)result_store.SelectObjects(binding, rsindex)[0];
+						indexes[i] = (int)(Decimal)index.ParseValue();
+						sorted = true;
+					}
+					Array.Sort(indexes, resultbindings);
+					
+					// Add bindings into results2.
+					for (int i = 0; i < resultbindings.Length; i++) {
+						Resource[] row = new Resource[vars.Count];
+						Entity binding = (Entity)resultbindings[i];
+						foreach (Entity var in result_store.SelectObjects(binding, rsbinding)) {
+							string name = ((Literal)result_store.SelectObjects(var, rsvariable)[0]).Value;
+							Resource val = result_store.SelectObjects(var, rsvalue)[0];
+							row[(int)varmap[name]] = val;
+						}
+						results2.Add(new VariableBindings(varsarray, row));
+					}
+				}
 				
 				// Check variable list
-				Entity resultset = result_store.GetEntitiesOfType(rsResultSet)[0];
 				ArrayList vars1 = new ArrayList();
 				foreach (Variable v in results.Variables)
 					vars1.Add(v.LocalName);				
 				ArrayList vars2 = new ArrayList();
-				foreach (Literal var in result_store.SelectObjects(resultset, rsresultVariable))
-					vars2.Add(var.Value);
+				foreach (Variable v in results2.Variables)
+					vars2.Add(v.LocalName);				
 				failed |= !SetsSame(vars1, vars2, "Result Set Variables", info);
 
 				// Checking bindings
-				Resource[] resultbindings = result_store.SelectObjects(resultset, rssolution);
-				if (results.Bindings.Count != resultbindings.Length) {
+				if (results.Bindings.Count != results2.Bindings.Count) {
 					info.Append("Solutions have different number of bindings.\n");
 					failed = true;
 				} else {
-					// Try sorting by index for ease of reading output.
-					int[] indexes = new int[resultbindings.Length];
-					for (int i = 0; i < resultbindings.Length; i++) {
-						Entity binding = (Entity)resultbindings[i];
-						try {
-							Literal index = (Literal)result_store.SelectObjects(binding, rsindex)[0];
-							indexes[i] = (int)(Decimal)index.ParseValue();
-						} catch (Exception) { }
-					}
-					Array.Sort(indexes, resultbindings);
-					
 					// Now actually run comparison.
-					for (int i = 0; i < resultbindings.Length; i++) {
-						Entity binding = (Entity)resultbindings[i];
-						try {
-							Literal index = (Literal)result_store.SelectObjects(binding, rsindex)[0];
-							int idx = (int)(Decimal)index.ParseValue();
-							
-							VariableBindings b = (VariableBindings)results.Bindings[idx-1];
-							foreach (Entity var in result_store.SelectObjects(binding, rsbinding)) {
-								string name = ((Literal)result_store.SelectObjects(var, rsvariable)[0]).Value;
-								Resource val = result_store.SelectObjects(var, rsvalue)[0];
-								Resource cval = b[name];
-								if (val != cval && !(val is BNode) && !(cval is BNode)) { // TODO: Test bnodes are returned correctly
-									info.Append("Bindings " + idx + " differ in value of " + name + " variable: " + cval + ", should be: " + val + "\n");
+					
+					if (!sorted) {
+						((ArrayList)results.Bindings).Sort();
+						((ArrayList)results2.Bindings).Sort();
+					}
+					
+					for (int i = 0; i < results.Bindings.Count; i++) {
+							VariableBindings b1 = (VariableBindings)results.Bindings[i];
+							VariableBindings b2 = (VariableBindings)results2.Bindings[i];
+							foreach (Variable var in results.Variables) {
+								Resource val1 = b1[var.LocalName];
+								Resource val2 = b2[var.LocalName];
+								if (val1 != val2 && !(val1 is BNode) && !(val2 is BNode)) { // TODO: Test bnodes are returned correctly
+									info.Append("Binding row " + i + " differ in value of " + var.LocalName + " variable: " + val2 + ", should be: " + val1 + "\n");
 									failed = true;
 								}
 							}
-									
-						} catch (Exception) { }
 					}
 				}
 				
