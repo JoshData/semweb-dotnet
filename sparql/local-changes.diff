@@ -19,7 +19,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/build.x
 +</project>
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/conf/grammars/20070624.jjt work-copy/conf/grammars/20070624.jjt
 --- upstream/conf/grammars/20070624.jjt	2007-10-07 07:19:16.000000000 -0400
-+++ work-copy/conf/grammars/20070624.jjt	2007-10-22 06:28:44.000000000 -0400
++++ work-copy/conf/grammars/20070624.jjt	2008-05-03 16:55:36.000000000 -0400
 @@ -144,7 +144,7 @@
  	| <#WS: ("\u0020" | "\u0009" | "\r" | "\n") >
  	| <#VARNAME: (<PN_CHARS_U> | ["0"-"9"]) (<PN_CHARS_U> | ["0"-"9"] | "\u00B7" | ["\u0300"-"\u036F"] | ["\u203F"-"\u2040"] )* >
@@ -29,6 +29,15 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/conf/gr
  	| <#PN_LOCAL: (<PN_CHARS_U> | ["0"-"9"]) ( (<PN_CHARS> | ".")* <PN_CHARS> )? >
  	| <#EXPONENT: ["E","e"] (["+","-"])? (["0"-"9"])+ >
  	| <#ECHAR: "\\" ["t","b","n","r","f","\\","'","\""] >
+@@ -262,7 +262,7 @@
+ }
+ {
+ 	( ( ( "ASC" | "DESC" {ascending = false;} ) BracketedExpression() #AscOrder(ascending) ) #DescOrder(!ascending) ) 
+-		| ( ( FunctionCall() | Var() | BracketedExpression() )#DefaultOrder )
++		| ( ( BuiltInCall() | FunctionCall() | Var() | BracketedExpression() )#DefaultOrder )
+ }
+ 
+ void LimitClause() #Limit :
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/common/AdvancedRdfSource.java work-copy/src/main/name/levering/ryan/sparql/common/AdvancedRdfSource.java
 --- upstream/src/main/name/levering/ryan/sparql/common/AdvancedRdfSource.java	1969-12-31 19:00:00.000000000 -0500
 +++ work-copy/src/main/name/levering/ryan/sparql/common/AdvancedRdfSource.java	2007-10-21 12:35:15.000000000 -0400
@@ -214,6 +223,145 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
 +		return ret;
 +	}
  }
+diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/common/SPARQLConstants.java work-copy/src/main/name/levering/ryan/sparql/common/SPARQLConstants.java
+--- upstream/src/main/name/levering/ryan/sparql/common/SPARQLConstants.java	2007-10-07 07:19:17.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/common/SPARQLConstants.java	2008-03-06 07:55:03.000000000 -0500
+@@ -26,42 +26,121 @@
+ 	public static final URI TYPE = initFactory.createURI("http://www.w3.org/1999/02/22-rdf-syntax-ns#type");
+ 	
+     /**
+-     * The datatype for double precision numerals.
++     * The URI for xsd:duration.
+      */
+-    public static final URI DOUBLE_TYPE = initFactory.createURI("http://www.w3.org/2001/XMLSchema#double");
++    public static final URI DURATION_TYPE = initFactory.createURI("http://www.w3.org/2001/XMLSchema#duration");
+ 
+     /**
+-     * The datatype for a smaller precision decimal numeral.
++     * The URI for xsd:dateTime.
+      */
+-    public static final URI INTEGER_TYPE = initFactory.createURI("http://www.w3.org/2001/XMLSchema#integer");
++    public static final URI DATETIME_TYPE = initFactory.createURI("http://www.w3.org/2001/XMLSchema#dateTime");
++
++    /**
++    /**
++     * The URI for xsd:time.
++     */
++    public static final URI TIME_TYPE = initFactory.createURI("http://www.w3.org/2001/XMLSchema#time");
+ 
+     /**
+-     * The datatype for the decimal type numeral, which is a generic
+-     * non-fractional number.
++     * The URI for xsd:date.
+      */
+-    public static final URI DECIMAL_TYPE = initFactory.createURI("http://www.w3.org/2001/XMLSchema#decimal");
++    public static final URI DATE_TYPE = initFactory.createURI("http://www.w3.org/2001/XMLSchema#date");
++
++    /**
++     * The datatype for a true/false value.
++     */
++    public static final URI BOOLEAN_TYPE = initFactory.createURI("http://www.w3.org/2001/XMLSchema#boolean");
+ 
+     /**
+      * The datatype for a single precision numeral.
+      */
+     public static final URI FLOAT_TYPE = initFactory.createURI("http://www.w3.org/2001/XMLSchema#float");
+ 
+-    /**
+-     * The datatype for a date/time representation, represented according to
+-     * ISO-8601.
++	/*
++     * The URI for xsd:double.
+      */
+-    public static final URI DATE_TYPE = initFactory.createURI("http://www.w3.org/2001/XMLSchema#dateTime");
++    public static final URI DOUBLE_TYPE = initFactory.createURI("http://www.w3.org/2001/XMLSchema#double");
++
++	/*
++     * The URI for xsd:anyURI.
++     */
++    public static final URI ANYURI_TYPE = initFactory.createURI("http://www.w3.org/2001/XMLSchema#anyURI");
+ 
+     /**
+-     * The datatype for a string representation, which is a general sequence of
++     * The XSD datatype for a string representation, which is a general sequence of
+      * UNICODE or ASCII characters.
+      */
+     public static final URI STRING_TYPE = initFactory.createURI("http://www.w3.org/2001/XMLSchema#string");
+ 
+     /**
+-     * The datatype for a true/false value.
++     * xsd:decimal
+      */
+-    public static final URI BOOLEAN_TYPE = initFactory.createURI("http://www.w3.org/2001/XMLSchema#boolean");
++    public static final URI DECIMAL_TYPE = initFactory.createURI("http://www.w3.org/2001/XMLSchema#decimal");
++
++    /**
++     * xsd:integer
++     */
++    public static final URI INTEGER_TYPE = initFactory.createURI("http://www.w3.org/2001/XMLSchema#integer");
++
++    /**
++     * xsd:nonPositiveInteger
++     */
++    public static final URI NONPOSITIVEINTEGER_TYPE = initFactory.createURI("http://www.w3.org/2001/XMLSchema#nonPositiveInteger");
++
++    /**
++     * xsd:negativeInteger
++     */
++    public static final URI NEGATIVEINTEGER_TYPE = initFactory.createURI("http://www.w3.org/2001/XMLSchema#negativeInteger");
++
++    /**
++     * The datatype for a higher precision decimal numeral.
++     */
++    public static final URI LONG_TYPE = initFactory.createURI("http://www.w3.org/2001/XMLSchema#long");
++
++    /**
++     * The datatype for a smaller precision decimal numeral.
++     */
++    public static final URI INT_TYPE = initFactory.createURI("http://www.w3.org/2001/XMLSchema#int");
++
++    /**
++     * The datatype for an even smaller precision decimal numeral.
++     */
++    public static final URI SHORT_TYPE = initFactory.createURI("http://www.w3.org/2001/XMLSchema#short");
++
++    /**
++     * The datatype for an even smaller precision decimal numeral.
++     */
++    public static final URI BYTE_TYPE = initFactory.createURI("http://www.w3.org/2001/XMLSchema#byte");
++
++    /**
++     * xsd:nonNegativeInteger
++     */
++    public static final URI NONNEGATIVEINTEGER_TYPE = initFactory.createURI("http://www.w3.org/2001/XMLSchema#nonNegativeInteger");
++
++    /**
++     * xsd:positiveInteger
++     */
++    public static final URI POSITIVEINTEGER_TYPE = initFactory.createURI("http://www.w3.org/2001/XMLSchema#positiveInteger");
++
++    /**
++     * The datatype for a higher precision decimal numeral.
++     */
++    public static final URI UNSIGNEDLONG_TYPE = initFactory.createURI("http://www.w3.org/2001/XMLSchema#unsignedLong");
++
++    /**
++     * The datatype for a smaller precision decimal numeral.
++     */
++    public static final URI UNSIGNEDINT_TYPE = initFactory.createURI("http://www.w3.org/2001/XMLSchema#unsignedInt");
++
++    /**
++     * The datatype for an even smaller precision decimal numeral.
++     */
++    public static final URI UNSIGNEDSHORT_TYPE = initFactory.createURI("http://www.w3.org/2001/XMLSchema#unsignedShort");
++
++    /**
++     * The datatype for an even smaller precision decimal numeral.
++     */
++    public static final URI UNSIGNEDBYTE_TYPE = initFactory.createURI("http://www.w3.org/2001/XMLSchema#unsignedByte");
+ 
+     /**
+      * The datatype specifically for RDF data, that represents an URI in an RDF triple. 
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/common/URI.java work-copy/src/main/name/levering/ryan/sparql/common/URI.java
 --- upstream/src/main/name/levering/ryan/sparql/common/URI.java	2007-10-07 07:19:17.000000000 -0400
 +++ work-copy/src/main/name/levering/ryan/sparql/common/URI.java	2007-10-21 12:35:15.000000000 -0400
@@ -262,6 +410,18 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
  	}
  
  }
+diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/extensions/functions/aggregate/CountFunction.java work-copy/src/main/name/levering/ryan/sparql/extensions/functions/aggregate/CountFunction.java
+--- upstream/src/main/name/levering/ryan/sparql/extensions/functions/aggregate/CountFunction.java	2007-10-07 07:19:16.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/extensions/functions/aggregate/CountFunction.java	2008-05-03 18:50:08.000000000 -0400
+@@ -65,7 +65,7 @@
+ 			counter = set.size();
+ 			this.countCache.put(set, new Integer(counter));
+ 		}
+-		return this.converter.convertInteger(counter);
++		return this.converter.convertInteger(java.math.BigInteger.valueOf(counter));
+ 	}
+ 
+ 	/**
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/extensions/functions/aggregate/IsMaxFunction.java work-copy/src/main/name/levering/ryan/sparql/extensions/functions/aggregate/IsMaxFunction.java
 --- upstream/src/main/name/levering/ryan/sparql/extensions/functions/aggregate/IsMaxFunction.java	2007-10-07 07:19:16.000000000 -0400
 +++ work-copy/src/main/name/levering/ryan/sparql/extensions/functions/aggregate/IsMaxFunction.java	2007-10-21 12:35:16.000000000 -0400
@@ -310,6 +470,185 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
  			}
  
  		};
+diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/extensions/functions/datetime/AddDayFunction.java work-copy/src/main/name/levering/ryan/sparql/extensions/functions/datetime/AddDayFunction.java
+--- upstream/src/main/name/levering/ryan/sparql/extensions/functions/datetime/AddDayFunction.java	2007-10-07 07:19:16.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/extensions/functions/datetime/AddDayFunction.java	2008-05-03 18:50:47.000000000 -0400
+@@ -51,7 +51,7 @@
+ 			throw new ExternalFunctionException("Values need to be literals to be understood");
+ 		}
+ 
+-		int number = this.converter.convertInteger((Literal) daysToAdd);
++		int number = this.converter.convertInteger((Literal) daysToAdd).intValue();
+ 		DateTime date = this.converter.convertDateTime((Literal) origDate);
+ 
+ 		Calendar cal = new GregorianCalendar(date.getYear(), date.getMonth() - 1, date.getDay(), date.getHour(), date
+diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/extensions/functions/datetime/AddHourFunction.java work-copy/src/main/name/levering/ryan/sparql/extensions/functions/datetime/AddHourFunction.java
+--- upstream/src/main/name/levering/ryan/sparql/extensions/functions/datetime/AddHourFunction.java	2007-10-07 07:19:16.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/extensions/functions/datetime/AddHourFunction.java	2008-05-03 18:46:39.000000000 -0400
+@@ -52,7 +52,7 @@
+                     "Values need to be literals to be understood");
+         }
+ 
+-        int number = this.converter.convertInteger((Literal) hoursToAdd);
++        int number = this.converter.convertInteger((Literal) hoursToAdd).intValue();
+         DateTime date = this.converter.convertDateTime((Literal) origDate);
+ 
+         Calendar cal = new GregorianCalendar(date.getYear(), date.getMonth() - 1, date.getDay(), date.getHour(), date.getMinute(), date.getSecond());
+diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/extensions/functions/datetime/AddMinuteFunction.java work-copy/src/main/name/levering/ryan/sparql/extensions/functions/datetime/AddMinuteFunction.java
+--- upstream/src/main/name/levering/ryan/sparql/extensions/functions/datetime/AddMinuteFunction.java	2007-10-07 07:19:16.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/extensions/functions/datetime/AddMinuteFunction.java	2008-05-03 18:46:29.000000000 -0400
+@@ -52,7 +52,7 @@
+                     "Values need to be literals to be understood");
+         }
+ 
+-        int number = this.converter.convertInteger((Literal) minutesToAdd);
++        int number = this.converter.convertInteger((Literal) minutesToAdd).intValue();
+         DateTime date = this.converter.convertDateTime((Literal) origDate);
+ 
+         Calendar cal = new GregorianCalendar(date.getYear(), date.getMonth() - 1, date.getDay(), date.getHour(), date.getMinute(), date.getSecond());
+diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/extensions/functions/datetime/AddMonthFunction.java work-copy/src/main/name/levering/ryan/sparql/extensions/functions/datetime/AddMonthFunction.java
+--- upstream/src/main/name/levering/ryan/sparql/extensions/functions/datetime/AddMonthFunction.java	2007-10-07 07:19:16.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/extensions/functions/datetime/AddMonthFunction.java	2008-05-03 18:46:35.000000000 -0400
+@@ -52,7 +52,7 @@
+                     "Values need to be literals to be understood");
+         }
+ 
+-        int number = this.converter.convertInteger((Literal) monthsToAdd);
++        int number = this.converter.convertInteger((Literal) monthsToAdd).intValue();
+         DateTime date = this.converter.convertDateTime((Literal) origDate);
+ 
+         Calendar cal = new GregorianCalendar(date.getYear(), date.getMonth() - 1, date.getDay(), date.getHour(), date.getMinute(), date.getSecond());
+diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/extensions/functions/datetime/AddSecondFunction.java work-copy/src/main/name/levering/ryan/sparql/extensions/functions/datetime/AddSecondFunction.java
+--- upstream/src/main/name/levering/ryan/sparql/extensions/functions/datetime/AddSecondFunction.java	2007-10-07 07:19:16.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/extensions/functions/datetime/AddSecondFunction.java	2008-05-03 18:46:23.000000000 -0400
+@@ -52,7 +52,7 @@
+                     "Values need to be literals to be understood");
+         }
+ 
+-        int number = this.converter.convertInteger((Literal) secondsToAdd);
++        int number = this.converter.convertInteger((Literal) secondsToAdd).intValue();
+         DateTime date = this.converter.convertDateTime((Literal) origDate);
+ 
+         Calendar cal = new GregorianCalendar(date.getYear(), date.getMonth() - 1, date.getDay(), date.getHour(), date.getMinute(), date.getSecond());
+diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/extensions/functions/datetime/AddYearFunction.java work-copy/src/main/name/levering/ryan/sparql/extensions/functions/datetime/AddYearFunction.java
+--- upstream/src/main/name/levering/ryan/sparql/extensions/functions/datetime/AddYearFunction.java	2007-10-07 07:19:16.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/extensions/functions/datetime/AddYearFunction.java	2008-05-03 18:46:17.000000000 -0400
+@@ -52,7 +52,7 @@
+                     "Values need to be literals to be understood");
+         }
+ 
+-        int number = this.converter.convertInteger((Literal) yearsToAdd);
++        int number = this.converter.convertInteger((Literal) yearsToAdd).intValue();
+         DateTime date = this.converter.convertDateTime((Literal) origDate);
+ 
+         Calendar cal = new GregorianCalendar(date.getYear(), date.getMonth() - 1, date.getDay(), date.getHour(), date.getMinute(), date.getSecond());
+diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/extensions/functions/datetime/DayFunction.java work-copy/src/main/name/levering/ryan/sparql/extensions/functions/datetime/DayFunction.java
+--- upstream/src/main/name/levering/ryan/sparql/extensions/functions/datetime/DayFunction.java	2007-10-07 07:19:16.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/extensions/functions/datetime/DayFunction.java	2008-05-03 18:50:08.000000000 -0400
+@@ -49,7 +49,7 @@
+ 
+ 		DateTime date = this.converter.convertDateTime((Literal) value);
+ 
+-		return this.converter.convertInteger(date.getDay());
++		return this.converter.convertInteger(java.math.BigInteger.valueOf(date.getDay()));
+ 	}
+ 
+ 	/**
+diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/extensions/functions/datetime/HourFunction.java work-copy/src/main/name/levering/ryan/sparql/extensions/functions/datetime/HourFunction.java
+--- upstream/src/main/name/levering/ryan/sparql/extensions/functions/datetime/HourFunction.java	2007-10-07 07:19:16.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/extensions/functions/datetime/HourFunction.java	2008-05-03 18:50:08.000000000 -0400
+@@ -49,7 +49,7 @@
+         
+         DateTime date = this.converter.convertDateTime((Literal) value);
+         
+-        return this.converter.convertInteger(date.getHour());
++        return this.converter.convertInteger(java.math.BigInteger.valueOf(date.getHour()));
+     }
+     
+ 	/**
+diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/extensions/functions/datetime/MinuteFunction.java work-copy/src/main/name/levering/ryan/sparql/extensions/functions/datetime/MinuteFunction.java
+--- upstream/src/main/name/levering/ryan/sparql/extensions/functions/datetime/MinuteFunction.java	2007-10-07 07:19:16.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/extensions/functions/datetime/MinuteFunction.java	2008-05-03 18:50:08.000000000 -0400
+@@ -49,7 +49,7 @@
+         
+         DateTime date = this.converter.convertDateTime((Literal) value);
+         
+-        return this.converter.convertInteger(date.getMinute());
++        return this.converter.convertInteger(java.math.BigInteger.valueOf(date.getMinute()));
+     }
+     
+ 	/**
+diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/extensions/functions/datetime/MonthFunction.java work-copy/src/main/name/levering/ryan/sparql/extensions/functions/datetime/MonthFunction.java
+--- upstream/src/main/name/levering/ryan/sparql/extensions/functions/datetime/MonthFunction.java	2007-10-07 07:19:16.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/extensions/functions/datetime/MonthFunction.java	2008-05-03 18:50:08.000000000 -0400
+@@ -49,7 +49,7 @@
+         
+         DateTime date = this.converter.convertDateTime((Literal) value);
+         
+-        return this.converter.convertInteger(date.getMonth());
++        return this.converter.convertInteger(java.math.BigInteger.valueOf(date.getMonth()));
+     }
+     
+ 	/**
+diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/extensions/functions/datetime/SecondFunction.java work-copy/src/main/name/levering/ryan/sparql/extensions/functions/datetime/SecondFunction.java
+--- upstream/src/main/name/levering/ryan/sparql/extensions/functions/datetime/SecondFunction.java	2007-10-07 07:19:16.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/extensions/functions/datetime/SecondFunction.java	2008-05-03 18:50:08.000000000 -0400
+@@ -49,7 +49,7 @@
+         
+         DateTime date = this.converter.convertDateTime((Literal) value);
+         
+-        return this.converter.convertInteger(date.getSecond());
++        return this.converter.convertInteger(java.math.BigInteger.valueOf(date.getSecond()));
+     }
+     
+ 	/**
+diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/extensions/functions/datetime/YearFunction.java work-copy/src/main/name/levering/ryan/sparql/extensions/functions/datetime/YearFunction.java
+--- upstream/src/main/name/levering/ryan/sparql/extensions/functions/datetime/YearFunction.java	2007-10-07 07:19:16.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/extensions/functions/datetime/YearFunction.java	2008-05-03 18:50:08.000000000 -0400
+@@ -49,7 +49,7 @@
+ 
+ 		DateTime date = this.converter.convertDateTime((Literal) value);
+ 
+-		return this.converter.convertInteger(date.getYear());
++		return this.converter.convertInteger(java.math.BigInteger.valueOf(date.getYear()));
+ 	}
+ 
+ 	/**
+diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/extensions/functions/string/LengthFunction.java work-copy/src/main/name/levering/ryan/sparql/extensions/functions/string/LengthFunction.java
+--- upstream/src/main/name/levering/ryan/sparql/extensions/functions/string/LengthFunction.java	2007-10-07 07:19:16.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/extensions/functions/string/LengthFunction.java	2008-05-03 18:50:08.000000000 -0400
+@@ -48,7 +48,7 @@
+ 
+ 		String string = this.converter.convertString((Literal) stringValue);
+ 
+-		return this.converter.convertInteger(string.length());
++		return this.converter.convertInteger(java.math.BigInteger.valueOf(string.length()));
+ 	}
+ 
+ 	/**
+diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/extensions/functions/string/SubstringFunction.java work-copy/src/main/name/levering/ryan/sparql/extensions/functions/string/SubstringFunction.java
+--- upstream/src/main/name/levering/ryan/sparql/extensions/functions/string/SubstringFunction.java	2007-10-07 07:19:16.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/extensions/functions/string/SubstringFunction.java	2008-05-03 18:43:44.000000000 -0400
+@@ -48,7 +48,7 @@
+ 		}
+ 
+ 		String string = this.converter.convertString((Literal) stringValue);
+-		int start = this.converter.convertInteger((Literal) startIndex);
++		int start = this.converter.convertInteger((Literal) startIndex).intValue();
+ 
+ 		return this.converter.convertString(string.substring(start));
+ 	}
+@@ -72,8 +72,8 @@
+ 		}
+ 
+ 		String string = this.converter.convertString((Literal) stringValue);
+-		int start = this.converter.convertInteger((Literal) startIndex);
+-		int chars = this.converter.convertInteger((Literal) length);
++		int start = this.converter.convertInteger((Literal) startIndex).intValue();
++		int chars = this.converter.convertInteger((Literal) length).intValue();
+ 
+ 		return this.converter.convertString(string.substring(start, start + chars));
+ 	}
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/extensions/with/DefaultWithConstraintLogic.java work-copy/src/main/name/levering/ryan/sparql/extensions/with/DefaultWithConstraintLogic.java
 --- upstream/src/main/name/levering/ryan/sparql/extensions/with/DefaultWithConstraintLogic.java	2006-08-20 20:00:59.000000000 -0400
 +++ work-copy/src/main/name/levering/ryan/sparql/extensions/with/DefaultWithConstraintLogic.java	2007-10-21 12:35:16.000000000 -0400
@@ -1007,6 +1346,48 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
 +		}
 +	}
  }
+diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/logic/DefaultEffectiveBooleanLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/DefaultEffectiveBooleanLogic.java
+--- upstream/src/main/name/levering/ryan/sparql/logic/DefaultEffectiveBooleanLogic.java	2007-10-07 07:19:19.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/logic/DefaultEffectiveBooleanLogic.java	2008-05-03 18:43:15.000000000 -0400
+@@ -8,6 +8,7 @@
+ import name.levering.ryan.sparql.common.SPARQLConstants;
+ import name.levering.ryan.sparql.model.logic.helper.EffectiveBooleanLogic;
+ import name.levering.ryan.sparql.model.logic.helper.ValueConversionLogic;
++import name.levering.ryan.sparql.logic.expression.TypeError;
+ 
+ import name.levering.ryan.sparql.common.Literal;
+ import name.levering.ryan.sparql.common.URI;
+@@ -63,6 +64,10 @@
+             return SPARQLConstants.FALSE_LITERAL;
+         }
+ 
++			if (!(value instanceof Literal)) {
++				throw new TypeError("The value " + value + " cannot be used in some evaluated expression because it cannot be coerced to a boolean value");
++			}
++			
+         Literal litValue = (Literal) value;
+         URI datatype = litValue.getDatatype();
+ 
+@@ -104,15 +109,15 @@
+         }
+ 
+         if (datatype.equals(SPARQLConstants.INTEGER_TYPE)) {
+-            int java = this.converter.convertInteger(litValue);
+-            if (java == 0) {
++            java.math.BigInteger v = this.converter.convertInteger(litValue);
++            if (v.equals(java.math.BigInteger.ZERO)) {
+                 return SPARQLConstants.FALSE_LITERAL;
+             }
+         }
+ 
+         if (datatype.equals(SPARQLConstants.DECIMAL_TYPE)) {
+-            long java = this.converter.convertDecimal(litValue);
+-            if (java == 0) {
++            java.math.BigDecimal v = this.converter.convertDecimal(litValue);
++            if (v.equals(java.math.BigDecimal.ZERO)) {
+                 return SPARQLConstants.FALSE_LITERAL;
+             }
+         }
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/logic/DefaultGraphTranslationLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/DefaultGraphTranslationLogic.java
 --- upstream/src/main/name/levering/ryan/sparql/logic/DefaultGraphTranslationLogic.java	2007-10-07 07:19:19.000000000 -0400
 +++ work-copy/src/main/name/levering/ryan/sparql/logic/DefaultGraphTranslationLogic.java	2007-10-21 12:35:15.000000000 -0400
@@ -1092,8 +1473,37 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
  						// And check to make sure this wasn't a final set, so we
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/logic/DefaultNumericPromotionLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/DefaultNumericPromotionLogic.java
 --- upstream/src/main/name/levering/ryan/sparql/logic/DefaultNumericPromotionLogic.java	2007-10-07 07:19:19.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/logic/DefaultNumericPromotionLogic.java	2008-04-27 11:00:37.000000000 -0400
-@@ -83,7 +83,7 @@
++++ work-copy/src/main/name/levering/ryan/sparql/logic/DefaultNumericPromotionLogic.java	2008-05-03 18:51:13.000000000 -0400
+@@ -56,6 +56,11 @@
+ 
+         URI leftDatatype = leftLiteral.getDatatype();
+         URI rightDatatype = rightLiteral.getDatatype();
++		  
++		  if (leftDatatype == null)
++			  leftDatatype = SPARQLConstants.STRING_TYPE;
++		  if (rightDatatype == null)
++			  rightDatatype = SPARQLConstants.STRING_TYPE;
+ 
+         if (leftDatatype.equals(SPARQLConstants.DOUBLE_TYPE)
+                 || rightDatatype.equals(SPARQLConstants.DOUBLE_TYPE)) {
+@@ -67,8 +72,14 @@
+             return new Literal[] { promoteFloat(leftLiteral),
+                     promoteFloat(rightLiteral) };
+         }
+-        return new Literal[] { promoteDecimal(leftLiteral),
+-                promoteDecimal(rightLiteral) };
++
++        if (leftDatatype.equals(SPARQLConstants.DECIMAL_TYPE)
++                || rightDatatype.equals(SPARQLConstants.DECIMAL_TYPE)) {
++            return new Literal[] { promoteDecimal(leftLiteral),
++                    promoteDecimal(rightLiteral) };
++        }
++        return new Literal[] { promoteInteger(leftLiteral),
++                promoteInteger(rightLiteral) };
+ 
+     }
+ 
+@@ -83,7 +94,7 @@
          try {
              result = Double.valueOf(numeral.getLabel());
          } catch (NumberFormatException e) {
@@ -1102,7 +1512,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
          }
          return this.factory.createLiteral(result.toString(), SPARQLConstants.DOUBLE_TYPE);
      }
-@@ -99,7 +99,7 @@
+@@ -99,7 +110,7 @@
          try {
              result = Float.valueOf(numeral.getLabel());
          } catch (NumberFormatException e) {
@@ -1111,15 +1521,38 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
          }
          return this.factory.createLiteral(result.toString(), SPARQLConstants.FLOAT_TYPE);
      }
-@@ -115,7 +115,7 @@
+@@ -111,12 +122,28 @@
+      * @return a xsd:double literal with the passed in literals value
+      */
+     private Literal promoteDecimal(Literal numeral) {
+-        Long result;
++        java.math.BigDecimal result;
          try {
-             result = Long.valueOf(numeral.getLabel());
+-            result = Long.valueOf(numeral.getLabel());
++            result = new java.math.BigDecimal(numeral.getLabel());
          } catch (NumberFormatException e) {
 -            throw new TypeError("Cannot promote non-numeral to a decimal value");
-+            throw new TypeError("Cannot promote non-numeral (" + numeral.getLabel() + "^^" + numeral.getDatatype() + ") to a decimal value");
++            throw new TypeError("Cannot promote " + numeral.getLabel() + " to a decimal value");
          }
          return this.factory.createLiteral(result.toString(), SPARQLConstants.DECIMAL_TYPE);
      }
++	 
++    /**
++     * Promotes a literal to an integer datatype, reparsing the label.
++     * 
++     * @param numeral the literal to promote to a decimal datatype
++     * @return a xsd:double literal with the passed in literals value
++     */
++    private Literal promoteInteger(Literal numeral) {
++        java.math.BigInteger result;
++        try {
++            result = new java.math.BigInteger(numeral.getLabel());
++        } catch (NumberFormatException e) {
++            throw new TypeError("Cannot promote non-numeral (" + numeral.getLabel() + "^^" + numeral.getDatatype() + ") to an integer value");
++        }
++        return this.factory.createLiteral(result.toString(), SPARQLConstants.INTEGER_TYPE);
++    }
+ }
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/logic/DefaultOrderExpressionLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/DefaultOrderExpressionLogic.java
 --- upstream/src/main/name/levering/ryan/sparql/logic/DefaultOrderExpressionLogic.java	2006-08-20 20:01:01.000000000 -0400
 +++ work-copy/src/main/name/levering/ryan/sparql/logic/DefaultOrderExpressionLogic.java	2008-04-27 11:18:16.000000000 -0400
@@ -1260,9 +1693,136 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
          return results;
      }
  
+diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/logic/DefaultValueConversionLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/DefaultValueConversionLogic.java
+--- upstream/src/main/name/levering/ryan/sparql/logic/DefaultValueConversionLogic.java	2007-10-07 07:19:19.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/logic/DefaultValueConversionLogic.java	2008-05-03 18:51:54.000000000 -0400
+@@ -57,14 +57,19 @@
+             if (datatype.equals(SPARQLConstants.DOUBLE_TYPE)) {
+                 return new Double(convertDouble(literal));
+             }
+-            if (datatype.equals(SPARQLConstants.INTEGER_TYPE)) {
+-                return new Integer(convertInteger(literal));
+-            }
+             if (datatype.equals(SPARQLConstants.FLOAT_TYPE)) {
+                 return new Float(convertFloat(literal));
+             }
+             if (datatype.equals(SPARQLConstants.DECIMAL_TYPE)) {
+-                return new Long(convertDecimal(literal));
++					return convertDecimal(literal);
++				 }
++				 if (datatype.equals(SPARQLConstants.INTEGER_TYPE)
++					|| datatype.equals(SPARQLConstants.NONPOSITIVEINTEGER_TYPE) || datatype.equals(SPARQLConstants.NEGATIVEINTEGER_TYPE) || datatype.equals(SPARQLConstants.NONNEGATIVEINTEGER_TYPE) || datatype.equals(SPARQLConstants.POSITIVEINTEGER_TYPE)
++					|| datatype.equals(SPARQLConstants.LONG_TYPE)
++					|| datatype.equals(SPARQLConstants.UNSIGNEDLONG_TYPE)
++             || datatype.equals(SPARQLConstants.INT_TYPE) || datatype.equals(SPARQLConstants.SHORT_TYPE) || datatype.equals(SPARQLConstants.BYTE_TYPE)
++					|| datatype.equals(SPARQLConstants.UNSIGNEDINT_TYPE) || datatype.equals(SPARQLConstants.UNSIGNEDSHORT_TYPE) || datatype.equals(SPARQLConstants.UNSIGNEDBYTE_TYPE)) {
++                return convertInteger(literal);
+             }
+             if (datatype.equals(SPARQLConstants.BOOLEAN_TYPE)) {
+                 return new Boolean(convertBoolean(literal));
+@@ -76,7 +81,7 @@
+                 return convertString(literal);
+             }
+             throw new ConversionException(
+-                    "Literal can't be converted to primitive object");
++						"Literal can't be converted to primitive object: Unrecognized datatype: " + datatype);
+         } else {
+             return convertString(literal);
+         }
+@@ -95,14 +100,14 @@
+         if (o instanceof Double) {
+             return convertDouble(((Double) o).doubleValue());
+         }
+-        if (o instanceof Integer) {
+-            return convertInteger(((Integer) o).intValue());
++        if (o instanceof java.math.BigInteger) {
++            return convertInteger((java.math.BigInteger) o);
+         }
+         if (o instanceof Float) {
+             return convertFloat(((Float) o).floatValue());
+         }
+-        if (o instanceof Long) {
+-            return convertDecimal(((Long) o).longValue());
++        if (o instanceof java.math.BigDecimal) {
++            return convertDecimal((java.math.BigDecimal) o);
+         }
+         if (o instanceof Boolean) {
+             return convertBoolean(((Boolean) o).booleanValue());
+@@ -191,27 +196,27 @@
+     }
+ 
+     /**
+-     * Converts a double value to a xsd:integer type literal.
++     * Converts a java.math.BigInteger value to a xsd:integer type literal.
+      * 
+-     * @param value the int value to convert
++     * @param value the java.math.BigInteger value to convert
+      * @return a correctly formed xsd:integer literal
+      */
+-    public Literal convertInteger(int value) {
+-        return this.factory.createLiteral(Integer.toString(value),
++    public Literal convertInteger(java.math.BigInteger value) {
++        return this.factory.createLiteral(value.toString(),
+                 SPARQLConstants.INTEGER_TYPE);
+     }
+ 
+     /**
+-     * Converts a literal to a int value.
++     * Converts a literal to a java.math.BigInteger value.
+      * 
+      * @param literal the xsd:integer to convert
+-     * @return a int value equating to the literal value
++     * @return a java.math.BigInteger value equating to the literal value
+      * @throws ConversionException if the literal is of an incorrect type or is
+      *             unparseable
+      */
+-    public int convertInteger(Literal literal) {
++    public java.math.BigInteger convertInteger(Literal literal) {
+         try {
+-            return Integer.parseInt(literal.getLabel());
++            return new java.math.BigInteger(literal.getLabel());
+         } catch (NumberFormatException e) {
+             throw new ConversionException(
+                     "Could not parse literal label to int type");
+@@ -275,27 +280,27 @@
+     }
+ 
+     /**
+-     * Converts a long value to a xsd:decimal type literal.
++     * Converts a java.math.BigDecimal value to a xsd:decimal type literal.
+      * 
+-     * @param value the long value to convert
++     * @param value the java.math.BigDecimal value to convert
+      * @return a correctly formed xsd:decimal literal
+      */
+-    public Literal convertDecimal(long value) {
+-        return this.factory.createLiteral(Long.toString(value),
++    public Literal convertDecimal(java.math.BigDecimal value) {
++        return this.factory.createLiteral(value.toString(),
+                 SPARQLConstants.DECIMAL_TYPE);
+     }
+ 
+     /**
+-     * Converts a literal to a long value.
++     * Converts a literal to a java.math.BigDecimal value.
+      * 
+      * @param literal the xsd:decimal to convert
+-     * @return a long value equating to the literal value
++     * @return a java.math.BigDecimal value equating to the literal value
+      * @throws ConversionException if the literal is of an incorrect type or is
+      *             unparseable
+      */
+-    public long convertDecimal(Literal literal) {
++    public java.math.BigDecimal convertDecimal(Literal literal) {
+         try {
+-            return Long.parseLong(literal.getLabel());
++            return new java.math.BigDecimal(literal.getLabel());
+         } catch (NumberFormatException e) {
+             throw new ConversionException(
+                     "Could not parse literal label to long type");
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/logic/DefaultValueOrderingLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/DefaultValueOrderingLogic.java
 --- upstream/src/main/name/levering/ryan/sparql/logic/DefaultValueOrderingLogic.java	2007-10-07 07:19:19.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/logic/DefaultValueOrderingLogic.java	2008-04-27 11:02:32.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/logic/DefaultValueOrderingLogic.java	2008-05-03 19:44:55.000000000 -0400
 @@ -1,5 +1,10 @@
  package name.levering.ryan.sparql.logic;
  
@@ -1321,10 +1881,10 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
 +					return ((Double)v1).compareTo((Double)v2);
 +				if (v1 instanceof Float)
 +					return ((Float)v1).compareTo((Float)v2);
-+				if (v1 instanceof Long)
-+					return ((Long)v1).compareTo((Long)v2);
-+				if (v1 instanceof Integer)
-+					return ((Integer)v1).compareTo((Integer)v2);
++				if (v1 instanceof java.math.BigDecimal)
++					return ((java.math.BigDecimal)v1).compareTo((java.math.BigDecimal)v2);
++				if (v1 instanceof java.math.BigInteger)
++					return ((java.math.BigInteger)v1).compareTo((java.math.BigInteger)v2);
 +				if (v1 instanceof Boolean)
 +					return ((Boolean)v1).compareTo((Boolean)v2);
 +				if (v1 instanceof DateTime)
@@ -1393,9 +1953,34 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
 -    }
 -
 -}
+diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/logic/expression/AdditionLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/expression/AdditionLogic.java
+--- upstream/src/main/name/levering/ryan/sparql/logic/expression/AdditionLogic.java	2006-08-20 20:01:00.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/logic/expression/AdditionLogic.java	2008-05-03 18:39:10.000000000 -0400
+@@ -38,8 +38,8 @@
+      * @param num2 the second number to add
+      * @return the sum of the two numbers
+      */
+-    public int evaluateInteger(int num1, int num2) {
+-        return num1 + num2;
++    public java.math.BigInteger evaluateInteger(java.math.BigInteger num1, java.math.BigInteger num2) {
++        return num1.add(num2);
+     }
+ 
+     /**
+@@ -71,8 +71,8 @@
+      * @param num2 the second number to add
+      * @return the sum of the two numbers
+      */
+-    public long evaluateDecimal(long num1, long num2) {
+-        return num1 + num2;
++    public java.math.BigDecimal evaluateDecimal(java.math.BigDecimal num1, java.math.BigDecimal num2) {
++        return num1.add(num2);
+     }
+ 
+ }
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/logic/expression/BinaryLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/expression/BinaryLogic.java
 --- upstream/src/main/name/levering/ryan/sparql/logic/expression/BinaryLogic.java	2007-10-07 07:19:19.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/logic/expression/BinaryLogic.java	2008-02-09 15:00:10.000000000 -0500
++++ work-copy/src/main/name/levering/ryan/sparql/logic/expression/BinaryLogic.java	2008-05-03 17:13:37.000000000 -0400
 @@ -59,5 +59,20 @@
       * @return the result of evaluating the operation
       */
@@ -1417,77 +2002,838 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
 +	}
  
  }
+diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/logic/expression/DivisionLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/expression/DivisionLogic.java
+--- upstream/src/main/name/levering/ryan/sparql/logic/expression/DivisionLogic.java	2006-08-20 20:01:00.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/logic/expression/DivisionLogic.java	2008-05-03 18:38:04.000000000 -0400
+@@ -38,8 +38,8 @@
+      * @param num2 the second number to divide
+      * @return the result of division of the two numbers
+      */
+-    public int evaluateInteger(int num1, int num2) {
+-        return num1 / num2;
++    public java.math.BigInteger evaluateInteger(java.math.BigInteger num1, java.math.BigInteger num2) {
++        return num1.divide(num2);
+     }
+ 
+     /**
+@@ -71,8 +71,8 @@
+      * @param num2 the second number to divide
+      * @return the result of division of the two numbers
+      */
+-    public long evaluateDecimal(long num1, long num2) {
+-        return num1 / num2;
++    public java.math.BigDecimal evaluateDecimal(java.math.BigDecimal num1, java.math.BigDecimal num2) {
++        return num1.divide(num2);
+     }
+ 
+ }
+diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/logic/expression/EqualsLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/expression/EqualsLogic.java
+--- upstream/src/main/name/levering/ryan/sparql/logic/expression/EqualsLogic.java	2007-10-07 07:19:19.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/logic/expression/EqualsLogic.java	2008-05-03 18:33:10.000000000 -0400
+@@ -34,71 +34,9 @@
+         super(data, numLogic, converter);
+     }
+ 
+-    /**
+-     * Evaluates any integer comparison.
+-     * 
+-     * @param num1 the first number to compare
+-     * @param num2 the second number to compare
+-     * @return true if the two numbers are equal
+-     */
+-    public boolean evaluateInteger(int num1, int num2) {
+-        return num1 == num2;
+-    }
+-
+-    /**
+-     * Evaluates any float comparison.
+-     * 
+-     * @param num1 the first number to compare
+-     * @param num2 the second number to compare
+-     * @return true if the two numbers are equal
+-     */
+-    public boolean evaluateFloat(float num1, float num2) {
+-        return num1 == num2;
+-    }
+-
+-    /**
+-     * Evaluates any double comparison.
+-     * 
+-     * @param num1 the first number to compare
+-     * @param num2 the second number to compare
+-     * @return true if the two numbers are equal
+-     */
+-    public boolean evaluateDouble(double num1, double num2) {
+-        return num1 == num2;
+-    }
+-
+-    /**
+-     * Evaluates any long comparison.
+-     * 
+-     * @param num1 the first number to compare
+-     * @param num2 the second number to compare
+-     * @return true if the two numbers are equal
+-     */
+-    public boolean evaluateDecimal(long num1, long num2) {
+-        return num1 == num2;
+-    }
+-
+-    /**
+-     * Evaluates any date/time comparison.
+-     * 
+-     * @param cal1 the first date to compare
+-     * @param cal2 the second date to compare
+-     * @return true if the two date/times are equal
+-     */
+-    public boolean evaluateDate(DateTime cal1, DateTime cal2) {
+-        return cal1.compareTo(cal2) == 0;
+-    }
+-
+-    /**
+-     * Evaluates any String comparison.
+-     * 
+-     * @param string1 the first String to compare
+-     * @param string2 the second String to compare
+-     * @return true if the two Strings are equal
+-     */
+-    public boolean evaluateString(String string1, String string2) {
+-        return string1.equals(string2);
+-    }
++  	 protected boolean comparisonResult(int comparison) {
++		 return comparison == 0;
++	 }
+ 
+     /**
+      * Evaluates any non-overloaded Value comparison.
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/logic/expression/GreaterThanEqualsLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/expression/GreaterThanEqualsLogic.java
 --- upstream/src/main/name/levering/ryan/sparql/logic/expression/GreaterThanEqualsLogic.java	2007-10-07 07:19:19.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/logic/expression/GreaterThanEqualsLogic.java	2007-10-21 12:35:15.000000000 -0400
-@@ -96,11 +96,10 @@
-      * 
-      * @param string1 the first String to compare
-      * @param string2 the second String to compare
--     * @return never
--     * @throws UnsupportedOperationException always
-+     * @return true if the first string is greater than or equal to the second
-      */
-     public boolean evaluateString(String string1, String string2) {
--        throw new UnsupportedOperationException("Strings cannot be compared using a >= operation");
-+        return string1.compareTo(string2) >= 0;
++++ work-copy/src/main/name/levering/ryan/sparql/logic/expression/GreaterThanEqualsLogic.java	2008-05-03 18:32:59.000000000 -0400
+@@ -36,73 +36,10 @@
+         super(data, numLogic, converter);
      }
  
+-    /**
+-     * Evaluates any integer comparison.
+-     * 
+-     * @param num1 the first number to compare
+-     * @param num2 the second number to compare
+-     * @return true if the first number is greater than or equal to the second
+-     */
+-    public boolean evaluateInteger(int num1, int num2) {
+-        return num1 >= num2;
+-    }
+-
+-    /**
+-     * Evaluates any float comparison.
+-     * 
+-     * @param num1 the first number to compare
+-     * @param num2 the second number to compare
+-     * @return true if the first number is greater than or equal to the second
+-     */
+-    public boolean evaluateFloat(float num1, float num2) {
+-        return num1 >= num2;
+-    }
+-
+-    /**
+-     * Evaluates any double comparison.
+-     * 
+-     * @param num1 the first number to compare
+-     * @param num2 the second number to compare
+-     * @return true if the first number is greater than or equal to the second
+-     */
+-    public boolean evaluateDouble(double num1, double num2) {
+-        return num1 >= num2;
+-    }
+-
+-    /**
+-     * Evaluates any long comparison.
+-     * 
+-     * @param num1 the first number to compare
+-     * @param num2 the second number to compare
+-     * @return true if the first number is greater than or equal to the second
+-     */
+-    public boolean evaluateDecimal(long num1, long num2) {
+-        return num1 >= num2;
+-    }
+-
+-    /**
+-     * Evaluates any date comparison.
+-     * 
+-     * @param cal1 the first date to compare
+-     * @param cal2 the second date to compare
+-     * @return true if the first date is after or the same as the second
+-     */
+-    public boolean evaluateDate(DateTime cal1, DateTime cal2) {
+-        return cal1.compareTo(cal2) >= 0;
+-    }
+-
+-    /**
+-     * Evaluates any String comparison.
+-     * 
+-     * @param string1 the first String to compare
+-     * @param string2 the second String to compare
+-     * @return never
+-     * @throws UnsupportedOperationException always
+-     */
+-    public boolean evaluateString(String string1, String string2) {
+-        throw new UnsupportedOperationException("Strings cannot be compared using a >= operation");
+-    }
+-
++  	 protected boolean comparisonResult(int comparison) {
++		 return comparison >= 0;
++	 }
++	 
      /**
+      * Evaluates any non-overloaded Value comparison.
+      * 
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/logic/expression/GreaterThanLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/expression/GreaterThanLogic.java
 --- upstream/src/main/name/levering/ryan/sparql/logic/expression/GreaterThanLogic.java	2007-10-07 07:19:19.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/logic/expression/GreaterThanLogic.java	2007-10-21 12:35:15.000000000 -0400
-@@ -96,11 +96,10 @@
-      * 
-      * @param string1 the first String to compare
-      * @param string2 the second String to compare
--     * @return never
--     * @throws UnsupportedOperationException always
-+     * @return true if the first string is greater than the second
-      */
-     public boolean evaluateString(String string1, String string2) {
--        throw new UnsupportedOperationException("Strings cannot be compared using a > operation");
-+        return string1.compareTo(string2) > 0;
++++ work-copy/src/main/name/levering/ryan/sparql/logic/expression/GreaterThanLogic.java	2008-05-03 18:32:52.000000000 -0400
+@@ -36,72 +36,9 @@
+         super(data, numLogic, converter);
      }
  
+-    /**
+-     * Evaluates any integer comparison.
+-     * 
+-     * @param num1 the first number to compare
+-     * @param num2 the second number to compare
+-     * @return true if the first number is greater than the second
+-     */
+-    public boolean evaluateInteger(int num1, int num2) {
+-        return num1 > num2;
+-    }
+-
+-    /**
+-     * Evaluates any float comparison.
+-     * 
+-     * @param num1 the first number to compare
+-     * @param num2 the second number to compare
+-     * @return true if the first number is greater than the second
+-     */
+-    public boolean evaluateFloat(float num1, float num2) {
+-        return num1 > num2;
+-    }
+-
+-    /**
+-     * Evaluates any double comparison.
+-     * 
+-     * @param num1 the first number to compare
+-     * @param num2 the second number to compare
+-     * @return true if the first number is greater than the second
+-     */
+-    public boolean evaluateDouble(double num1, double num2) {
+-        return num1 > num2;
+-    }
+-
+-    /**
+-     * Evaluates any long comparison.
+-     * 
+-     * @param num1 the first number to compare
+-     * @param num2 the second number to compare
+-     * @return true if the first number is greater than the second
+-     */
+-    public boolean evaluateDecimal(long num1, long num2) {
+-        return num1 > num2;
+-    }
+-
+-    /**
+-     * Evaluates any date comparison.
+-     * 
+-     * @param cal1 the first date to compare
+-     * @param cal2 the second date to compare
+-     * @return true if the first date is after the second
+-     */
+-    public boolean evaluateDate(DateTime cal1, DateTime cal2) {
+-        return cal1.compareTo(cal2) > 0;
+-    }
+-
+-    /**
+-     * Evaluates any String comparison.
+-     * 
+-     * @param string1 the first String to compare
+-     * @param string2 the second String to compare
+-     * @return never
+-     * @throws UnsupportedOperationException always
+-     */
+-    public boolean evaluateString(String string1, String string2) {
+-        throw new UnsupportedOperationException("Strings cannot be compared using a > operation");
+-    }
++	 protected boolean comparisonResult(int comparison) {
++		 return comparison > 0;
++	 }
+ 
      /**
+      * Evaluates any non-overloaded Value comparison.
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/logic/expression/LessThanEqualsLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/expression/LessThanEqualsLogic.java
 --- upstream/src/main/name/levering/ryan/sparql/logic/expression/LessThanEqualsLogic.java	2007-10-07 07:19:19.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/logic/expression/LessThanEqualsLogic.java	2007-10-21 12:35:15.000000000 -0400
-@@ -96,11 +96,10 @@
-      * 
-      * @param string1 the first String to compare
-      * @param string2 the second String to compare
++++ work-copy/src/main/name/levering/ryan/sparql/logic/expression/LessThanEqualsLogic.java	2008-05-03 18:33:26.000000000 -0400
+@@ -36,72 +36,9 @@
+         super(data, numLogic, converter);
+     }
+ 
+-    /**
+-     * Evaluates any integer comparison.
+-     * 
+-     * @param num1 the first number to compare
+-     * @param num2 the second number to compare
+-     * @return true if the first number is less than or equal to the second
+-     */
+-    public boolean evaluateInteger(int num1, int num2) {
+-        return num1 <= num2;
+-    }
+-
+-    /**
+-     * Evaluates any float comparison.
+-     * 
+-     * @param num1 the first number to compare
+-     * @param num2 the second number to compare
+-     * @return true if the first number is less than or equal to the second
+-     */
+-    public boolean evaluateFloat(float num1, float num2) {
+-        return num1 <= num2;
+-    }
+-
+-    /**
+-     * Evaluates any double comparison.
+-     * 
+-     * @param num1 the first number to compare
+-     * @param num2 the second number to compare
+-     * @return true if the first number is less than or equal to the second
+-     */
+-    public boolean evaluateDouble(double num1, double num2) {
+-        return num1 <= num2;
+-    }
+-
+-    /**
+-     * Evaluates any long comparison.
+-     * 
+-     * @param num1 the first number to compare
+-     * @param num2 the second number to compare
+-     * @return true if the first number is less than or equal to the second
+-     */
+-    public boolean evaluateDecimal(long num1, long num2) {
+-        return num1 <= num2;
+-    }
+-
+-    /**
+-     * Evaluates any date comparison.
+-     * 
+-     * @param cal1 the first date to compare
+-     * @param cal2 the second date to compare
+-     * @return true if the first date is before or the same as the second
+-     */
+-    public boolean evaluateDate(DateTime cal1, DateTime cal2) {
+-        return cal1.compareTo(cal2) <= 0;
+-    }
+-
+-    /**
+-     * Evaluates any String comparison.
+-     * 
+-     * @param string1 the first String to compare
+-     * @param string2 the second String to compare
 -     * @return never
 -     * @throws UnsupportedOperationException always
-+     * @return true if the first string is less than or equal to the second
-      */
-     public boolean evaluateString(String string1, String string2) {
+-     */
+-    public boolean evaluateString(String string1, String string2) {
 -        throw new UnsupportedOperationException("Strings cannot be compared using a <= operation");
-+        return string1.compareTo(string2) <= 0;
+-    }
++	 protected boolean comparisonResult(int comparison) {
++		 return comparison <= 0;
++	 }
+ 
+     /**
+      * Evaluates any non-overloaded Value comparison.
+diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/logic/expression/LessThanLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/expression/LessThanLogic.java
+--- upstream/src/main/name/levering/ryan/sparql/logic/expression/LessThanLogic.java	2007-10-07 07:19:19.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/logic/expression/LessThanLogic.java	2008-05-03 18:33:36.000000000 -0400
+@@ -36,72 +36,10 @@
+         super(data, numLogic, converter);
+     }
+ 
+-    /**
+-     * Evaluates any integer comparison.
+-     * 
+-     * @param num1 the first number to compare
+-     * @param num2 the second number to compare
+-     * @return true if the first number is less than the second
+-     */
+-    public boolean evaluateInteger(int num1, int num2) {
+-        return num1 < num2;
+-    }
+-
+-    /**
+-     * Evaluates any float comparison.
+-     * 
+-     * @param num1 the first number to compare
+-     * @param num2 the second number to compare
+-     * @return true if the first number is less than the second
+-     */
+-    public boolean evaluateFloat(float num1, float num2) {
+-        return num1 < num2;
+-    }
+-
+-    /**
+-     * Evaluates any double comparison.
+-     * 
+-     * @param num1 the first number to compare
+-     * @param num2 the second number to compare
+-     * @return true if the first number is less than the second
+-     */
+-    public boolean evaluateDouble(double num1, double num2) {
+-        return num1 < num2;
+-    }
+-
+-    /**
+-     * Evaluates any long comparison.
+-     * 
+-     * @param num1 the first number to compare
+-     * @param num2 the second number to compare
+-     * @return true if the first number is less than the second
+-     */
+-    public boolean evaluateDecimal(long num1, long num2) {
+-        return num1 < num2;
+-    }
++	 protected boolean comparisonResult(int comparison) {
++		 return comparison < 0;
++	 }
+ 
+-    /**
+-     * Evaluates any date comparison.
+-     * 
+-     * @param cal1 the first date to compare
+-     * @param cal2 the second date to compare
+-     * @return true if the first date is before the second
+-     */
+-    public boolean evaluateDate(DateTime cal1, DateTime cal2) {
+-        return cal1.compareTo(cal2) < 0;
+-    }
+-
+-    /**
+-     * Evaluates any String comparison.
+-     * 
+-     * @param string1 the first String to compare
+-     * @param string2 the second String to compare
+-     * @return never
+-     * @throws UnsupportedOperationException always
+-     */
+-    public boolean evaluateString(String string1, String string2) {
+-        throw new UnsupportedOperationException("Fix this");
+-    }
+     
+     /**
+      * Evaluates any non-overloaded Value comparison.
+diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/logic/expression/MinusLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/expression/MinusLogic.java
+--- upstream/src/main/name/levering/ryan/sparql/logic/expression/MinusLogic.java	2006-08-20 20:01:00.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/logic/expression/MinusLogic.java	2008-05-03 18:36:51.000000000 -0400
+@@ -34,8 +34,8 @@
+      * @param num the number to negate
+      * @return the negation of the number
+      */
+-    public long evaluateDecimal(long num) {
+-        return -num;
++    public java.math.BigDecimal evaluateDecimal(java.math.BigDecimal num) {
++        return num.negate();
      }
  
      /**
-diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/logic/expression/LessThanLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/expression/LessThanLogic.java
---- upstream/src/main/name/levering/ryan/sparql/logic/expression/LessThanLogic.java	2007-10-07 07:19:19.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/logic/expression/LessThanLogic.java	2007-10-21 12:35:15.000000000 -0400
-@@ -96,11 +96,10 @@
-      * 
-      * @param string1 the first String to compare
-      * @param string2 the second String to compare
--     * @return never
--     * @throws UnsupportedOperationException always
-+     * @return true if the first string is less than the second
+@@ -64,8 +64,8 @@
+      * @param num the number to negate
+      * @return the negation of the number
       */
-     public boolean evaluateString(String string1, String string2) {
--        throw new UnsupportedOperationException("Fix this");
-+        return string1.compareTo(string2) < 0;
+-    public int evaluateInteger(int num) {
+-        return -num;
++    public java.math.BigInteger evaluateInteger(java.math.BigInteger num) {
++        return num.negate();
      }
-     
+ 
+ }
+diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/logic/expression/MultiplicationLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/expression/MultiplicationLogic.java
+--- upstream/src/main/name/levering/ryan/sparql/logic/expression/MultiplicationLogic.java	2006-08-20 20:01:00.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/logic/expression/MultiplicationLogic.java	2008-05-03 18:38:13.000000000 -0400
+@@ -38,8 +38,8 @@
+      * @param num2 the second number to multiply
+      * @return the result of multiplication of the two numbers
+      */
+-    public int evaluateInteger(int num1, int num2) {
+-        return num1 * num2;
++    public java.math.BigInteger evaluateInteger(java.math.BigInteger num1, java.math.BigInteger num2) {
++        return num1.multiply(num2);
+     }
+ 
      /**
+@@ -71,8 +71,8 @@
+      * @param num2 the second number to multiply
+      * @return the result of multiplication of the two numbers
+      */
+-    public long evaluateDecimal(long num1, long num2) {
+-        return num1 * num2;
++    public java.math.BigDecimal evaluateDecimal(java.math.BigDecimal num1, java.math.BigDecimal num2) {
++        return num1.multiply(num2);
+     }
+ 
+ }
+diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/logic/expression/NotEqualsLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/expression/NotEqualsLogic.java
+--- upstream/src/main/name/levering/ryan/sparql/logic/expression/NotEqualsLogic.java	2007-10-07 07:19:19.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/logic/expression/NotEqualsLogic.java	2008-05-03 18:33:50.000000000 -0400
+@@ -36,71 +36,9 @@
+         super(data, numLogic, converter);
+     }
+ 
+-    /**
+-     * Evaluates any integer comparison.
+-     * 
+-     * @param num1 the first number to compare
+-     * @param num2 the second number to compare
+-     * @return true if the two numbers are not equal
+-     */
+-    public boolean evaluateInteger(int num1, int num2) {
+-        return num1 != num2;
+-    }
+-
+-    /**
+-     * Evaluates any float comparison.
+-     * 
+-     * @param num1 the first number to compare
+-     * @param num2 the second number to compare
+-     * @return true if the two numbers are not equal
+-     */
+-    public boolean evaluateFloat(float num1, float num2) {
+-        return num1 != num2;
+-    }
+-
+-    /**
+-     * Evaluates any double comparison.
+-     * 
+-     * @param num1 the first number to compare
+-     * @param num2 the second number to compare
+-     * @return true if the two numbers are not equal
+-     */
+-    public boolean evaluateDouble(double num1, double num2) {
+-        return num1 != num2;
+-    }
+-
+-    /**
+-     * Evaluates any long comparison.
+-     * 
+-     * @param num1 the first number to compare
+-     * @param num2 the second number to compare
+-     * @return true if the two numbers are not equal
+-     */
+-    public boolean evaluateDecimal(long num1, long num2) {
+-        return num1 != num2;
+-    }
+-
+-    /**
+-     * Evaluates any date/time comparison.
+-     * 
+-     * @param cal1 the first date to compare
+-     * @param cal2 the second date to compare
+-     * @return true if the two date/times are not equal
+-     */
+-    public boolean evaluateDate(DateTime cal1, DateTime cal2) {
+-        return cal1.compareTo(cal2) != 0;
+-    }
+-
+-    /**
+-     * Evaluates any String comparison.
+-     * 
+-     * @param string1 the first String to compare
+-     * @param string2 the second String to compare
+-     * @return true if the two Strings are not equal
+-     */
+-    public boolean evaluateString(String string1, String string2) {
+-        return !string1.equals(string2);
+-    }
++	 protected boolean comparisonResult(int comparison) {
++		 return comparison != 0;
++	 }
+ 
+     /**
+      * Evaluates any non-overloaded Value comparison.
+diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/logic/expression/NumericBinaryLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/expression/NumericBinaryLogic.java
+--- upstream/src/main/name/levering/ryan/sparql/logic/expression/NumericBinaryLogic.java	2007-10-07 07:19:19.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/logic/expression/NumericBinaryLogic.java	2008-05-03 18:19:57.000000000 -0400
+@@ -82,10 +82,10 @@
+             Object leftEvaluate = this.converter.convertLiteral(leftLiteral);
+             Object rightEvaluate = this.converter.convertLiteral(rightLiteral);
+ 
+-            if (leftEvaluate instanceof Long && rightEvaluate instanceof Long) {
+-                long result = evaluateDecimal(
+-                        ((Long) leftEvaluate).longValue(),
+-                        ((Long) rightEvaluate).longValue());
++            if (leftEvaluate instanceof java.math.BigDecimal && rightEvaluate instanceof java.math.BigDecimal) {
++                java.math.BigDecimal result = evaluateDecimal(
++                        (java.math.BigDecimal) leftEvaluate,
++                        (java.math.BigDecimal) rightEvaluate);
+                 return this.converter.convertDecimal(result);
+             } else if (leftEvaluate instanceof Double
+                     && rightEvaluate instanceof Double) {
+@@ -99,11 +99,11 @@
+                         ((Float) leftEvaluate).floatValue(),
+                         ((Float) rightEvaluate).floatValue());
+                 return this.converter.convertFloat(result);
+-            } else if (leftEvaluate instanceof Integer
+-                    && rightEvaluate instanceof Integer) {
+-                int result = evaluateInteger(
+-                        ((Integer) leftEvaluate).intValue(),
+-                        ((Integer) rightEvaluate).intValue());
++            } else if (leftEvaluate instanceof java.math.BigInteger
++                    && rightEvaluate instanceof java.math.BigInteger) {
++                java.math.BigInteger result = evaluateInteger(
++                        (java.math.BigInteger) leftEvaluate,
++                        (java.math.BigInteger) rightEvaluate);
+                 return this.converter.convertInteger(result);
+             }
+             throw new TypeError(
+@@ -120,7 +120,7 @@
+      * @param num2 the second numeric operand
+      * @return the result of the numeric binary operation
+      */
+-    public abstract int evaluateInteger(int num1, int num2);
++    public abstract java.math.BigInteger evaluateInteger(java.math.BigInteger num1, java.math.BigInteger num2);
+ 
+     /**
+      * Performs an float precision numeric operation.
+@@ -147,6 +147,6 @@
+      * @param num2 the second numeric operand
+      * @return the result of the numeric binary operation
+      */
+-    public abstract long evaluateDecimal(long num1, long num2);
++    public abstract java.math.BigDecimal evaluateDecimal(java.math.BigDecimal num1, java.math.BigDecimal num2);
+ 
+ }
+diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/logic/expression/NumericUnaryLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/expression/NumericUnaryLogic.java
+--- upstream/src/main/name/levering/ryan/sparql/logic/expression/NumericUnaryLogic.java	2007-10-07 07:19:19.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/logic/expression/NumericUnaryLogic.java	2008-05-03 18:17:47.000000000 -0400
+@@ -50,9 +50,9 @@
+     public Value evaluate(Value value) {
+         if (value instanceof Literal) {
+             Object evaluation = this.converter.convertLiteral((Literal) value);
+-            if (evaluation instanceof Integer) {
+-                int result = evaluateInteger(((Integer) evaluation).intValue());
+-                return this.converter.convertObject(new Integer(result));
++            if (evaluation instanceof java.math.BigInteger) {
++                java.math.BigInteger result = evaluateInteger((java.math.BigInteger) evaluation);
++                return this.converter.convertObject(result);
+             }
+             if (evaluation instanceof Float) {
+                 float result = evaluateFloat(((Float) evaluation).floatValue());
+@@ -62,9 +62,9 @@
+                 double result = evaluateDouble(((Double) evaluation).doubleValue());
+                 return this.converter.convertObject(new Double(result));
+             }
+-            if (evaluation instanceof Long) {
+-                long result = evaluateDecimal(((Long) evaluation).longValue());
+-                return this.converter.convertObject(new Long(result));
++            if (evaluation instanceof java.math.BigDecimal) {
++                java.math.BigDecimal result = evaluateDecimal((java.math.BigDecimal) evaluation);
++                return this.converter.convertObject(result);
+             }
+         }
+         throw new TypeError(
+@@ -77,7 +77,7 @@
+      * @param num the numeric operand
+      * @return the result of the numeric operation
+      */
+-    public abstract int evaluateInteger(int num);
++    public abstract java.math.BigInteger evaluateInteger(java.math.BigInteger num);
+ 
+     /**
+      * Performs a float precision numeric operation.
+@@ -101,6 +101,6 @@
+      * @param num the numeric operand
+      * @return the result of the numeric operation
+      */
+-    public abstract long evaluateDecimal(long num);
++    public abstract java.math.BigDecimal evaluateDecimal(java.math.BigDecimal num);
+ 
+ }
+diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/logic/expression/OrLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/expression/OrLogic.java
+--- upstream/src/main/name/levering/ryan/sparql/logic/expression/OrLogic.java	2007-10-07 07:19:19.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/logic/expression/OrLogic.java	2008-05-03 18:02:14.000000000 -0400
+@@ -46,14 +46,13 @@
+      */
+     public Value evaluate(RdfBindingRow bindings) {
+ 
+-        boolean caughtError = false;
+-
+         boolean leftEvaluate;
++		  RuntimeException leftException = null;
+         try {
+             Literal leftBool = this.boolLogic.forceBoolean(this.data.getLeftExpression().evaluate(bindings));
+             leftEvaluate = this.converter.convertBoolean(leftBool);
+-        } catch (TypeError e) {
+-            caughtError = true;
++        } catch (RuntimeException e) {
++            leftException = e;
+             leftEvaluate = false;
+         }
+ 
+@@ -61,10 +60,10 @@
+         try {
+             Literal rightBool = this.boolLogic.forceBoolean(this.data.getRightExpression().evaluate(bindings));
+             rightEvaluate = this.converter.convertBoolean(rightBool);
+-        } catch (TypeError e) {
+-            if (caughtError) {
++        } catch (RuntimeException e) {
++            if (leftException != null) {
+                 throw new TypeError(
+-                        "Both expressions of the disjunction produced type errors");
++						     "Both expressions of the disjunction produced type or cast errors: (left side) " + leftException + ", (right side) " + e);
+             }
+             rightEvaluate = false;
+         }
+diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/logic/expression/PlusLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/expression/PlusLogic.java
+--- upstream/src/main/name/levering/ryan/sparql/logic/expression/PlusLogic.java	2006-08-20 20:01:00.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/logic/expression/PlusLogic.java	2008-05-03 18:36:07.000000000 -0400
+@@ -35,7 +35,7 @@
+      * @param num the number to positivize
+      * @return the positivation of the number
+      */
+-    public long evaluateDecimal(long num) {
++    public java.math.BigDecimal evaluateDecimal(java.math.BigDecimal num) {
+         return num;
+     }
+ 
+@@ -65,7 +65,7 @@
+      * @param num the number to positivize
+      * @return the positivation of the number
+      */
+-    public int evaluateInteger(int num) {
++    public java.math.BigInteger evaluateInteger(java.math.BigInteger num) {
+         return num;
+     }
+ 
+diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/logic/expression/RelationalLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/expression/RelationalLogic.java
+--- upstream/src/main/name/levering/ryan/sparql/logic/expression/RelationalLogic.java	2007-10-07 07:19:19.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/logic/expression/RelationalLogic.java	2008-05-03 18:38:48.000000000 -0400
+@@ -30,6 +30,8 @@
+ 	private ValueConversionLogic converter;
+ 
+ 	private NumericPromotionLogic numLogic;
++	
++	
+ 
+ 	/**
+ 	 * Creates a new relational logic object with particular expression data to
+@@ -89,10 +91,10 @@
+ 							.doubleValue());
+ 				} else if (leftEvaluate instanceof Float && rightEvaluate instanceof Float) {
+ 					result = evaluateFloat(((Float) leftEvaluate).floatValue(), ((Float) rightEvaluate).floatValue());
+-				} else if (leftEvaluate instanceof Long && rightEvaluate instanceof Long) {
+-					result = evaluateDecimal(((Long) leftEvaluate).longValue(), ((Long) rightEvaluate).longValue());
+-				} else if (leftEvaluate instanceof Integer && rightEvaluate instanceof Integer) {
+-					result = evaluateInteger(((Integer) leftEvaluate).intValue(), ((Integer) rightEvaluate).intValue());
++				} else if (leftEvaluate instanceof java.math.BigDecimal && rightEvaluate instanceof java.math.BigDecimal) {
++					result = evaluateDecimal((java.math.BigDecimal) leftEvaluate, (java.math.BigDecimal) rightEvaluate);
++				} else if (leftEvaluate instanceof java.math.BigInteger && rightEvaluate instanceof java.math.BigInteger) {
++					result = evaluateInteger((java.math.BigInteger) leftEvaluate, (java.math.BigInteger) rightEvaluate);
+ 				} else if (leftEvaluate instanceof DateTime && rightEvaluate instanceof DateTime) {
+ 					result = evaluateDate((DateTime) leftEvaluate, (DateTime) rightEvaluate);
+ 				} else if (leftEvaluate instanceof String && rightEvaluate instanceof String) {
+@@ -129,7 +131,9 @@
+ 	 * @param num2 the right value to compare
+ 	 * @return true if the underlying implementation evaluates the expression to be true
+ 	 */
+-	public abstract boolean evaluateInteger(int num1, int num2);
++	 public boolean evaluateInteger(java.math.BigInteger num1, java.math.BigInteger num2) {
++		 return comparisonResult(num1.compareTo(num2));
++	 }
+ 
+ 	/**
+ 	 * Template method delegation to subclass relational logic implementation.
+@@ -138,7 +142,9 @@
+ 	 * @param num2 the right value to compare
+ 	 * @return true if the underlying implementation evaluates the expression to be true
+ 	 */
+-	public abstract boolean evaluateFloat(float num1, float num2);
++	 public boolean evaluateFloat(float num1, float num2) {
++		 return comparisonResult(Float.compare(num1, num2));
++	 }
+ 
+ 	/**
+ 	 * Template method delegation to subclass relational logic implementation.
+@@ -147,7 +153,9 @@
+ 	 * @param num2 the right value to compare
+ 	 * @return true if the underlying implementation evaluates the expression to be true
+ 	 */
+-	public abstract boolean evaluateDouble(double num1, double num2);
++	 public boolean evaluateDouble(double num1, double num2) {
++		 return comparisonResult(Double.compare(num1, num2));
++	 }
+ 
+ 	/**
+ 	 * Template method delegation to subclass relational logic implementation.
+@@ -156,7 +164,9 @@
+ 	 * @param num2 the right value to compare
+ 	 * @return true if the underlying implementation evaluates the expression to be true
+ 	 */
+-	public abstract boolean evaluateDecimal(long num1, long num2);
++	 public boolean evaluateDecimal(java.math.BigDecimal num1, java.math.BigDecimal num2) {
++		 return comparisonResult(num1.compareTo(num2));
++	 }
+ 
+ 	/**
+ 	 * Template method delegation to subclass relational logic implementation.
+@@ -165,7 +175,9 @@
+ 	 * @param cal2 the right value to compare
+ 	 * @return true if the underlying implementation evaluates the expression to be true
+ 	 */
+-	public abstract boolean evaluateDate(DateTime cal1, DateTime cal2);
++	 public boolean evaluateDate(DateTime cal1, DateTime cal2) {
++		 return comparisonResult(cal1.compareTo(cal2));
++	 }
+ 
+ 	/**
+ 	 * Template method delegation to subclass relational logic implementation.
+@@ -174,7 +186,9 @@
+ 	 * @param string2 the right value to compare
+ 	 * @return true if the underlying implementation evaluates the expression to be true
+ 	 */
+-	public abstract boolean evaluateString(String string1, String string2);
++	 public boolean evaluateString(String string1, String string2) {
++		 return comparisonResult(string1.compareTo(string2));
++	 }
+ 
+ 	/**
+ 	 * Template method delegation to subclass relational logic implementation.
+@@ -184,5 +198,7 @@
+ 	 * @return true if the underlying implementation evaluates the expression to be true
+ 	 */
+ 	public abstract boolean evaluateValue(Value value1, Value value2);
++	
++	protected abstract boolean comparisonResult(int comparison);
+ 
+ }
+diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/logic/expression/SubtractionLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/expression/SubtractionLogic.java
+--- upstream/src/main/name/levering/ryan/sparql/logic/expression/SubtractionLogic.java	2006-08-20 20:01:00.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/logic/expression/SubtractionLogic.java	2008-05-03 18:38:28.000000000 -0400
+@@ -38,8 +38,8 @@
+      * @param num2 the second number to subtract
+      * @return the difference of the two numbers
+      */
+-    public int evaluateInteger(int num1, int num2) {
+-        return num1 - num2;
++    public java.math.BigInteger evaluateInteger(java.math.BigInteger num1, java.math.BigInteger num2) {
++        return num1.subtract(num2);
+     }
+ 
+     /**
+@@ -71,8 +71,8 @@
+      * @param num2 the second number to subtract
+      * @return the difference of the two numbers
+      */
+-    public long evaluateDecimal(long num1, long num2) {
+-        return num1 - num2;
++    public java.math.BigDecimal evaluateDecimal(java.math.BigDecimal num1, java.math.BigDecimal num2) {
++        return num1.subtract(num2);
+     }
+ 
+ }
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/logic/expression/UnaryLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/expression/UnaryLogic.java
 --- upstream/src/main/name/levering/ryan/sparql/logic/expression/UnaryLogic.java	2007-10-07 07:19:19.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/logic/expression/UnaryLogic.java	2008-02-07 16:45:39.000000000 -0500
++++ work-copy/src/main/name/levering/ryan/sparql/logic/expression/UnaryLogic.java	2008-05-03 17:13:33.000000000 -0400
 @@ -56,4 +56,8 @@
       * @return the result of evaluating the operation
       */
@@ -1651,7 +2997,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
      
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/logic/function/ExternalFunctionLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/function/ExternalFunctionLogic.java
 --- upstream/src/main/name/levering/ryan/sparql/logic/function/ExternalFunctionLogic.java	2007-10-07 07:19:19.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/logic/function/ExternalFunctionLogic.java	2007-10-21 12:35:15.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/logic/function/ExternalFunctionLogic.java	2008-05-03 17:46:24.000000000 -0400
 @@ -23,34 +23,29 @@
   * @author Ryan Levering
   * @version 1.1
@@ -1709,6 +3055,16 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
  
  	/**
  	 * Evaluates the function by evaluating the arguments and passing them to
+@@ -68,8 +63,7 @@
+ 			// Convert the return value to an evaluable Value
+ 			return this.factory.createValue(value);
+ 		} catch (ExternalFunctionException e) {
+-			// TODO Should be some exception?
+-			return null;
++			throw new RuntimeException("External function " + this.function + " threw an exception: " + e);
+ 		}
+ 
+ 	}
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/logic/function/FunctionLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/function/FunctionLogic.java
 --- upstream/src/main/name/levering/ryan/sparql/logic/function/FunctionLogic.java	1969-12-31 19:00:00.000000000 -0500
 +++ work-copy/src/main/name/levering/ryan/sparql/logic/function/FunctionLogic.java	2008-02-07 16:51:42.000000000 -0500
@@ -1942,8 +3298,16 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
  		Object value = expression.evaluate(bindings);
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/logic/function/LangLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/function/LangLogic.java
 --- upstream/src/main/name/levering/ryan/sparql/logic/function/LangLogic.java	2007-10-07 07:19:19.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/logic/function/LangLogic.java	2007-10-21 12:35:15.000000000 -0400
-@@ -20,30 +20,22 @@
++++ work-copy/src/main/name/levering/ryan/sparql/logic/function/LangLogic.java	2008-05-03 17:42:04.000000000 -0400
+@@ -11,6 +11,7 @@
+ import name.levering.ryan.sparql.model.data.CallExpressionData;
+ import name.levering.ryan.sparql.model.logic.ExpressionLogic;
+ import name.levering.ryan.sparql.model.logic.helper.ValueConversionLogic;
++import name.levering.ryan.sparql.logic.expression.TypeError;
+ 
+ /**
+  * The logic to evaluate the sop:lang SPARQL function, found in section 11.2.3.8
+@@ -20,30 +21,22 @@
   * @author Ryan Levering
   * @version 1.0
   */
@@ -1985,6 +3349,22 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
  
  	/**
  	 * Returns the language of a language tagged literal.
+@@ -53,8 +46,14 @@
+ 	 */
+ 	public Value evaluate(RdfBindingRow bindings) {
+ 		ExpressionLogic expression = (ExpressionLogic) this.data.getArguments().get(0);
+-		Literal literal = (Literal) expression.evaluate(bindings);
++		Value value = expression.evaluate(bindings);
++		if (!(value instanceof Literal))
++			throw new TypeError("The lang function only works on literals");
++
++		Literal literal = (Literal) value;
+ 		String result = literal.getLanguage();
++		if (result == null)
++			result = "";
+ 
+ 		return this.converter.convertString(result);
+ 	}
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/logic/function/LangMatchesLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/function/LangMatchesLogic.java
 --- upstream/src/main/name/levering/ryan/sparql/logic/function/LangMatchesLogic.java	2007-10-07 07:19:19.000000000 -0400
 +++ work-copy/src/main/name/levering/ryan/sparql/logic/function/LangMatchesLogic.java	2007-10-21 12:35:15.000000000 -0400
@@ -2320,161 +3700,6 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
  		return current;
  	}
  
-diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/logic/naive/DefaultGroupConstraintLogic.java~ work-copy/src/main/name/levering/ryan/sparql/logic/naive/DefaultGroupConstraintLogic.java~
---- upstream/src/main/name/levering/ryan/sparql/logic/naive/DefaultGroupConstraintLogic.java~	1969-12-31 19:00:00.000000000 -0500
-+++ work-copy/src/main/name/levering/ryan/sparql/logic/naive/DefaultGroupConstraintLogic.java~	2008-02-05 16:35:39.000000000 -0500
-@@ -0,0 +1,151 @@
-+/*
-+ * SPARQL Engine
-+ * Copyright (C) 2005 Ryan Levering, All rights reserved.
-+ * See LICENSE for full license information
-+ */
-+package name.levering.ryan.sparql.logic.naive;
-+
-+import java.util.Collection;
-+import java.util.Iterator;
-+import java.util.LinkedList;
-+import java.util.List;
-+import java.util.Map;
-+
-+import name.levering.ryan.sparql.common.RdfBindingSet;
-+import name.levering.ryan.sparql.common.RdfSource;
-+import name.levering.ryan.sparql.common.impl.RdfBindingSetImpl;
-+import name.levering.ryan.sparql.model.data.FilterConstraintData;
-+import name.levering.ryan.sparql.model.data.GraphConstraintData;
-+import name.levering.ryan.sparql.model.data.GroupConstraintData;
-+import name.levering.ryan.sparql.model.data.OptionalConstraintData;
-+import name.levering.ryan.sparql.model.logic.ConstraintLogic;
-+import name.levering.ryan.sparql.model.logic.helper.IntersectOrderLogic;
-+import name.levering.ryan.sparql.model.logic.helper.SetIntersectLogic;
-+
-+/**
-+ * This logic is the default logic for the main constraint that is used as an
-+ * aggregate of other constraints. TripleConstraints, UnionConstraints, and
-+ * GraphConstraints all are intersected with the running binding set. After
-+ * that, OptionalConstraints and FilterConstraints modify the set themselves.
-+ * 
-+ * @author Ryan Levering
-+ * @version 1.0
-+ */
-+public class DefaultGroupConstraintLogic implements ConstraintLogic {
-+
-+	/**
-+	 * The data that holds the constraints that this group constraint
-+	 * aggregates.
-+	 */
-+	private final GroupConstraintData data;
-+
-+	/**
-+	 * This logic that intersects the parts of the graph pattern.
-+	 */
-+	private final SetIntersectLogic logic;
-+
-+	/**
-+	 * This logic determines the order of set intersection to maximize variable
-+	 * intersection.
-+	 */
-+	private final IntersectOrderLogic orderLogic;
-+
-+	/**
-+	 * Creates a new default group logic, with the given subconstraints found in
-+	 * the data.
-+	 * 
-+	 * @param data the data holding the subconstraints to bind
-+	 */
-+	public DefaultGroupConstraintLogic(GroupConstraintData data, SetIntersectLogic logic, IntersectOrderLogic orderLogic) {
-+		this.data = data;
-+		this.logic = logic;
-+		this.orderLogic = orderLogic;
-+	}
-+
-+	/**
-+	 * Applies each subconstraint in turn, saving filter and optional
-+	 * constraints for last, as according to specification.
-+	 * 
-+	 * @param bindings the current running bindings, ignored here
-+	 * @param source the source to query RDF triples, passed on to
-+	 *            subconstraints
-+	 * @param defaultDatasets the datasets to query by default, passed on to
-+	 *            subconstraints
-+	 * @param namedDatasets the named datasets to query in an unbound graph
-+	 *            query, passed on to subconstraints
-+	 */
-+	public RdfBindingSet constrain(ConstraintLogic.CallParams p) {
-+		return this.constrain(p, true);
-+	}
-+
-+	private RdfBindingSet constrain(ConstraintLogic.CallParams p, boolean withFilter) {
-+
-+		List filterQueue = new LinkedList();
-+		List optionalQueue = new LinkedList();
-+		List graphQueue = new LinkedList();
-+
-+		ConstraintLogic.CallParams p2 = p.clone();
-+		p2.bindings = null;
-+
-+		RdfBindingSet current = null;
-+		// Constrain in order, unless we hit an optional, graph, or value filter
-+		// These things all kind of depend on the previous bindings
-+		// Graph probably shouldn't technically, but I think in this
-+		// implementation it does
-+		for (Iterator cons = this.data.getConstraints().iterator(); cons.hasNext();) {
-+			ConstraintLogic c = (ConstraintLogic) cons.next();
-+			if (c instanceof OptionalConstraintData) {
-+				optionalQueue.add(c);
-+			} else if (c instanceof FilterConstraintData) {
-+				filterQueue.add(c);
-+			} else if (c instanceof GraphConstraintData) {
-+				graphQueue.add(c);
-+			} else {
-+				this.orderLogic.addBindingSet(c.constrain(p2));
-+			}
-+
-+		}
-+		current = this.orderLogic.removeIntersectedSet();
-+
-+		// This scoped graphing isn't required by the spec, but it's allowed
-+		for (Iterator graphs = graphQueue.iterator(); graphs.hasNext();) {
-+			ConstraintLogic c = (ConstraintLogic) graphs.next();
-+			p2.bindings = current;
-+			
-+			// we would have to do more to pass these down reliably/usefully
-+			p2.offset = 0;
-+			p2.limit = -1;
-+			p2.distinguishedVariables = null;
-+			p2.orderExpressions = null;
-+				
-+			if (current == null) {
-+				current = c.constrain(p2);
-+			} else {
-+				current = this.logic.intersect(current, c.constrain(p2));
-+			}
-+		}
-+
-+		// At this point, we don't have any constraints so just bring the whole
-+		// set in
-+		if (current == null) {
-+			current = RdfBindingSetImpl.EMPTY_SET;
-+		}
-+
-+		for (Iterator optionals = optionalQueue.iterator(); optionals.hasNext();) {
-+			ConstraintLogic c = (ConstraintLogic) optionals.next();
-+			p2.bindings = current;
-+			// note that we pass down the limit
-+			current = c.constrain(p2);
-+		}
-+		for (Iterator filters = filterQueue.iterator(); filters.hasNext();) {
-+			ConstraintLogic c = (ConstraintLogic) filters.next();
-+			p2.bindings = current;
-+			current = c.constrain(p2);
-+		}
-+		
-+		current = p.projectOrderDistinctLimit(current);
-+		
-+		return current;
-+	}
-+
-+}
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/logic/naive/DefaultOptionalConstraintLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/naive/DefaultOptionalConstraintLogic.java
 --- upstream/src/main/name/levering/ryan/sparql/logic/naive/DefaultOptionalConstraintLogic.java	2006-08-20 20:01:01.000000000 -0400
 +++ work-copy/src/main/name/levering/ryan/sparql/logic/naive/DefaultOptionalConstraintLogic.java	2008-02-09 15:26:55.000000000 -0500
@@ -2781,147 +4006,6 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
  		return current;
  	}
  
-diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/logic/naive/DefaultUnionConstraintLogic.java~ work-copy/src/main/name/levering/ryan/sparql/logic/naive/DefaultUnionConstraintLogic.java~
---- upstream/src/main/name/levering/ryan/sparql/logic/naive/DefaultUnionConstraintLogic.java~	1969-12-31 19:00:00.000000000 -0500
-+++ work-copy/src/main/name/levering/ryan/sparql/logic/naive/DefaultUnionConstraintLogic.java~	2008-03-11 08:04:14.000000000 -0400
-@@ -0,0 +1,137 @@
-+/*
-+ * SPARQL Engine
-+ * Copyright (C) 2005 Ryan Levering, All rights reserved.
-+ * See LICENSE for full license information
-+ */
-+package name.levering.ryan.sparql.logic.naive;
-+
-+import java.util.Collection;
-+import java.util.Iterator;
-+import java.util.Map;
-+
-+import name.levering.ryan.sparql.common.RdfBindingSet;
-+import name.levering.ryan.sparql.common.RdfSource;
-+import name.levering.ryan.sparql.common.impl.RdfBindingSetImpl;
-+import name.levering.ryan.sparql.model.GroupConstraint;
-+import name.levering.ryan.sparql.model.data.UnionConstraintData;
-+import name.levering.ryan.sparql.model.logic.ConstraintLogic;
-+import name.levering.ryan.sparql.model.logic.helper.SetUnionLogic;
-+
-+/**
-+ * This constraint logic represents the UNION constraint logic found in the
-+ * SPARQL specification. The constraint essentially merges two or more binding
-+ * sets into one, forming null values where variables are not bound in certain
-+ * sets.
-+ * 
-+ * @author Ryan Levering
-+ * @version 1.0
-+ */
-+public class DefaultUnionConstraintLogic implements ConstraintLogic {
-+
-+	/**
-+	 * The data holding the collection of subconstraints.
-+	 */
-+	private final UnionConstraintData data;
-+
-+	/**
-+	 * The logic to use for the combinatory set union.
-+	 */
-+	private final SetUnionLogic logic;
-+
-+	/**
-+	 * Creates a new logic object that forms the union of several value binding
-+	 * sets.
-+	 * 
-+	 * @param data the data to form a union with
-+	 * @param logic the logic to use for the combinatory set union
-+	 */
-+	public DefaultUnionConstraintLogic(UnionConstraintData data, SetUnionLogic logic) {
-+		this.data = data;
-+		this.logic = logic;
-+	}
-+
-+	/**
-+	 * Iterates over the collection of binding sets returned by the group
-+	 * constraints and forms the aggregate union of all of them.
-+	 * 
-+	 * @param bindings the current bindings, not used in this constraint
-+	 * @param source the RDF triple source, passed onto the sub constraints
-+	 * @param defaultDatasets the default graphs to query, passed on to the sub
-+	 *            constraints
-+	 * @param namedDatasets the named graphs to query, passed on to the sub
-+	 *            constraints
-+	 * @return a set containing the union of all the bound values of all the sub
-+	 *         constraints
-+	 */
-+	public RdfBindingSet constrain(ConstraintLogic.CallParams p) {
-+		RdfBindingSet current = null;
-+		
-+		// Because of DISTINCT, we can't quite know how
-+		// many rows to ask from each part to reach our limit.
-+		// So we do something adaptive.
-+		
-+		int lastCount = 0;
-+		int limitFactor = 1;
-+		while (limitFactor < 10000) {
-+			current = null;
-+			
-+			for (Iterator groupOrUnions = this.data.getConstraints().iterator(); groupOrUnions.hasNext();) {
-+				ConstraintLogic group = (ConstraintLogic) groupOrUnions.next();
-+				
-+				ConstraintLogic.CallParams p2 = p.clone();
-+				
-+				if (current == null) {
-+					// If an offset is specified for the global results, I'm not
-+					// sure how to pass down the limit, especially if the results
-+					// are ordered.
-+					if (p.offset != 0) {
-+						// TODO
-+						p2.offset = 0;
-+						p2.limit = -1;
-+					} else {
-+						p2.limit *= limitFactor;
-+					}
-+					
-+					current = group.constrain(p2);
-+				} else {
-+					// If a limit is provided, subtract from the limit the number
-+					// of rows found already, and if we don't need any more, stop.
-+					if (p.offset == 0 && p.limit >= 0) {
-+						p2.limit = p.limit - current.size();
-+						
-+						if (p2.limit <= 0)
-+							break;
-+						
-+						// But because of DISTINCT, it might be that none of the rows
-+						// we get are new. So, we multiple our request by the limitFactor
-+						// which increases adaptively.
-+						p2.limit *= limitFactor;
-+						
-+					} else if (p.offset != 0) {
-+						// TODO
-+						p2.offset = 0;
-+						p2.limit = -1;
-+					}
-+
-+					current = this.logic.union(current, group.constrain(p2));
-+				}
-+			}
-+	
-+			current = p.projectOrderDistinctLimit(current);
-+			
-+			// When we've reached our limit, or if there is no limit,
-+			// or if we didn't get any more bindings than with the last
-+			// adaptive limit, we're done.
-+			if (p.limit == -1 || current.size() >= p.limit || current.size() == lastCount)
-+				break;
-+			
-+			lastCount = current.size();
-+			
-+			// Increase the factor to get more results next time.
-+			limitFactor *= 3;
-+		}
-+		
-+		return current;
-+	}
-+
-+}
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/logic/naive/NaiveSetJoinLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/naive/NaiveSetJoinLogic.java
 --- upstream/src/main/name/levering/ryan/sparql/logic/naive/NaiveSetJoinLogic.java	2007-10-07 07:19:19.000000000 -0400
 +++ work-copy/src/main/name/levering/ryan/sparql/logic/naive/NaiveSetJoinLogic.java	2007-10-21 12:35:15.000000000 -0400
@@ -3679,7 +4763,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
  
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/logic/streamed/StreamedFilterConstraintLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/streamed/StreamedFilterConstraintLogic.java
 --- upstream/src/main/name/levering/ryan/sparql/logic/streamed/StreamedFilterConstraintLogic.java	2007-10-07 07:19:19.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/logic/streamed/StreamedFilterConstraintLogic.java	2008-02-09 15:22:14.000000000 -0500
++++ work-copy/src/main/name/levering/ryan/sparql/logic/streamed/StreamedFilterConstraintLogic.java	2008-05-03 18:03:15.000000000 -0400
 @@ -10,6 +10,7 @@
  import java.util.Iterator;
  import java.util.LinkedList;
@@ -3700,7 +4784,17 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
  	}
  
  	private class FilterBindingSet extends AbstractRdfBindingSet implements StackedRdfBindingSet {
-@@ -155,16 +155,4 @@
+@@ -139,6 +139,9 @@
+ 						}
+ 					} catch (TypeError e) {
+ 						// Ignore and don't return
++					} catch (RuntimeException e) {
++						// Ignore and don't return
++						// This could come from wrapping the exception thrown by an external function, including cast functions
+ 					}
+ 				}
+ 				return null;
+@@ -155,16 +158,4 @@
  
  
  	}
@@ -4558,7 +5652,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
  }
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/model/logic/ExpressionLogic.java work-copy/src/main/name/levering/ryan/sparql/model/logic/ExpressionLogic.java
 --- upstream/src/main/name/levering/ryan/sparql/model/logic/ExpressionLogic.java	2007-10-07 07:19:17.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/model/logic/ExpressionLogic.java	2008-02-07 16:44:35.000000000 -0500
++++ work-copy/src/main/name/levering/ryan/sparql/model/logic/ExpressionLogic.java	2008-05-03 17:39:06.000000000 -0400
 @@ -5,6 +5,8 @@
   */
  package name.levering.ryan.sparql.model.logic;
@@ -4579,6 +5673,66 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
 +    public Set getVariables();
  }
 \ No newline at end of file
+diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/model/logic/helper/ValueConversionLogic.java work-copy/src/main/name/levering/ryan/sparql/model/logic/helper/ValueConversionLogic.java
+--- upstream/src/main/name/levering/ryan/sparql/model/logic/helper/ValueConversionLogic.java	2007-10-07 07:19:17.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/model/logic/helper/ValueConversionLogic.java	2008-05-03 18:12:05.000000000 -0400
+@@ -95,22 +95,22 @@
+     public Literal convertDouble(double value);
+ 
+     /**
+-     * Converts a xsd:integer literal to a int primitive value.
++     * Converts a xsd:integer literal to a java.math.BigInteger value.
+      * 
+      * @param literal a literal of xsd:integer datatype
+-     * @return a int value representing the value in the literal
++     * @return a java.math.BigInteger value representing the value in the literal
+      * @throws ConversionException if the literal isn't a integer
+      */
+-    public int convertInteger(Literal literal);
++    public java.math.BigInteger convertInteger(Literal literal);
+ 
+     /**
+-     * Converts a int primitive value to an xsd:integer literal.
++     * Converts a java.math.BigInteger value to an xsd:integer literal.
+      * 
+-     * @param value the int value to convert to a literal
++     * @param value the java.math.BigInteger value to convert to a literal
+      * @return a literal of type xsd:integer representing the value of the
+      *         primitive
+      */
+-    public Literal convertInteger(int value);
++    public Literal convertInteger(java.math.BigInteger value);
+ 
+     /**
+      * Converts a xsd:dateTime literal to a DateTime primitive value.
+@@ -149,21 +149,21 @@
+     public Literal convertFloat(float value);
+ 
+     /**
+-     * Converts a xsd:decimal literal to a long primitive value.
++     * Converts a xsd:decimal literal to a java.math.BigDecimal value.
+      * 
+      * @param literal a literal of xsd:decimal datatype
+-     * @return a long value representing the value in the literal
++     * @return a java.math.BigDecimal value representing the value in the literal
+      * @throws ConversionException if the literal isn't a decimal
+      */
+-    public long convertDecimal(Literal literal);
++    public java.math.BigDecimal convertDecimal(Literal literal);
+ 
+     /**
+-     * Converts a long primitive value to an xsd:decimal literal.
++     * Converts a java.math.BigDecimal value to an xsd:decimal literal.
+      * 
+-     * @param value the long value to convert to a literal
++     * @param value the java.math.BigDecimal value to convert to a literal
+      * @return a literal of type xsd:decimal representing the value of the
+      *         primitive
+      */
+-    public Literal convertDecimal(long value);
++    public Literal convertDecimal(java.math.BigDecimal value);
+ 
+ }
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/model/logic/LogicFactory.java work-copy/src/main/name/levering/ryan/sparql/model/logic/LogicFactory.java
 --- upstream/src/main/name/levering/ryan/sparql/model/logic/LogicFactory.java	2007-10-07 07:19:17.000000000 -0400
 +++ work-copy/src/main/name/levering/ryan/sparql/model/logic/LogicFactory.java	2008-02-09 10:19:02.000000000 -0500
@@ -5492,7 +6646,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
  }
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/parser/model/SPARQLParserTreeConstants.java work-copy/src/main/name/levering/ryan/sparql/parser/model/SPARQLParserTreeConstants.java
 --- upstream/src/main/name/levering/ryan/sparql/parser/model/SPARQLParserTreeConstants.java	2007-10-07 07:19:57.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/parser/model/SPARQLParserTreeConstants.java	2008-04-27 11:26:28.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/parser/model/SPARQLParserTreeConstants.java	2008-05-03 19:44:59.000000000 -0400
 @@ -1,141 +1,139 @@
 -/* Generated By:JJTree: Do not edit this line. C:/workspaces/sparql/SPARQL Engine Trunk/src/main/name/levering/ryan/sparql/parser/model\SPARQLParserTreeConstants.java */
 -
@@ -5942,7 +7096,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
  }
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/parser/SPARQLParserConstants.java work-copy/src/main/name/levering/ryan/sparql/parser/SPARQLParserConstants.java
 --- upstream/src/main/name/levering/ryan/sparql/parser/SPARQLParserConstants.java	2007-10-07 07:19:57.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/parser/SPARQLParserConstants.java	2008-04-27 11:26:29.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/parser/SPARQLParserConstants.java	2008-05-03 19:45:00.000000000 -0400
 @@ -1,139 +1,136 @@
 -/* Generated By:JJTree&JavaCC: Do not edit this line. SPARQLParserConstants.java */
 -package name.levering.ryan.sparql.parser;
@@ -6221,8 +7375,8 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
 +}
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/parser/SPARQLParser.java work-copy/src/main/name/levering/ryan/sparql/parser/SPARQLParser.java
 --- upstream/src/main/name/levering/ryan/sparql/parser/SPARQLParser.java	2007-10-07 07:19:39.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/parser/SPARQLParser.java	2008-04-27 11:26:29.000000000 -0400
-@@ -1,4422 +1,3182 @@
++++ work-copy/src/main/name/levering/ryan/sparql/parser/SPARQLParser.java	2008-05-03 19:45:00.000000000 -0400
+@@ -1,4422 +1,3217 @@
 -/* Generated By:JJTree&JavaCC: Do not edit this line. SPARQLParser.java */
 -package name.levering.ryan.sparql.parser;
 -
@@ -11273,6 +12427,17 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
 +        case 50:
 +        case 51:
 +        case 61:
++        case 80:
++        case 81:
++        case 82:
++        case 83:
++        case 84:
++        case 85:
++        case 86:
++        case 87:
++        case 88:
++        case 89:
++        case 90:
 +          ;
 +          break;
 +        default:
@@ -11373,11 +12538,35 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
 +    case VAR1:
 +    case VAR2:
 +    case 61:
++    case 80:
++    case 81:
++    case 82:
++    case 83:
++    case 84:
++    case 85:
++    case 86:
++    case 87:
++    case 88:
++    case 89:
++    case 90:
 +                      ASTDefaultOrder jjtn003 = new ASTDefaultOrder(JJTDEFAULTORDER);
 +                      boolean jjtc003 = true;
 +                      jjtree.openNodeScope(jjtn003);
 +      try {
 +        switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
++        case 80:
++        case 81:
++        case 82:
++        case 83:
++        case 84:
++        case 85:
++        case 86:
++        case 87:
++        case 88:
++        case 89:
++        case 90:
++          BuiltInCall();
++          break;
 +        case IRI_REF:
 +        case PNAME_NS:
 +        case QNAME:
@@ -13672,7 +14861,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
 +      jj_la1_1 = new int[] {0x1c40,0x10,0x20,0x180,0x180,0x0,0x200,0x2000,0x2000,0x0,0x200,0x2000,0x408000,0x2000,0x4000,0x8000,0x10000,0x300000,0x200000,0x100000,0x300000,0x200c0000,0xc0000,0x20000000,0x200c0000,0x1000000,0x6400000,0x20000000,0x1000000,0x10000000,0x1000000,0x20000000,0x6400000,0x8000000,0x20000000,0x40000000,0x20000000,0x20000000,0x1000000,0x20000000,0x0,0x20000000,0x0,0x0,0x40000000,0x0,0x20000000,0x20000000,0x20000000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x200,0x200,0x20000000,0x20000000,0x0,0x40000000,0x20000000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,};
 +   }
 +   private static void jj_la1_2() {
-+      jj_la1_2 = new int[] {0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x30000034,0x0,0x0,0x0,0x30000034,0x0,0x0,0x7ff0000,0x0,0x37ff8030,0x0,0x0,0x30000034,0x2,0x30000034,0x2,0x1,0x0,0x2,0x4,0x30000034,0x30000034,0x30000030,0x0,0x0,0x30000030,0x40,0x80,0x3f00,0x3f00,0x30,0x30,0x4000,0x4000,0x37ff8030,0x37ff0000,0x7ff0000,0x0,0x0,0x0,0x8000000,0x8000000,0x0,0x0,0x30000000,0x0,0x0,0x0,};
++      jj_la1_2 = new int[] {0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x7ff0000,0x0,0x7ff0000,0x7ff0000,0x0,0x0,0x30000034,0x0,0x0,0x0,0x30000034,0x0,0x0,0x7ff0000,0x0,0x37ff8030,0x0,0x0,0x30000034,0x2,0x30000034,0x2,0x1,0x0,0x2,0x4,0x30000034,0x30000034,0x30000030,0x0,0x0,0x30000030,0x40,0x80,0x3f00,0x3f00,0x30,0x30,0x4000,0x4000,0x37ff8030,0x37ff0000,0x7ff0000,0x0,0x0,0x0,0x8000000,0x8000000,0x0,0x0,0x30000000,0x0,0x0,0x0,};
 +   }
 +
 +  public SPARQLParser(java.io.InputStream stream) {
@@ -13826,7 +15015,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/mai
 +}
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF upstream/src/main/name/levering/ryan/sparql/parser/SPARQLParserTokenManager.java work-copy/src/main/name/levering/ryan/sparql/parser/SPARQLParserTokenManager.java
 --- upstream/src/main/name/levering/ryan/sparql/parser/SPARQLParserTokenManager.java	2007-10-07 07:19:57.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/parser/SPARQLParserTokenManager.java	2008-04-27 11:26:29.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/parser/SPARQLParserTokenManager.java	2008-05-03 19:45:00.000000000 -0400
 @@ -1,3660 +1,3997 @@
 -/* Generated By:JJTree&JavaCC: Do not edit this line. SPARQLParserTokenManager.java */
 -package name.levering.ryan.sparql.parser;
