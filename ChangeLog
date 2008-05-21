@@ -24,6 +24,8 @@
 	* SPARQL: Moved MIME-type handling into SparqlEngine and added
 	  support for text/plain (ASK) and text/csv (SELECT) queries.
 	* SemWeb.Query.VariableBindings now implements IComparable.
+	* Resource: In the .NET 1.1 build, changed the CompareTo public
+	  method to take an argument of type Resource instead of object.
 	* Makefile: Include SPARQL build files in the release package,
 	  added SemWeb.SQLServerStore.dll to clean target.
 	* Various changes to make the Silverlight build work.

@@ -69,21 +69,17 @@ namespace SemWeb {
 			extraKeys.Add(k);
 		}
 
-#if DOTNET2
 		int IComparable.CompareTo(object other) {
 			return CompareTo((Resource)other);
 		}
 		public int CompareTo(Resource other) {
-#else
-		public int CompareTo(object other) {
-#endif
 			// We'll make an ordering over resources.
 			// First named entities, then bnodes, then literals.
 			// Named entities are sorted by URI.
 			// Bnodes by hashcode.
 			// Literals by their value, language, datatype.
 		
-			Resource r = (Resource)other;
+			Resource r = other;
 			if (Uri != null && r.Uri == null) return -1;
 			if (Uri == null && r.Uri != null) return 1;
 			if (this is BNode && r is Literal) return -1;
