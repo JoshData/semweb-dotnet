@@ -238,7 +238,11 @@ namespace SemWeb.Query {
 		#endif
 	}
 	
-	public class VariableBindings {
+	public class VariableBindings : IComparable
+	#if DOTNET2
+	, IComparable<VariableBindings>
+	#endif
+	{
 		Variable[] vars;
 		Resource[] vals;
 
@@ -295,6 +299,25 @@ namespace SemWeb.Query {
 				ret += vars[i] + "=>" + vals[i] + "; ";
 			}
 			return ret;
+		}
+		
+		int IComparable.CompareTo(object other) {
+			return CompareTo((VariableBindings)other);
+		}
+		public int CompareTo(VariableBindings other) {
+			for (int i = 0; i < vars.Length; i++) {
+				Resource a = vals[i];
+				Resource b = other.vals[i];
+				if (a == null && b == null)
+					continue;
+				if (a == null)
+					return -1;
+				if (b == null)
+					return 1;
+				int c = a.CompareTo(b);
+				if (c != 0) return c;
+			}
+			return 0;			
 		}
 	}
 }
