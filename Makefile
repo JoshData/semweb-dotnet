@@ -1,4 +1,4 @@
-VERSION=1.05
+VERSION=1.06
     # don't forget to update src/AssemblyInfo.cs!!
 
 ########################
@@ -147,10 +147,13 @@ apidocxml: Makefile
 package: all
 	rm -rf package-workspace
 	mkdir -p package-workspace/semweb-$(VERSION)
-	cp -R bin bin_generics bin_silverlight src tools apidocs doc \
+	cp -R bin bin_generics bin_silverlight src tools apidocs apidocxml doc \
 		ChangeLog Makefile README.txt semweb.mds semweb.sln \
-		sparql/README.txt sparql/Makefile sparql/local-changes.diff \
 		package-workspace/semweb-$(VERSION)
+	mkdir package-workspace/semweb-$(VERSION)/sparql
+	cp -R \
+		sparql/README.txt sparql/Makefile sparql/local-changes.diff \
+		package-workspace/semweb-$(VERSION)/sparql
 	mkdir package-workspace/semweb-$(VERSION)/examples
 	cp examples/*.cs examples/Makefile examples/README.txt examples/getsomedata.sh \
 		package-workspace/semweb-$(VERSION)/examples
@@ -158,7 +161,7 @@ package: all
 		--exclude .svn \
 		semweb-$(VERSION)
 	rm -f packages/semweb.zip
-	cd package-workspace/semweb-$(VERSION); cp -R ../../apidocxml monodoc; zip -r -q ../../packages/semweb.zip * -x "*.svn*"
+	cd package-workspace/semweb-$(VERSION); zip -r -q ../../packages/semweb.zip * -x "*.svn*"
 	rm -rf package-workspace
 	
 deploy: package
