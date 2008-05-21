@@ -21,6 +21,8 @@
 	  were used in a query, the query would fail.
 	* SqliteStore: Fix table and index creation to work with Sqlite2.
 	* MySQLStore: Implement ToString().
+	* SPARQL: Moved MIME-type handling into SparqlEngine and added
+	  support for text/plain (ASK) and text/csv (SELECT) queries.
 	* Makefile: Include SPARQL build files in the release package,
 	  added SemWeb.SQLServerStore.dll to clean target.
 	* Various changes to make the Silverlight build work.

@@ -118,8 +118,10 @@ namespace SemWeb.Query {
 				}
 			}
 			set {
-				if ((query is AskQuery || query is SelectQuery) && value != SparqlXmlQuerySink.MimeType)
-					throw new NotSupportedException("That MIME type is not supported for ASK or SELECT queries.");
+				if (query is AskQuery && value != SparqlXmlQuerySink.MimeType && value != "text/xml" && value != "text/plain")
+					throw new NotSupportedException("That MIME type is not supported for ASK queries.");
+				if (query is SelectQuery && value != SparqlXmlQuerySink.MimeType && value != "text/xml" && value != "text/html" && value != "text/csv")
+					throw new NotSupportedException("That MIME type is not supported for SPARQL queries.");
 				
 				if (query is ConstructQuery || query is DescribeQuery) {
 					// this throws if we don't recognize the type
@@ -169,17 +171,22 @@ namespace SemWeb.Query {
 		
 		public void Ask(SelectableSource source, TextWriter output) {
 			bool result = Ask(source);
-			System.Xml.XmlTextWriter w = new System.Xml.XmlTextWriter(output);
-			w.Formatting = System.Xml.Formatting.Indented;
-			w.WriteStartElement("sparql");
-			w.WriteAttributeString("xmlns", "http://www.w3.org/2001/sw/DataAccess/rf1/result");
-			w.WriteStartElement("head");
-			w.WriteEndElement();
-			w.WriteStartElement("boolean");
-			w.WriteString(result ? "true" : "false");
-			w.WriteEndElement();
-			w.WriteEndElement();
-			w.Flush();
+			if (MimeType == SparqlXmlQuerySink.MimeType || MimeType == "text/xml") {
+				System.Xml.XmlTextWriter w = new System.Xml.XmlTextWriter(output);
+				w.Formatting = System.Xml.Formatting.Indented;
+				w.WriteStartElement("sparql");
+				w.WriteAttributeString("xmlns", "http://www.w3.org/2001/sw/DataAccess/rf1/result");
+				w.WriteStartElement("head");
+				w.WriteEndElement();
+				w.WriteStartElement("boolean");
+				w.WriteString(result ? "true" : "false");
+				w.WriteEndElement();
+				w.WriteEndElement();
+				w.Flush();
+			} else if (MimeType == "text/plain") {
+				output.WriteLine(result ? "true" : "false");
+			} else {
+			}
 		}
 	
 		public void Construct(SelectableSource source, StatementSink sink) {
@@ -254,7 +261,16 @@ namespace SemWeb.Query {
 		}
 
 		public void Select(SelectableSource source, TextWriter output) {
-			Select(source, new SparqlXmlQuerySink(output));
+			QueryResultSink sink;
+			if (MimeType == SparqlXmlQuerySink.MimeType || MimeType == "text/xml")
+				sink = new SparqlXmlQuerySink(output);
+			else if (MimeType == "text/html")
+				sink = new HTMLQuerySink(output);
+			else if (MimeType == "text/csv")
+				sink = new CSVQuerySink(output);
+			else
+				throw new InvalidOperationException("MIME type not supported.");
+			Select(source, sink);
 		}
 
 		public void Select(SelectableSource source, QueryResultSink sink) {
@@ -781,6 +797,7 @@ namespace SemWeb.Query {
 					return r.GetHashCode();
 			}
 			public object getNative() { return r; }
+			public override string toString() { return r.ToString(); }
 		}
 	
 		class URIWrapper : java.lang.Object, name.levering.ryan.sparql.common.URI {
@@ -822,6 +839,7 @@ namespace SemWeb.Query {
 						: literal.getDatatype().getURI());
 			}
 			public object getNative() { return r; }
+			public override string toString() { return r.ToString(); }
 		}
 		
 		class ExtFuncWrapper : name.levering.ryan.sparql.logic.function.ExternalFunctionFactory, name.levering.ryan.sparql.logic.function.ExternalFunction {

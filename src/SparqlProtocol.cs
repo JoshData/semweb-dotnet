@@ -46,6 +46,9 @@ namespace SemWeb.Query {
 						}
 					}
 					
+					if (context.Request["outputMimeType"] != null)
+						sparql.MimeType = context.Request["outputMimeType"];
+					
 					TextWriter writer = new StreamWriter(buffer, System.Text.Encoding.UTF8);
 					RunQuery(sparql, source, writer);
 					writer.Flush();
@@ -117,51 +120,80 @@ namespace SemWeb.Query {
 		}
 		
 		protected virtual void RunQuery(Query query, SelectableSource source, TextWriter output) {
-			if (System.Web.HttpContext.Current != null
-				&& System.Web.HttpContext.Current.Request["outputMimeType"] != null
-				&& System.Web.HttpContext.Current.Request["outputMimeType"] == "text/html") {
-				query.Run(source, new HTMLQuerySink(output));
-				return;
-			}
-
 			query.Run(source, output);
 		}
+	}
 		
-		private class HTMLQuerySink : QueryResultSink {
-			TextWriter output;
-			
-			public HTMLQuerySink(TextWriter output) { this.output = output; }
+	internal class HTMLQuerySink : QueryResultSink {
+		TextWriter output;
+		
+		public HTMLQuerySink(TextWriter output) { this.output = output; }
 
-			public override void Init(Variable[] variables) {
-				output.WriteLine("<table>");
-				output.WriteLine("<tr>");
-				foreach (Variable var in variables) {
-					if (var.LocalName == null) continue;
-					output.WriteLine("<th>" + var.LocalName + "</th>");
-				}
-				output.WriteLine("</tr>");
+		public override void Init(Variable[] variables) {
+			output.WriteLine("<table>");
+			output.WriteLine("<tr>");
+			foreach (Variable var in variables) {
+				if (var.LocalName == null) continue;
+				output.WriteLine("<th>" + var.LocalName + "</th>");
 			}
-			
-			public override void Finished() {
-				output.WriteLine("</table>");
-			}
-			
-			public override bool Add(VariableBindings result) {
-				output.WriteLine("<tr>");
-				foreach (Variable var in result.Variables) {
-					if (var.LocalName == null) continue;
-					Resource varTarget = result[var];
-					string t = varTarget.ToString();
-					if (varTarget is Literal) t = ((Literal)varTarget).Value;
-					t = t.Replace("&", "&amp;");
-					t = t.Replace("<", "&lt;");
-					output.WriteLine("<td>" + t + "</td>");
-				}
-				output.WriteLine("</tr>");			
-				return true;
-			}
+			output.WriteLine("</tr>");
 		}
-
+		
+		public override void Finished() {
+			output.WriteLine("</table>");
+		}
+		
+		public override bool Add(VariableBindings result) {
+			output.WriteLine("<tr>");
+			foreach (Variable var in result.Variables) {
+				if (var.LocalName == null) continue;
+				Resource varTarget = result[var];
+				string t = varTarget.ToString();
+				if (varTarget is Literal) t = ((Literal)varTarget).Value;
+				t = t.Replace("&", "&amp;");
+				t = t.Replace("<", "&lt;");
+				output.WriteLine("<td>" + t + "</td>");
+			}
+			output.WriteLine("</tr>");			
+			return true;
+		}
 	}
 
+	internal class CSVQuerySink : QueryResultSink {
+		TextWriter output;
+		
+		private static readonly char[] reservedChars = new char[] { ',', '\n', '\r' };
+		
+		public CSVQuerySink(TextWriter output) { this.output = output; }
+
+		public override void Init(Variable[] variables) {
+			bool first = true;
+			foreach (Variable var in variables) {
+				if (var.LocalName == null) continue;
+				if (!first) output.Write(","); first = false;
+				output.Write(var.LocalName);
+			}
+			output.WriteLine();
+		}
+		
+		public override void Finished() {
+		}
+		
+		public override bool Add(VariableBindings result) {
+			bool first = true;
+			foreach (Variable var in result.Variables) {
+				if (var.LocalName == null) continue;
+				Resource varTarget = result[var];
+				string t = varTarget.ToString();
+				if (varTarget is Literal) t = ((Literal)varTarget).Value;
+				if (varTarget.Uri != null) t = varTarget.Uri;
+				if (t.IndexOfAny(reservedChars) >= 0 || t != t.Trim())
+					t = "\"" + t.Replace("\"", "\"\"") + "\"";
+				if (!first) output.Write(","); first = false;
+				output.Write(t);
+			}
+			output.WriteLine();			
+			return true;
+		}
+	}
 }
