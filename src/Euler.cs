@@ -238,9 +238,8 @@ namespace SemWeb.Inference {
 			public Hashtable env; // substitution environment: Resource => Resource
 			public ArrayList ground;
 			
-			public QueueItem Clone() {
-				return (QueueItem)MemberwiseClone();
-			}
+			public int liveChildren = 0;
+			public StatementList solutions;
 			
 			public override string ToString() {
 				string ret = "";
@@ -271,6 +270,8 @@ namespace SemWeb.Inference {
 			if (world != null) // cache our queries to the world, if a world is provided
 				world = new SemWeb.Stores.CachedSource(world);
 		
+			StatementMap cached_subproofs = new StatementMap();
+			
 			// Create the queue and add the first item.
 			ArrayList queue = new ArrayList();
 			{
@@ -341,15 +342,20 @@ namespace SemWeb.Inference {
 						r.rule = c.parent.rule;
 						r.src = c.parent.src;
 						r.ind = c.parent.ind;
-						r.parent = c.parent.parent != null
-							? c.parent.parent.Clone()
-							: null;
+						r.parent = c.parent.parent;
 						r.env = (Hashtable)c.parent.env.Clone();
 						r.ground = g;
 						unify(c.rule.head, c.env, r.rule.body[r.ind], r.env, true);
 						r.ind++;
 						queue.Add(r);
 						if (Debug) Console.Error.WriteLine("Euler: Queue Advancement: " + r);
+						
+						// The number of live children for this parent is decremented since we are
+						// done with this subproof, but we store the result for later.
+						if (c.parent.solutions == null)
+							c.parent.solutions = new StatementList();
+						c.parent.solutions.Add(evaluate(r.rule.body[r.ind-1], r.env));
+						decrementLife(c.parent, cached_subproofs);
 					}
 				
 				// this sequent still has parts of the body left to be proved; try to
@@ -415,6 +421,12 @@ namespace SemWeb.Inference {
 							r.ground = g;
 							r.ind++;
 							queue.Add(r);
+							
+							// Note: Since we are putting something back in for c, we don't touch the life counter on the parent.
+							
+						} else {
+							// If the predicate fails, decrement the life of the parent.
+							decrementLife(c.parent, cached_subproofs);
 						}
 						continue;
 					}
@@ -424,48 +436,64 @@ namespace SemWeb.Inference {
 
 					Statement t_resolved = evaluate(t, c.env);
 					
-					// If resolving this statement requires putting a
-					// literal in subject or predicate position, we
+					// If resolving this statement requires putting a literal in subject or predicate position, we
 					// can't prove it.
-					if (t_resolved == Statement.All)
+					if (t_resolved == Statement.All) {
+						decrementLife(c.parent, cached_subproofs);
 						continue;
+					}
 						
 					ArrayList tcases = new ArrayList();
 					
-					// get all of the rules that apply to the predicate in question
-					if (t_resolved.Predicate != null && cases.ContainsKey(t_resolved.Predicate))
-						tcases.AddRange((IList)cases[t_resolved.Predicate]);
-
-					/*if (cases.ContainsKey("WILDCARD")) // not supported yet -- infinite regress not handled
-						tcases.AddRange((IList)cases["WILDCARD"]);*/
-					
-					// if t has no unbound variables and we've matched something from
-					// the axioms, don't bother looking at the world, and don't bother
-					// proving it any other way than by the axiom.
-					bool lookAtWorld = true;
-					foreach (Sequent seq in tcases) {
-						if (seq.body.Length == 0 && seq.head == t_resolved) {
-							lookAtWorld = false;
-							tcases.Clear();
-							tcases.Add(seq);
-							break;
+					// See if we have already tried to prove this.
+					if (cached_subproofs.ContainsKey(t_resolved)) {
+						StatementList cached_solutions = (StatementList)cached_subproofs[t_resolved];
+						if (cached_solutions == null) {
+							if (Debug) Console.Error.WriteLine("Euler: Dropping queue item because we have already failed to prove it: " + t_resolved);
+						} else {
+							foreach (Statement s in cached_solutions) {
+								if (Debug) Console.Error.WriteLine("Euler: Using Cached Axiom:  " + s);
+								Sequent seq = new Sequent(s);
+								tcases.Add(seq);
+							}
+						}
+					} else {
+						// get all of the rules that apply to the predicate in question
+						if (t_resolved.Predicate != null && cases.ContainsKey(t_resolved.Predicate))
+							tcases.AddRange((IList)cases[t_resolved.Predicate]);
+	
+						if (cases.ContainsKey("WILDCARD"))
+							tcases.AddRange((IList)cases["WILDCARD"]);
+						
+						// if t has no unbound variables and we've matched something from
+						// the axioms, don't bother looking at the world, and don't bother
+						// proving it any other way than by the axiom.
+						bool lookAtWorld = true;
+						foreach (Sequent seq in tcases) {
+							if (seq.body.Length == 0 && seq.head == t_resolved) {
+								lookAtWorld = false;
+								tcases.Clear();
+								tcases.Add(seq);
+								break;
+							}
+						}
+	
+						// if there is a seprate world, get all of the world
+						// statements that witness t
+						if (world != null && lookAtWorld) {
+							MemoryStore w = new MemoryStore();
+						
+							if (Debug) Console.Error.WriteLine("Running " + c);
+							if (Debug) Console.Error.WriteLine("Euler: Ask World: " + t_resolved);
+							world.Select(t_resolved, w);
+							foreach (Statement s in w) {
+								if (Debug) Console.Error.WriteLine("Euler: World Select Response:  " + s);
+								Sequent seq = new Sequent(s);
+								tcases.Add(seq);
+							}
 						}
 					}
-
-					// if there is a seprate world, get all of the world
-					// statements that witness t
-					if (world != null && lookAtWorld) {
-						MemoryStore w = new MemoryStore();
 					
-						if (Debug) Console.WriteLine("Euler: Ask World: " + t_resolved);
-						world.Select(t_resolved, w);
-						foreach (Statement s in w) {
-							if (Debug) Console.WriteLine("Euler: World Select Response:  " + s);
-							Sequent seq = new Sequent(s);
-							tcases.Add(seq);
-						}
-					}
-
 					// If there is no evidence or potential evidence (i.e. rules)
 					// for t, then we will dump this QueueItem by not queuing any
 					// subproofs.
@@ -489,15 +517,33 @@ namespace SemWeb.Inference {
 						  		if (ep.src == c.src && unify(ep.rule.head, ep.env, c.rule.head, c.env, false))
 						  			break;
 						 	if (ep == null) {
-						 		queue.Insert(0, r);
+								// It is better for caching subproofs to work an entire proof out before
+								// going on, which means we want to put the new queue item at the
+								// top of the stack.
+						 		queue.Add(r);
+								c.liveChildren++;
 						 		if (Debug) Console.Error.WriteLine("Euler: Queue from Axiom: " + r);
 						 	}
 						}
 					}
+					
+					// If we did not add anything back into the queue for this item, then
+					// we decrement the life of the parent.
+					if (c.liveChildren == 0)
+						decrementLife(c.parent, cached_subproofs);
 				}
 			}
 			
 			return evidence;
+		}
+		
+		private static void decrementLife(QueueItem q, StatementMap cached_subproofs) {
+			q.liveChildren--;
+			if (q.liveChildren == 0) {
+				Statement t = evaluate(q.rule.body[q.ind], q.env);
+				cached_subproofs[t] = q.solutions;
+				if (Debug && q.solutions == null) Console.Error.WriteLine("Euler: Died: " + q);
+			}
 		}
 		
 		private static bool unify(Resource s, Hashtable senv, Resource d, Hashtable denv, bool f) {

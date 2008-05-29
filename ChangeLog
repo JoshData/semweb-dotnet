@@ -28,6 +28,11 @@
 	  so it can be called from elsewhere.
 	* Store: When multiple data sources are included in the Store,
 	  use GraphMatch.ReorderQuery to chunk the parts of the query better.
+	* Euler:
+	  - Allow rules to have variable predicates. I thought this lead
+	    to infinite recursion, but maybe it was just taking a long time.
+	    It seems to work at least in one test case.
+	  - Cache the results of subproofs, giving a huge speed boost.
 	* SQLStore: When Select(stmt)'ing with a statement with no null
 	  fields, the subject came back as a bnode. Patch from Peter
 	  Ansell-- thanks!

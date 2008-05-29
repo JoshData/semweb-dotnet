@@ -197,6 +197,17 @@ namespace SemWeb.Inference {
 					ret.Append(step.Substitutions[v]);
 					ret.Append("\n");
 				}
+				if (vars.Count > 0) {
+					foreach (Statement s in step.Rule.Consequent) {
+						Statement ss = s;
+						foreach (Variable v in vars)
+							ss = ss.Replace(v, (Resource)step.Substitutions[v]);
+						
+						ret.Append("\t\t=> ");
+						ret.Append(ss.ToString());
+						ret.Append("\n");
+					}
+				}
 			}
 			
 			return ret.ToString();
