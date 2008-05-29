@@ -13,7 +13,7 @@
 	    its operands as false.
 	  - The lang() function now throws a better error when it is called on a
 	    non-literal, and it returns the empty string, rather than raising an
-	    error, when called on an untyped literal.
+	    error, when called on a literal without a language tag.
 	  - Exceptions in cast functions and external functions now throw
 	    RuntimeExceptions which are expected to be caught, rather than
 	    silently being dropped.
@@ -23,7 +23,7 @@
 	* RdfXmlReader, N3Reader: Override Dispose so that the underlying
 	  streams are closed after the completion of a using block. (Reported
 	  by Mikhail Navernyuk.)
-	* GraphMatch: Reorder the statements of a query in a smart way to
+	* GraphMatch: Reorder the statements of a query in a smart way so
 	  queries are more efficient. Added public static ReorderQuery method
 	  so it can be called from elsewhere.
 	* Store: When multiple data sources are included in the Store,
