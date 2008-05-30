@@ -2,12 +2,16 @@
   <TypeSignature Language="C#" Value="public class TimeSpanCompareFilter : SemWeb.LiteralFilter" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
-    <AssemblyVersion>1.0.5.0</AssemblyVersion>
+    <AssemblyVersion>1.0.6.0</AssemblyVersion>
   </AssemblyInfo>
   <Base>
     <BaseTypeName>SemWeb.LiteralFilter</BaseTypeName>
   </Base>
   <Interfaces />
+  <Docs>
+    <summary>To be added.</summary>
+    <remarks>To be added.</remarks>
+  </Docs>
   <Members>
     <Member MemberName=".ctor">
       <MemberSignature Language="C#" Value="public TimeSpanCompareFilter (TimeSpan timespan, SemWeb.LiteralFilter.CompType type);" />
@@ -23,17 +27,6 @@
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
-    <Member MemberName="Value">
-      <MemberSignature Language="C#" Value="public readonly TimeSpan Value;" />
-      <MemberType>Field</MemberType>
-      <ReturnValue>
-        <ReturnType>System.TimeSpan</ReturnType>
-      </ReturnValue>
-      <Docs>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
-      </Docs>
-    </Member>
     <Member MemberName="Type">
       <MemberSignature Language="C#" Value="public readonly SemWeb.LiteralFilter.CompType Type;" />
       <MemberType>Field</MemberType>
@@ -45,9 +38,16 @@
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
+    <Member MemberName="Value">
+      <MemberSignature Language="C#" Value="public readonly TimeSpan Value;" />
+      <MemberType>Field</MemberType>
+      <ReturnValue>
+        <ReturnType>System.TimeSpan</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
   </Members>
-  <Docs>
-    <summary>To be added.</summary>
-    <remarks>To be added.</remarks>
-  </Docs>
 </Type>

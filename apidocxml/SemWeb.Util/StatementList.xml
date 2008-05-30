@@ -2,7 +2,7 @@
   <TypeSignature Language="C#" Value="public class StatementList : System.Collections.ICollection" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
-    <AssemblyVersion>1.0.5.0</AssemblyVersion>
+    <AssemblyVersion>1.0.6.0</AssemblyVersion>
   </AssemblyInfo>
   <Base>
     <BaseTypeName>System.Object</BaseTypeName>
@@ -17,6 +17,10 @@
       <AttributeName>System.Reflection.DefaultMember("Item")</AttributeName>
     </Attribute>
   </Attributes>
+  <Docs>
+    <summary>An expandable array of Statements; i.e. an ArrayList specialized for statements.</summary>
+    <remarks>This utility class is for manipulating an expandable array of <see cref="T:SemWeb.Statement" />s. Since the Statement type is a struct, and the .NET 1.1 build of this library does not use generics, this class is provided to avoid needing to box statements in ArrayLists.</remarks>
+  </Docs>
   <Members>
     <Member MemberName=".ctor">
       <MemberSignature Language="C#" Value="public StatementList ();" />
@@ -24,6 +28,18 @@
       <Parameters />
       <Docs>
         <summary>Creates a new empty array of statements.</summary>
+        <remarks>None.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public StatementList (SemWeb.Statement[] statements);" />
+      <MemberType>Constructor</MemberType>
+      <Parameters>
+        <Parameter Name="statements" Type="SemWeb.Statement[]" />
+      </Parameters>
+      <Docs>
+        <param name="statements">An array of statements.</param>
+        <summary>Creates a new StatementList and adds the statements in an array to the list.</summary>
         <remarks>None.</remarks>
       </Docs>
     </Member>
@@ -43,21 +59,6 @@
         <remarks>None.</remarks>
       </Docs>
     </Member>
-    <Member MemberName="Remove">
-      <MemberSignature Language="C#" Value="public void Remove (SemWeb.Statement s);" />
-      <MemberType>Method</MemberType>
-      <ReturnValue>
-        <ReturnType>System.Void</ReturnType>
-      </ReturnValue>
-      <Parameters>
-        <Parameter Name="s" Type="SemWeb.Statement" />
-      </Parameters>
-      <Docs>
-        <param name="s">The statement to remove.</param>
-        <summary>Removes a statement from the array.</summary>
-        <remarks>The statement is removed by linearly searching for it in the array.</remarks>
-      </Docs>
-    </Member>
     <Member MemberName="Clear">
       <MemberSignature Language="C#" Value="public virtual void Clear ();" />
       <MemberType>Method</MemberType>
@@ -69,62 +70,6 @@
         <summary>Clears the array.</summary>
         <remarks>None.</remarks>
       </Docs>
-    </Member>
-    <Member MemberName="RemoveAt">
-      <MemberSignature Language="C#" Value="public virtual void RemoveAt (int index);" />
-      <MemberType>Method</MemberType>
-      <ReturnValue>
-        <ReturnType>System.Void</ReturnType>
-      </ReturnValue>
-      <Parameters>
-        <Parameter Name="index" Type="System.Int32" />
-      </Parameters>
-      <Docs>
-        <param name="index">The zero-based index at which to remove a statement.</param>
-        <summary>Removes the statement at the given index.</summary>
-        <remarks>None.</remarks>
-      </Docs>
-    </Member>
-    <Member MemberName="Reverse">
-      <MemberSignature Language="C#" Value="public void Reverse ();" />
-      <MemberType>Method</MemberType>
-      <ReturnValue>
-        <ReturnType>System.Void</ReturnType>
-      </ReturnValue>
-      <Parameters />
-      <Docs>
-        <summary>Reverses the array.</summary>
-        <remarks>None.</remarks>
-      </Docs>
-    </Member>
-    <Member MemberName="ToArray">
-      <MemberSignature Language="C#" Value="public SemWeb.Statement[] ToArray ();" />
-      <MemberType>Method</MemberType>
-      <ReturnValue>
-        <ReturnType>SemWeb.Statement[]</ReturnType>
-      </ReturnValue>
-      <Parameters />
-      <Docs>
-        <summary>Returns an array containing all of the statements in the list.</summary>
-        <returns>An array of statements.</returns>
-        <remarks>None.</remarks>
-      </Docs>
-    </Member>
-    <Member MemberName="GetEnumerator">
-      <MemberSignature Language="C#" Value="public System.Collections.IEnumerator GetEnumerator ();" />
-      <MemberType>Method</MemberType>
-      <ReturnValue>
-        <ReturnType>System.Collections.IEnumerator</ReturnType>
-      </ReturnValue>
-      <Parameters />
-      <Docs>
-        <summary>Gets an enumerator over the statements in the array.</summary>
-        <returns>An enumerator over the statements in the array.</returns>
-        <remarks>None.</remarks>
-      </Docs>
-      <ImplementsInterfaceMethods>
-        <InterfaceImpl Type="System.Collections.IEnumerable" Member="GetEnumerator" cref="M:System.Collections.IEnumerable.GetEnumerator" />
-      </ImplementsInterfaceMethods>
     </Member>
     <Member MemberName="CopyTo">
       <MemberSignature Language="C#" Value="public void CopyTo (Array dest, int start);" />
@@ -161,19 +106,20 @@
         <InterfaceImpl Type="System.Collections.ICollection" Member="Count" cref="P:System.Collections.ICollection.Count" />
       </ImplementsInterfaceMethods>
     </Member>
-    <Member MemberName="SyncRoot">
-      <MemberSignature Language="C#" Value="public object SyncRoot { get; };" />
-      <MemberType>Property</MemberType>
+    <Member MemberName="GetEnumerator">
+      <MemberSignature Language="C#" Value="public System.Collections.IEnumerator GetEnumerator ();" />
+      <MemberType>Method</MemberType>
       <ReturnValue>
-        <ReturnType>System.Object</ReturnType>
+        <ReturnType>System.Collections.IEnumerator</ReturnType>
       </ReturnValue>
+      <Parameters />
       <Docs>
-        <summary>Returns null.</summary>
-        <value>Null.</value>
+        <summary>Gets an enumerator over the statements in the array.</summary>
+        <returns>An enumerator over the statements in the array.</returns>
         <remarks>None.</remarks>
       </Docs>
       <ImplementsInterfaceMethods>
-        <InterfaceImpl Type="System.Collections.ICollection" Member="SyncRoot" cref="P:System.Collections.ICollection.SyncRoot" />
+        <InterfaceImpl Type="System.Collections.IEnumerable" Member="GetEnumerator" cref="M:System.Collections.IEnumerable.GetEnumerator" />
       </ImplementsInterfaceMethods>
     </Member>
     <Member MemberName="IsSynchronized">
@@ -223,6 +169,48 @@
         <remarks>This just calls ToArray.</remarks>
       </Docs>
     </Member>
+    <Member MemberName="Remove">
+      <MemberSignature Language="C#" Value="public void Remove (SemWeb.Statement s);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="s" Type="SemWeb.Statement" />
+      </Parameters>
+      <Docs>
+        <param name="s">The statement to remove.</param>
+        <summary>Removes a statement from the array.</summary>
+        <remarks>The statement is removed by linearly searching for it in the array.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="RemoveAt">
+      <MemberSignature Language="C#" Value="public virtual void RemoveAt (int index);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="index" Type="System.Int32" />
+      </Parameters>
+      <Docs>
+        <param name="index">The zero-based index at which to remove a statement.</param>
+        <summary>Removes the statement at the given index.</summary>
+        <remarks>None.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Reverse">
+      <MemberSignature Language="C#" Value="public void Reverse ();" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters />
+      <Docs>
+        <summary>Reverses the array.</summary>
+        <remarks>None.</remarks>
+      </Docs>
+    </Member>
     <Member MemberName="Sort">
       <MemberSignature Language="C#" Value="public void Sort ();" />
       <MemberType>Method</MemberType>
@@ -235,21 +223,33 @@
         <remarks>The statements are sorted according to the sort order implemented in Statement's implementation of IComparable.</remarks>
       </Docs>
     </Member>
-    <Member MemberName=".ctor">
-      <MemberSignature Language="C#" Value="public StatementList (SemWeb.Statement[] statements);" />
-      <MemberType>Constructor</MemberType>
-      <Parameters>
-        <Parameter Name="statements" Type="SemWeb.Statement[]" />
-      </Parameters>
+    <Member MemberName="SyncRoot">
+      <MemberSignature Language="C#" Value="public object SyncRoot { get; };" />
+      <MemberType>Property</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Object</ReturnType>
+      </ReturnValue>
       <Docs>
-        <param name="statements">An array of statements.</param>
-        <summary>Creates a new StatementList and adds the statements in an array to the list.</summary>
+        <summary>Returns null.</summary>
+        <value>Null.</value>
+        <remarks>None.</remarks>
+      </Docs>
+      <ImplementsInterfaceMethods>
+        <InterfaceImpl Type="System.Collections.ICollection" Member="SyncRoot" cref="P:System.Collections.ICollection.SyncRoot" />
+      </ImplementsInterfaceMethods>
+    </Member>
+    <Member MemberName="ToArray">
+      <MemberSignature Language="C#" Value="public SemWeb.Statement[] ToArray ();" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>SemWeb.Statement[]</ReturnType>
+      </ReturnValue>
+      <Parameters />
+      <Docs>
+        <summary>Returns an array containing all of the statements in the list.</summary>
+        <returns>An array of statements.</returns>
         <remarks>None.</remarks>
       </Docs>
     </Member>
   </Members>
-  <Docs>
-    <summary>An expandable array of Statements; i.e. an ArrayList specialized for statements.</summary>
-    <remarks>This utility class is for manipulating an expandable array of <see cref="T:SemWeb.Statement" />s. Since the Statement type is a struct, and the .NET 1.1 build of this library does not use generics, this class is provided to avoid needing to box statements in ArrayLists.</remarks>
-  </Docs>
 </Type>

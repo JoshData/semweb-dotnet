@@ -2,12 +2,26 @@
   <TypeSignature Language="C#" Value="public class N3Reader : SemWeb.RdfReader" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
-    <AssemblyVersion>1.0.5.0</AssemblyVersion>
+    <AssemblyVersion>1.0.6.0</AssemblyVersion>
   </AssemblyInfo>
   <Base>
     <BaseTypeName>SemWeb.RdfReader</BaseTypeName>
   </Base>
   <Interfaces />
+  <Docs>
+    <summary>Reads RDF statements from a Notation 3 (N3, Turtle, or NTriples) stream.</summary>
+    <remarks>
+      <para>Most of the N3 specification is supported, including everything in NTriples and Turtle.  Statements are streamed as soon as they are read from the stream.</para>
+      <para>N3 formula notation with { and } is supported in the following way.  For every formula, an anonymous entity is created to represent that graph.  Every statement in the formula is imported with the <see cref="P:SemWeb.Statement.Meta" /> property set to the anonymous entity (unless it is recursively embedded in another formula, in which case it uses the innermost formula's anonymous entity).</para>
+      <example>
+        <para>The following example reads a N-Triples, Turtle, or N3 file from disk:</para>
+        <code lang="C#">using (RdfReader data = new N3Reader("filename.n3")) {
+    store.Import(data);
+}  </code>
+      </example>
+      <para>Once the document is fully read, all namespace declarations in the document are available in the <see cref="P:SemWeb.RdfReader.Namespaces" /> property and can be copied into the namespace manager of a <see cref="T:SemWeb.RdfWriter" /> using the <see cref="M:SemWeb.NamespaceManager.AddFrom(SemWeb.NamespaceManager)" /> method.</para>
+    </remarks>
+  </Docs>
   <Members>
     <Member MemberName=".ctor">
       <MemberSignature Language="C#" Value="public N3Reader (System.IO.TextReader source);" />
@@ -34,18 +48,4 @@
       </Docs>
     </Member>
   </Members>
-  <Docs>
-    <summary>Reads RDF statements from a Notation 3 (N3, Turtle, or NTriples) stream.</summary>
-    <remarks>
-      <para>Most of the N3 specification is supported, including everything in NTriples and Turtle.  Statements are streamed as soon as they are read from the stream.</para>
-      <para>N3 formula notation with { and } is supported in the following way.  For every formula, an anonymous entity is created to represent that graph.  Every statement in the formula is imported with the <see cref="P:SemWeb.Statement.Meta" /> property set to the anonymous entity (unless it is recursively embedded in another formula, in which case it uses the innermost formula's anonymous entity).</para>
-      <example>
-        <para>The following example reads a N-Triples, Turtle, or N3 file from disk:</para>
-        <code lang="C#">using (RdfReader data = new N3Reader("filename.n3")) {
-    store.Import(data);
-}  </code>
-      </example>
-      <para>Once the document is fully read, all namespace declarations in the document are available in the <see cref="P:SemWeb.RdfReader.Namespaces" /> property and can be copied into the namespace manager of a <see cref="T:SemWeb.RdfWriter" /> using the <see cref="M:SemWeb.NamespaceManager.AddFrom(SemWeb.NamespaceManager)" /> method.</para>
-    </remarks>
-  </Docs>
 </Type>

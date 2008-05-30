@@ -12,102 +12,6 @@
       <InterfaceName>System.Web.IHttpHandler</InterfaceName>
     </Interface>
   </Interfaces>
-  <Members>
-    <Member MemberName=".ctor">
-      <MemberSignature Language="C#" Value="public SparqlProtocolServerHandler ();" />
-      <MemberType>Constructor</MemberType>
-      <Parameters />
-      <Docs>
-        <summary>Creates a new SPARQL Protocol implementation class.</summary>
-        <remarks>This class does not listen on an HTTP port by itself.  It is meant to be embedded in an ASP.NET site.</remarks>
-      </Docs>
-    </Member>
-    <Member MemberName="MaximumLimit">
-      <MemberSignature Language="C#" Value="public int MaximumLimit;" />
-      <MemberType>Field</MemberType>
-      <ReturnValue>
-        <ReturnType>System.Int32</ReturnType>
-      </ReturnValue>
-      <Docs>
-        <summary>The maximum number of bindings to return for any query.</summary>
-        <remarks>Set to -1, the default, to have no limit.</remarks>
-      </Docs>
-    </Member>
-    <Member MemberName="ProcessRequest">
-      <MemberSignature Language="C#" Value="public virtual void ProcessRequest (System.Web.HttpContext context);" />
-      <MemberType>Method</MemberType>
-      <ReturnValue>
-        <ReturnType>System.Void</ReturnType>
-      </ReturnValue>
-      <Parameters>
-        <Parameter Name="context" Type="System.Web.HttpContext" />
-      </Parameters>
-      <Docs>
-        <param name="context">The request context.</param>
-        <summary>Processes an HTTP request from the ASP.NET subsystem.</summary>
-        <remarks>This method is not meant to be called from user code.</remarks>
-      </Docs>
-      <ImplementsInterfaceMethods>
-        <InterfaceImpl Type="System.Web.IHttpHandler" Member="ProcessRequest" cref="M:System.Web.IHttpHandler.ProcessRequest(System.Web.HttpContext)" />
-      </ImplementsInterfaceMethods>
-    </Member>
-    <Member MemberName="CreateQuery">
-      <MemberSignature Language="C#" Value="protected virtual SemWeb.Query.Query CreateQuery (string query);" />
-      <MemberType>Method</MemberType>
-      <ReturnValue>
-        <ReturnType>SemWeb.Query.Query</ReturnType>
-      </ReturnValue>
-      <Parameters>
-        <Parameter Name="query" Type="System.String" />
-      </Parameters>
-      <Docs>
-        <param name="query">The SPARQL query as a string.</param>
-        <summary>Constructs a Query object for a SPARQL query.</summary>
-        <returns>A Query object.</returns>
-        <remarks>The default implementation returns a new SPARQL query object based on the
-        query.  Override in subclasses to create a query in a different way, or to set
-        limits on the query.</remarks>
-      </Docs>
-    </Member>
-    <Member MemberName="RunQuery">
-      <MemberSignature Language="C#" Value="protected virtual void RunQuery (SemWeb.Query.Query query, SemWeb.SelectableSource source, System.IO.TextWriter output);" />
-      <MemberType>Method</MemberType>
-      <ReturnValue>
-        <ReturnType>System.Void</ReturnType>
-      </ReturnValue>
-      <Parameters>
-        <Parameter Name="query" Type="SemWeb.Query.Query" />
-        <Parameter Name="source" Type="SemWeb.SelectableSource" />
-        <Parameter Name="output" Type="System.IO.TextWriter" />
-      </Parameters>
-      <Docs>
-        <param name="query">The query to run.</param>
-        <param name="source">The data source to query against.</param>
-        <param name="output">The output stream.</param>
-        <summary>Runs a query.</summary>
-        <remarks>The default implementation runs the query on the data source and outputs the
-        results in the SPARQL XML Results specification format.  Override in subclasses to
-        output the results in a different way, to run the query differently, or to set
-        limits on the query or output.</remarks>
-      </Docs>
-    </Member>
-    <Member MemberName="GetDataSource">
-      <MemberSignature Language="C#" Value="protected virtual SemWeb.SelectableSource GetDataSource (out bool closeAfterQuery);" />
-      <MemberType>Method</MemberType>
-      <ReturnValue>
-        <ReturnType>SemWeb.SelectableSource</ReturnType>
-      </ReturnValue>
-      <Parameters>
-        <Parameter Name="closeAfterQuery" Type="System.Boolean&amp;" RefType="out" />
-      </Parameters>
-      <Docs>
-        <param name="closeAfterQuery">Set to true to indicate that the data source should be closed/disposed after the query is complete.</param>
-        <summary>Gets the data source to query.</summary>
-        <returns>A data source to query.</returns>
-        <remarks>None.</remarks>
-      </Docs>
-    </Member>
-  </Members>
   <Docs>
     <summary>Implements a SPARQL Protocol server for ASP.NET.</summary>
     <remarks>
@@ -182,4 +86,112 @@ LIMIT 10
       </example>
     </remarks>
   </Docs>
+  <Members>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public SparqlProtocolServerHandler ();" />
+      <MemberType>Constructor</MemberType>
+      <Parameters />
+      <Docs>
+        <summary>Creates a new SPARQL Protocol implementation class.</summary>
+        <remarks>This class does not listen on an HTTP port by itself.  It is meant to be embedded in an ASP.NET site.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="CreateQuery">
+      <MemberSignature Language="C#" Value="protected virtual SemWeb.Query.Query CreateQuery (string query);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>SemWeb.Query.Query</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="query" Type="System.String" />
+      </Parameters>
+      <Docs>
+        <param name="query">The SPARQL query as a string.</param>
+        <summary>Constructs a Query object for a SPARQL query.</summary>
+        <returns>A Query object.</returns>
+        <remarks>The default implementation returns a new SPARQL query object based on the
+        query.  Override in subclasses to create a query in a different way, or to set
+        limits on the query.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="GetDataSource">
+      <MemberSignature Language="C#" Value="protected virtual SemWeb.SelectableSource GetDataSource (out bool closeAfterQuery);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>SemWeb.SelectableSource</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="closeAfterQuery" Type="System.Boolean&amp;" RefType="out" />
+      </Parameters>
+      <Docs>
+        <param name="closeAfterQuery">Set to true to indicate that the data source should be closed/disposed after the query is complete.</param>
+        <summary>Gets the data source to query.</summary>
+        <returns>A data source to query.</returns>
+        <remarks>None.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="MaximumLimit">
+      <MemberSignature Language="C#" Value="public int MaximumLimit;" />
+      <MemberType>Field</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Int32</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>The maximum number of bindings to return for any query.</summary>
+        <remarks>Set to -1, the default, to have no limit.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="ProcessRequest">
+      <MemberSignature Language="C#" Value="public virtual void ProcessRequest (System.Web.HttpContext context);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="context" Type="System.Web.HttpContext" />
+      </Parameters>
+      <Docs>
+        <param name="context">The request context.</param>
+        <summary>Processes an HTTP request from the ASP.NET subsystem.</summary>
+        <remarks>This method is not meant to be called from user code.</remarks>
+      </Docs>
+      <ImplementsInterfaceMethods>
+        <InterfaceImpl Type="System.Web.IHttpHandler" Member="ProcessRequest" cref="M:System.Web.IHttpHandler.ProcessRequest(System.Web.HttpContext)" />
+      </ImplementsInterfaceMethods>
+    </Member>
+    <Member MemberName="RunQuery">
+      <MemberSignature Language="C#" Value="protected virtual void RunQuery (SemWeb.Query.Query query, SemWeb.SelectableSource source, System.IO.TextWriter output);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="query" Type="SemWeb.Query.Query" />
+        <Parameter Name="source" Type="SemWeb.SelectableSource" />
+        <Parameter Name="output" Type="System.IO.TextWriter" />
+      </Parameters>
+      <Docs>
+        <param name="query">The query to run.</param>
+        <param name="source">The data source to query against.</param>
+        <param name="output">The output stream.</param>
+        <summary>Runs a query.</summary>
+        <remarks>The default implementation runs the query on the data source and outputs the
+        results in the SPARQL XML Results specification format.  Override in subclasses to
+        output the results in a different way, to run the query differently, or to set
+        limits on the query or output.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="System.Web.IHttpHandler.IsReusable">
+      <MemberSignature Language="C#" Value="bool IHttpHandler.IsReusable { get; };" />
+      <MemberType>Property</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Boolean</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+        <value>To be added.</value>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+  </Members>
 </Type>

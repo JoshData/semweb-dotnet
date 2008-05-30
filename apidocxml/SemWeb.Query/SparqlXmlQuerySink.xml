@@ -2,12 +2,16 @@
   <TypeSignature Language="C#" Value="public class SparqlXmlQuerySink : SemWeb.Query.QueryResultSink" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
-    <AssemblyVersion>1.0.5.0</AssemblyVersion>
+    <AssemblyVersion>1.0.6.0</AssemblyVersion>
   </AssemblyInfo>
   <Base>
     <BaseTypeName>SemWeb.Query.QueryResultSink</BaseTypeName>
   </Base>
   <Interfaces />
+  <Docs>
+    <summary>A QueryResultSink outputting results in the SPARQL output XML format.</summary>
+    <remarks>Although the format was designed for SPARQL queries, it can be used with any Query class.</remarks>
+  </Docs>
   <Members>
     <Member MemberName=".ctor">
       <MemberSignature Language="C#" Value="public SparqlXmlQuerySink (System.IO.TextWriter output);" />
@@ -45,8 +49,4 @@
       </Docs>
     </Member>
   </Members>
-  <Docs>
-    <summary>A QueryResultSink outputting results in the SPARQL output XML format.</summary>
-    <remarks>Although the format was designed for SPARQL queries, it can be used with any Query class.</remarks>
-  </Docs>
 </Type>

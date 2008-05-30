@@ -2,12 +2,16 @@
   <TypeSignature Language="C#" Value="public abstract class QueryResultSink" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
-    <AssemblyVersion>1.0.5.0</AssemblyVersion>
+    <AssemblyVersion>1.0.6.0</AssemblyVersion>
   </AssemblyInfo>
   <Base>
     <BaseTypeName>System.Object</BaseTypeName>
   </Base>
   <Interfaces />
+  <Docs>
+    <summary>A class that receives the results of a query.</summary>
+    <remarks>This is an abstract base class.  <see cref="T:SemWeb.Query.SparqlXmlQuerySink" /> is an implementation that writes out the results of a query in SPARQL XML Results Format.</remarks>
+  </Docs>
   <Members>
     <Member MemberName=".ctor">
       <MemberSignature Language="C#" Value="protected QueryResultSink ();" />
@@ -18,15 +22,19 @@
         <remarks>None.</remarks>
       </Docs>
     </Member>
-    <Member MemberName="Finished">
-      <MemberSignature Language="C#" Value="public virtual void Finished ();" />
+    <Member MemberName="Add">
+      <MemberSignature Language="C#" Value="public abstract bool Add (SemWeb.Query.VariableBindings result);" />
       <MemberType>Method</MemberType>
       <ReturnValue>
-        <ReturnType>System.Void</ReturnType>
+        <ReturnType>System.Boolean</ReturnType>
       </ReturnValue>
-      <Parameters />
+      <Parameters>
+        <Parameter Name="result" Type="SemWeb.Query.VariableBindings" />
+      </Parameters>
       <Docs>
-        <summary>This method is called by a Query object after the last variable binding is added.</summary>
+        <param name="result">The variable bindings to values in this row.</param>
+        <summary>Called to add a new result row.</summary>
+        <returns>Return <see langword="true" /> to have the caller continue streaming results, otherwise the caller will abort the query.</returns>
         <remarks>None.</remarks>
       </Docs>
     </Member>
@@ -45,19 +53,15 @@
         <remarks>This method may be called at any time, before, during, and after all bindings have been written.</remarks>
       </Docs>
     </Member>
-    <Member MemberName="Add">
-      <MemberSignature Language="C#" Value="public abstract bool Add (SemWeb.Query.VariableBindings result);" />
+    <Member MemberName="Finished">
+      <MemberSignature Language="C#" Value="public virtual void Finished ();" />
       <MemberType>Method</MemberType>
       <ReturnValue>
-        <ReturnType>System.Boolean</ReturnType>
+        <ReturnType>System.Void</ReturnType>
       </ReturnValue>
-      <Parameters>
-        <Parameter Name="result" Type="SemWeb.Query.VariableBindings" />
-      </Parameters>
+      <Parameters />
       <Docs>
-        <param name="result">The variable bindings to values in this row.</param>
-        <summary>Called to add a new result row.</summary>
-        <returns>Return <see langword="true" /> to have the caller continue streaming results, otherwise the caller will abort the query.</returns>
+        <summary>This method is called by a Query object after the last variable binding is added.</summary>
         <remarks>None.</remarks>
       </Docs>
     </Member>
@@ -77,8 +81,4 @@
       </Docs>
     </Member>
   </Members>
-  <Docs>
-    <summary>A class that receives the results of a query.</summary>
-    <remarks>This is an abstract base class.  <see cref="T:SemWeb.Query.SparqlXmlQuerySink" /> is an implementation that writes out the results of a query in SPARQL XML Results Format.</remarks>
-  </Docs>
 </Type>

@@ -2,7 +2,7 @@
   <TypeSignature Language="C#" Value="public class MemoryStore : SemWeb.Store, System.Collections.Generic.IEnumerable&lt;SemWeb.Statement&gt;" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
-    <AssemblyVersion>1.0.5.0</AssemblyVersion>
+    <AssemblyVersion>1.0.6.0</AssemblyVersion>
   </AssemblyInfo>
   <Base>
     <BaseTypeName>SemWeb.Store</BaseTypeName>
@@ -12,70 +12,6 @@
       <InterfaceName>System.Collections.Generic.IEnumerable&lt;SemWeb.Statement&gt;</InterfaceName>
     </Interface>
   </Interfaces>
-  <Members>
-    <Member MemberName=".ctor">
-      <MemberSignature Language="C#" Value="public MemoryStore ();" />
-      <MemberType>Constructor</MemberType>
-      <Parameters />
-      <Docs>
-        <summary>Creates a new empty MemoryStore.</summary>
-        <remarks>None.</remarks>
-      </Docs>
-    </Member>
-    <Member MemberName=".ctor">
-      <MemberSignature Language="C#" Value="public MemoryStore (SemWeb.StatementSource source);" />
-      <MemberType>Constructor</MemberType>
-      <Parameters>
-        <Parameter Name="source" Type="SemWeb.StatementSource" />
-      </Parameters>
-      <Docs>
-        <param name="source">A StatementSource, the contents of which are read into the memory store.</param>
-        <summary>Creates a new MemoryStore and reads the data from a StatementSource, which might be a <see cref="T:SemWeb.RdfReader" />, for instance.</summary>
-        <remarks>None.</remarks>
-      </Docs>
-    </Member>
-    <Member MemberName="ToArray">
-      <MemberSignature Language="C#" Value="public SemWeb.Statement[] ToArray ();" />
-      <MemberType>Method</MemberType>
-      <ReturnValue>
-        <ReturnType>SemWeb.Statement[]</ReturnType>
-      </ReturnValue>
-      <Parameters />
-      <Docs>
-        <summary>Returns the contents of the store as an array of Statements.</summary>
-        <returns>An array of Statements that make up the contents of the store.</returns>
-        <remarks>None.</remarks>
-      </Docs>
-    </Member>
-    <Member MemberName="Item">
-      <MemberSignature Language="C#" Value="public SemWeb.Statement this[int index] { get; };" />
-      <MemberType>Property</MemberType>
-      <ReturnValue>
-        <ReturnType>SemWeb.Statement</ReturnType>
-      </ReturnValue>
-      <Parameters>
-        <Parameter Name="index" Type="System.Int32" />
-      </Parameters>
-      <Docs>
-        <param name="index">The 0-based index to a statement in the store.</param>
-        <summary>Returns a statement in the store by index.</summary>
-        <value>A <see cref="T:SemWeb.Statement" />.</value>
-        <remarks>None.</remarks>
-      </Docs>
-    </Member>
-    <Member MemberName=".ctor">
-      <MemberSignature Language="C#" Value="public MemoryStore (SemWeb.Statement[] statements);" />
-      <MemberType>Constructor</MemberType>
-      <Parameters>
-        <Parameter Name="statements" Type="SemWeb.Statement[]" />
-      </Parameters>
-      <Docs>
-        <param name="statements">An array of statements.</param>
-        <summary>Creates a MemoryStore initialized with the given array of statements.</summary>
-        <remarks>The statements in the array are added to the MemoryStore on creation.</remarks>
-      </Docs>
-    </Member>
-  </Members>
   <Docs>
     <summary>A graph of statements held in memory.</summary>
     <remarks>
@@ -119,6 +55,96 @@ foreach (Resource res in store.SelectObjects(othersite, dctitle)) {
       </example>
     </remarks>
   </Docs>
+  <Members>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public MemoryStore ();" />
+      <MemberType>Constructor</MemberType>
+      <Parameters />
+      <Docs>
+        <summary>Creates a new empty MemoryStore.</summary>
+        <remarks>None.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public MemoryStore (SemWeb.Statement[] statements);" />
+      <MemberType>Constructor</MemberType>
+      <Parameters>
+        <Parameter Name="statements" Type="SemWeb.Statement[]" />
+      </Parameters>
+      <Docs>
+        <param name="statements">An array of statements.</param>
+        <summary>Creates a MemoryStore initialized with the given array of statements.</summary>
+        <remarks>The statements in the array are added to the MemoryStore on creation.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public MemoryStore (SemWeb.StatementSource source);" />
+      <MemberType>Constructor</MemberType>
+      <Parameters>
+        <Parameter Name="source" Type="SemWeb.StatementSource" />
+      </Parameters>
+      <Docs>
+        <param name="source">A StatementSource, the contents of which are read into the memory store.</param>
+        <summary>Creates a new MemoryStore and reads the data from a StatementSource, which might be a <see cref="T:SemWeb.RdfReader" />, for instance.</summary>
+        <remarks>None.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Item">
+      <MemberSignature Language="C#" Value="public SemWeb.Statement this[int index] { get; };" />
+      <MemberType>Property</MemberType>
+      <ReturnValue>
+        <ReturnType>SemWeb.Statement</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="index" Type="System.Int32" />
+      </Parameters>
+      <Docs>
+        <param name="index">The 0-based index to a statement in the store.</param>
+        <summary>Returns a statement in the store by index.</summary>
+        <value>A <see cref="T:SemWeb.Statement" />.</value>
+        <remarks>None.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="System.Collections.Generic.IEnumerable&lt;SemWeb.Statement&gt;.GetEnumerator">
+      <MemberSignature Language="C#" Value="System.Collections.Generic.IEnumerator&lt;SemWeb.Statement&gt; IEnumerable&lt;Statement&gt;.GetEnumerator ();" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Collections.Generic.IEnumerator&lt;SemWeb.Statement&gt;</ReturnType>
+      </ReturnValue>
+      <Parameters />
+      <Docs>
+        <summary>To be added.</summary>
+        <returns>To be added.</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="System.Collections.IEnumerable.GetEnumerator">
+      <MemberSignature Language="C#" Value="System.Collections.IEnumerator IEnumerable.GetEnumerator ();" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Collections.IEnumerator</ReturnType>
+      </ReturnValue>
+      <Parameters />
+      <Docs>
+        <summary>To be added.</summary>
+        <returns>To be added.</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="ToArray">
+      <MemberSignature Language="C#" Value="public SemWeb.Statement[] ToArray ();" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>SemWeb.Statement[]</ReturnType>
+      </ReturnValue>
+      <Parameters />
+      <Docs>
+        <summary>Returns the contents of the store as an array of Statements.</summary>
+        <returns>An array of Statements that make up the contents of the store.</returns>
+        <remarks>None.</remarks>
+      </Docs>
+    </Member>
+  </Members>
   <Attributes>
     <Attribute>
       <AttributeName>System.Reflection.DefaultMember("Item")</AttributeName>

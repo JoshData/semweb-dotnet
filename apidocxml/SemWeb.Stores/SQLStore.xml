@@ -2,7 +2,7 @@
   <TypeSignature Language="C#" Value="public abstract class SQLStore : IDisposable, SemWeb.ModifiableSource, SemWeb.QueryableSource, SemWeb.StaticSource" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
-    <AssemblyVersion>1.0.5.0</AssemblyVersion>
+    <AssemblyVersion>1.0.6.0</AssemblyVersion>
   </AssemblyInfo>
   <Base>
     <BaseTypeName>System.Object</BaseTypeName>
@@ -21,114 +21,36 @@
       <InterfaceName>System.IDisposable</InterfaceName>
     </Interface>
   </Interfaces>
+  <Docs>
+    <summary>A store that holds statements in an SQL database.</summary>
+    <remarks>
+      <para>This class is abstract and is inherited by classes for particular database backends.  Backends are provided for MySQL and SQLite in separate assemblies.  Rather than referencing those assemblies and using their constructors to create stores for those databases, it is easier to use <see cref="M:SemWeb.Store.CreateForInput(string)" /> or <see cref="M:SemWeb.Store.CreateForOutput(string)" />.  Both methods return SQLStores that can be used for both reading and writing.</para>
+      <para>The SQLStore uses three tables, one containing the statement triples (actually quadruples with meta information) using numeric identifiers for each resource, one mapping entity identifiers to URIs, and the last mapping literal identifiers to string/language/datatype triples.  The CREATE statements for the tables, which are automatically executed by the SQLStore when needed, are:</para>
+      <example>
+        <code lang="SQL">
+CREATE TABLE TABLEPREFIX_statements (subject int UNSIGNED NOT NULL,
+       predicate int UNSIGNED NOT NULL, objecttype int NOT NULL, object int UNSIGNED NOT NULL,
+       meta int UNSIGNED NOT NULL);
+
+CREATE TABLE TABLEPREFIX_entities (id INT NOT NULL, value BLOB NOT NULL,
+      PRIMARY KEY(id));
+
+CREATE TABLE TABLEPREFIX_literals (id INT NOT NULL, value BLOB NOT NULL,
+      language TEXT, datatype TEXT, PRIMARY KEY(id));
+</code>
+      </example>
+      <para>Indexes are created on the subject, predicate, and object/objecttype columns in the statements table, and on the value columns in the entities and literals table.  Because MySQL before version 4.1.2 supported text indexes of length up to 255 bytes, URIs in the SQLStore are limited to this length.</para>
+      <para>Each resource stored in the tables is given an ID starting at 1 which is used as the value of the subject, predicate, object, and meta columns when the entity appears in a statement.  The value 0 is used for statements with no meta information.  When the object of a statement is an entity, objecttype is 0 and object contains the ID of the entity.  When the object of a statement is a literal, objecttype is 1 and the object column contains the value of the id column in the literals table for the literal value.  Literals in the literals table can be referenced by more than one statement.</para>
+      <para>Anonymous entities (blank nodes) are simply those entities mentioned in the statements table that have no entry giving their URI in the entities table.</para>
+      <block subset="none" type="note">
+        <para>
+     While it is safe to use many SQLStores to read from the same store, it is not safe to use multiple SQLStores to write to the same store concurrently.
+  </para>
+      </block>
+      <para>Inheritors must implement <see cref="M:SemWeb.Stores.SQLStore.RunCommand(string)" />, <see cref="M:SemWeb.Stores.SQLStore.RunReader(string)" />, and <see cref="M:SemWeb.Stores.SQLStore.RunScalar(string)" />.</para>
+    </remarks>
+  </Docs>
   <Members>
-    <Member MemberName="RunCommand">
-      <MemberSignature Language="C#" Value="protected abstract void RunCommand (string sql);" />
-      <MemberType>Method</MemberType>
-      <ReturnValue>
-        <ReturnType>System.Void</ReturnType>
-      </ReturnValue>
-      <Parameters>
-        <Parameter Name="sql" Type="System.String" />
-      </Parameters>
-      <Docs>
-        <param name="sql">The SQL statement to execute.</param>
-        <summary>Executes an SQL statement without a return value.</summary>
-        <remarks>Inheritors must implemented this method.</remarks>
-      </Docs>
-    </Member>
-    <Member MemberName="RunScalar">
-      <MemberSignature Language="C#" Value="protected abstract object RunScalar (string sql);" />
-      <MemberType>Method</MemberType>
-      <ReturnValue>
-        <ReturnType>System.Object</ReturnType>
-      </ReturnValue>
-      <Parameters>
-        <Parameter Name="sql" Type="System.String" />
-      </Parameters>
-      <Docs>
-        <param name="sql">The SQL statement to run that returns a number of text value.</param>
-        <summary>Executes an SQL statement that returns a scalar value.</summary>
-        <returns>The numeric or text value.</returns>
-        <remarks>Inheritors must implement this method.</remarks>
-      </Docs>
-    </Member>
-    <Member MemberName="RunReader">
-      <MemberSignature Language="C#" Value="protected abstract System.Data.IDataReader RunReader (string sql);" />
-      <MemberType>Method</MemberType>
-      <ReturnValue>
-        <ReturnType>System.Data.IDataReader</ReturnType>
-      </ReturnValue>
-      <Parameters>
-        <Parameter Name="sql" Type="System.String" />
-      </Parameters>
-      <Docs>
-        <param name="sql">The SQL statement to run.</param>
-        <summary>Executes an SQL statement that returns a table.</summary>
-        <returns>An IDataReader containing the result of the tabular query.</returns>
-        <remarks>Inheritors must implement this method.</remarks>
-      </Docs>
-    </Member>
-    <Member MemberName="CreateTable">
-      <MemberSignature Language="C#" Value="protected virtual void CreateTable ();" />
-      <MemberType>Method</MemberType>
-      <ReturnValue>
-        <ReturnType>System.Void</ReturnType>
-      </ReturnValue>
-      <Parameters />
-      <Docs>
-        <summary>Creates the tables needed by the SQLStore.</summary>
-        <remarks>Inheritors may override this method to change the way tables are created by the SQLStore.</remarks>
-      </Docs>
-    </Member>
-    <Member MemberName="CreateIndexes">
-      <MemberSignature Language="C#" Value="protected virtual void CreateIndexes ();" />
-      <MemberType>Method</MemberType>
-      <ReturnValue>
-        <ReturnType>System.Void</ReturnType>
-      </ReturnValue>
-      <Parameters />
-      <Docs>
-        <summary>Creates the indexes on the tables.</summary>
-        <remarks>Inheritors may override this method to change the way indexes are created on the tables used by the SQLStore.</remarks>
-      </Docs>
-    </Member>
-    <Member MemberName="BeginTransaction">
-      <MemberSignature Language="C#" Value="protected virtual void BeginTransaction ();" />
-      <MemberType>Method</MemberType>
-      <ReturnValue>
-        <ReturnType>System.Void</ReturnType>
-      </ReturnValue>
-      <Parameters />
-      <Docs>
-        <summary>Called at the start of <see cref="M:SemWeb.Store.Import(SemWeb.RdfReader)" />.</summary>
-        <remarks>Inheritors may override this method to put a lock on the tables or begin a transaction to speed up the process of adding many statements into the tables.  The default implementation does nothing.</remarks>
-      </Docs>
-    </Member>
-    <Member MemberName="EndTransaction">
-      <MemberSignature Language="C#" Value="protected virtual void EndTransaction ();" />
-      <MemberType>Method</MemberType>
-      <ReturnValue>
-        <ReturnType>System.Void</ReturnType>
-      </ReturnValue>
-      <Parameters />
-      <Docs>
-        <summary>Called at the end of <see cref="M:SemWeb.Store.Import(SemWeb.RdfReader)" />.</summary>
-        <remarks>Inheritors may override this method to end a lock or transaction started in <see cref="M:SemWeb.Stores.SQLStore.BeginTransaction()" />.</remarks>
-      </Docs>
-    </Member>
-    <Member MemberName="TableName">
-      <MemberSignature Language="C#" Value="protected string TableName { get; };" />
-      <MemberType>Property</MemberType>
-      <ReturnValue>
-        <ReturnType>System.String</ReturnType>
-      </ReturnValue>
-      <Docs>
-        <summary>Gets the table prefix passed to the constructor.</summary>
-        <value>The table prefix passed to the constructor.</value>
-        <remarks>This property is protected and read-only.</remarks>
-      </Docs>
-    </Member>
     <Member MemberName=".ctor">
       <MemberSignature Language="C#" Value="protected SQLStore (string table);" />
       <MemberType>Constructor</MemberType>
@@ -139,176 +61,6 @@
         <param name="table">The prefix name of the tables used by this store.</param>
         <summary>The protected constructor used by inherited classes.</summary>
         <remarks>The two tables used by this store will be <paramref name="table" />_statements and <paramref name="table" />_literals.</remarks>
-      </Docs>
-    </Member>
-    <Member MemberName="EscapedAppend">
-      <MemberSignature Language="C#" Value="protected void EscapedAppend (System.Text.StringBuilder b, string str);" />
-      <MemberType>Method</MemberType>
-      <ReturnValue>
-        <ReturnType>System.Void</ReturnType>
-      </ReturnValue>
-      <Parameters>
-        <Parameter Name="b" Type="System.Text.StringBuilder" />
-        <Parameter Name="str" Type="System.String" />
-      </Parameters>
-      <Docs>
-        <param name="b">To be added.</param>
-        <param name="str">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
-      </Docs>
-    </Member>
-    <Member MemberName="SupportsInsertCombined">
-      <MemberSignature Language="C#" Value="protected abstract bool SupportsInsertCombined { get; };" />
-      <MemberType>Property</MemberType>
-      <ReturnValue>
-        <ReturnType>System.Boolean</ReturnType>
-      </ReturnValue>
-      <Docs>
-        <summary>Implemented by inheritors to indicate whether the backend supports inserting mutliple rows at once in a single INSERT command.</summary>
-        <value>If true, the more efficient multiple-row INSERT syntax is used, e.g.: INSERT INTO table VALUES (row1a, row1b), (row2a, row2b), .... ;</value>
-        <remarks>None.</remarks>
-      </Docs>
-    </Member>
-    <Member MemberName="GetQuoteChar">
-      <MemberSignature Language="C#" Value="protected virtual char GetQuoteChar ();" />
-      <MemberType>Method</MemberType>
-      <ReturnValue>
-        <ReturnType>System.Char</ReturnType>
-      </ReturnValue>
-      <Parameters />
-      <Docs>
-        <summary>Implemented by inheritors to provide the character used to surround strings in a SQL query.</summary>
-        <returns>The string quotation character, usually an apostrophe or double-quote.</returns>
-        <remarks>The default implementation returns a double-quote.</remarks>
-      </Docs>
-    </Member>
-    <Member MemberName="GetStoreGuid">
-      <MemberSignature Language="C#" Value="public string GetStoreGuid ();" />
-      <MemberType>Method</MemberType>
-      <ReturnValue>
-        <ReturnType>System.String</ReturnType>
-      </ReturnValue>
-      <Parameters />
-      <Docs>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
-      </Docs>
-    </Member>
-    <Member MemberName="CreateNullTest">
-      <MemberSignature Language="C#" Value="protected abstract void CreateNullTest (string column, System.Text.StringBuilder command);" />
-      <MemberType>Method</MemberType>
-      <ReturnValue>
-        <ReturnType>System.Void</ReturnType>
-      </ReturnValue>
-      <Parameters>
-        <Parameter Name="column" Type="System.String" />
-        <Parameter Name="command" Type="System.Text.StringBuilder" />
-      </Parameters>
-      <Docs>
-        <param name="column">To be added.</param>
-        <param name="command">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
-      </Docs>
-    </Member>
-    <Member MemberName="SupportsSubquery">
-      <MemberSignature Language="C#" Value="protected abstract bool SupportsSubquery { get; };" />
-      <MemberType>Property</MemberType>
-      <ReturnValue>
-        <ReturnType>System.Boolean</ReturnType>
-      </ReturnValue>
-      <Docs>
-        <summary>To be added.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
-      </Docs>
-    </Member>
-    <Member MemberName="HasUniqueStatementsConstraint">
-      <MemberSignature Language="C#" Value="protected abstract bool HasUniqueStatementsConstraint { get; };" />
-      <MemberType>Property</MemberType>
-      <ReturnValue>
-        <ReturnType>System.Boolean</ReturnType>
-      </ReturnValue>
-      <Docs>
-        <summary>To be added.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
-      </Docs>
-    </Member>
-    <Member MemberName="InsertIgnoreCommand">
-      <MemberSignature Language="C#" Value="protected abstract string InsertIgnoreCommand { get; };" />
-      <MemberType>Property</MemberType>
-      <ReturnValue>
-        <ReturnType>System.String</ReturnType>
-      </ReturnValue>
-      <Docs>
-        <summary>To be added.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
-      </Docs>
-    </Member>
-    <Member MemberName="CreateEntityPrefixTest">
-      <MemberSignature Language="C#" Value="protected virtual bool CreateEntityPrefixTest (string column, string prefix, System.Text.StringBuilder command);" />
-      <MemberType>Method</MemberType>
-      <ReturnValue>
-        <ReturnType>System.Boolean</ReturnType>
-      </ReturnValue>
-      <Parameters>
-        <Parameter Name="column" Type="System.String" />
-        <Parameter Name="prefix" Type="System.String" />
-        <Parameter Name="command" Type="System.Text.StringBuilder" />
-      </Parameters>
-      <Docs>
-        <param name="column">To be added.</param>
-        <param name="prefix">To be added.</param>
-        <param name="command">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
-      </Docs>
-    </Member>
-    <Member MemberName="CreateLikeTest">
-      <MemberSignature Language="C#" Value="protected abstract void CreateLikeTest (string column, string prefix, int method, System.Text.StringBuilder command);" />
-      <MemberType>Method</MemberType>
-      <ReturnValue>
-        <ReturnType>System.Void</ReturnType>
-      </ReturnValue>
-      <Parameters>
-        <Parameter Name="column" Type="System.String" />
-        <Parameter Name="prefix" Type="System.String" />
-        <Parameter Name="method" Type="System.Int32" />
-        <Parameter Name="command" Type="System.Text.StringBuilder" />
-      </Parameters>
-      <Docs>
-        <param name="column">To be added.</param>
-        <param name="prefix">To be added.</param>
-        <param name="method">To be added.</param>
-        <param name="command">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
-      </Docs>
-    </Member>
-    <Member MemberName="EscapedAppend">
-      <MemberSignature Language="C#" Value="protected virtual void EscapedAppend (System.Text.StringBuilder b, string str, bool quotes, bool forLike);" />
-      <MemberType>Method</MemberType>
-      <ReturnValue>
-        <ReturnType>System.Void</ReturnType>
-      </ReturnValue>
-      <Parameters>
-        <Parameter Name="b" Type="System.Text.StringBuilder" />
-        <Parameter Name="str" Type="System.String" />
-        <Parameter Name="quotes" Type="System.Boolean" />
-        <Parameter Name="forLike" Type="System.Boolean" />
-      </Parameters>
-      <Docs>
-        <param name="b">To be added.</param>
-        <param name="str">To be added.</param>
-        <param name="quotes">To be added.</param>
-        <param name="forLike">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Add">
@@ -324,6 +76,18 @@
         <param name="statement">To be added.</param>
         <summary>To be added.</summary>
         <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="BeginTransaction">
+      <MemberSignature Language="C#" Value="protected virtual void BeginTransaction ();" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters />
+      <Docs>
+        <summary>Called at the start of <see cref="M:SemWeb.Store.Import(SemWeb.RdfReader)" />.</summary>
+        <remarks>Inheritors may override this method to put a lock on the tables or begin a transaction to speed up the process of adding many statements into the tables.  The default implementation does nothing.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Clear">
@@ -391,6 +155,88 @@
         <InterfaceImpl Type="SemWeb.SelectableSource" Member="Contains" cref="M:SemWeb.SelectableSource.Contains(SemWeb.Statement)" />
       </ImplementsInterfaceMethods>
     </Member>
+    <Member MemberName="CreateEntityPrefixTest">
+      <MemberSignature Language="C#" Value="protected virtual bool CreateEntityPrefixTest (string column, string prefix, System.Text.StringBuilder command);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Boolean</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="column" Type="System.String" />
+        <Parameter Name="prefix" Type="System.String" />
+        <Parameter Name="command" Type="System.Text.StringBuilder" />
+      </Parameters>
+      <Docs>
+        <param name="column">To be added.</param>
+        <param name="prefix">To be added.</param>
+        <param name="command">To be added.</param>
+        <summary>To be added.</summary>
+        <returns>To be added.</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="CreateIndexes">
+      <MemberSignature Language="C#" Value="protected virtual void CreateIndexes ();" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters />
+      <Docs>
+        <summary>Creates the indexes on the tables.</summary>
+        <remarks>Inheritors may override this method to change the way indexes are created on the tables used by the SQLStore.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="CreateLikeTest">
+      <MemberSignature Language="C#" Value="protected abstract void CreateLikeTest (string column, string prefix, int method, System.Text.StringBuilder command);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="column" Type="System.String" />
+        <Parameter Name="prefix" Type="System.String" />
+        <Parameter Name="method" Type="System.Int32" />
+        <Parameter Name="command" Type="System.Text.StringBuilder" />
+      </Parameters>
+      <Docs>
+        <param name="column">To be added.</param>
+        <param name="prefix">To be added.</param>
+        <param name="method">To be added.</param>
+        <param name="command">To be added.</param>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="CreateNullTest">
+      <MemberSignature Language="C#" Value="protected abstract void CreateNullTest (string column, System.Text.StringBuilder command);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="column" Type="System.String" />
+        <Parameter Name="command" Type="System.Text.StringBuilder" />
+      </Parameters>
+      <Docs>
+        <param name="column">To be added.</param>
+        <param name="command">To be added.</param>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="CreateTable">
+      <MemberSignature Language="C#" Value="protected virtual void CreateTable ();" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters />
+      <Docs>
+        <summary>Creates the tables needed by the SQLStore.</summary>
+        <remarks>Inheritors may override this method to change the way tables are created by the SQLStore.</remarks>
+      </Docs>
+    </Member>
     <Member MemberName="Distinct">
       <MemberSignature Language="C#" Value="public bool Distinct { get; };" />
       <MemberType>Property</MemberType>
@@ -405,6 +251,56 @@
       <ImplementsInterfaceMethods>
         <InterfaceImpl Type="SemWeb.StatementSource" Member="Distinct" cref="P:SemWeb.StatementSource.Distinct" />
       </ImplementsInterfaceMethods>
+    </Member>
+    <Member MemberName="EndTransaction">
+      <MemberSignature Language="C#" Value="protected virtual void EndTransaction ();" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters />
+      <Docs>
+        <summary>Called at the end of <see cref="M:SemWeb.Store.Import(SemWeb.RdfReader)" />.</summary>
+        <remarks>Inheritors may override this method to end a lock or transaction started in <see cref="M:SemWeb.Stores.SQLStore.BeginTransaction()" />.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="EscapedAppend">
+      <MemberSignature Language="C#" Value="protected void EscapedAppend (System.Text.StringBuilder b, string str);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="b" Type="System.Text.StringBuilder" />
+        <Parameter Name="str" Type="System.String" />
+      </Parameters>
+      <Docs>
+        <param name="b">To be added.</param>
+        <param name="str">To be added.</param>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="EscapedAppend">
+      <MemberSignature Language="C#" Value="protected virtual void EscapedAppend (System.Text.StringBuilder b, string str, bool quotes, bool forLike);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="b" Type="System.Text.StringBuilder" />
+        <Parameter Name="str" Type="System.String" />
+        <Parameter Name="quotes" Type="System.Boolean" />
+        <Parameter Name="forLike" Type="System.Boolean" />
+      </Parameters>
+      <Docs>
+        <param name="b">To be added.</param>
+        <param name="str">To be added.</param>
+        <param name="quotes">To be added.</param>
+        <param name="forLike">To be added.</param>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
     </Member>
     <Member MemberName="GetBNodeFromPersistentId">
       <MemberSignature Language="C#" Value="public SemWeb.BNode GetBNodeFromPersistentId (string persistentId);" />
@@ -492,6 +388,44 @@
         <InterfaceImpl Type="SemWeb.StaticSource" Member="GetPredicates" cref="M:SemWeb.StaticSource.GetPredicates" />
       </ImplementsInterfaceMethods>
     </Member>
+    <Member MemberName="GetQuoteChar">
+      <MemberSignature Language="C#" Value="protected virtual char GetQuoteChar ();" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Char</ReturnType>
+      </ReturnValue>
+      <Parameters />
+      <Docs>
+        <summary>Implemented by inheritors to provide the character used to surround strings in a SQL query.</summary>
+        <returns>The string quotation character, usually an apostrophe or double-quote.</returns>
+        <remarks>The default implementation returns a double-quote.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="GetStoreGuid">
+      <MemberSignature Language="C#" Value="public string GetStoreGuid ();" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>System.String</ReturnType>
+      </ReturnValue>
+      <Parameters />
+      <Docs>
+        <summary>To be added.</summary>
+        <returns>To be added.</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="HasUniqueStatementsConstraint">
+      <MemberSignature Language="C#" Value="protected abstract bool HasUniqueStatementsConstraint { get; };" />
+      <MemberType>Property</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Boolean</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+        <value>To be added.</value>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
     <Member MemberName="Import">
       <MemberSignature Language="C#" Value="public void Import (SemWeb.StatementSource source);" />
       <MemberType>Method</MemberType>
@@ -509,6 +443,30 @@
       <ImplementsInterfaceMethods>
         <InterfaceImpl Type="SemWeb.ModifiableSource" Member="Import" cref="M:SemWeb.ModifiableSource.Import(SemWeb.StatementSource)" />
       </ImplementsInterfaceMethods>
+    </Member>
+    <Member MemberName="InsertIgnoreCommand">
+      <MemberSignature Language="C#" Value="protected abstract string InsertIgnoreCommand { get; };" />
+      <MemberType>Property</MemberType>
+      <ReturnValue>
+        <ReturnType>System.String</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+        <value>To be added.</value>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="MaximumUriLength">
+      <MemberSignature Language="C#" Value="protected virtual int MaximumUriLength { get; };" />
+      <MemberType>Property</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Int32</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+        <value>To be added.</value>
+        <remarks>To be added.</remarks>
+      </Docs>
     </Member>
     <Member MemberName="MetaQuery">
       <MemberSignature Language="C#" Value="public SemWeb.Query.MetaQueryResult MetaQuery (SemWeb.Statement[] graph, SemWeb.Query.QueryOptions options);" />
@@ -629,6 +587,71 @@
         <InterfaceImpl Type="SemWeb.ModifiableSource" Member="Replace" cref="M:SemWeb.ModifiableSource.Replace(SemWeb.Statement,SemWeb.Statement)" />
       </ImplementsInterfaceMethods>
     </Member>
+    <Member MemberName="RunCommand">
+      <MemberSignature Language="C#" Value="protected abstract void RunCommand (string sql);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="sql" Type="System.String" />
+      </Parameters>
+      <Docs>
+        <param name="sql">The SQL statement to execute.</param>
+        <summary>Executes an SQL statement without a return value.</summary>
+        <remarks>Inheritors must implemented this method.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="RunReader">
+      <MemberSignature Language="C#" Value="protected abstract System.Data.IDataReader RunReader (string sql);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Data.IDataReader</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="sql" Type="System.String" />
+      </Parameters>
+      <Docs>
+        <param name="sql">The SQL statement to run.</param>
+        <summary>Executes an SQL statement that returns a table.</summary>
+        <returns>An IDataReader containing the result of the tabular query.</returns>
+        <remarks>Inheritors must implement this method.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="RunScalar">
+      <MemberSignature Language="C#" Value="protected abstract object RunScalar (string sql);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Object</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="sql" Type="System.String" />
+      </Parameters>
+      <Docs>
+        <param name="sql">The SQL statement to run that returns a number of text value.</param>
+        <summary>Executes an SQL statement that returns a scalar value.</summary>
+        <returns>The numeric or text value.</returns>
+        <remarks>Inheritors must implement this method.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Select">
+      <MemberSignature Language="C#" Value="public void Select (SemWeb.StatementSink result);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="result" Type="SemWeb.StatementSink" />
+      </Parameters>
+      <Docs>
+        <param name="result">To be added.</param>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+      <ImplementsInterfaceMethods>
+        <InterfaceImpl Type="SemWeb.StatementSource" Member="Select" cref="M:SemWeb.StatementSource.Select(SemWeb.StatementSink)" />
+      </ImplementsInterfaceMethods>
+    </Member>
     <Member MemberName="Select">
       <MemberSignature Language="C#" Value="public void Select (SemWeb.SelectFilter filter, SemWeb.StatementSink result);" />
       <MemberType>Method</MemberType>
@@ -669,23 +692,21 @@
         <InterfaceImpl Type="SemWeb.SelectableSource" Member="Select" cref="M:SemWeb.SelectableSource.Select(SemWeb.Statement,SemWeb.StatementSink)" />
       </ImplementsInterfaceMethods>
     </Member>
-    <Member MemberName="Select">
-      <MemberSignature Language="C#" Value="public void Select (SemWeb.StatementSink result);" />
+    <Member MemberName="SemWeb.StatementSink.Add">
+      <MemberSignature Language="C#" Value="bool StatementSink.Add (SemWeb.Statement statement);" />
       <MemberType>Method</MemberType>
       <ReturnValue>
-        <ReturnType>System.Void</ReturnType>
+        <ReturnType>System.Boolean</ReturnType>
       </ReturnValue>
       <Parameters>
-        <Parameter Name="result" Type="SemWeb.StatementSink" />
+        <Parameter Name="statement" Type="SemWeb.Statement" />
       </Parameters>
       <Docs>
-        <param name="result">To be added.</param>
+        <param name="statement">To be added.</param>
         <summary>To be added.</summary>
+        <returns>To be added.</returns>
         <remarks>To be added.</remarks>
       </Docs>
-      <ImplementsInterfaceMethods>
-        <InterfaceImpl Type="SemWeb.StatementSource" Member="Select" cref="M:SemWeb.StatementSource.Select(SemWeb.StatementSink)" />
-      </ImplementsInterfaceMethods>
     </Member>
     <Member MemberName="StatementCount">
       <MemberSignature Language="C#" Value="public int StatementCount { get; };" />
@@ -702,28 +723,16 @@
         <InterfaceImpl Type="SemWeb.StaticSource" Member="StatementCount" cref="P:SemWeb.StaticSource.StatementCount" />
       </ImplementsInterfaceMethods>
     </Member>
-    <Member MemberName="SupportsViews">
-      <MemberSignature Language="C#" Value="protected virtual bool SupportsViews { get; };" />
+    <Member MemberName="SupportsInsertCombined">
+      <MemberSignature Language="C#" Value="protected abstract bool SupportsInsertCombined { get; };" />
       <MemberType>Property</MemberType>
       <ReturnValue>
         <ReturnType>System.Boolean</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
-      </Docs>
-    </Member>
-    <Member MemberName="MaximumUriLength">
-      <MemberSignature Language="C#" Value="protected virtual int MaximumUriLength { get; };" />
-      <MemberType>Property</MemberType>
-      <ReturnValue>
-        <ReturnType>System.Int32</ReturnType>
-      </ReturnValue>
-      <Docs>
-        <summary>To be added.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
+        <summary>Implemented by inheritors to indicate whether the backend supports inserting mutliple rows at once in a single INSERT command.</summary>
+        <value>If true, the more efficient multiple-row INSERT syntax is used, e.g.: INSERT INTO table VALUES (row1a, row1b), (row2a, row2b), .... ;</value>
+        <remarks>None.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SupportsLimitClause">
@@ -738,34 +747,53 @@
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
+    <Member MemberName="SupportsSubquery">
+      <MemberSignature Language="C#" Value="protected abstract bool SupportsSubquery { get; };" />
+      <MemberType>Property</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Boolean</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+        <value>To be added.</value>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="SupportsViews">
+      <MemberSignature Language="C#" Value="protected virtual bool SupportsViews { get; };" />
+      <MemberType>Property</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Boolean</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+        <value>To be added.</value>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="System.IDisposable.Dispose">
+      <MemberSignature Language="C#" Value="void IDisposable.Dispose ();" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters />
+      <Docs>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="TableName">
+      <MemberSignature Language="C#" Value="protected string TableName { get; };" />
+      <MemberType>Property</MemberType>
+      <ReturnValue>
+        <ReturnType>System.String</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Gets the table prefix passed to the constructor.</summary>
+        <value>The table prefix passed to the constructor.</value>
+        <remarks>This property is protected and read-only.</remarks>
+      </Docs>
+    </Member>
   </Members>
-  <Docs>
-    <summary>A store that holds statements in an SQL database.</summary>
-    <remarks>
-      <para>This class is abstract and is inherited by classes for particular database backends.  Backends are provided for MySQL and SQLite in separate assemblies.  Rather than referencing those assemblies and using their constructors to create stores for those databases, it is easier to use <see cref="M:SemWeb.Store.CreateForInput(string)" /> or <see cref="M:SemWeb.Store.CreateForOutput(string)" />.  Both methods return SQLStores that can be used for both reading and writing.</para>
-      <para>The SQLStore uses three tables, one containing the statement triples (actually quadruples with meta information) using numeric identifiers for each resource, one mapping entity identifiers to URIs, and the last mapping literal identifiers to string/language/datatype triples.  The CREATE statements for the tables, which are automatically executed by the SQLStore when needed, are:</para>
-      <example>
-        <code lang="SQL">
-CREATE TABLE TABLEPREFIX_statements (subject int UNSIGNED NOT NULL,
-       predicate int UNSIGNED NOT NULL, objecttype int NOT NULL, object int UNSIGNED NOT NULL,
-       meta int UNSIGNED NOT NULL);
-
-CREATE TABLE TABLEPREFIX_entities (id INT NOT NULL, value BLOB NOT NULL,
-      PRIMARY KEY(id));
-
-CREATE TABLE TABLEPREFIX_literals (id INT NOT NULL, value BLOB NOT NULL,
-      language TEXT, datatype TEXT, PRIMARY KEY(id));
-</code>
-      </example>
-      <para>Indexes are created on the subject, predicate, and object/objecttype columns in the statements table, and on the value columns in the entities and literals table.  Because MySQL before version 4.1.2 supported text indexes of length up to 255 bytes, URIs in the SQLStore are limited to this length.</para>
-      <para>Each resource stored in the tables is given an ID starting at 1 which is used as the value of the subject, predicate, object, and meta columns when the entity appears in a statement.  The value 0 is used for statements with no meta information.  When the object of a statement is an entity, objecttype is 0 and object contains the ID of the entity.  When the object of a statement is a literal, objecttype is 1 and the object column contains the value of the id column in the literals table for the literal value.  Literals in the literals table can be referenced by more than one statement.</para>
-      <para>Anonymous entities (blank nodes) are simply those entities mentioned in the statements table that have no entry giving their URI in the entities table.</para>
-      <block subset="none" type="note">
-        <para>
-     While it is safe to use many SQLStores to read from the same store, it is not safe to use multiple SQLStores to write to the same store concurrently.
-  </para>
-      </block>
-      <para>Inheritors must implement <see cref="M:SemWeb.Stores.SQLStore.RunCommand(string)" />, <see cref="M:SemWeb.Stores.SQLStore.RunReader(string)" />, and <see cref="M:SemWeb.Stores.SQLStore.RunScalar(string)" />.</para>
-    </remarks>
-  </Docs>
 </Type>

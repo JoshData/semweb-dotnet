@@ -2,12 +2,16 @@
   <TypeSignature Language="C#" Value="public class RdfXmlWriter.Options" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
-    <AssemblyVersion>1.0.5.0</AssemblyVersion>
+    <AssemblyVersion>1.0.6.0</AssemblyVersion>
   </AssemblyInfo>
   <Base>
     <BaseTypeName>System.Object</BaseTypeName>
   </Base>
   <Interfaces />
+  <Docs>
+    <summary>This class specifies output style options for the <see cref="T:SemWeb.RdfXmlWriter" />.</summary>
+    <remarks>This class defines two static fields which have option settings for two common styles: <see cref="F:SemWeb.RdfXmlWriter+Options.Full" /> and <see cref="F:SemWeb.RdfXmlWriter+Options.XMP" />.  See the documentation for those fields for details.</remarks>
+  </Docs>
   <Members>
     <Member MemberName=".ctor">
       <MemberSignature Language="C#" Value="public Options ();" />
@@ -183,8 +187,4 @@
       </Docs>
     </Member>
   </Members>
-  <Docs>
-    <summary>This class specifies output style options for the <see cref="T:SemWeb.RdfXmlWriter" />.</summary>
-    <remarks>This class defines two static fields which have option settings for two common styles: <see cref="F:SemWeb.RdfXmlWriter+Options.Full" /> and <see cref="F:SemWeb.RdfXmlWriter+Options.XMP" />.  See the documentation for those fields for details.</remarks>
-  </Docs>
 </Type>

@@ -2,13 +2,26 @@
   <TypeSignature Language="C#" Value="public class MSG" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
-    <AssemblyVersion>1.0.5.0</AssemblyVersion>
+    <AssemblyVersion>1.0.6.0</AssemblyVersion>
   </AssemblyInfo>
   <Base>
     <BaseTypeName>System.Object</BaseTypeName>
   </Base>
   <Interfaces />
+  <Docs>
+    <summary>To be added.</summary>
+    <remarks>To be added.</remarks>
+  </Docs>
   <Members>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public MSG ();" />
+      <MemberType>Constructor</MemberType>
+      <Parameters />
+      <Docs>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
     <Member MemberName="FindMSG">
       <MemberSignature Language="C#" Value="public static SemWeb.MemoryStore FindMSG (SemWeb.SelectableSource store, SemWeb.Entity node);" />
       <MemberType>Method</MemberType>
@@ -24,33 +37,6 @@
         <param name="node">To be added.</param>
         <summary>To be added.</summary>
         <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
-      </Docs>
-    </Member>
-    <Member MemberName="FindMSGs">
-      <MemberSignature Language="C#" Value="public static SemWeb.Algos.MSG.Graph[] FindMSGs (SemWeb.SelectableSource source, bool loadIntoMemory);" />
-      <MemberType>Method</MemberType>
-      <ReturnValue>
-        <ReturnType>SemWeb.Algos.MSG+Graph[]</ReturnType>
-      </ReturnValue>
-      <Parameters>
-        <Parameter Name="source" Type="SemWeb.SelectableSource" />
-        <Parameter Name="loadIntoMemory" Type="System.Boolean" />
-      </Parameters>
-      <Docs>
-        <param name="source">To be added.</param>
-        <param name="loadIntoMemory">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
-      </Docs>
-    </Member>
-    <Member MemberName=".ctor">
-      <MemberSignature Language="C#" Value="public MSG ();" />
-      <MemberType>Constructor</MemberType>
-      <Parameters />
-      <Docs>
-        <summary>To be added.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -73,9 +59,23 @@
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
+    <Member MemberName="FindMSGs">
+      <MemberSignature Language="C#" Value="public static SemWeb.Algos.MSG.Graph[] FindMSGs (SemWeb.SelectableSource source, bool loadIntoMemory);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>SemWeb.Algos.MSG+Graph[]</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="source" Type="SemWeb.SelectableSource" />
+        <Parameter Name="loadIntoMemory" Type="System.Boolean" />
+      </Parameters>
+      <Docs>
+        <param name="source">To be added.</param>
+        <param name="loadIntoMemory">To be added.</param>
+        <summary>To be added.</summary>
+        <returns>To be added.</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
   </Members>
-  <Docs>
-    <summary>To be added.</summary>
-    <remarks>To be added.</remarks>
-  </Docs>
 </Type>

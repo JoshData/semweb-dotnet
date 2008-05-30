@@ -2,7 +2,7 @@
   <TypeSignature Language="C#" Value="public abstract class SelectResult : SemWeb.StatementSource, System.Collections.Generic.IEnumerable&lt;SemWeb.Statement&gt;" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
-    <AssemblyVersion>1.0.5.0</AssemblyVersion>
+    <AssemblyVersion>1.0.6.0</AssemblyVersion>
   </AssemblyInfo>
   <Base>
     <BaseTypeName>System.Object</BaseTypeName>
@@ -15,7 +15,39 @@
       <InterfaceName>System.Collections.Generic.IEnumerable&lt;SemWeb.Statement&gt;</InterfaceName>
     </Interface>
   </Interfaces>
+  <Docs>
+    <summary>This class is used to hold the results of a call to Select.</summary>
+    <remarks>See <see cref="M:SemWeb.Store.Select(SemWeb.Statement)" /> and <see cref="M:SemWeb.Store.Select(SemWeb.SelectFilter)" /> for examples.</remarks>
+  </Docs>
   <Members>
+    <Member MemberName="Distinct">
+      <MemberSignature Language="C#" Value="public bool Distinct { get; };" />
+      <MemberType>Property</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Boolean</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Gets whether this select result returns only distinct statments from Select calls.</summary>
+        <value>True if any call to Select and its overloads yields only distinct statements (i.e. no duplicates).</value>
+        <remarks>None.</remarks>
+      </Docs>
+      <ImplementsInterfaceMethods>
+        <InterfaceImpl Type="SemWeb.StatementSource" Member="Distinct" cref="P:SemWeb.StatementSource.Distinct" />
+      </ImplementsInterfaceMethods>
+    </Member>
+    <Member MemberName="Load">
+      <MemberSignature Language="C#" Value="public SemWeb.MemoryStore Load ();" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>SemWeb.MemoryStore</ReturnType>
+      </ReturnValue>
+      <Parameters />
+      <Docs>
+        <summary>Loads all of the matching statements into memory and returns a MemoryStore containing the statements.</summary>
+        <returns>A MemoryStore containing the matching statements.</returns>
+        <remarks>Calling this method is not advised when the number of matching statements may be very large.</remarks>
+      </Docs>
+    </Member>
     <Member MemberName="Select">
       <MemberSignature Language="C#" Value="public abstract void Select (SemWeb.StatementSink sink);" />
       <MemberType>Method</MemberType>
@@ -34,19 +66,6 @@
         <InterfaceImpl Type="SemWeb.StatementSource" Member="Select" cref="M:SemWeb.StatementSource.Select(SemWeb.StatementSink)" />
       </ImplementsInterfaceMethods>
     </Member>
-    <Member MemberName="Load">
-      <MemberSignature Language="C#" Value="public SemWeb.MemoryStore Load ();" />
-      <MemberType>Method</MemberType>
-      <ReturnValue>
-        <ReturnType>SemWeb.MemoryStore</ReturnType>
-      </ReturnValue>
-      <Parameters />
-      <Docs>
-        <summary>Loads all of the matching statements into memory and returns a MemoryStore containing the statements.</summary>
-        <returns>A MemoryStore containing the matching statements.</returns>
-        <remarks>Calling this method is not advised when the number of matching statements may be very large.</remarks>
-      </Docs>
-    </Member>
     <Member MemberName="StatementCount">
       <MemberSignature Language="C#" Value="public long StatementCount { get; };" />
       <MemberType>Property</MemberType>
@@ -57,6 +76,32 @@
         <summary>Gets the number of matching statements.</summary>
         <value>The number of matching statements.</value>
         <remarks>Upon accessing this property, all of the matching statements are loaded into memory as if through a call to <see cref="M:SemWeb.SelectResult.Load()" />.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="System.Collections.Generic.IEnumerable&lt;SemWeb.Statement&gt;.GetEnumerator">
+      <MemberSignature Language="C#" Value="System.Collections.Generic.IEnumerator&lt;SemWeb.Statement&gt; IEnumerable&lt;Statement&gt;.GetEnumerator ();" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Collections.Generic.IEnumerator&lt;SemWeb.Statement&gt;</ReturnType>
+      </ReturnValue>
+      <Parameters />
+      <Docs>
+        <summary>To be added.</summary>
+        <returns>To be added.</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="System.Collections.IEnumerable.GetEnumerator">
+      <MemberSignature Language="C#" Value="System.Collections.IEnumerator IEnumerable.GetEnumerator ();" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Collections.IEnumerator</ReturnType>
+      </ReturnValue>
+      <Parameters />
+      <Docs>
+        <summary>To be added.</summary>
+        <returns>To be added.</returns>
+        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="ToArray">
@@ -72,24 +117,5 @@
         <remarks>Calling this method is not advised when the number of matching statements may be very large.</remarks>
       </Docs>
     </Member>
-    <Member MemberName="Distinct">
-      <MemberSignature Language="C#" Value="public bool Distinct { get; };" />
-      <MemberType>Property</MemberType>
-      <ReturnValue>
-        <ReturnType>System.Boolean</ReturnType>
-      </ReturnValue>
-      <Docs>
-        <summary>Gets whether this select result returns only distinct statments from Select calls.</summary>
-        <value>True if any call to Select and its overloads yields only distinct statements (i.e. no duplicates).</value>
-        <remarks>None.</remarks>
-      </Docs>
-      <ImplementsInterfaceMethods>
-        <InterfaceImpl Type="SemWeb.StatementSource" Member="Distinct" cref="P:SemWeb.StatementSource.Distinct" />
-      </ImplementsInterfaceMethods>
-    </Member>
   </Members>
-  <Docs>
-    <summary>This class is used to hold the results of a call to Select.</summary>
-    <remarks>See <see cref="M:SemWeb.Store.Select(SemWeb.Statement)" /> and <see cref="M:SemWeb.Store.Select(SemWeb.SelectFilter)" /> for examples.</remarks>
-  </Docs>
 </Type>

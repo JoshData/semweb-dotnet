@@ -2,13 +2,63 @@
   <TypeSignature Language="C#" Value="public class RdfXmlReader : SemWeb.RdfReader" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
-    <AssemblyVersion>1.0.5.0</AssemblyVersion>
+    <AssemblyVersion>1.0.6.0</AssemblyVersion>
   </AssemblyInfo>
   <Base>
     <BaseTypeName>SemWeb.RdfReader</BaseTypeName>
   </Base>
   <Interfaces />
+  <Docs>
+    <summary>Reads RDF statements from an RDF/XML file.</summary>
+    <remarks>
+      <para>The RdfXmlReader streams the statements to the StatementSink as they are read from the XML stream.  The entire XML document will not be loaded into memory.</para>
+      <example>
+        <para>The following example reads a RDF/XML file from disk:</para>
+        <code lang="C#">using (RdfReader data = new RdfXmlReader("filename.rdf")) {
+    store.Import(data);
+}  </code>
+      </example>
+      <para>It is strongly recommended that you use one of the constructors that takes a Base URI argument, or else set the Base URI of the reader before reading statements from it, so that relative URIs found in the document can be interpreted.  If a BaseURI has not been set and a relative URI is encountered, parsing the document will fail.</para>
+      <para>The stream is begun to be read as soon as the constructor is called.  Any namespace declarations found on the document element of the RDF/XML document will be available in the <see cref="P:SemWeb.RdfXmlReader.Namespaces" /> property once the constructor returns.  Once the document is fully read, all namespace declarations in the document are available in the <see cref="P:SemWeb.RdfReader.Namespaces" /> property and can be copied into the namespace manager of a <see cref="T:SemWeb.RdfWriter" /> using the <see cref="M:SemWeb.NamespaceManager.AddFrom(SemWeb.NamespaceManager)" /> method.</para>
+    </remarks>
+  </Docs>
   <Members>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public RdfXmlReader (System.IO.Stream document);" />
+      <MemberType>Constructor</MemberType>
+      <Parameters>
+        <Parameter Name="document" Type="System.IO.Stream" />
+      </Parameters>
+      <Docs>
+        <param name="document">The stream containing the RDF/XML file.</param>
+        <summary>Creates a parser from a stream.</summary>
+        <remarks>None.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public RdfXmlReader (System.IO.TextReader document);" />
+      <MemberType>Constructor</MemberType>
+      <Parameters>
+        <Parameter Name="document" Type="System.IO.TextReader" />
+      </Parameters>
+      <Docs>
+        <param name="document">The stream containing the RDF/XML file.</param>
+        <summary>Creates a parser from a TextReader.</summary>
+        <remarks>None.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public RdfXmlReader (string file);" />
+      <MemberType>Constructor</MemberType>
+      <Parameters>
+        <Parameter Name="file" Type="System.String" />
+      </Parameters>
+      <Docs>
+        <param name="file">The path of the file containing RDF/XML, or "-" to read from Console.In.</param>
+        <summary>Creates a parser for a file.</summary>
+        <remarks>None.</remarks>
+      </Docs>
+    </Member>
     <Member MemberName=".ctor">
       <MemberSignature Language="C#" Value="public RdfXmlReader (System.Xml.XmlDocument document);" />
       <MemberType>Constructor</MemberType>
@@ -34,38 +84,16 @@
       </Docs>
     </Member>
     <Member MemberName=".ctor">
-      <MemberSignature Language="C#" Value="public RdfXmlReader (System.IO.TextReader document);" />
-      <MemberType>Constructor</MemberType>
-      <Parameters>
-        <Parameter Name="document" Type="System.IO.TextReader" />
-      </Parameters>
-      <Docs>
-        <param name="document">The stream containing the RDF/XML file.</param>
-        <summary>Creates a parser from a TextReader.</summary>
-        <remarks>None.</remarks>
-      </Docs>
-    </Member>
-    <Member MemberName=".ctor">
-      <MemberSignature Language="C#" Value="public RdfXmlReader (System.IO.Stream document);" />
+      <MemberSignature Language="C#" Value="public RdfXmlReader (System.IO.Stream document, string baseUri);" />
       <MemberType>Constructor</MemberType>
       <Parameters>
         <Parameter Name="document" Type="System.IO.Stream" />
+        <Parameter Name="baseUri" Type="System.String" />
       </Parameters>
       <Docs>
         <param name="document">The stream containing the RDF/XML file.</param>
-        <summary>Creates a parser from a stream.</summary>
-        <remarks>None.</remarks>
-      </Docs>
-    </Member>
-    <Member MemberName=".ctor">
-      <MemberSignature Language="C#" Value="public RdfXmlReader (string file);" />
-      <MemberType>Constructor</MemberType>
-      <Parameters>
-        <Parameter Name="file" Type="System.String" />
-      </Parameters>
-      <Docs>
-        <param name="file">The path of the file containing RDF/XML, or "-" to read from Console.In.</param>
-        <summary>Creates a parser for a file.</summary>
+        <param name="baseUri">The URI of the document itself, to be taken as the Base URI for relative URIs encoutered in the document.</param>
+        <summary>Creates a parser from a stream with the given base URI.</summary>
         <remarks>None.</remarks>
       </Docs>
     </Member>
@@ -84,20 +112,6 @@
       </Docs>
     </Member>
     <Member MemberName=".ctor">
-      <MemberSignature Language="C#" Value="public RdfXmlReader (System.IO.Stream document, string baseUri);" />
-      <MemberType>Constructor</MemberType>
-      <Parameters>
-        <Parameter Name="document" Type="System.IO.Stream" />
-        <Parameter Name="baseUri" Type="System.String" />
-      </Parameters>
-      <Docs>
-        <param name="document">The stream containing the RDF/XML file.</param>
-        <param name="baseUri">The URI of the document itself, to be taken as the Base URI for relative URIs encoutered in the document.</param>
-        <summary>Creates a parser from a stream with the given base URI.</summary>
-        <remarks>None.</remarks>
-      </Docs>
-    </Member>
-    <Member MemberName=".ctor">
       <MemberSignature Language="C#" Value="public RdfXmlReader (string file, string baseUri);" />
       <MemberType>Constructor</MemberType>
       <Parameters>
@@ -112,18 +126,4 @@
       </Docs>
     </Member>
   </Members>
-  <Docs>
-    <summary>Reads RDF statements from an RDF/XML file.</summary>
-    <remarks>
-      <para>The RdfXmlReader streams the statements to the StatementSink as they are read from the XML stream.  The entire XML document will not be loaded into memory.</para>
-      <example>
-        <para>The following example reads a RDF/XML file from disk:</para>
-        <code lang="C#">using (RdfReader data = new RdfXmlReader("filename.rdf")) {
-    store.Import(data);
-}  </code>
-      </example>
-      <para>It is strongly recommended that you use one of the constructors that takes a Base URI argument, or else set the Base URI of the reader before reading statements from it, so that relative URIs found in the document can be interpreted.  If a BaseURI has not been set and a relative URI is encountered, parsing the document will fail.</para>
-      <para>The stream is begun to be read as soon as the constructor is called.  Any namespace declarations found on the document element of the RDF/XML document will be available in the <see cref="P:SemWeb.RdfXmlReader.Namespaces" /> property once the constructor returns.  Once the document is fully read, all namespace declarations in the document are available in the <see cref="P:SemWeb.RdfReader.Namespaces" /> property and can be copied into the namespace manager of a <see cref="T:SemWeb.RdfWriter" /> using the <see cref="M:SemWeb.NamespaceManager.AddFrom(SemWeb.NamespaceManager)" /> method.</para>
-    </remarks>
-  </Docs>
 </Type>

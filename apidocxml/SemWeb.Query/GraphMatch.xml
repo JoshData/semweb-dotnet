@@ -2,12 +2,16 @@
   <TypeSignature Language="C#" Value="public class GraphMatch : SemWeb.Query.Query" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
-    <AssemblyVersion>1.0.5.0</AssemblyVersion>
+    <AssemblyVersion>1.0.6.0</AssemblyVersion>
   </AssemblyInfo>
   <Base>
     <BaseTypeName>SemWeb.Query.Query</BaseTypeName>
   </Base>
   <Interfaces />
+  <Docs>
+    <summary>The GraphMatch class implements an algorithm for determining all of the ways the variables in one graph can be bound to resources in another graph.</summary>
+    <remarks>None.</remarks>
+  </Docs>
   <Members>
     <Member MemberName=".ctor">
       <MemberSignature Language="C#" Value="public GraphMatch ();" />
@@ -87,21 +91,26 @@ new GraphMatch(queryGraph).Run(targetData, Console.Out);  </code>
         <remarks>None.</remarks>
       </Docs>
     </Member>
-    <Member MemberName="SetVariableRange">
-      <MemberSignature Language="C#" Value="public void SetVariableRange (SemWeb.Variable variable, System.Collections.Generic.ICollection&lt;SemWeb.Resource&gt; range);" />
+    <Member MemberName="ReorderQuery">
+      <MemberSignature Language="C#" Value="public static SemWeb.Statement[] ReorderQuery (SemWeb.Statement[] graph, SemWeb.Variable[] fixedVariables, SemWeb.SelectableSource schema, bool[,] groupingPreference);" />
       <MemberType>Method</MemberType>
       <ReturnValue>
-        <ReturnType>System.Void</ReturnType>
+        <ReturnType>SemWeb.Statement[]</ReturnType>
       </ReturnValue>
       <Parameters>
-        <Parameter Name="variable" Type="SemWeb.Variable" />
-        <Parameter Name="range" Type="System.Collections.Generic.ICollection&lt;SemWeb.Resource&gt;" />
+        <Parameter Name="graph" Type="SemWeb.Statement[]" />
+        <Parameter Name="fixedVariables" Type="SemWeb.Variable[]" />
+        <Parameter Name="schema" Type="SemWeb.SelectableSource" />
+        <Parameter Name="groupingPreference" Type="System.Boolean[,]" />
       </Parameters>
       <Docs>
-        <param name="variable">A variable in the query.</param>
-        <param name="range">A collection of Resources.</param>
-        <summary>Sets the range of values that the variable's bindings must be drawn from.</summary>
-        <remarks>All bindings for this variable will be in the provided set of resources.</remarks>
+        <param name="graph">To be added.</param>
+        <param name="fixedVariables">To be added.</param>
+        <param name="schema">To be added.</param>
+        <param name="groupingPreference">To be added.</param>
+        <summary>To be added.</summary>
+        <returns>To be added.</returns>
+        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SetDistinguishedVariable">
@@ -119,9 +128,22 @@ new GraphMatch(queryGraph).Run(targetData, Console.Out);  </code>
         <remarks>If this method is never called, all variables in the query are returned in the variable bindings. However, once this method is called, only variables distinguished by this method will be included the resulting bindings. This is useful to avoid getting distinct answers on variables that the user does not care about.</remarks>
       </Docs>
     </Member>
+    <Member MemberName="SetVariableRange">
+      <MemberSignature Language="C#" Value="public void SetVariableRange (SemWeb.Variable variable, System.Collections.Generic.ICollection&lt;SemWeb.Resource&gt; range);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="variable" Type="SemWeb.Variable" />
+        <Parameter Name="range" Type="System.Collections.Generic.ICollection&lt;SemWeb.Resource&gt;" />
+      </Parameters>
+      <Docs>
+        <param name="variable">A variable in the query.</param>
+        <param name="range">A collection of Resources.</param>
+        <summary>Sets the range of values that the variable's bindings must be drawn from.</summary>
+        <remarks>All bindings for this variable will be in the provided set of resources.</remarks>
+      </Docs>
+    </Member>
   </Members>
-  <Docs>
-    <summary>The GraphMatch class implements an algorithm for determining all of the ways the variables in one graph can be bound to resources in another graph.</summary>
-    <remarks>None.</remarks>
-  </Docs>
 </Type>

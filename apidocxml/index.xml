@@ -7,100 +7,100 @@
   <Copyright>See <a href="http://razor.occams.info/code/semweb">http://razor.occams.info/code/semweb</a>.</Copyright>
   <Types>
     <Namespace Name="SemWeb">
-      <Type Name="StatementSink" />
-      <Type Name="Store" />
-      <Type Name="RdfWriter" />
-      <Type Name="NamespaceManager" />
-      <Type Name="ParserException" />
-      <Type Name="Resource" />
+      <Type Name="BNode" />
+      <Type Name="CanForgetBNodes" />
       <Type Name="Entity" />
       <Type Name="Literal" />
-      <Type Name="Statement" />
-      <Type Name="MemoryStore" />
-      <Type Name="RdfReader" />
-      <Type Name="N3Reader" />
-      <Type Name="N3Writer" />
-      <Type Name="RdfXmlReader" />
-      <Type Name="RdfXmlWriter" />
-      <Type Name="StatementSource" />
-      <Type Name="N3Writer+Formats" />
-      <Type Name="SelectableSource" />
-      <Type Name="SelectResult" />
-      <Type Name="QueryableSource" />
-      <Type Name="ModifiableSource" />
-      <Type Name="BNode" />
       <Type Name="LiteralFilter" />
       <Type Name="LiteralFilter+CompType" />
-      <Type Name="SelectFilter" />
-      <Type Name="Variable" />
+      <Type Name="MemoryStore" />
+      <Type Name="ModifiableSource" />
+      <Type Name="N3Reader" />
+      <Type Name="N3Writer" />
+      <Type Name="N3Writer+Formats" />
+      <Type Name="NamespaceManager" />
+      <Type Name="ParserException" />
+      <Type Name="QueryableSource" />
+      <Type Name="RdfReader" />
+      <Type Name="RdfWriter" />
+      <Type Name="RdfXmlReader" />
+      <Type Name="RdfXmlWriter" />
       <Type Name="RdfXmlWriter+Options" />
+      <Type Name="Resource" />
+      <Type Name="SelectableSource" />
+      <Type Name="SelectFilter" />
+      <Type Name="SelectResult" />
+      <Type Name="Statement" />
+      <Type Name="StatementSink" />
+      <Type Name="StatementSource" />
       <Type Name="StaticSource" />
-      <Type Name="CanForgetBNodes" />
-    </Namespace>
-    <Namespace Name="SemWeb.Query">
-      <Type Name="QueryResultSink" />
-      <Type Name="SparqlXmlQuerySink" />
-      <Type Name="GraphMatch" />
-      <Type Name="Query" />
-      <Type Name="QueryFormatException" />
-      <Type Name="QueryExecutionException" />
-      <Type Name="RdfFunction" />
-      <Type Name="QueryOptions" />
-      <Type Name="MetaQueryResult" />
-      <Type Name="VariableBindings" />
-      <Type Name="SparqlEngine" />
-      <Type Name="SparqlEngine+QueryType" />
-      <Type Name="SparqlProtocolServerHandler" />
-      <Type Name="QueryResultBuffer" />
-    </Namespace>
-    <Namespace Name="SemWeb.Stores">
-      <Type Name="SQLStore" />
-      <Type Name="SimpleSourceWrapper" />
-      <Type Name="CachedSource" />
-      <Type Name="DebuggedSource" />
-    </Namespace>
-    <Namespace Name="SemWeb.Util">
-      <Type Name="StatementList" />
-      <Type Name="DistinctStatementsSink" />
-      <Type Name="StatementMap" />
+      <Type Name="Store" />
+      <Type Name="Variable" />
     </Namespace>
     <Namespace Name="SemWeb.Algos">
+      <Type Name="Connectivity" />
       <Type Name="Lean" />
       <Type Name="MSG" />
       <Type Name="MSG+Graph" />
-      <Type Name="Connectivity" />
       <Type Name="SubgraphIterator" />
+    </Namespace>
+    <Namespace Name="SemWeb.Filters">
+      <Type Name="DateTimeCompareFilter" />
+      <Type Name="FilterSink" />
+      <Type Name="NumericCompareFilter" />
+      <Type Name="StringCompareFilter" />
+      <Type Name="StringContainsFilter" />
+      <Type Name="StringEndsWithFilter" />
+      <Type Name="StringStartsWithFilter" />
+      <Type Name="TimeSpanCompareFilter" />
+    </Namespace>
+    <Namespace Name="SemWeb.Inference">
+      <Type Name="Euler" />
+      <Type Name="Proof" />
+      <Type Name="ProofStep" />
+      <Type Name="RdfRelation" />
+      <Type Name="RDFS" />
+      <Type Name="Reasoner" />
+      <Type Name="Rule" />
+      <Type Name="SimpleEntailment" />
+    </Namespace>
+    <Namespace Name="SemWeb.Query">
+      <Type Name="GraphMatch" />
+      <Type Name="MetaQueryResult" />
+      <Type Name="Query" />
+      <Type Name="QueryExecutionException" />
+      <Type Name="QueryFormatException" />
+      <Type Name="QueryOptions" />
+      <Type Name="QueryResultBuffer" />
+      <Type Name="QueryResultSink" />
+      <Type Name="RdfFunction" />
+      <Type Name="SparqlEngine" />
+      <Type Name="SparqlEngine+QueryType" />
+      <Type Name="SparqlProtocolServerHandler" />
+      <Type Name="SparqlXmlQuerySink" />
+      <Type Name="VariableBindings" />
     </Namespace>
     <Namespace Name="SemWeb.Remote">
       <Type Name="SparqlHttpSource" />
       <Type Name="SparqlSource" />
     </Namespace>
+    <Namespace Name="SemWeb.Stores">
+      <Type Name="CachedSource" />
+      <Type Name="DebuggedSource" />
+      <Type Name="SimpleSourceWrapper" />
+      <Type Name="SQLStore" />
+    </Namespace>
+    <Namespace Name="SemWeb.Util">
+      <Type Name="DistinctStatementsSink" />
+      <Type Name="StatementList" />
+      <Type Name="StatementMap" />
+    </Namespace>
     <Namespace Name="SemWeb.Util.Bind">
       <Type Name="Any" />
     </Namespace>
-    <Namespace Name="SemWeb.Filters">
-      <Type Name="StringCompareFilter" />
-      <Type Name="StringContainsFilter" />
-      <Type Name="StringStartsWithFilter" />
-      <Type Name="NumericCompareFilter" />
-      <Type Name="DateTimeCompareFilter" />
-      <Type Name="TimeSpanCompareFilter" />
-      <Type Name="FilterSink" />
-      <Type Name="StringEndsWithFilter" />
-    </Namespace>
-    <Namespace Name="SemWeb.Inference">
-      <Type Name="RDFS" />
-      <Type Name="Rule" />
-      <Type Name="ProofStep" />
-      <Type Name="Proof" />
-      <Type Name="Reasoner" />
-      <Type Name="SimpleEntailment" />
-      <Type Name="Euler" />
-      <Type Name="RdfRelation" />
-    </Namespace>
   </Types>
   <Assemblies>
-    <Assembly Name="SemWeb" Version="1.0.5.0">
+    <Assembly Name="SemWeb" Version="1.0.6.0">
       <Attributes>
         <Attribute>
           <AttributeName>System.Runtime.CompilerServices.RuntimeCompatibility(WrapNonExceptionThrows=true)</AttributeName>

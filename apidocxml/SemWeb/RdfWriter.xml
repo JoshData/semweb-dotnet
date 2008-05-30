@@ -2,7 +2,7 @@
   <TypeSignature Language="C#" Value="public abstract class RdfWriter : IDisposable, SemWeb.StatementSink" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
-    <AssemblyVersion>1.0.5.0</AssemblyVersion>
+    <AssemblyVersion>1.0.6.0</AssemblyVersion>
   </AssemblyInfo>
   <Base>
     <BaseTypeName>System.Object</BaseTypeName>
@@ -15,6 +15,12 @@
       <InterfaceName>System.IDisposable</InterfaceName>
     </Interface>
   </Interfaces>
+  <Docs>
+    <summary>The base class of types that write statements to a stream.</summary>
+    <remarks>
+      <para>This is an abstract class.  Two subclasses are provided: <see cref="T:SemWeb.N3Writer" /> and <see cref="T:SemWeb.RdfXmlWriter" />.</para>
+    </remarks>
+  </Docs>
   <Members>
     <Member MemberName=".ctor">
       <MemberSignature Language="C#" Value="protected RdfWriter ();" />
@@ -40,30 +46,6 @@
         <remarks>None.</remarks>
       </Docs>
     </Member>
-    <Member MemberName="Close">
-      <MemberSignature Language="C#" Value="public virtual void Close ();" />
-      <MemberType>Method</MemberType>
-      <ReturnValue>
-        <ReturnType>System.Void</ReturnType>
-      </ReturnValue>
-      <Parameters />
-      <Docs>
-        <summary>Completes writing the data and closes the stream.</summary>
-        <remarks>None.</remarks>
-      </Docs>
-    </Member>
-    <Member MemberName="Namespaces">
-      <MemberSignature Language="C#" Value="public abstract SemWeb.NamespaceManager Namespaces { get; };" />
-      <MemberType>Property</MemberType>
-      <ReturnValue>
-        <ReturnType>SemWeb.NamespaceManager</ReturnType>
-      </ReturnValue>
-      <Docs>
-        <summary>The NamespaceManager that manages namespace URIs and their prefixes.</summary>
-        <value>A NamespaceManager.</value>
-        <remarks>For some parsers, it is necessary to give a prefix for all namespaces that occur in the data model being written before the writing begins.</remarks>
-      </Docs>
-    </Member>
     <Member MemberName="BaseUri">
       <MemberSignature Language="C#" Value="public string BaseUri { set; get; };" />
       <MemberType>Property</MemberType>
@@ -76,51 +58,15 @@
         <remarks>A writer may choose to abbreviate URIs in the output according to the base URI.</remarks>
       </Docs>
     </Member>
-    <Member MemberName="GetResourceKey">
-      <MemberSignature Language="C#" Value="protected object GetResourceKey (SemWeb.Resource resource);" />
-      <MemberType>Method</MemberType>
-      <ReturnValue>
-        <ReturnType>System.Object</ReturnType>
-      </ReturnValue>
-      <Parameters>
-        <Parameter Name="resource" Type="SemWeb.Resource" />
-      </Parameters>
-      <Docs>
-        <param name="resource">A resource.</param>
-        <summary>See <see cref="M:SemWeb.Store.GetResourceKey(SemWeb.Resource)" />.</summary>
-        <returns>A resource key associated with the resource and this writer.</returns>
-        <remarks>See <see cref="M:SemWeb.Store.GetResourceKey(SemWeb.Resource)" />.</remarks>
-      </Docs>
-    </Member>
-    <Member MemberName="SetResourceKey">
-      <MemberSignature Language="C#" Value="protected void SetResourceKey (SemWeb.Resource resource, object value);" />
+    <Member MemberName="Close">
+      <MemberSignature Language="C#" Value="public virtual void Close ();" />
       <MemberType>Method</MemberType>
       <ReturnValue>
         <ReturnType>System.Void</ReturnType>
       </ReturnValue>
-      <Parameters>
-        <Parameter Name="resource" Type="SemWeb.Resource" />
-        <Parameter Name="value" Type="System.Object" />
-      </Parameters>
+      <Parameters />
       <Docs>
-        <param name="resource">A resource.</param>
-        <param name="value">A key to associate with the resource and the writer.</param>
-        <summary>See <see cref="M:SemWeb.Store.SetResourceKey(SemWeb.Resource)" />.</summary>
-        <remarks>See <see cref="M:SemWeb.Store.SetResourceKey(SemWeb.Resource)" />.</remarks>
-      </Docs>
-    </Member>
-    <Member MemberName="Write">
-      <MemberSignature Language="C#" Value="public virtual void Write (SemWeb.StatementSource source);" />
-      <MemberType>Method</MemberType>
-      <ReturnValue>
-        <ReturnType>System.Void</ReturnType>
-      </ReturnValue>
-      <Parameters>
-        <Parameter Name="source" Type="SemWeb.StatementSource" />
-      </Parameters>
-      <Docs>
-        <param name="source">A source containing statements to write.</param>
-        <summary>Writes out the contents of the StatementSource.</summary>
+        <summary>Completes writing the data and closes the stream.</summary>
         <remarks>None.</remarks>
       </Docs>
     </Member>
@@ -161,11 +107,93 @@
         <remarks>The possible values for <paramref name="type" /> are listed in the Remarks section of <see cref="M:SemWeb.RdfWriter.Create(System.String,System.IO.TextWriter)" /></remarks>
       </Docs>
     </Member>
+    <Member MemberName="GetResourceKey">
+      <MemberSignature Language="C#" Value="protected object GetResourceKey (SemWeb.Resource resource);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Object</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="resource" Type="SemWeb.Resource" />
+      </Parameters>
+      <Docs>
+        <param name="resource">A resource.</param>
+        <summary>See <see cref="M:SemWeb.Store.GetResourceKey(SemWeb.Resource)" />.</summary>
+        <returns>A resource key associated with the resource and this writer.</returns>
+        <remarks>See <see cref="M:SemWeb.Store.GetResourceKey(SemWeb.Resource)" />.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Namespaces">
+      <MemberSignature Language="C#" Value="public abstract SemWeb.NamespaceManager Namespaces { get; };" />
+      <MemberType>Property</MemberType>
+      <ReturnValue>
+        <ReturnType>SemWeb.NamespaceManager</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>The NamespaceManager that manages namespace URIs and their prefixes.</summary>
+        <value>A NamespaceManager.</value>
+        <remarks>For some parsers, it is necessary to give a prefix for all namespaces that occur in the data model being written before the writing begins.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="SemWeb.StatementSink.Add">
+      <MemberSignature Language="C#" Value="bool StatementSink.Add (SemWeb.Statement statement);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Boolean</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="statement" Type="SemWeb.Statement" />
+      </Parameters>
+      <Docs>
+        <param name="statement">To be added.</param>
+        <summary>To be added.</summary>
+        <returns>To be added.</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="SetResourceKey">
+      <MemberSignature Language="C#" Value="protected void SetResourceKey (SemWeb.Resource resource, object value);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="resource" Type="SemWeb.Resource" />
+        <Parameter Name="value" Type="System.Object" />
+      </Parameters>
+      <Docs>
+        <param name="resource">A resource.</param>
+        <param name="value">A key to associate with the resource and the writer.</param>
+        <summary>See <see cref="M:SemWeb.Store.SetResourceKey(SemWeb.Resource)" />.</summary>
+        <remarks>See <see cref="M:SemWeb.Store.SetResourceKey(SemWeb.Resource)" />.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="System.IDisposable.Dispose">
+      <MemberSignature Language="C#" Value="void IDisposable.Dispose ();" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters />
+      <Docs>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Write">
+      <MemberSignature Language="C#" Value="public virtual void Write (SemWeb.StatementSource source);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="source" Type="SemWeb.StatementSource" />
+      </Parameters>
+      <Docs>
+        <param name="source">A source containing statements to write.</param>
+        <summary>Writes out the contents of the StatementSource.</summary>
+        <remarks>None.</remarks>
+      </Docs>
+    </Member>
   </Members>
-  <Docs>
-    <summary>The base class of types that write statements to a stream.</summary>
-    <remarks>
-      <para>This is an abstract class.  Two subclasses are provided: <see cref="T:SemWeb.N3Writer" /> and <see cref="T:SemWeb.RdfXmlWriter" />.</para>
-    </remarks>
-  </Docs>
 </Type>

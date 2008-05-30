@@ -2,20 +2,24 @@
   <TypeSignature Language="C#" Value="public enum LiteralFilter.CompType" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
-    <AssemblyVersion>1.0.5.0</AssemblyVersion>
+    <AssemblyVersion>1.0.6.0</AssemblyVersion>
   </AssemblyInfo>
   <Base>
     <BaseTypeName>System.Enum</BaseTypeName>
   </Base>
+  <Docs>
+    <summary>Represents a type of relational comparison.</summary>
+    <remarks>This enumeration is used by various derivatives of the <see cref="T:SemWeb.LiteralFilter" /> class.</remarks>
+  </Docs>
   <Members>
-    <Member MemberName="NE">
-      <MemberSignature Language="C#" Value="NE" />
+    <Member MemberName="EQ">
+      <MemberSignature Language="C#" Value="EQ" />
       <MemberType>Field</MemberType>
       <ReturnValue>
         <ReturnType>SemWeb.LiteralFilter+CompType</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>Not equal</summary>
+        <summary>Equal</summary>
       </Docs>
     </Member>
     <Member MemberName="GE">
@@ -28,16 +32,6 @@
         <summary>Greater than or equal</summary>
       </Docs>
     </Member>
-    <Member MemberName="LE">
-      <MemberSignature Language="C#" Value="LE" />
-      <MemberType>Field</MemberType>
-      <ReturnValue>
-        <ReturnType>SemWeb.LiteralFilter+CompType</ReturnType>
-      </ReturnValue>
-      <Docs>
-        <summary>Less than or equal</summary>
-      </Docs>
-    </Member>
     <Member MemberName="GT">
       <MemberSignature Language="C#" Value="GT" />
       <MemberType>Field</MemberType>
@@ -46,6 +40,16 @@
       </ReturnValue>
       <Docs>
         <summary>Greater than</summary>
+      </Docs>
+    </Member>
+    <Member MemberName="LE">
+      <MemberSignature Language="C#" Value="LE" />
+      <MemberType>Field</MemberType>
+      <ReturnValue>
+        <ReturnType>SemWeb.LiteralFilter+CompType</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Less than or equal</summary>
       </Docs>
     </Member>
     <Member MemberName="LT">
@@ -58,19 +62,15 @@
         <summary>Less than</summary>
       </Docs>
     </Member>
-    <Member MemberName="EQ">
-      <MemberSignature Language="C#" Value="EQ" />
+    <Member MemberName="NE">
+      <MemberSignature Language="C#" Value="NE" />
       <MemberType>Field</MemberType>
       <ReturnValue>
         <ReturnType>SemWeb.LiteralFilter+CompType</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>Equal</summary>
+        <summary>Not equal</summary>
       </Docs>
     </Member>
   </Members>
-  <Docs>
-    <summary>Represents a type of relational comparison.</summary>
-    <remarks>This enumeration is used by various derivatives of the <see cref="T:SemWeb.LiteralFilter" /> class.</remarks>
-  </Docs>
 </Type>

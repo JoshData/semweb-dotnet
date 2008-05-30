@@ -2,12 +2,16 @@
   <TypeSignature Language="C#" Value="public class ParserException : ApplicationException" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
-    <AssemblyVersion>1.0.5.0</AssemblyVersion>
+    <AssemblyVersion>1.0.6.0</AssemblyVersion>
   </AssemblyInfo>
   <Base>
     <BaseTypeName>System.ApplicationException</BaseTypeName>
   </Base>
   <Interfaces />
+  <Docs>
+    <summary>An exception thrown when an error occurs parsing an RDF document.</summary>
+    <remarks>None.</remarks>
+  </Docs>
   <Members>
     <Member MemberName=".ctor">
       <MemberSignature Language="C#" Value="public ParserException (string message);" />
@@ -36,8 +40,4 @@
       </Docs>
     </Member>
   </Members>
-  <Docs>
-    <summary>An exception thrown when an error occurs parsing an RDF document.</summary>
-    <remarks>None.</remarks>
-  </Docs>
 </Type>

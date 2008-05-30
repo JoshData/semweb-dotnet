@@ -1,18 +1,29 @@
 <Type Name="VariableBindings" FullName="SemWeb.Query.VariableBindings">
-  <TypeSignature Language="C#" Value="public class VariableBindings" />
+  <TypeSignature Language="C#" Value="public class VariableBindings : IComparable, IComparable&lt;SemWeb.Query.VariableBindings&gt;" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
-    <AssemblyVersion>1.0.5.0</AssemblyVersion>
+    <AssemblyVersion>1.0.6.0</AssemblyVersion>
   </AssemblyInfo>
   <Base>
     <BaseTypeName>System.Object</BaseTypeName>
   </Base>
-  <Interfaces />
+  <Interfaces>
+    <Interface>
+      <InterfaceName>System.IComparable</InterfaceName>
+    </Interface>
+    <Interface>
+      <InterfaceName>System.IComparable&lt;SemWeb.Query.VariableBindings&gt;</InterfaceName>
+    </Interface>
+  </Interfaces>
   <Attributes>
     <Attribute>
       <AttributeName>System.Reflection.DefaultMember("Item")</AttributeName>
     </Attribute>
   </Attributes>
+  <Docs>
+    <summary>Represents a row of results from a query.</summary>
+    <remarks>This class maps variables to their target values in a single row of query results.</remarks>
+  </Docs>
   <Members>
     <Member MemberName=".ctor">
       <MemberSignature Language="C#" Value="public VariableBindings (SemWeb.Variable[] vars, SemWeb.Resource[] vals);" />
@@ -26,6 +37,22 @@
         <param name="vals">Their corresponding values (in the same order). Values may be <see langword="null" /> to indicate an unbound variable.</param>
         <summary>Constructs a VariableBindings instance.</summary>
         <remarks>None.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="CompareTo">
+      <MemberSignature Language="C#" Value="public int CompareTo (SemWeb.Query.VariableBindings other);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Int32</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="other" Type="SemWeb.Query.VariableBindings" />
+      </Parameters>
+      <Docs>
+        <param name="other">To be added.</param>
+        <summary>To be added.</summary>
+        <returns>To be added.</returns>
+        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Count">
@@ -56,6 +83,22 @@
         <remarks>None.</remarks>
       </Docs>
     </Member>
+    <Member MemberName="Item">
+      <MemberSignature Language="C#" Value="public SemWeb.Resource this[string variableName] { get; };" />
+      <MemberType>Property</MemberType>
+      <ReturnValue>
+        <ReturnType>SemWeb.Resource</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="variableName" Type="System.String" />
+      </Parameters>
+      <Docs>
+        <param name="variableName">The name of a variable in the binding set.</param>
+        <summary>Gets the resource bound by a variable of the given name.</summary>
+        <value>The resource that is bound by the variable in this row of results, or <see langword="null" /> if the variable is not bound.</value>
+        <remarks>If more than one variable (distinct Variable instance) has the same name in this row, the result of this function is unspecified. Use the other overload of this method instead.</remarks>
+      </Docs>
+    </Member>
     <Member MemberName="Substitute">
       <MemberSignature Language="C#" Value="public SemWeb.Statement Substitute (SemWeb.Statement template);" />
       <MemberType>Method</MemberType>
@@ -70,6 +113,22 @@
         <summary>Performs a substitution on a statement.</summary>
         <returns>A new statement will all occurrences of variables in this row of bindings replaced by their values.</returns>
         <remarks>If a variable in the Subject, Predicate, or Meta fields is bound by a Literal value, a <see cref="T:System.InvalidCastException" /> is thrown.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="System.IComparable.CompareTo">
+      <MemberSignature Language="C#" Value="int IComparable.CompareTo (object other);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Int32</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="other" Type="System.Object" />
+      </Parameters>
+      <Docs>
+        <param name="other">To be added.</param>
+        <summary>To be added.</summary>
+        <returns>To be added.</returns>
+        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Values">
@@ -96,25 +155,5 @@
         <remarks>None.</remarks>
       </Docs>
     </Member>
-    <Member MemberName="Item">
-      <MemberSignature Language="C#" Value="public SemWeb.Resource this[string variableName] { get; };" />
-      <MemberType>Property</MemberType>
-      <ReturnValue>
-        <ReturnType>SemWeb.Resource</ReturnType>
-      </ReturnValue>
-      <Parameters>
-        <Parameter Name="variableName" Type="System.String" />
-      </Parameters>
-      <Docs>
-        <param name="variableName">The name of a variable in the binding set.</param>
-        <summary>Gets the resource bound by a variable of the given name.</summary>
-        <value>The resource that is bound by the variable in this row of results, or <see langword="null" /> if the variable is not bound.</value>
-        <remarks>If more than one variable (distinct Variable instance) has the same name in this row, the result of this function is unspecified. Use the other overload of this method instead.</remarks>
-      </Docs>
-    </Member>
   </Members>
-  <Docs>
-    <summary>Represents a row of results from a query.</summary>
-    <remarks>This class maps variables to their target values in a single row of query results.</remarks>
-  </Docs>
 </Type>

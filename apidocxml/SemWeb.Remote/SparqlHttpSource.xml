@@ -2,7 +2,7 @@
   <TypeSignature Language="C#" Value="public class SparqlHttpSource : SemWeb.QueryableSource, SemWeb.Remote.SparqlSource" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
-    <AssemblyVersion>1.0.5.0</AssemblyVersion>
+    <AssemblyVersion>1.0.6.0</AssemblyVersion>
   </AssemblyInfo>
   <Base>
     <BaseTypeName>System.Object</BaseTypeName>
@@ -15,6 +15,13 @@
       <InterfaceName>SemWeb.Remote.SparqlSource</InterfaceName>
     </Interface>
   </Interfaces>
+  <Docs>
+    <summary>This class is used to access data remotely via the SPARQL Protocol.</summary>
+    <remarks>
+      <para>The SparqlHttpSource accesses remote data using the SPARQL Protocol over HTTP.</para>
+      <para>SPARQL has some serious limitations regarding blank nodes.  Critically, a blank node returned by a SPARQL query cannot be referenced in future queries.  As a result, blank nodes returned by calls to this source cannot be used in future select calls to this source.</para>
+    </remarks>
+  </Docs>
   <Members>
     <Member MemberName=".ctor">
       <MemberSignature Language="C#" Value="public SparqlHttpSource (string url);" />
@@ -27,98 +34,6 @@
         <summary>Creates a new SPARQL data source ready to connect to the SPARQL server at the given URL.</summary>
         <remarks>A new HTTP connection is created on each call to a method in this class.</remarks>
       </Docs>
-    </Member>
-    <Member MemberName="Contains">
-      <MemberSignature Language="C#" Value="public bool Contains (SemWeb.Statement template);" />
-      <MemberType>Method</MemberType>
-      <ReturnValue>
-        <ReturnType>System.Boolean</ReturnType>
-      </ReturnValue>
-      <Parameters>
-        <Parameter Name="template" Type="SemWeb.Statement" />
-      </Parameters>
-      <Docs>
-        <param name="template">A statement with possibly null fields to turn into an ASK query.</param>
-        <summary>Issues an ASK query to see whether any statements matching a template are contained within the endpoint.</summary>
-        <returns>A boolean indicating whether any statements matching the template are contained in the endpoint.</returns>
-        <remarks>An ASK query of the following form is used: "ASK WHERE { ?subject ?predicate ?object }" where any of the variables is the resource in the statement template if the template has a corresponding non-null field</remarks>
-      </Docs>
-      <ImplementsInterfaceMethods>
-        <InterfaceImpl Type="SemWeb.SelectableSource" Member="Contains" cref="M:SemWeb.SelectableSource.Contains(SemWeb.Statement)" />
-      </ImplementsInterfaceMethods>
-    </Member>
-    <Member MemberName="Select">
-      <MemberSignature Language="C#" Value="public void Select (SemWeb.StatementSink sink);" />
-      <MemberType>Method</MemberType>
-      <ReturnValue>
-        <ReturnType>System.Void</ReturnType>
-      </ReturnValue>
-      <Parameters>
-        <Parameter Name="sink" Type="SemWeb.StatementSink" />
-      </Parameters>
-      <Docs>
-        <param name="sink">A StatementSink.</param>
-        <summary>Selects all of the statements in the endpoint.</summary>
-        <remarks>Issues a "SELECT ?subject ?predicate ?object WHERE { ?subject ?predicate ?object }" query to retreive all statements in the endpoint.</remarks>
-      </Docs>
-      <ImplementsInterfaceMethods>
-        <InterfaceImpl Type="SemWeb.StatementSource" Member="Select" cref="M:SemWeb.StatementSource.Select(SemWeb.StatementSink)" />
-      </ImplementsInterfaceMethods>
-    </Member>
-    <Member MemberName="Select">
-      <MemberSignature Language="C#" Value="public void Select (SemWeb.Statement template, SemWeb.StatementSink sink);" />
-      <MemberType>Method</MemberType>
-      <ReturnValue>
-        <ReturnType>System.Void</ReturnType>
-      </ReturnValue>
-      <Parameters>
-        <Parameter Name="template" Type="SemWeb.Statement" />
-        <Parameter Name="sink" Type="SemWeb.StatementSink" />
-      </Parameters>
-      <Docs>
-        <param name="template">A statement template.</param>
-        <param name="sink">A StatementSink to receive the matching statements.</param>
-        <summary>Selects matching statements from the endpoint.</summary>
-        <remarks>Issues a "SELECT ?subject ?predicate ?object WHERE { ?subject ?predicate ?object }" query, where the variables may be replaced by values from the template if the template has a corresponding non-null field, to retreive matching statements in the endpoint.</remarks>
-      </Docs>
-      <ImplementsInterfaceMethods>
-        <InterfaceImpl Type="SemWeb.SelectableSource" Member="Select" cref="M:SemWeb.SelectableSource.Select(SemWeb.Statement,SemWeb.StatementSink)" />
-      </ImplementsInterfaceMethods>
-    </Member>
-    <Member MemberName="Select">
-      <MemberSignature Language="C#" Value="public void Select (SemWeb.SelectFilter filter, SemWeb.StatementSink sink);" />
-      <MemberType>Method</MemberType>
-      <ReturnValue>
-        <ReturnType>System.Void</ReturnType>
-      </ReturnValue>
-      <Parameters>
-        <Parameter Name="filter" Type="SemWeb.SelectFilter" />
-        <Parameter Name="sink" Type="SemWeb.StatementSink" />
-      </Parameters>
-      <Docs>
-        <param name="filter">To be added.</param>
-        <param name="sink">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
-      </Docs>
-      <ImplementsInterfaceMethods>
-        <InterfaceImpl Type="SemWeb.SelectableSource" Member="Select" cref="M:SemWeb.SelectableSource.Select(SemWeb.SelectFilter,SemWeb.StatementSink)" />
-      </ImplementsInterfaceMethods>
-    </Member>
-    <Member MemberName="Distinct">
-      <MemberSignature Language="C#" Value="public bool Distinct { get; };" />
-      <MemberType>Property</MemberType>
-      <ReturnValue>
-        <ReturnType>System.Boolean</ReturnType>
-      </ReturnValue>
-      <Docs>
-        <summary>Returns whether Select calls return only unique statements.</summary>
-        <value>False.</value>
-        <remarks>This method always returns false.</remarks>
-      </Docs>
-      <ImplementsInterfaceMethods>
-        <InterfaceImpl Type="SemWeb.StatementSource" Member="Distinct" cref="P:SemWeb.StatementSource.Distinct" />
-      </ImplementsInterfaceMethods>
     </Member>
     <Member MemberName="Contains">
       <MemberSignature Language="C#" Value="public bool Contains (SemWeb.Resource resource);" />
@@ -142,6 +57,40 @@
         <InterfaceImpl Type="SemWeb.SelectableSource" Member="Contains" cref="M:SemWeb.SelectableSource.Contains(SemWeb.Resource)" />
       </ImplementsInterfaceMethods>
     </Member>
+    <Member MemberName="Contains">
+      <MemberSignature Language="C#" Value="public bool Contains (SemWeb.Statement template);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Boolean</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="template" Type="SemWeb.Statement" />
+      </Parameters>
+      <Docs>
+        <param name="template">A statement with possibly null fields to turn into an ASK query.</param>
+        <summary>Issues an ASK query to see whether any statements matching a template are contained within the endpoint.</summary>
+        <returns>A boolean indicating whether any statements matching the template are contained in the endpoint.</returns>
+        <remarks>An ASK query of the following form is used: "ASK WHERE { ?subject ?predicate ?object }" where any of the variables is the resource in the statement template if the template has a corresponding non-null field</remarks>
+      </Docs>
+      <ImplementsInterfaceMethods>
+        <InterfaceImpl Type="SemWeb.SelectableSource" Member="Contains" cref="M:SemWeb.SelectableSource.Contains(SemWeb.Statement)" />
+      </ImplementsInterfaceMethods>
+    </Member>
+    <Member MemberName="Distinct">
+      <MemberSignature Language="C#" Value="public bool Distinct { get; };" />
+      <MemberType>Property</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Boolean</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Returns whether Select calls return only unique statements.</summary>
+        <value>False.</value>
+        <remarks>This method always returns false.</remarks>
+      </Docs>
+      <ImplementsInterfaceMethods>
+        <InterfaceImpl Type="SemWeb.StatementSource" Member="Distinct" cref="P:SemWeb.StatementSource.Distinct" />
+      </ImplementsInterfaceMethods>
+    </Member>
     <Member MemberName="MetaQuery">
       <MemberSignature Language="C#" Value="public SemWeb.Query.MetaQueryResult MetaQuery (SemWeb.Statement[] graph, SemWeb.Query.QueryOptions options);" />
       <MemberType>Method</MemberType>
@@ -162,6 +111,40 @@
       <ImplementsInterfaceMethods>
         <InterfaceImpl Type="SemWeb.QueryableSource" Member="MetaQuery" cref="M:SemWeb.QueryableSource.MetaQuery(SemWeb.Statement[],SemWeb.Query.QueryOptions)" />
       </ImplementsInterfaceMethods>
+    </Member>
+    <Member MemberName="ParseSparqlResponse">
+      <MemberSignature Language="C#" Value="public static void ParseSparqlResponse (System.IO.Stream sparqlResponse, SemWeb.Query.QueryResultSink queryResults);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="sparqlResponse" Type="System.IO.Stream" />
+        <Parameter Name="queryResults" Type="SemWeb.Query.QueryResultSink" />
+      </Parameters>
+      <Docs>
+        <param name="sparqlResponse">To be added.</param>
+        <param name="queryResults">To be added.</param>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="ParseSparqlResponse">
+      <MemberSignature Language="C#" Value="public static void ParseSparqlResponse (System.IO.Stream sparqlResponse, out bool askResult);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="sparqlResponse" Type="System.IO.Stream" />
+        <Parameter Name="askResult" Type="System.Boolean&amp;" RefType="out" />
+      </Parameters>
+      <Docs>
+        <param name="sparqlResponse">To be added.</param>
+        <param name="askResult">To be added.</param>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
     </Member>
     <Member MemberName="Query">
       <MemberSignature Language="C#" Value="public void Query (SemWeb.Statement[] graph, SemWeb.Query.QueryOptions options, SemWeb.Query.QueryResultSink sink);" />
@@ -226,60 +209,6 @@
       </ImplementsInterfaceMethods>
     </Member>
     <Member MemberName="RunSparqlQuery">
-      <MemberSignature Language="C#" Value="public void RunSparqlQuery (string sparqlQuery, System.IO.TextWriter output);" />
-      <MemberType>Method</MemberType>
-      <ReturnValue>
-        <ReturnType>System.Void</ReturnType>
-      </ReturnValue>
-      <Parameters>
-        <Parameter Name="sparqlQuery" Type="System.String" />
-        <Parameter Name="output" Type="System.IO.TextWriter" />
-      </Parameters>
-      <Docs>
-        <param name="sparqlQuery">To be added.</param>
-        <param name="output">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
-      </Docs>
-      <ImplementsInterfaceMethods>
-        <InterfaceImpl Type="SemWeb.Remote.SparqlSource" Member="RunSparqlQuery" cref="M:SemWeb.Remote.SparqlSource.RunSparqlQuery(System.String,System.IO.TextWriter)" />
-      </ImplementsInterfaceMethods>
-    </Member>
-    <Member MemberName="ParseSparqlResponse">
-      <MemberSignature Language="C#" Value="public static void ParseSparqlResponse (System.IO.Stream sparqlResponse, SemWeb.Query.QueryResultSink queryResults);" />
-      <MemberType>Method</MemberType>
-      <ReturnValue>
-        <ReturnType>System.Void</ReturnType>
-      </ReturnValue>
-      <Parameters>
-        <Parameter Name="sparqlResponse" Type="System.IO.Stream" />
-        <Parameter Name="queryResults" Type="SemWeb.Query.QueryResultSink" />
-      </Parameters>
-      <Docs>
-        <param name="sparqlResponse">To be added.</param>
-        <param name="queryResults">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
-      </Docs>
-    </Member>
-    <Member MemberName="ParseSparqlResponse">
-      <MemberSignature Language="C#" Value="public static void ParseSparqlResponse (System.IO.Stream sparqlResponse, out bool askResult);" />
-      <MemberType>Method</MemberType>
-      <ReturnValue>
-        <ReturnType>System.Void</ReturnType>
-      </ReturnValue>
-      <Parameters>
-        <Parameter Name="sparqlResponse" Type="System.IO.Stream" />
-        <Parameter Name="askResult" Type="System.Boolean&amp;" RefType="out" />
-      </Parameters>
-      <Docs>
-        <param name="sparqlResponse">To be added.</param>
-        <param name="askResult">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
-      </Docs>
-    </Member>
-    <Member MemberName="RunSparqlQuery">
       <MemberSignature Language="C#" Value="public void RunSparqlQuery (string sparqlQuery, out bool askResult);" />
       <MemberType>Method</MemberType>
       <ReturnValue>
@@ -299,12 +228,83 @@
         <InterfaceImpl Type="SemWeb.Remote.SparqlSource" Member="RunSparqlQuery" cref="M:SemWeb.Remote.SparqlSource.RunSparqlQuery(System.String,System.Boolean@)" />
       </ImplementsInterfaceMethods>
     </Member>
+    <Member MemberName="RunSparqlQuery">
+      <MemberSignature Language="C#" Value="public void RunSparqlQuery (string sparqlQuery, System.IO.TextWriter output);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="sparqlQuery" Type="System.String" />
+        <Parameter Name="output" Type="System.IO.TextWriter" />
+      </Parameters>
+      <Docs>
+        <param name="sparqlQuery">To be added.</param>
+        <param name="output">To be added.</param>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+      <ImplementsInterfaceMethods>
+        <InterfaceImpl Type="SemWeb.Remote.SparqlSource" Member="RunSparqlQuery" cref="M:SemWeb.Remote.SparqlSource.RunSparqlQuery(System.String,System.IO.TextWriter)" />
+      </ImplementsInterfaceMethods>
+    </Member>
+    <Member MemberName="Select">
+      <MemberSignature Language="C#" Value="public void Select (SemWeb.StatementSink sink);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="sink" Type="SemWeb.StatementSink" />
+      </Parameters>
+      <Docs>
+        <param name="sink">A StatementSink.</param>
+        <summary>Selects all of the statements in the endpoint.</summary>
+        <remarks>Issues a "SELECT ?subject ?predicate ?object WHERE { ?subject ?predicate ?object }" query to retreive all statements in the endpoint.</remarks>
+      </Docs>
+      <ImplementsInterfaceMethods>
+        <InterfaceImpl Type="SemWeb.StatementSource" Member="Select" cref="M:SemWeb.StatementSource.Select(SemWeb.StatementSink)" />
+      </ImplementsInterfaceMethods>
+    </Member>
+    <Member MemberName="Select">
+      <MemberSignature Language="C#" Value="public void Select (SemWeb.SelectFilter filter, SemWeb.StatementSink sink);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="filter" Type="SemWeb.SelectFilter" />
+        <Parameter Name="sink" Type="SemWeb.StatementSink" />
+      </Parameters>
+      <Docs>
+        <param name="filter">To be added.</param>
+        <param name="sink">To be added.</param>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+      <ImplementsInterfaceMethods>
+        <InterfaceImpl Type="SemWeb.SelectableSource" Member="Select" cref="M:SemWeb.SelectableSource.Select(SemWeb.SelectFilter,SemWeb.StatementSink)" />
+      </ImplementsInterfaceMethods>
+    </Member>
+    <Member MemberName="Select">
+      <MemberSignature Language="C#" Value="public void Select (SemWeb.Statement template, SemWeb.StatementSink sink);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="template" Type="SemWeb.Statement" />
+        <Parameter Name="sink" Type="SemWeb.StatementSink" />
+      </Parameters>
+      <Docs>
+        <param name="template">A statement template.</param>
+        <param name="sink">A StatementSink to receive the matching statements.</param>
+        <summary>Selects matching statements from the endpoint.</summary>
+        <remarks>Issues a "SELECT ?subject ?predicate ?object WHERE { ?subject ?predicate ?object }" query, where the variables may be replaced by values from the template if the template has a corresponding non-null field, to retreive matching statements in the endpoint.</remarks>
+      </Docs>
+      <ImplementsInterfaceMethods>
+        <InterfaceImpl Type="SemWeb.SelectableSource" Member="Select" cref="M:SemWeb.SelectableSource.Select(SemWeb.Statement,SemWeb.StatementSink)" />
+      </ImplementsInterfaceMethods>
+    </Member>
   </Members>
-  <Docs>
-    <summary>This class is used to access data remotely via the SPARQL Protocol.</summary>
-    <remarks>
-      <para>The SparqlHttpSource accesses remote data using the SPARQL Protocol over HTTP.</para>
-      <para>SPARQL has some serious limitations regarding blank nodes.  Critically, a blank node returned by a SPARQL query cannot be referenced in future queries.  As a result, blank nodes returned by calls to this source cannot be used in future select calls to this source.</para>
-    </remarks>
-  </Docs>
 </Type>

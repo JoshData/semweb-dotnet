@@ -2,12 +2,16 @@
   <TypeSignature Language="C#" Value="public class NamespaceManager" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
-    <AssemblyVersion>1.0.5.0</AssemblyVersion>
+    <AssemblyVersion>1.0.6.0</AssemblyVersion>
   </AssemblyInfo>
   <Base>
     <BaseTypeName>System.Object</BaseTypeName>
   </Base>
   <Interfaces />
+  <Docs>
+    <summary>A class that maintains a mapping between namespace prefixes and URIs.</summary>
+    <remarks>None.</remarks>
+  </Docs>
   <Members>
     <Member MemberName=".ctor">
       <MemberSignature Language="C#" Value="public NamespaceManager ();" />
@@ -28,6 +32,21 @@
         <param name="parent">Another namespace manager.</param>
         <summary>Creates a new namespace manager who will look in another namespace manager when it cannot find a matching prefix or URI.</summary>
         <remarks>When the new namespace manager cannot find a prefix or URI in its own table, it will consult <paramref name="parent" />'s table.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="AddFrom">
+      <MemberSignature Language="C#" Value="public void AddFrom (SemWeb.NamespaceManager nsmgr);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="nsmgr" Type="SemWeb.NamespaceManager" />
+      </Parameters>
+      <Docs>
+        <param name="nsmgr">The NamespaceManager to copy the declarations from.</param>
+        <summary>Adds all of the namespace declarations from another NamespaceManager.</summary>
+        <remarks>None.</remarks>
       </Docs>
     </Member>
     <Member MemberName="AddNamespace">
@@ -63,6 +82,19 @@
         <remarks>None.</remarks>
       </Docs>
     </Member>
+    <Member MemberName="GetNamespaces">
+      <MemberSignature Language="C#" Value="public System.Collections.ICollection GetNamespaces ();" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Collections.ICollection</ReturnType>
+      </ReturnValue>
+      <Parameters />
+      <Docs>
+        <summary>Gets all of the namespace URIs known to the namespace manager.</summary>
+        <returns>A collection of all namespace URIs known to this namespace manager.</returns>
+        <remarks>None.</remarks>
+      </Docs>
+    </Member>
     <Member MemberName="GetPrefix">
       <MemberSignature Language="C#" Value="public virtual string GetPrefix (string uri);" />
       <MemberType>Method</MemberType>
@@ -77,6 +109,35 @@
         <summary>Gets the prefix associated with a namespace URI.</summary>
         <returns>The prefix associated with this namespace, or <see langword="null" /> if the URI is not associated with a prefix.</returns>
         <remarks>None.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="GetPrefixes">
+      <MemberSignature Language="C#" Value="public System.Collections.ICollection GetPrefixes ();" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Collections.ICollection</ReturnType>
+      </ReturnValue>
+      <Parameters />
+      <Docs>
+        <summary>Gets all of the prefixes known to the namespace manager.</summary>
+        <returns>A collection of all prefixes known to this namespace manager.</returns>
+        <remarks>None.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Normalize">
+      <MemberSignature Language="C#" Value="public string Normalize (string uri);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>System.String</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="uri" Type="System.String" />
+      </Parameters>
+      <Docs>
+        <param name="uri">A URI to normalize.</param>
+        <summary>Normalizes a URI in N3 format.</summary>
+        <returns>If a namespace matches part of this URI, a QName (prefix:localname) is returned.  Otherwise, the URI is returned in angled brackets (&lt;uri&gt;).</returns>
+        <remarks>A QName will only be returned if the localname consists only of valid characters for a QName.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Normalize">
@@ -99,22 +160,6 @@
         <remarks>None.</remarks>
       </Docs>
     </Member>
-    <Member MemberName="Normalize">
-      <MemberSignature Language="C#" Value="public string Normalize (string uri);" />
-      <MemberType>Method</MemberType>
-      <ReturnValue>
-        <ReturnType>System.String</ReturnType>
-      </ReturnValue>
-      <Parameters>
-        <Parameter Name="uri" Type="System.String" />
-      </Parameters>
-      <Docs>
-        <param name="uri">A URI to normalize.</param>
-        <summary>Normalizes a URI in N3 format.</summary>
-        <returns>If a namespace matches part of this URI, a QName (prefix:localname) is returned.  Otherwise, the URI is returned in angled brackets (&lt;uri&gt;).</returns>
-        <remarks>A QName will only be returned if the localname consists only of valid characters for a QName.</remarks>
-      </Docs>
-    </Member>
     <Member MemberName="Resolve">
       <MemberSignature Language="C#" Value="public string Resolve (string qname);" />
       <MemberType>Method</MemberType>
@@ -131,50 +176,5 @@
         <remarks>The QName is split on its colon.  The prefix and colon are replaced by the namespace corresponding to the prefix.  An exception is thrown if the prefix is not known to the namespace manager.</remarks>
       </Docs>
     </Member>
-    <Member MemberName="GetNamespaces">
-      <MemberSignature Language="C#" Value="public System.Collections.ICollection GetNamespaces ();" />
-      <MemberType>Method</MemberType>
-      <ReturnValue>
-        <ReturnType>System.Collections.ICollection</ReturnType>
-      </ReturnValue>
-      <Parameters />
-      <Docs>
-        <summary>Gets all of the namespace URIs known to the namespace manager.</summary>
-        <returns>A collection of all namespace URIs known to this namespace manager.</returns>
-        <remarks>None.</remarks>
-      </Docs>
-    </Member>
-    <Member MemberName="GetPrefixes">
-      <MemberSignature Language="C#" Value="public System.Collections.ICollection GetPrefixes ();" />
-      <MemberType>Method</MemberType>
-      <ReturnValue>
-        <ReturnType>System.Collections.ICollection</ReturnType>
-      </ReturnValue>
-      <Parameters />
-      <Docs>
-        <summary>Gets all of the prefixes known to the namespace manager.</summary>
-        <returns>A collection of all prefixes known to this namespace manager.</returns>
-        <remarks>None.</remarks>
-      </Docs>
-    </Member>
-    <Member MemberName="AddFrom">
-      <MemberSignature Language="C#" Value="public void AddFrom (SemWeb.NamespaceManager nsmgr);" />
-      <MemberType>Method</MemberType>
-      <ReturnValue>
-        <ReturnType>System.Void</ReturnType>
-      </ReturnValue>
-      <Parameters>
-        <Parameter Name="nsmgr" Type="SemWeb.NamespaceManager" />
-      </Parameters>
-      <Docs>
-        <param name="nsmgr">The NamespaceManager to copy the declarations from.</param>
-        <summary>Adds all of the namespace declarations from another NamespaceManager.</summary>
-        <remarks>None.</remarks>
-      </Docs>
-    </Member>
   </Members>
-  <Docs>
-    <summary>A class that maintains a mapping between namespace prefixes and URIs.</summary>
-    <remarks>None.</remarks>
-  </Docs>
 </Type>

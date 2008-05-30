@@ -2,14 +2,54 @@
   <TypeSignature Language="C#" Value="public interface QueryableSource : SemWeb.SelectableSource" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
-    <AssemblyVersion>1.0.5.0</AssemblyVersion>
+    <AssemblyVersion>1.0.6.0</AssemblyVersion>
   </AssemblyInfo>
   <Interfaces>
     <Interface>
       <InterfaceName>SemWeb.SelectableSource</InterfaceName>
     </Interface>
   </Interfaces>
+  <Docs>
+    <summary>A QueryableSource is a data source that supports a graph-matching query operation.</summary>
+    <remarks>
+      <para>The QueryableSource interface is meant to expose the functionality of simple graph matching over a data source.  For instance, the following simple type of query can be answered through the QueryableSource interface:</para>
+      <code>?book dc:title ?title .
+?book ex:isbn ?isbn.</code>
+      <para>In these queries, the QueryableSouce returns all ways to bind variables to values such that for each binding, all the statements in the query with the variables replaced with their values are contained within data source.</para>
+      <para>The <see cref="M:SemWeb.QueryableSource.Query(SemWeb.Statement[],SemWeb.Query.QueryOptions,SemWeb.Query.QueryResultSink)" /> method takes three parameters.  The first parameter is the graph, as an array of <see cref="T:SemWeb.Statement" />s.  For the example above, the array could be created as follows:</para>
+      <code lang="C#">Variable book = new Variable();
+Variable title = new Variable();
+Variable isbn = new Variable();
+
+Statement[] graph = new Statement[] {
+	new Statement(book, DCNS + "title", title),
+	new Statement(book, EXNS + "isbn", isbn)
+}</code>
+      <para>Keep in mind that different <see cref="T:SemWeb.Variable" /> instances always represent different variables.  Be sure to reuse the same Variable object when you want to use the same variable more than once in the query.</para>
+      <para>The second argument to Query is a <see cref="T:SemWeb.Query.QueryOptions" /> structure which provides additional details on how the query should be executed.  No members of that structure are required to be set for a run-of-the-mill query.</para>
+      <para>The final argument is a <see cref="T:SemWeb.Query.QueryResultSink" /> to which each of the bindings are sent as they are computed.  All of the results are sent to the sink before the Query method returns.</para>
+      <para>This interface also has a <see cref="M:SemWeb.QueryableSource.MetaQuery(SemWeb.Statement[],SemWeb.Query.QueryOptions)" /> method which is used before invoking the Query method to determine whether the data source can answer the query.  Calling MetaQuery is optional; however, Query may throw a <see cref="T:System.NotSupportedException" /> if the query cannot even be processed, something that can be avoided by calling MetaQuery first and checking the return value.</para>
+    </remarks>
+  </Docs>
   <Members>
+    <Member MemberName="MetaQuery">
+      <MemberSignature Language="C#" Value="public SemWeb.Query.MetaQueryResult MetaQuery (SemWeb.Statement[] graph, SemWeb.Query.QueryOptions options);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>SemWeb.Query.MetaQueryResult</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="graph" Type="SemWeb.Statement[]" />
+        <Parameter Name="options" Type="SemWeb.Query.QueryOptions" />
+      </Parameters>
+      <Docs>
+        <param name="graph">The query.</param>
+        <param name="options">The query options.</param>
+        <summary>This method is used to cheaply get information on how the Query method will execute a query.</summary>
+        <returns>A <see cref="T:SemWeb.Query.MetaQueryResult" /> structure indicating whether and how the query will be executed.</returns>
+        <remarks>Call this method before the Query method to check whether a query is supported on the data source and to get more information on how the query will be executed.  Use the same arguments for <paramref name="graph" /> and <paramref name="options" /> as you are about to pass to the Query method.  See the documentation for <see cref="T:SemWeb.Query.MetaQueryResult" /> for more information.</remarks>
+      </Docs>
+    </Member>
     <Member MemberName="Query">
       <MemberSignature Language="C#" Value="public void Query (SemWeb.Statement[] graph, SemWeb.Query.QueryOptions options, SemWeb.Query.QueryResultSink sink);" />
       <MemberType>Method</MemberType>
@@ -33,45 +73,5 @@
         </remarks>
       </Docs>
     </Member>
-    <Member MemberName="MetaQuery">
-      <MemberSignature Language="C#" Value="public SemWeb.Query.MetaQueryResult MetaQuery (SemWeb.Statement[] graph, SemWeb.Query.QueryOptions options);" />
-      <MemberType>Method</MemberType>
-      <ReturnValue>
-        <ReturnType>SemWeb.Query.MetaQueryResult</ReturnType>
-      </ReturnValue>
-      <Parameters>
-        <Parameter Name="graph" Type="SemWeb.Statement[]" />
-        <Parameter Name="options" Type="SemWeb.Query.QueryOptions" />
-      </Parameters>
-      <Docs>
-        <param name="graph">The query.</param>
-        <param name="options">The query options.</param>
-        <summary>This method is used to cheaply get information on how the Query method will execute a query.</summary>
-        <returns>A <see cref="T:SemWeb.Query.MetaQueryResult" /> structure indicating whether and how the query will be executed.</returns>
-        <remarks>Call this method before the Query method to check whether a query is supported on the data source and to get more information on how the query will be executed.  Use the same arguments for <paramref name="graph" /> and <paramref name="options" /> as you are about to pass to the Query method.  See the documentation for <see cref="T:SemWeb.Query.MetaQueryResult" /> for more information.</remarks>
-      </Docs>
-    </Member>
   </Members>
-  <Docs>
-    <summary>A QueryableSource is a data source that supports a graph-matching query operation.</summary>
-    <remarks>
-      <para>The QueryableSource interface is meant to expose the functionality of simple graph matching over a data source.  For instance, the following simple type of query can be answered through the QueryableSource interface:</para>
-      <code>?book dc:title ?title .
-?book ex:isbn ?isbn.</code>
-      <para>In these queries, the QueryableSouce returns all ways to bind variables to values such that for each binding, all the statements in the query with the variables replaced with their values are contained within data source.</para>
-      <para>The <see cref="M:SemWeb.QueryableSource.Query(SemWeb.Statement[],SemWeb.Query.QueryOptions,SemWeb.Query.QueryResultSink)" /> method takes three parameters.  The first parameter is the graph, as an array of <see cref="T:SemWeb.Statement" />s.  For the example above, the array could be created as follows:</para>
-      <code lang="C#">Variable book = new Variable();
-Variable title = new Variable();
-Variable isbn = new Variable();
-
-Statement[] graph = new Statement[] {
-	new Statement(book, DCNS + "title", title),
-	new Statement(book, EXNS + "isbn", isbn)
-}</code>
-      <para>Keep in mind that different <see cref="T:SemWeb.Variable" /> instances always represent different variables.  Be sure to reuse the same Variable object when you want to use the same variable more than once in the query.</para>
-      <para>The second argument to Query is a <see cref="T:SemWeb.Query.QueryOptions" /> structure which provides additional details on how the query should be executed.  No members of that structure are required to be set for a run-of-the-mill query.</para>
-      <para>The final argument is a <see cref="T:SemWeb.Query.QueryResultSink" /> to which each of the bindings are sent as they are computed.  All of the results are sent to the sink before the Query method returns.</para>
-      <para>This interface also has a <see cref="M:SemWeb.QueryableSource.MetaQuery(SemWeb.Statement[],SemWeb.Query.QueryOptions)" /> method which is used before invoking the Query method to determine whether the data source can answer the query.  Calling MetaQuery is optional; however, Query may throw a <see cref="T:System.NotSupportedException" /> if the query cannot even be processed, something that can be avoided by calling MetaQuery first and checking the return value.</para>
-    </remarks>
-  </Docs>
 </Type>

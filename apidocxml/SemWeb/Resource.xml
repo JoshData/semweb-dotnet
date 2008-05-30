@@ -2,7 +2,7 @@
   <TypeSignature Language="C#" Value="public abstract class Resource : IComparable, IComparable&lt;SemWeb.Resource&gt;" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
-    <AssemblyVersion>1.0.5.0</AssemblyVersion>
+    <AssemblyVersion>1.0.6.0</AssemblyVersion>
   </AssemblyInfo>
   <Base>
     <BaseTypeName>System.Object</BaseTypeName>
@@ -15,17 +15,49 @@
       <InterfaceName>System.IComparable&lt;SemWeb.Resource&gt;</InterfaceName>
     </Interface>
   </Interfaces>
+  <Docs>
+    <summary>The base class of <see cref="T:SemWeb.Entity" />, <see cref="T:SemWeb.BNode" />, <see cref="T:SemWeb.Literal" />, and <see cref="T:SemWeb.Variable" />, the nodes in an RDF graph.</summary>
+    <remarks>
+      <para>There are two types of resources in the RDF world: entities and literals.  Entities are nodes in the graph.  They can be either named (i.e. they have a URI) or unnamed (i.e. they are anonymous, or "blank").  All of these things are represented by the <see cref="T:SemWeb.Entity" /> class, which is a subclass of <see cref="T:SemWeb.Resource" />.  However, unnamed "blank" nodes are represented by a special subclass of Entity, the <see cref="T:SemWeb.BNode" /> class.  So, when you want to create a named node, use <c>new Entity(uri)</c>, but when you want to create a new blank node, use <c>new BNode()</c>.  Never say <c>new Entity(null)</c>.</para>
+      <para>Literals, which are textual strings, are represented by the <see cref="T:SemWeb.Literal" /> class.  In RDF, literals can only be the objects of statements.  Use the <c>Value</c> property of a literal to get back its string value.</para>
+      <para>There is a special type of blank node in this library for variables used in queries and inferencing.  These are represented by the <see cref="T:SemWeb.Variable" /> class, which inherits from the <see cref="T:SemWeb.BNode" /> class. The <see cref="T:SemWeb.N3Reader" /> will read <c>?variable</c> resources as <see cref="T:SemWeb.Variable" />s.  The name of the variable will be put in its <see cref="P:SemWeb.BNode.LocalName" /> property.</para>
+      <para>The == and != operators have been overloaded for Resources.  Two resources are equal if they are both <see cref="T:SemWeb.Entity" /> objects and the <see cref="T:SemWeb.Entity" /> overloaded == operator returns true, or if they are both <see cref="T:SemWeb.Literal" /> objects with equal values for Value, Language, and DataType.</para>
+    </remarks>
+  </Docs>
   <Members>
-    <Member MemberName="Uri">
-      <MemberSignature Language="C#" Value="public abstract string Uri { get; };" />
-      <MemberType>Property</MemberType>
+    <Member MemberName="CompareTo">
+      <MemberSignature Language="C#" Value="public int CompareTo (SemWeb.Resource other);" />
+      <MemberType>Method</MemberType>
       <ReturnValue>
-        <ReturnType>System.String</ReturnType>
+        <ReturnType>System.Int32</ReturnType>
       </ReturnValue>
+      <Parameters>
+        <Parameter Name="other" Type="SemWeb.Resource" />
+      </Parameters>
       <Docs>
-        <summary>The URI of this resource.</summary>
-        <value>The URI of the resource, or <see langword="null" /> if the resource is anonymous or a literal.</value>
-        <remarks>None.</remarks>
+        <param name="other">The other resource.</param>
+        <summary>Compares two resources.</summary>
+        <returns>0 if the resources are equal, -1 if this resource should be ordered before <paramref name="other" />, or 1 if <paramref name="other" /> should be ordered first.</returns>
+        <remarks>The ordering used by this method is as follows: Entities sorted by URI, then BNodes sorted by HashCode, and finally Literals sorted by their Value.</remarks>
+      </Docs>
+      <ImplementsInterfaceMethods>
+        <InterfaceImpl Type="System.IComparable&lt;SemWeb.Resource&gt;" Member="CompareTo" cref="M:System.IComparable`1.CompareTo(SemWeb.Resource)" />
+      </ImplementsInterfaceMethods>
+    </Member>
+    <Member MemberName="GetResourceKey">
+      <MemberSignature Language="C#" Value="public object GetResourceKey (object key);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Object</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="key" Type="System.Object" />
+      </Parameters>
+      <Docs>
+        <param name="key">To be added.</param>
+        <summary>To be added.</summary>
+        <returns>To be added.</returns>
+        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="op_Equality">
@@ -70,41 +102,6 @@
         <remarks>See the Resource equality operator.</remarks>
       </Docs>
     </Member>
-    <Member MemberName="CompareTo">
-      <MemberSignature Language="C#" Value="public int CompareTo (SemWeb.Resource other);" />
-      <MemberType>Method</MemberType>
-      <ReturnValue>
-        <ReturnType>System.Int32</ReturnType>
-      </ReturnValue>
-      <Parameters>
-        <Parameter Name="other" Type="SemWeb.Resource" />
-      </Parameters>
-      <Docs>
-        <param name="other">The other resource.</param>
-        <summary>Compares two resources.</summary>
-        <returns>0 if the resources are equal, -1 if this resource should be ordered before <paramref name="other" />, or 1 if <paramref name="other" /> should be ordered first.</returns>
-        <remarks>The ordering used by this method is as follows: Entities sorted by URI, then BNodes sorted by HashCode, and finally Literals sorted by their Value.</remarks>
-      </Docs>
-      <ImplementsInterfaceMethods>
-        <InterfaceImpl Type="System.IComparable&lt;SemWeb.Resource&gt;" Member="CompareTo" cref="M:System.IComparable`1.CompareTo(SemWeb.Resource)" />
-      </ImplementsInterfaceMethods>
-    </Member>
-    <Member MemberName="GetResourceKey">
-      <MemberSignature Language="C#" Value="public object GetResourceKey (object key);" />
-      <MemberType>Method</MemberType>
-      <ReturnValue>
-        <ReturnType>System.Object</ReturnType>
-      </ReturnValue>
-      <Parameters>
-        <Parameter Name="key" Type="System.Object" />
-      </Parameters>
-      <Docs>
-        <param name="key">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
-      </Docs>
-    </Member>
     <Member MemberName="SetResourceKey">
       <MemberSignature Language="C#" Value="public void SetResourceKey (object key, object value);" />
       <MemberType>Method</MemberType>
@@ -122,14 +119,33 @@
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
+    <Member MemberName="System.IComparable.CompareTo">
+      <MemberSignature Language="C#" Value="int IComparable.CompareTo (object other);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Int32</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="other" Type="System.Object" />
+      </Parameters>
+      <Docs>
+        <param name="other">To be added.</param>
+        <summary>To be added.</summary>
+        <returns>To be added.</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Uri">
+      <MemberSignature Language="C#" Value="public abstract string Uri { get; };" />
+      <MemberType>Property</MemberType>
+      <ReturnValue>
+        <ReturnType>System.String</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>The URI of this resource.</summary>
+        <value>The URI of the resource, or <see langword="null" /> if the resource is anonymous or a literal.</value>
+        <remarks>None.</remarks>
+      </Docs>
+    </Member>
   </Members>
-  <Docs>
-    <summary>The base class of <see cref="T:SemWeb.Entity" />, <see cref="T:SemWeb.BNode" />, <see cref="T:SemWeb.Literal" />, and <see cref="T:SemWeb.Variable" />, the nodes in an RDF graph.</summary>
-    <remarks>
-      <para>There are two types of resources in the RDF world: entities and literals.  Entities are nodes in the graph.  They can be either named (i.e. they have a URI) or unnamed (i.e. they are anonymous, or "blank").  All of these things are represented by the <see cref="T:SemWeb.Entity" /> class, which is a subclass of <see cref="T:SemWeb.Resource" />.  However, unnamed "blank" nodes are represented by a special subclass of Entity, the <see cref="T:SemWeb.BNode" /> class.  So, when you want to create a named node, use <c>new Entity(uri)</c>, but when you want to create a new blank node, use <c>new BNode()</c>.  Never say <c>new Entity(null)</c>.</para>
-      <para>Literals, which are textual strings, are represented by the <see cref="T:SemWeb.Literal" /> class.  In RDF, literals can only be the objects of statements.  Use the <c>Value</c> property of a literal to get back its string value.</para>
-      <para>There is a special type of blank node in this library for variables used in queries and inferencing.  These are represented by the <see cref="T:SemWeb.Variable" /> class, which inherits from the <see cref="T:SemWeb.BNode" /> class. The <see cref="T:SemWeb.N3Reader" /> will read <c>?variable</c> resources as <see cref="T:SemWeb.Variable" />s.  The name of the variable will be put in its <see cref="P:SemWeb.BNode.LocalName" /> property.</para>
-      <para>The == and != operators have been overloaded for Resources.  Two resources are equal if they are both <see cref="T:SemWeb.Entity" /> objects and the <see cref="T:SemWeb.Entity" /> overloaded == operator returns true, or if they are both <see cref="T:SemWeb.Literal" /> objects with equal values for Value, Language, and DataType.</para>
-    </remarks>
-  </Docs>
 </Type>

@@ -8,7 +8,38 @@
     <BaseTypeName>SemWeb.Query.Query</BaseTypeName>
   </Base>
   <Interfaces />
+  <Docs>
+    <summary>A SPARQL query engine.</summary>
+    <remarks>
+      <para>This class is based on the engine at http://sparql.sourceforge.net/ by Ryan Levering, version 0.8.</para>
+      <example>
+        <para>This example runs a SELECT query on a data source and writes the results as XML to standard output.</para>
+        <code lang="C#">MemoryStore datamodel = new MemoryStore(new RdfXmlReader("rdfdata.rdf"));
+
+string sparqlQuery = "PREFIX rdf: &lt;http://www.w3.org/1999/02/22-rdf-syntax-ns#&gt;\n"
+                           + "PREFIX foaf: &lt;http://xmlns.com/foaf/0.1/&gt;\n"
+                           + "SELECT * WHERE { ?person rdf:type foaf:Agent . \n"
+                           + "?person foaf:name ?name . }";
+
+SparqlEngine query = new SparqlEngine(sparqlQuery);
+query.Run(datamodel, Console.Out).  </code>
+      </example>
+      <para>Although this example sends the results to a stream, the results can be processed programmatically by passing a <see cref="T:SemWeb.Query.QueryResultSink" /> instead of a TextWriter.</para>
+    </remarks>
+  </Docs>
   <Members>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public SparqlEngine (System.IO.TextReader query);" />
+      <MemberType>Constructor</MemberType>
+      <Parameters>
+        <Parameter Name="query" Type="System.IO.TextReader" />
+      </Parameters>
+      <Docs>
+        <param name="query">A TextReader containing the SPARQL query.</param>
+        <summary>Initialized the SPARQL query from a TextReader.</summary>
+        <remarks>None.</remarks>
+      </Docs>
+    </Member>
     <Member MemberName=".ctor">
       <MemberSignature Language="C#" Value="public SparqlEngine (string query);" />
       <MemberType>Constructor</MemberType>
@@ -21,16 +52,30 @@
         <remarks>None.</remarks>
       </Docs>
     </Member>
-    <Member MemberName=".ctor">
-      <MemberSignature Language="C#" Value="public SparqlEngine (System.IO.TextReader query);" />
-      <MemberType>Constructor</MemberType>
+    <Member MemberName="AddExternalFunction">
+      <MemberSignature Language="C#" Value="public void AddExternalFunction (SemWeb.Query.RdfFunction function);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
       <Parameters>
-        <Parameter Name="query" Type="System.IO.TextReader" />
+        <Parameter Name="function" Type="SemWeb.Query.RdfFunction" />
       </Parameters>
       <Docs>
-        <param name="query">A TextReader containing the SPARQL query.</param>
-        <summary>Initialized the SPARQL query from a TextReader.</summary>
+        <param name="function">An object implementing an external function.</param>
+        <summary>Registers an external function that can be used in FILTER clauses.</summary>
         <remarks>None.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="AllowPersistBNodes">
+      <MemberSignature Language="C#" Value="public bool AllowPersistBNodes;" />
+      <MemberType>Field</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Boolean</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Ask">
@@ -134,21 +179,17 @@
         <remarks>This method can also be called through <see cref="M:SemWeb.Query.Query.Run(SemWeb.SelectableSource,System.IO.TextWriter)" />.</remarks>
       </Docs>
     </Member>
-    <Member MemberName="Select">
-      <MemberSignature Language="C#" Value="public void Select (SemWeb.SelectableSource source, System.IO.TextWriter output);" />
+    <Member MemberName="GetQueryPrefixes">
+      <MemberSignature Language="C#" Value="public SemWeb.NamespaceManager GetQueryPrefixes ();" />
       <MemberType>Method</MemberType>
       <ReturnValue>
-        <ReturnType>System.Void</ReturnType>
+        <ReturnType>SemWeb.NamespaceManager</ReturnType>
       </ReturnValue>
-      <Parameters>
-        <Parameter Name="source" Type="SemWeb.SelectableSource" />
-        <Parameter Name="output" Type="System.IO.TextWriter" />
-      </Parameters>
+      <Parameters />
       <Docs>
-        <param name="source">The data source to query.</param>
-        <param name="output">The <see cref="T:System.IO.TextWriter" /> to output the results to in the SPARQL Results XML output format.</param>
-        <summary>Executes a SELECT query on the given data source and outputs the result of the query in the SPARQL results format to a TextWriter.</summary>
-        <remarks>This method can also be called through <see cref="M:SemWeb.Query.Query.Run(SemWeb.SelectableSource,System.IO.TextWriter)" />.</remarks>
+        <summary>Gets a NamespaceManager containing all of the PREFIX definitions used in the query.</summary>
+        <returns>A NamespaceManager.</returns>
+        <remarks>None.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Select">
@@ -168,6 +209,23 @@
         <remarks>None.</remarks>
       </Docs>
     </Member>
+    <Member MemberName="Select">
+      <MemberSignature Language="C#" Value="public void Select (SemWeb.SelectableSource source, System.IO.TextWriter output);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="source" Type="SemWeb.SelectableSource" />
+        <Parameter Name="output" Type="System.IO.TextWriter" />
+      </Parameters>
+      <Docs>
+        <param name="source">The data source to query.</param>
+        <param name="output">The <see cref="T:System.IO.TextWriter" /> to output the results to in the SPARQL Results XML output format.</param>
+        <summary>Executes a SELECT query on the given data source and outputs the result of the query in the SPARQL results format to a TextWriter.</summary>
+        <remarks>This method can also be called through <see cref="M:SemWeb.Query.Query.Run(SemWeb.SelectableSource,System.IO.TextWriter)" />.</remarks>
+      </Docs>
+    </Member>
     <Member MemberName="Type">
       <MemberSignature Language="C#" Value="public SemWeb.Query.SparqlEngine.QueryType Type { get; };" />
       <MemberType>Property</MemberType>
@@ -180,63 +238,5 @@
         <remarks>None.</remarks>
       </Docs>
     </Member>
-    <Member MemberName="AllowPersistBNodes">
-      <MemberSignature Language="C#" Value="public bool AllowPersistBNodes;" />
-      <MemberType>Field</MemberType>
-      <ReturnValue>
-        <ReturnType>System.Boolean</ReturnType>
-      </ReturnValue>
-      <Docs>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
-      </Docs>
-    </Member>
-    <Member MemberName="AddExternalFunction">
-      <MemberSignature Language="C#" Value="public void AddExternalFunction (SemWeb.Query.RdfFunction function);" />
-      <MemberType>Method</MemberType>
-      <ReturnValue>
-        <ReturnType>System.Void</ReturnType>
-      </ReturnValue>
-      <Parameters>
-        <Parameter Name="function" Type="SemWeb.Query.RdfFunction" />
-      </Parameters>
-      <Docs>
-        <param name="function">An object implementing an external function.</param>
-        <summary>Registers an external function that can be used in FILTER clauses.</summary>
-        <remarks>None.</remarks>
-      </Docs>
-    </Member>
-    <Member MemberName="GetQueryPrefixes">
-      <MemberSignature Language="C#" Value="public SemWeb.NamespaceManager GetQueryPrefixes ();" />
-      <MemberType>Method</MemberType>
-      <ReturnValue>
-        <ReturnType>SemWeb.NamespaceManager</ReturnType>
-      </ReturnValue>
-      <Parameters />
-      <Docs>
-        <summary>Gets a NamespaceManager containing all of the PREFIX definitions used in the query.</summary>
-        <returns>A NamespaceManager.</returns>
-        <remarks>None.</remarks>
-      </Docs>
-    </Member>
   </Members>
-  <Docs>
-    <summary>A SPARQL query engine.</summary>
-    <remarks>
-      <para>This class is based on the engine at http://sparql.sourceforge.net/ by Ryan Levering, version 0.8.</para>
-      <example>
-        <para>This example runs a SELECT query on a data source and writes the results as XML to standard output.</para>
-        <code lang="C#">MemoryStore datamodel = new MemoryStore(new RdfXmlReader("rdfdata.rdf"));
-
-string sparqlQuery = "PREFIX rdf: &lt;http://www.w3.org/1999/02/22-rdf-syntax-ns#&gt;\n"
-                           + "PREFIX foaf: &lt;http://xmlns.com/foaf/0.1/&gt;\n"
-                           + "SELECT * WHERE { ?person rdf:type foaf:Agent . \n"
-                           + "?person foaf:name ?name . }";
-
-SparqlEngine query = new SparqlEngine(sparqlQuery);
-query.Run(datamodel, Console.Out).  </code>
-      </example>
-      <para>Although this example sends the results to a stream, the results can be processed programmatically by passing a <see cref="T:SemWeb.Query.QueryResultSink" /> instead of a TextWriter.</para>
-    </remarks>
-  </Docs>
 </Type>

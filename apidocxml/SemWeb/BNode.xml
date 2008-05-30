@@ -2,12 +2,26 @@
   <TypeSignature Language="C#" Value="public class BNode : SemWeb.Entity" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
-    <AssemblyVersion>1.0.5.0</AssemblyVersion>
+    <AssemblyVersion>1.0.6.0</AssemblyVersion>
   </AssemblyInfo>
   <Base>
     <BaseTypeName>SemWeb.Entity</BaseTypeName>
   </Base>
   <Interfaces />
+  <Docs>
+    <summary>A blank (anonymous) node.</summary>
+    <remarks>
+      <para>Blank nodes are a type of <see cref="T:SemWeb.Entity" /> that have no globally unique identifier.
+    Two blank node instances are generally references to distinct nodes in a graph, unless they were created
+    in the same <see cref="T:SemWeb.StatementSource" /> which marked them as being equivalent.</para>
+      <para>The <see cref="T:SemWeb.Variable" /> class is a subclass of the BNode class.  Variables are used
+      for queries.  Variable names are accessible through the LocalName property.</para>
+      <example>
+        <para>The following example creates a new blank node.</para>
+        <code lang="C#">BNode node = new BNode();  </code>
+      </example>
+    </remarks>
+  </Docs>
   <Members>
     <Member MemberName=".ctor">
       <MemberSignature Language="C#" Value="public BNode ();" />
@@ -43,18 +57,4 @@
       </Docs>
     </Member>
   </Members>
-  <Docs>
-    <summary>A blank (anonymous) node.</summary>
-    <remarks>
-      <para>Blank nodes are a type of <see cref="T:SemWeb.Entity" /> that have no globally unique identifier.
-    Two blank node instances are generally references to distinct nodes in a graph, unless they were created
-    in the same <see cref="T:SemWeb.StatementSource" /> which marked them as being equivalent.</para>
-      <para>The <see cref="T:SemWeb.Variable" /> class is a subclass of the BNode class.  Variables are used
-      for queries.  Variable names are accessible through the LocalName property.</para>
-      <example>
-        <para>The following example creates a new blank node.</para>
-        <code lang="C#">BNode node = new BNode();  </code>
-      </example>
-    </remarks>
-  </Docs>
 </Type>

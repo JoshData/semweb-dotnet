@@ -2,7 +2,7 @@
   <TypeSignature Language="C#" Value="public interface ModifiableSource : SemWeb.SelectableSource, SemWeb.StatementSink" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
-    <AssemblyVersion>1.0.5.0</AssemblyVersion>
+    <AssemblyVersion>1.0.6.0</AssemblyVersion>
   </AssemblyInfo>
   <Interfaces>
     <Interface>
@@ -12,6 +12,10 @@
       <InterfaceName>SemWeb.StatementSink</InterfaceName>
     </Interface>
   </Interfaces>
+  <Docs>
+    <summary>This interface is implemented by data sources that support modifying the contents of the store.</summary>
+    <remarks>Operations including Clear, Replace, and Remove are specified by this interface.</remarks>
+  </Docs>
   <Members>
     <Member MemberName="Clear">
       <MemberSignature Language="C#" Value="public void Clear ();" />
@@ -108,8 +112,4 @@ store.Remove(Statement.All);</code></example></remarks>
       </Docs>
     </Member>
   </Members>
-  <Docs>
-    <summary>This interface is implemented by data sources that support modifying the contents of the store.</summary>
-    <remarks>Operations including Clear, Replace, and Remove are specified by this interface.</remarks>
-  </Docs>
 </Type>

@@ -2,7 +2,7 @@
   <TypeSignature Language="C#" Value="public struct SelectFilter : System.Collections.IEnumerable" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
-    <AssemblyVersion>1.0.5.0</AssemblyVersion>
+    <AssemblyVersion>1.0.6.0</AssemblyVersion>
   </AssemblyInfo>
   <Base>
     <BaseTypeName>System.ValueType</BaseTypeName>
@@ -12,6 +12,10 @@
       <InterfaceName>System.Collections.IEnumerable</InterfaceName>
     </Interface>
   </Interfaces>
+  <Docs>
+    <summary>This structure provides the arguments to the more powerful Select overload.</summary>
+    <remarks>For examples, see <see cref="M:SemWeb.SelectableSource.Select(SemWeb.SelectFilter,SemWeb.StatementSink)" />.</remarks>
+  </Docs>
   <Members>
     <Member MemberName=".ctor">
       <MemberSignature Language="C#" Value="public SelectFilter (SemWeb.Statement statement);" />
@@ -45,76 +49,6 @@
           <see langword="null" /> to match any entity, or an array of entities any of which match the filter.</param>
         <summary>Creates a SelectFilter to select for matching statements.</summary>
         <remarks>None.</remarks>
-      </Docs>
-    </Member>
-    <Member MemberName="Subjects">
-      <MemberSignature Language="C#" Value="public SemWeb.Entity[] Subjects;" />
-      <MemberType>Field</MemberType>
-      <ReturnValue>
-        <ReturnType>SemWeb.Entity[]</ReturnType>
-      </ReturnValue>
-      <Docs>
-        <summary>The filter for the subject value of statements.</summary>
-        <remarks>
-          <see langword="null" /> to match any entity, or an array of entities any of which match the filter.</remarks>
-      </Docs>
-    </Member>
-    <Member MemberName="Predicates">
-      <MemberSignature Language="C#" Value="public SemWeb.Entity[] Predicates;" />
-      <MemberType>Field</MemberType>
-      <ReturnValue>
-        <ReturnType>SemWeb.Entity[]</ReturnType>
-      </ReturnValue>
-      <Docs>
-        <summary>The filter for the predicate value of statements.</summary>
-        <remarks>
-          <see langword="null" /> to match any entity, or an array of entities any of which match the filter.</remarks>
-      </Docs>
-    </Member>
-    <Member MemberName="Objects">
-      <MemberSignature Language="C#" Value="public SemWeb.Resource[] Objects;" />
-      <MemberType>Field</MemberType>
-      <ReturnValue>
-        <ReturnType>SemWeb.Resource[]</ReturnType>
-      </ReturnValue>
-      <Docs>
-        <summary>The filter for the object value of statements.</summary>
-        <remarks>
-          <see langword="null" /> to match any resource, or an array of resources any of which match the filter.</remarks>
-      </Docs>
-    </Member>
-    <Member MemberName="Metas">
-      <MemberSignature Language="C#" Value="public SemWeb.Entity[] Metas;" />
-      <MemberType>Field</MemberType>
-      <ReturnValue>
-        <ReturnType>SemWeb.Entity[]</ReturnType>
-      </ReturnValue>
-      <Docs>
-        <summary>The filter for the meta value of statements.</summary>
-        <remarks>
-          <see langword="null" /> to match any entity, or an array of entities any of which match the filter.</remarks>
-      </Docs>
-    </Member>
-    <Member MemberName="LiteralFilters">
-      <MemberSignature Language="C#" Value="public SemWeb.LiteralFilter[] LiteralFilters;" />
-      <MemberType>Field</MemberType>
-      <ReturnValue>
-        <ReturnType>SemWeb.LiteralFilter[]</ReturnType>
-      </ReturnValue>
-      <Docs>
-        <summary>An array of filters that the object value of statements must match.</summary>
-        <remarks>An array of filters that the object value of any matching statements must match.</remarks>
-      </Docs>
-    </Member>
-    <Member MemberName="Limit">
-      <MemberSignature Language="C#" Value="public int Limit;" />
-      <MemberType>Field</MemberType>
-      <ReturnValue>
-        <ReturnType>System.Int32</ReturnType>
-      </ReturnValue>
-      <Docs>
-        <summary>Maximum number of statements to return.</summary>
-        <remarks>Stores are free to ignore the limit provided.</remarks>
       </Docs>
     </Member>
     <Member MemberName="All">
@@ -160,6 +94,52 @@
         <InterfaceImpl Type="System.Collections.IEnumerable" Member="GetEnumerator" cref="M:System.Collections.IEnumerable.GetEnumerator" />
       </ImplementsInterfaceMethods>
     </Member>
+    <Member MemberName="Limit">
+      <MemberSignature Language="C#" Value="public int Limit;" />
+      <MemberType>Field</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Int32</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Maximum number of statements to return.</summary>
+        <remarks>Stores are free to ignore the limit provided.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="LiteralFilters">
+      <MemberSignature Language="C#" Value="public SemWeb.LiteralFilter[] LiteralFilters;" />
+      <MemberType>Field</MemberType>
+      <ReturnValue>
+        <ReturnType>SemWeb.LiteralFilter[]</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>An array of filters that the object value of statements must match.</summary>
+        <remarks>An array of filters that the object value of any matching statements must match.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Metas">
+      <MemberSignature Language="C#" Value="public SemWeb.Entity[] Metas;" />
+      <MemberType>Field</MemberType>
+      <ReturnValue>
+        <ReturnType>SemWeb.Entity[]</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>The filter for the meta value of statements.</summary>
+        <remarks>
+          <see langword="null" /> to match any entity, or an array of entities any of which match the filter.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Objects">
+      <MemberSignature Language="C#" Value="public SemWeb.Resource[] Objects;" />
+      <MemberType>Field</MemberType>
+      <ReturnValue>
+        <ReturnType>SemWeb.Resource[]</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>The filter for the object value of statements.</summary>
+        <remarks>
+          <see langword="null" /> to match any resource, or an array of resources any of which match the filter.</remarks>
+      </Docs>
+    </Member>
     <Member MemberName="op_Equality">
       <MemberSignature Language="C#" Value="public static bool op_Equality (SemWeb.SelectFilter a, SemWeb.SelectFilter b);" />
       <MemberType>Method</MemberType>
@@ -196,9 +176,29 @@
         <remarks>None.</remarks>
       </Docs>
     </Member>
+    <Member MemberName="Predicates">
+      <MemberSignature Language="C#" Value="public SemWeb.Entity[] Predicates;" />
+      <MemberType>Field</MemberType>
+      <ReturnValue>
+        <ReturnType>SemWeb.Entity[]</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>The filter for the predicate value of statements.</summary>
+        <remarks>
+          <see langword="null" /> to match any entity, or an array of entities any of which match the filter.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Subjects">
+      <MemberSignature Language="C#" Value="public SemWeb.Entity[] Subjects;" />
+      <MemberType>Field</MemberType>
+      <ReturnValue>
+        <ReturnType>SemWeb.Entity[]</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>The filter for the subject value of statements.</summary>
+        <remarks>
+          <see langword="null" /> to match any entity, or an array of entities any of which match the filter.</remarks>
+      </Docs>
+    </Member>
   </Members>
-  <Docs>
-    <summary>This structure provides the arguments to the more powerful Select overload.</summary>
-    <remarks>For examples, see <see cref="M:SemWeb.SelectableSource.Select(SemWeb.SelectFilter,SemWeb.StatementSink)" />.</remarks>
-  </Docs>
 </Type>

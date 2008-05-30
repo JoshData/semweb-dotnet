@@ -2,12 +2,19 @@
   <TypeSignature Language="C#" Value="public abstract class Query" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
-    <AssemblyVersion>1.0.5.0</AssemblyVersion>
+    <AssemblyVersion>1.0.6.0</AssemblyVersion>
   </AssemblyInfo>
   <Base>
     <BaseTypeName>System.Object</BaseTypeName>
   </Base>
   <Interfaces />
+  <Docs>
+    <summary>A Query is something that returns all of the ways a set of variables may bind to a graph.  This is the abstract base class of several query methods.</summary>
+    <remarks>
+      <para>The <see cref="T:SemWeb.Query.GraphMatch" /> class provides a query algorithm to match a graph with variables against another graph.</para>
+      <para>The <see cref="T:SemWeb.Query.Sparql" /> class provides a SPARQL query engine.</para>
+    </remarks>
+  </Docs>
   <Members>
     <Member MemberName=".ctor">
       <MemberSignature Language="C#" Value="protected Query ();" />
@@ -31,16 +38,34 @@
         <remarks>This method is provided for debugging or for users to be able to optimize the query based on the information in the returned string.</remarks>
       </Docs>
     </Member>
-    <Member MemberName="ReturnStart">
-      <MemberSignature Language="C#" Value="public int ReturnStart { set; get; };" />
+    <Member MemberName="MimeType">
+      <MemberSignature Language="C#" Value="public virtual string MimeType { set; get; };" />
       <MemberType>Property</MemberType>
       <ReturnValue>
-        <ReturnType>System.Int32</ReturnType>
+        <ReturnType>System.String</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>The index of the first binding to return.</summary>
-        <value>The index of the first binding to return.  The value of this property is 1-based.</value>
-        <remarks>The first binding returned is by default the first binding.</remarks>
+        <summary>Gets or sets the preferred MIME type for the output of the query.</summary>
+        <value>The preferred MIME type for the output of the query.</value>
+        <remarks>
+          <para>This propery returns the MIME type of the output that results from calling <see cref="M:SemWeb.Query.Run(SemWeb.SelectableSource,System.IO.TextWriter)" />. Output is often in the SPARQL XML Results format, so this property often returns "application/sparql-results+xml".</para>
+          <para>The <see cref="T:SemWeb.Query.SparqlEngine" /> class handles several different types of queries. ASK and SELECT queries return the MIME type above. CONSTRUCT and DESCRIBE queries will be output in RDF/XML format by default, and so this property returns "application/rdf+xml" for those queries.</para>
+          <para>This property can also be used to change the ouput format of queries, where supported. A MIME type that is not supported or recognized will cause the property setter to throw <see cref="T:System.NotSupportedException" />. Always catch this exception when setting this property.</para>
+          <para>The <see cref="T:SemWeb.GraphMatch" /> class ignores the property and always outputs in the SPARQL Results XML format.</para>
+          <para>Using the <see cref="T:SemWeb.Query.SparqlEngine" /> class, SPARQL SELECT queries support application/sparql-results+xml (or text/xml), text/csv, and text/html. SPARQL ASK queries support application/sparql-results+xml (or text/xml) and text/plain. SPARQL CONSTRUCT and DESCRIBE queries can be set to output in either RDF/XML or N3 format by setting this property to "application/n3" or any of the values listed in <see cref="M:SemWeb.RdfWriter.Create(System.String,System.IO.TextWriter)" />.</para>
+        </remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="QueryMeta">
+      <MemberSignature Language="C#" Value="public SemWeb.Entity QueryMeta { set; get; };" />
+      <MemberType>Property</MemberType>
+      <ReturnValue>
+        <ReturnType>SemWeb.Entity</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>A filter on the Meta value of statements in the target graph considered by the query.</summary>
+        <value>The value of this property is <see langword="null" /> by default, meaning the Meta field of statements in the target graph is ignored for the purposes of the query.  Otherwise, the query is restricted to statements with the given entity as a Meta value.</value>
+        <remarks>None.</remarks>
       </Docs>
     </Member>
     <Member MemberName="ReturnLimit">
@@ -55,16 +80,16 @@
         <remarks>All bindings are returned by default.</remarks>
       </Docs>
     </Member>
-    <Member MemberName="QueryMeta">
-      <MemberSignature Language="C#" Value="public SemWeb.Entity QueryMeta { set; get; };" />
+    <Member MemberName="ReturnStart">
+      <MemberSignature Language="C#" Value="public int ReturnStart { set; get; };" />
       <MemberType>Property</MemberType>
       <ReturnValue>
-        <ReturnType>SemWeb.Entity</ReturnType>
+        <ReturnType>System.Int32</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>A filter on the Meta value of statements in the target graph considered by the query.</summary>
-        <value>The value of this property is <see langword="null" /> by default, meaning the Meta field of statements in the target graph is ignored for the purposes of the query.  Otherwise, the query is restricted to statements with the given entity as a Meta value.</value>
-        <remarks>None.</remarks>
+        <summary>The index of the first binding to return.</summary>
+        <value>The index of the first binding to return.  The value of this property is 1-based.</value>
+        <remarks>The first binding returned is by default the first binding.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Run">
@@ -101,30 +126,5 @@
         <remarks>The normal output format uses the <see cref="T:SemWeb.Query.SparqlXmlQuerySink" />.</remarks>
       </Docs>
     </Member>
-    <Member MemberName="MimeType">
-      <MemberSignature Language="C#" Value="public virtual string MimeType { set; get; };" />
-      <MemberType>Property</MemberType>
-      <ReturnValue>
-        <ReturnType>System.String</ReturnType>
-      </ReturnValue>
-      <Docs>
-        <summary>Gets or sets the preferred MIME type for the output of the query.</summary>
-        <value>The preferred MIME type for the output of the query.</value>
-        <remarks>
-          <para>This propery returns the MIME type of the output that results from calling <see cref="M:SemWeb.Query.Run(SemWeb.SelectableSource,System.IO.TextWriter)" />. Output is often in the SPARQL XML Results format, so this property often returns "application/sparql-results+xml".</para>
-          <para>The <see cref="T:SemWeb.Query.SparqlEngine" /> class handles several different types of queries. ASK and SELECT queries return the MIME type above. CONSTRUCT and DESCRIBE queries will be output in RDF/XML format by default, and so this property returns "application/rdf+xml" for those queries.</para>
-          <para>This property can also be used to change the ouput format of queries, where supported. A MIME type that is not supported or recognized will cause the property setter to throw <see cref="T:System.NotSupportedException" />. Always catch this exception when setting this property.</para>
-          <para>The <see cref="T:SemWeb.GraphMatch" /> class and SPARQL SELECT and ASK queries with the <see cref="T:SemWeb.Query.SparqlEngine" /> class do not support other output formats than SPARQL XML Results.</para>
-          <para>SPARQL CONSTRUCT and DESCRIBE queries with the <see cref="T:SemWeb.Query.SparqlEngine" /> class can be set to output in either RDF/XML or N3 format by setting this property to "application/n3" or any of the values listed in <see cref="M:SemWeb.RdfWriter.Create(System.String,System.IO.TextWriter)" />.</para>
-        </remarks>
-      </Docs>
-    </Member>
   </Members>
-  <Docs>
-    <summary>A Query is something that returns all of the ways a set of variables may bind to a graph.  This is the abstract base class of several query methods.</summary>
-    <remarks>
-      <para>The <see cref="T:SemWeb.Query.GraphMatch" /> class provides a query algorithm to match a graph with variables against another graph.</para>
-      <para>The <see cref="T:SemWeb.Query.Sparql" /> class provides a SPARQL query engine.</para>
-    </remarks>
-  </Docs>
 </Type>

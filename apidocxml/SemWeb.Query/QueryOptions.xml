@@ -2,20 +2,45 @@
   <TypeSignature Language="C#" Value="public struct QueryOptions" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
-    <AssemblyVersion>1.0.5.0</AssemblyVersion>
+    <AssemblyVersion>1.0.6.0</AssemblyVersion>
   </AssemblyInfo>
   <Base>
     <BaseTypeName>System.ValueType</BaseTypeName>
   </Base>
   <Interfaces />
+  <Docs>
+    <summary>A structure specifying options for carrying out a query.</summary>
+    <remarks>It is usually sufficient to pass <c>new QueryOptions()</c>  to the options parameter of MetaQuery and Query methods of QueryableSources.</remarks>
+  </Docs>
   <Members>
-    <Member MemberName="Limit">
-      <MemberSignature Language="C#" Value="public int Limit;" />
-      <MemberType>Field</MemberType>
+    <Member MemberName="AddDistinguishedVariable">
+      <MemberSignature Language="C#" Value="public void AddDistinguishedVariable (SemWeb.Variable variable);" />
+      <MemberType>Method</MemberType>
       <ReturnValue>
-        <ReturnType>System.Int32</ReturnType>
+        <ReturnType>System.Void</ReturnType>
       </ReturnValue>
+      <Parameters>
+        <Parameter Name="variable" Type="SemWeb.Variable" />
+      </Parameters>
       <Docs>
+        <param name="variable">To be added.</param>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="AddLiteralFilter">
+      <MemberSignature Language="C#" Value="public void AddLiteralFilter (SemWeb.Variable variable, SemWeb.LiteralFilter filter);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="variable" Type="SemWeb.Variable" />
+        <Parameter Name="filter" Type="SemWeb.LiteralFilter" />
+      </Parameters>
+      <Docs>
+        <param name="variable">To be added.</param>
+        <param name="filter">To be added.</param>
         <summary>To be added.</summary>
         <remarks>To be added.</remarks>
       </Docs>
@@ -27,6 +52,34 @@
         <ReturnType>System.Collections.Generic.ICollection&lt;SemWeb.Variable&gt;</ReturnType>
       </ReturnValue>
       <Docs>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Limit">
+      <MemberSignature Language="C#" Value="public int Limit;" />
+      <MemberType>Field</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Int32</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="SetVariableKnownValues">
+      <MemberSignature Language="C#" Value="public void SetVariableKnownValues (SemWeb.Variable variable, System.Collections.Generic.ICollection&lt;SemWeb.Resource&gt; knownValues);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="variable" Type="SemWeb.Variable" />
+        <Parameter Name="knownValues" Type="System.Collections.Generic.ICollection&lt;SemWeb.Resource&gt;" />
+      </Parameters>
+      <Docs>
+        <param name="variable">To be added.</param>
+        <param name="knownValues">To be added.</param>
         <summary>To be added.</summary>
         <remarks>To be added.</remarks>
       </Docs>
@@ -53,58 +106,5 @@
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
-    <Member MemberName="AddLiteralFilter">
-      <MemberSignature Language="C#" Value="public void AddLiteralFilter (SemWeb.Variable variable, SemWeb.LiteralFilter filter);" />
-      <MemberType>Method</MemberType>
-      <ReturnValue>
-        <ReturnType>System.Void</ReturnType>
-      </ReturnValue>
-      <Parameters>
-        <Parameter Name="variable" Type="SemWeb.Variable" />
-        <Parameter Name="filter" Type="SemWeb.LiteralFilter" />
-      </Parameters>
-      <Docs>
-        <param name="variable">To be added.</param>
-        <param name="filter">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
-      </Docs>
-    </Member>
-    <Member MemberName="SetVariableKnownValues">
-      <MemberSignature Language="C#" Value="public void SetVariableKnownValues (SemWeb.Variable variable, System.Collections.Generic.ICollection&lt;SemWeb.Resource&gt; knownValues);" />
-      <MemberType>Method</MemberType>
-      <ReturnValue>
-        <ReturnType>System.Void</ReturnType>
-      </ReturnValue>
-      <Parameters>
-        <Parameter Name="variable" Type="SemWeb.Variable" />
-        <Parameter Name="knownValues" Type="System.Collections.Generic.ICollection&lt;SemWeb.Resource&gt;" />
-      </Parameters>
-      <Docs>
-        <param name="variable">To be added.</param>
-        <param name="knownValues">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
-      </Docs>
-    </Member>
-    <Member MemberName="AddDistinguishedVariable">
-      <MemberSignature Language="C#" Value="public void AddDistinguishedVariable (SemWeb.Variable variable);" />
-      <MemberType>Method</MemberType>
-      <ReturnValue>
-        <ReturnType>System.Void</ReturnType>
-      </ReturnValue>
-      <Parameters>
-        <Parameter Name="variable" Type="SemWeb.Variable" />
-      </Parameters>
-      <Docs>
-        <param name="variable">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
-      </Docs>
-    </Member>
   </Members>
-  <Docs>
-    <summary>A structure specifying options for carrying out a query.</summary>
-    <remarks>It is usually sufficient to pass <c>new QueryOptions()</c>  to the options parameter of MetaQuery and Query methods of QueryableSources.</remarks>
-  </Docs>
 </Type>

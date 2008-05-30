@@ -2,7 +2,7 @@
   <TypeSignature Language="C#" Value="public struct Statement : IComparable&lt;SemWeb.Statement&gt;, IEquatable&lt;SemWeb.Statement&gt;" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
-    <AssemblyVersion>1.0.5.0</AssemblyVersion>
+    <AssemblyVersion>1.0.6.0</AssemblyVersion>
   </AssemblyInfo>
   <Base>
     <BaseTypeName>System.ValueType</BaseTypeName>
@@ -15,6 +15,14 @@
       <InterfaceName>System.IEquatable&lt;SemWeb.Statement&gt;</InterfaceName>
     </Interface>
   </Interfaces>
+  <Docs>
+    <summary>A statement, comprising a subject, predicate, and object.</summary>
+    <remarks>
+      <para>RDF requires that subjects and predicates be entities (non-literals).</para>
+      <para>The <see cref="P:SemWeb.Statement.Meta" /> property optionally contains an entity that has meta-information about the statement.  The use of the Meta property is left up to application writers.</para>
+      <para>The subject, predicate, and object fields should not normally be <see langword="null" />.  They must not be <see langword="null" /> in a call to <see cref="M:SemWeb.Store.Add(SemWeb.Statement)" />.  They may be <see langword="null" /> when used in a call to <see cref="M:SemWeb.Store.Select" />.  </para>
+    </remarks>
+  </Docs>
   <Members>
     <Member MemberName=".ctor">
       <MemberSignature Language="C#" Value="public Statement (SemWeb.Entity subject, SemWeb.Entity predicate, SemWeb.Resource object);" />
@@ -55,6 +63,68 @@
         </remarks>
       </Docs>
     </Member>
+    <Member MemberName="All">
+      <MemberSignature Language="C#" Value="public static SemWeb.Statement All;" />
+      <MemberType>Field</MemberType>
+      <ReturnValue>
+        <ReturnType>SemWeb.Statement</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>A statement whose fields are all <see langword="null" />.</summary>
+        <remarks>
+          <para>This statement is provided as a convience to easily select all statements in a source by a call to Select.</para>
+          <example>
+            <para>The following expression writes out all statements in a store.</para>
+            <code lang="C#">using (StatementSink sink = new N3Writer(Console.Out)) {
+    store.Select(Statement.All);
+}</code>
+          </example>
+        </remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="AnyNull">
+      <MemberSignature Language="C#" Value="public bool AnyNull { get; };" />
+      <MemberType>Property</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Boolean</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Gets whether any of the Subject, Predicate, Object, or Meta fields are <see langword="null" />.</summary>
+        <value>
+          <see langword="true" /> if any of the Subject, Predicate, Object, or Meta fields are <see langword="null" />.</value>
+        <remarks>This is used to detect whether the Statement is a template.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="CompareTo">
+      <MemberSignature Language="C#" Value="public int CompareTo (SemWeb.Statement s);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Int32</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="s" Type="SemWeb.Statement" />
+      </Parameters>
+      <Docs>
+        <param name="s">Another statement.</param>
+        <summary>Compares two statements.</summary>
+        <returns>0 if the two statements are equal, -1 if this statement should be ordered before <paramref name="s" />, otherwise 1 if <paramref name="s" /> should be ordered before this statement.</returns>
+        <remarks>Statements are ordered first by subject, then by predicate, then object, then meta.  For each of those fields, this statement comes first if its field is null or if the resource in the field would be ordered first compared to the corresponding resource in <paramref name="s" />, according to the ordering defined in the Resource class.</remarks>
+      </Docs>
+      <ImplementsInterfaceMethods>
+        <InterfaceImpl Type="System.IComparable&lt;SemWeb.Statement&gt;" Member="CompareTo" cref="M:System.IComparable`1.CompareTo(SemWeb.Statement)" />
+      </ImplementsInterfaceMethods>
+    </Member>
+    <Member MemberName="DefaultMeta">
+      <MemberSignature Language="C#" Value="public static SemWeb.Entity DefaultMeta;" />
+      <MemberType>Field</MemberType>
+      <ReturnValue>
+        <ReturnType>SemWeb.Entity</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>The entity used for the <see cref="P:SemWeb.Statement.Meta" /> field of statements when a Meta value is not given by the caller.</summary>
+        <remarks>None.</remarks>
+      </Docs>
+    </Member>
     <Member MemberName="Invert">
       <MemberSignature Language="C#" Value="public SemWeb.Statement Invert ();" />
       <MemberType>Method</MemberType>
@@ -66,6 +136,44 @@
         <summary>Returns a new statement with the same predicate but with subject and object reversed.</summary>
         <returns>The inverse of this statement.</returns>
         <remarks>A <see cref="System.ArgumentException" /> is thrown if the object of the statement is not an entity, since subjects can only be entities.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Matches">
+      <MemberSignature Language="C#" Value="public bool Matches (SemWeb.Statement statement);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Boolean</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="statement" Type="SemWeb.Statement" />
+      </Parameters>
+      <Docs>
+        <param name="statement">To be added.</param>
+        <summary>To be added.</summary>
+        <returns>To be added.</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Meta">
+      <MemberSignature Language="C#" Value="public SemWeb.Entity Meta;" />
+      <MemberType>Field</MemberType>
+      <ReturnValue>
+        <ReturnType>SemWeb.Entity</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>The meta field for the statement.</summary>
+        <remarks>This field is often left as its default value, which is <see cref="F:SemWeb.Statement.DefaultMeta" />, but the value of this field can be used for any application-specific purpose.  Uses include tracking context and provenance, reification, and for formulas and named graphs.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Object">
+      <MemberSignature Language="C#" Value="public SemWeb.Resource Object;" />
+      <MemberType>Field</MemberType>
+      <ReturnValue>
+        <ReturnType>SemWeb.Resource</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>The object of the statement.</summary>
+        <remarks>Objects can be entities or literals.</remarks>
       </Docs>
     </Member>
     <Member MemberName="op_Equality">
@@ -106,47 +214,31 @@
         meta entities are considered equal, or both are <see langword="null" />.</remarks>
       </Docs>
     </Member>
-    <Member MemberName="DefaultMeta">
-      <MemberSignature Language="C#" Value="public static SemWeb.Entity DefaultMeta;" />
+    <Member MemberName="Predicate">
+      <MemberSignature Language="C#" Value="public SemWeb.Entity Predicate;" />
       <MemberType>Field</MemberType>
       <ReturnValue>
         <ReturnType>SemWeb.Entity</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>The entity used for the <see cref="P:SemWeb.Statement.Meta" /> field of statements when a Meta value is not given by the caller.</summary>
+        <summary>The predicate of the statement.</summary>
         <remarks>None.</remarks>
       </Docs>
     </Member>
-    <Member MemberName="All">
-      <MemberSignature Language="C#" Value="public static SemWeb.Statement All;" />
-      <MemberType>Field</MemberType>
+    <Member MemberName="Replace">
+      <MemberSignature Language="C#" Value="public SemWeb.Statement Replace (System.Collections.Hashtable resourceMap);" />
+      <MemberType>Method</MemberType>
       <ReturnValue>
         <ReturnType>SemWeb.Statement</ReturnType>
       </ReturnValue>
+      <Parameters>
+        <Parameter Name="resourceMap" Type="System.Collections.Hashtable" />
+      </Parameters>
       <Docs>
-        <summary>A statement whose fields are all <see langword="null" />.</summary>
-        <remarks>
-          <para>This statement is provided as a convience to easily select all statements in a source by a call to Select.</para>
-          <example>
-            <para>The following expression writes out all statements in a store.</para>
-            <code lang="C#">using (StatementSink sink = new N3Writer(Console.Out)) {
-    store.Select(Statement.All);
-}</code>
-          </example>
-        </remarks>
-      </Docs>
-    </Member>
-    <Member MemberName="AnyNull">
-      <MemberSignature Language="C#" Value="public bool AnyNull { get; };" />
-      <MemberType>Property</MemberType>
-      <ReturnValue>
-        <ReturnType>System.Boolean</ReturnType>
-      </ReturnValue>
-      <Docs>
-        <summary>Gets whether any of the Subject, Predicate, Object, or Meta fields are <see langword="null" />.</summary>
-        <value>
-          <see langword="true" /> if any of the Subject, Predicate, Object, or Meta fields are <see langword="null" />.</value>
-        <remarks>This is used to detect whether the Statement is a template.</remarks>
+        <param name="resourceMap">A mapping from resources to resources.</param>
+        <summary>Replaces instances of resources in the statement with other resources.</summary>
+        <returns>A new statement in which instances of the keys of <paramref name="resourceMap" /> have been replaced by their corresponding values.</returns>
+        <remarks>An exception will be thrown if a resource in subject, predicate, or meta position is mapped to a literal value.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Replace">
@@ -178,97 +270,21 @@
         <remarks>None.</remarks>
       </Docs>
     </Member>
-    <Member MemberName="Predicate">
-      <MemberSignature Language="C#" Value="public SemWeb.Entity Predicate;" />
-      <MemberType>Field</MemberType>
-      <ReturnValue>
-        <ReturnType>SemWeb.Entity</ReturnType>
-      </ReturnValue>
-      <Docs>
-        <summary>The predicate of the statement.</summary>
-        <remarks>None.</remarks>
-      </Docs>
-    </Member>
-    <Member MemberName="Object">
-      <MemberSignature Language="C#" Value="public SemWeb.Resource Object;" />
-      <MemberType>Field</MemberType>
-      <ReturnValue>
-        <ReturnType>SemWeb.Resource</ReturnType>
-      </ReturnValue>
-      <Docs>
-        <summary>The object of the statement.</summary>
-        <remarks>Objects can be entities or literals.</remarks>
-      </Docs>
-    </Member>
-    <Member MemberName="Meta">
-      <MemberSignature Language="C#" Value="public SemWeb.Entity Meta;" />
-      <MemberType>Field</MemberType>
-      <ReturnValue>
-        <ReturnType>SemWeb.Entity</ReturnType>
-      </ReturnValue>
-      <Docs>
-        <summary>The meta field for the statement.</summary>
-        <remarks>This field is often left as its default value, which is <see cref="F:SemWeb.Statement.DefaultMeta" />, but the value of this field can be used for any application-specific purpose.  Uses include tracking context and provenance, reification, and for formulas and named graphs.</remarks>
-      </Docs>
-    </Member>
-    <Member MemberName="Replace">
-      <MemberSignature Language="C#" Value="public SemWeb.Statement Replace (System.Collections.Hashtable resourceMap);" />
-      <MemberType>Method</MemberType>
-      <ReturnValue>
-        <ReturnType>SemWeb.Statement</ReturnType>
-      </ReturnValue>
-      <Parameters>
-        <Parameter Name="resourceMap" Type="System.Collections.Hashtable" />
-      </Parameters>
-      <Docs>
-        <param name="resourceMap">A mapping from resources to resources.</param>
-        <summary>Replaces instances of resources in the statement with other resources.</summary>
-        <returns>A new statement in which instances of the keys of <paramref name="resourceMap" /> have been replaced by their corresponding values.</returns>
-        <remarks>An exception will be thrown if a resource in subject, predicate, or meta position is mapped to a literal value.</remarks>
-      </Docs>
-    </Member>
-    <Member MemberName="Matches">
-      <MemberSignature Language="C#" Value="public bool Matches (SemWeb.Statement statement);" />
+    <Member MemberName="System.IEquatable&lt;SemWeb.Statement&gt;.Equals">
+      <MemberSignature Language="C#" Value="bool IEquatable&lt;Statement&gt;.Equals (SemWeb.Statement other);" />
       <MemberType>Method</MemberType>
       <ReturnValue>
         <ReturnType>System.Boolean</ReturnType>
       </ReturnValue>
       <Parameters>
-        <Parameter Name="statement" Type="SemWeb.Statement" />
+        <Parameter Name="other" Type="SemWeb.Statement" />
       </Parameters>
       <Docs>
-        <param name="statement">To be added.</param>
+        <param name="other">To be added.</param>
         <summary>To be added.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
-    <Member MemberName="CompareTo">
-      <MemberSignature Language="C#" Value="public int CompareTo (SemWeb.Statement s);" />
-      <MemberType>Method</MemberType>
-      <ReturnValue>
-        <ReturnType>System.Int32</ReturnType>
-      </ReturnValue>
-      <Parameters>
-        <Parameter Name="s" Type="SemWeb.Statement" />
-      </Parameters>
-      <Docs>
-        <param name="s">Another statement.</param>
-        <summary>Compares two statements.</summary>
-        <returns>0 if the two statements are equal, -1 if this statement should be ordered before <paramref name="s" />, otherwise 1 if <paramref name="s" /> should be ordered before this statement.</returns>
-        <remarks>Statements are ordered first by subject, then by predicate, then object, then meta.  For each of those fields, this statement comes first if its field is null or if the resource in the field would be ordered first compared to the corresponding resource in <paramref name="s" />, according to the ordering defined in the Resource class.</remarks>
-      </Docs>
-      <ImplementsInterfaceMethods>
-        <InterfaceImpl Type="System.IComparable&lt;SemWeb.Statement&gt;" Member="CompareTo" cref="M:System.IComparable`1.CompareTo(SemWeb.Statement)" />
-      </ImplementsInterfaceMethods>
-    </Member>
   </Members>
-  <Docs>
-    <summary>A statement, comprising a subject, predicate, and object.</summary>
-    <remarks>
-      <para>RDF requires that subjects and predicates be entities (non-literals).</para>
-      <para>The <see cref="P:SemWeb.Statement.Meta" /> property optionally contains an entity that has meta-information about the statement.  The use of the Meta property is left up to application writers.</para>
-      <para>The subject, predicate, and object fields should not normally be <see langword="null" />.  They must not be <see langword="null" /> in a call to <see cref="M:SemWeb.Store.Add(SemWeb.Statement)" />.  They may be <see langword="null" /> when used in a call to <see cref="M:SemWeb.Store.Select" />.  </para>
-    </remarks>
-  </Docs>
 </Type>

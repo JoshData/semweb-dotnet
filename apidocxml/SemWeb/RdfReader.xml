@@ -2,7 +2,7 @@
   <TypeSignature Language="C#" Value="public abstract class RdfReader : IDisposable, SemWeb.StatementSource" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
-    <AssemblyVersion>1.0.5.0</AssemblyVersion>
+    <AssemblyVersion>1.0.6.0</AssemblyVersion>
   </AssemblyInfo>
   <Base>
     <BaseTypeName>System.Object</BaseTypeName>
@@ -15,6 +15,16 @@
       <InterfaceName>System.IDisposable</InterfaceName>
     </Interface>
   </Interfaces>
+  <Docs>
+    <summary>The base class of types that read statements from streams.</summary>
+    <remarks>
+      <para>This is an abstract class.  Two subclasses are provided: <see cref="T:SemWeb.N3Reader" /> and <see cref="T:SemWeb.RdfXmlReader" />.</para>
+      <para>
+        <see cref="M:SemWeb.RdfReader.LoadFromUri(System.Uri)" /> can be used to load RDF data, in either N3 or XML format, from a web address.</para>
+      <para>
+        <see cref="M:SemWeb.RdfReader.Create(string,string)" /> can be used to create a reader in the factory paradigm.</para>
+    </remarks>
+  </Docs>
   <Members>
     <Member MemberName=".ctor">
       <MemberSignature Language="C#" Value="protected RdfReader ();" />
@@ -22,189 +32,6 @@
       <Parameters />
       <Docs>
         <summary>The protected no-arg constructor used by derived classes.</summary>
-        <remarks>None.</remarks>
-      </Docs>
-    </Member>
-    <Member MemberName="Dispose">
-      <MemberSignature Language="C#" Value="public virtual void Dispose ();" />
-      <MemberType>Method</MemberType>
-      <ReturnValue>
-        <ReturnType>System.Void</ReturnType>
-      </ReturnValue>
-      <Parameters />
-      <Docs>
-        <summary>Disposes the reader.</summary>
-        <remarks>The resources associated with the reader are freed.</remarks>
-      </Docs>
-      <ImplementsInterfaceMethods>
-        <InterfaceImpl Type="System.IDisposable" Member="Dispose" cref="M:System.IDisposable.Dispose" />
-      </ImplementsInterfaceMethods>
-    </Member>
-    <Member MemberName="Create">
-      <MemberSignature Language="C#" Value="public static SemWeb.RdfReader Create (string type, string source);" />
-      <MemberType>Method</MemberType>
-      <ReturnValue>
-        <ReturnType>SemWeb.RdfReader</ReturnType>
-      </ReturnValue>
-      <Parameters>
-        <Parameter Name="type" Type="System.String" />
-        <Parameter Name="source" Type="System.String" />
-      </Parameters>
-      <Docs>
-        <param name="type">The stream type.</param>
-        <param name="source">The name of the source stream, as a file name, or "-" for standard input.</param>
-        <summary>Creates a RdfReader in the factory paradigm for the given file.</summary>
-        <returns>
-          <para>The type of reader returned is given in the following table.</para>
-          <list type="table">
-            <listheader>
-              <term>
-                <paramref name="type" />
-              </term>
-              <description>Reader</description>
-            </listheader>
-            <item>
-              <term>"xml", "text/xml", "application/xml", "application/rdf+xml"</term>
-              <description>
-                <see cref="T:SemWeb.RdfXmlReader" />
-              </description>
-            </item>
-            <item>
-              <term>"n3", "text/n3", "application/n3", "application/turtle", "application/x-turtle"</term>
-              <description>
-                <see cref="T:SemWeb.N3Reader" />
-              </description>
-            </item>
-          </list>
-        </returns>
-        <remarks>None.</remarks>
-      </Docs>
-    </Member>
-    <Member MemberName="Meta">
-      <MemberSignature Language="C#" Value="public SemWeb.Entity Meta { set; get; };" />
-      <MemberType>Property</MemberType>
-      <ReturnValue>
-        <ReturnType>SemWeb.Entity</ReturnType>
-      </ReturnValue>
-      <Docs>
-        <summary>An entity to assign as the meta entity for statements loaded by this reader.</summary>
-        <value>An entity to use for meta information.  Cannot be <see langword="null" />.</value>
-        <remarks>
-          <para>The value of this property is used as the meta argument in calls to the Statement constructor <see cref="C:SemWeb.Statement(SemWeb.Entity,SemWeb.Entity,SemWeb.Resource,SemWeb.Entity)" />.  The use of <see cref="P:SemWeb.Statement.Meta" /> is up to the application.</para>
-          <para>The default value of this property is <see cref="P:SemWeb.Statement.DefaultMeta" />, which is also the meta value used in the three-arg constructor for <see cref="T:SemWeb.Statement" />.  If the meta field is not important for the application, this field should be left unchanged.</para>
-        </remarks>
-      </Docs>
-    </Member>
-    <Member MemberName="BaseUri">
-      <MemberSignature Language="C#" Value="public string BaseUri { set; get; };" />
-      <MemberType>Property</MemberType>
-      <ReturnValue>
-        <ReturnType>System.String</ReturnType>
-      </ReturnValue>
-      <Docs>
-        <summary>The base URI for resolving relative URIs found in the stream.  If a base URI is provided within the stream, this property may be updated to indicate the base URI found.</summary>
-        <value>The base URI for resolving relative URIs found in the stream.  May be, and is initially, <see langword="null" />.  </value>
-        <remarks>When this property is <see langword="null" />, the reader will not correctly resolve relative URIs in the stream.  Always set this property before beginning reading when the base URI of the document is known.</remarks>
-      </Docs>
-    </Member>
-    <Member MemberName="OnWarning">
-      <MemberSignature Language="C#" Value="protected void OnWarning (string message);" />
-      <MemberType>Method</MemberType>
-      <ReturnValue>
-        <ReturnType>System.Void</ReturnType>
-      </ReturnValue>
-      <Parameters>
-        <Parameter Name="message" Type="System.String" />
-      </Parameters>
-      <Docs>
-        <param name="message">A warning message.</param>
-        <summary>Implementors of RdfReader may call this method to indicate a parsing warning.</summary>
-        <remarks>This is not currently used for anything.</remarks>
-      </Docs>
-    </Member>
-    <Member MemberName="Variables">
-      <MemberSignature Language="C#" Value="public System.Collections.Generic.ICollection&lt;SemWeb.Variable&gt; Variables { get; };" />
-      <MemberType>Property</MemberType>
-      <ReturnValue>
-        <ReturnType>System.Collections.Generic.ICollection&lt;SemWeb.Variable&gt;</ReturnType>
-      </ReturnValue>
-      <Docs>
-        <summary>A list of <see cref="T:SemWeb.Variable" />s found in the stream.</summary>
-        <value>A list of <see cref="T:SemWeb.Variable" />s found in the stream.</value>
-        <remarks>Not all readers support variables.  (N3-formatted RDF does, but XML formatted RDF doesn't.)</remarks>
-      </Docs>
-    </Member>
-    <Member MemberName="Select">
-      <MemberSignature Language="C#" Value="public abstract void Select (SemWeb.StatementSink sink);" />
-      <MemberType>Method</MemberType>
-      <ReturnValue>
-        <ReturnType>System.Void</ReturnType>
-      </ReturnValue>
-      <Parameters>
-        <Parameter Name="sink" Type="SemWeb.StatementSink" />
-      </Parameters>
-      <Docs>
-        <param name="sink">Each statement found in the stream is added to the statement sink via <see cref="M:SemWeb.StatementSink.Add(SemWeb.Statement)" />.</param>
-        <summary>Reads the stream into the statement sink.</summary>
-        <remarks>User code should call <see cref="M:SemWeb.Store.Import(SemWeb.StatementSource)" /> rather than calling this method directly.</remarks>
-      </Docs>
-      <ImplementsInterfaceMethods>
-        <InterfaceImpl Type="SemWeb.StatementSource" Member="Select" cref="M:SemWeb.StatementSource.Select(SemWeb.StatementSink)" />
-      </ImplementsInterfaceMethods>
-    </Member>
-    <Member MemberName="ReuseEntities">
-      <MemberSignature Language="C#" Value="public bool ReuseEntities { set; get; };" />
-      <MemberType>Property</MemberType>
-      <ReturnValue>
-        <ReturnType>System.Boolean</ReturnType>
-      </ReturnValue>
-      <Docs>
-        <summary>Determines whether the reader must reuse Entity objects that it creates.</summary>
-        <value>If false (the default), the reader may create a new Entity object each time an entity is encoutered in the stream.  If true, the reader must return the same Entity object each time it encounters a reference to the same entity.</value>
-        <remarks>Setting this property to true may slow down the performance of the reader, as it may need to consult a hashtable each time a URI is read mapping the URI to an Entity it has previously created.</remarks>
-      </Docs>
-    </Member>
-    <Member MemberName="LoadFromUri">
-      <MemberSignature Language="C#" Value="public static SemWeb.RdfReader LoadFromUri (Uri webresource);" />
-      <MemberType>Method</MemberType>
-      <ReturnValue>
-        <ReturnType>SemWeb.RdfReader</ReturnType>
-      </ReturnValue>
-      <Parameters>
-        <Parameter Name="webresource" Type="System.Uri" />
-      </Parameters>
-      <Docs>
-        <param name="webresource">The URI of the RDF document.</param>
-        <summary>Loads an RDF document from the Internet.</summary>
-        <returns>An RdfReader over the remote document.</returns>
-        <remarks>
-          <para>The document is fetched with <see cref="T:System.Net.WebRequest" /> and must be in RDF/XML or Notation3 (NTriples/Turtle/N3) format.</para>
-          <para>The format of the document is detected as follows.  If the document has a mime-type of text/xml, application/xml, application/rss+xml, or application/rdf+xml, the document is treated as an RDF/XML document.  If the document has a mime-type of text/rdf+n3, application/n3, application/turtle, or application/x-turtle, the document is treated as a Notation3 document.  If the mime-type is not recognized, the document's file name extension is checked.  If it is .xml or .rss, it is treated as an RDF/XML document.  If it is .n3, .ttl, or .nt, it is treated as a Notation3 document.</para>
-          <para>If the format could not be determined, a <see cref="T:System.InvalidOperationException" /> is thrown.</para>
-        </remarks>
-      </Docs>
-    </Member>
-    <Member MemberName="Namespaces">
-      <MemberSignature Language="C#" Value="public SemWeb.NamespaceManager Namespaces { get; };" />
-      <MemberType>Property</MemberType>
-      <ReturnValue>
-        <ReturnType>SemWeb.NamespaceManager</ReturnType>
-      </ReturnValue>
-      <Docs>
-        <summary>Gets the NamespaceManager that contains all of the namespace-prefix mappings used in the input stream.</summary>
-        <value>A NamespaceManager that contains all of the namespace-prefix mappings used in the input stream.</value>
-        <remarks>None.</remarks>
-      </Docs>
-    </Member>
-    <Member MemberName="Warnings">
-      <MemberSignature Language="C#" Value="public System.Collections.Generic.ICollection&lt;string&gt; Warnings { get; };" />
-      <MemberType>Property</MemberType>
-      <ReturnValue>
-        <ReturnType>System.Collections.Generic.ICollection&lt;System.String&gt;</ReturnType>
-      </ReturnValue>
-      <Docs>
-        <summary>Gets a list of warnings generated while parsing the input stream.</summary>
-        <value>A list of warnings generated while parsing the input stream.  Each element of the list is a string.</value>
         <remarks>None.</remarks>
       </Docs>
     </Member>
@@ -221,6 +48,18 @@
         <param name="variable">A variable.</param>
         <summary>Adds a Variable to the Variables collection.</summary>
         <remarks>Used by RdfReader implementations to add a variable into the Variables collection.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="BaseUri">
+      <MemberSignature Language="C#" Value="public string BaseUri { set; get; };" />
+      <MemberType>Property</MemberType>
+      <ReturnValue>
+        <ReturnType>System.String</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>The base URI for resolving relative URIs found in the stream.  If a base URI is provided within the stream, this property may be updated to indicate the base URI found.</summary>
+        <value>The base URI for resolving relative URIs found in the stream.  May be, and is initially, <see langword="null" />.  </value>
+        <remarks>When this property is <see langword="null" />, the reader will not correctly resolve relative URIs in the stream.  Always set this property before beginning reading when the base URI of the document is known.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Create">
@@ -263,15 +102,200 @@
         <remarks>None.</remarks>
       </Docs>
     </Member>
+    <Member MemberName="Create">
+      <MemberSignature Language="C#" Value="public static SemWeb.RdfReader Create (string type, string source);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>SemWeb.RdfReader</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="type" Type="System.String" />
+        <Parameter Name="source" Type="System.String" />
+      </Parameters>
+      <Docs>
+        <param name="type">The stream type.</param>
+        <param name="source">The name of the source stream, as a file name, or "-" for standard input.</param>
+        <summary>Creates a RdfReader in the factory paradigm for the given file.</summary>
+        <returns>
+          <para>The type of reader returned is given in the following table.</para>
+          <list type="table">
+            <listheader>
+              <term>
+                <paramref name="type" />
+              </term>
+              <description>Reader</description>
+            </listheader>
+            <item>
+              <term>"xml", "text/xml", "application/xml", "application/rdf+xml"</term>
+              <description>
+                <see cref="T:SemWeb.RdfXmlReader" />
+              </description>
+            </item>
+            <item>
+              <term>"n3", "text/n3", "application/n3", "application/turtle", "application/x-turtle"</term>
+              <description>
+                <see cref="T:SemWeb.N3Reader" />
+              </description>
+            </item>
+          </list>
+        </returns>
+        <remarks>None.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Dispose">
+      <MemberSignature Language="C#" Value="protected virtual void Dispose ();" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters />
+      <Docs>
+        <summary>Disposes the reader.</summary>
+        <remarks>The resources associated with the reader are freed.</remarks>
+      </Docs>
+      <ImplementsInterfaceMethods>
+        <InterfaceImpl Type="System.IDisposable" Member="Dispose" cref="M:System.IDisposable.Dispose" />
+      </ImplementsInterfaceMethods>
+    </Member>
+    <Member MemberName="LoadFromUri">
+      <MemberSignature Language="C#" Value="public static SemWeb.RdfReader LoadFromUri (Uri webresource);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>SemWeb.RdfReader</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="webresource" Type="System.Uri" />
+      </Parameters>
+      <Docs>
+        <param name="webresource">The URI of the RDF document.</param>
+        <summary>Loads an RDF document from the Internet.</summary>
+        <returns>An RdfReader over the remote document.</returns>
+        <remarks>
+          <para>The document is fetched with <see cref="T:System.Net.WebRequest" /> and must be in RDF/XML or Notation3 (NTriples/Turtle/N3) format.</para>
+          <para>The format of the document is detected as follows.  If the document has a mime-type of text/xml, application/xml, application/rss+xml, or application/rdf+xml, the document is treated as an RDF/XML document.  If the document has a mime-type of text/rdf+n3, application/n3, application/turtle, or application/x-turtle, the document is treated as a Notation3 document.  If the mime-type is not recognized, the document's file name extension is checked.  If it is .xml or .rss, it is treated as an RDF/XML document.  If it is .n3, .ttl, or .nt, it is treated as a Notation3 document.</para>
+          <para>If the format could not be determined, a <see cref="T:System.InvalidOperationException" /> is thrown.</para>
+        </remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Meta">
+      <MemberSignature Language="C#" Value="public SemWeb.Entity Meta { set; get; };" />
+      <MemberType>Property</MemberType>
+      <ReturnValue>
+        <ReturnType>SemWeb.Entity</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>An entity to assign as the meta entity for statements loaded by this reader.</summary>
+        <value>An entity to use for meta information.  Cannot be <see langword="null" />.</value>
+        <remarks>
+          <para>The value of this property is used as the meta argument in calls to the Statement constructor <see cref="C:SemWeb.Statement(SemWeb.Entity,SemWeb.Entity,SemWeb.Resource,SemWeb.Entity)" />.  The use of <see cref="P:SemWeb.Statement.Meta" /> is up to the application.</para>
+          <para>The default value of this property is <see cref="P:SemWeb.Statement.DefaultMeta" />, which is also the meta value used in the three-arg constructor for <see cref="T:SemWeb.Statement" />.  If the meta field is not important for the application, this field should be left unchanged.</para>
+        </remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Namespaces">
+      <MemberSignature Language="C#" Value="public SemWeb.NamespaceManager Namespaces { get; };" />
+      <MemberType>Property</MemberType>
+      <ReturnValue>
+        <ReturnType>SemWeb.NamespaceManager</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Gets the NamespaceManager that contains all of the namespace-prefix mappings used in the input stream.</summary>
+        <value>A NamespaceManager that contains all of the namespace-prefix mappings used in the input stream.</value>
+        <remarks>None.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="OnWarning">
+      <MemberSignature Language="C#" Value="protected void OnWarning (string message);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="message" Type="System.String" />
+      </Parameters>
+      <Docs>
+        <param name="message">A warning message.</param>
+        <summary>Implementors of RdfReader may call this method to indicate a parsing warning.</summary>
+        <remarks>This is not currently used for anything.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="ReuseEntities">
+      <MemberSignature Language="C#" Value="public bool ReuseEntities { set; get; };" />
+      <MemberType>Property</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Boolean</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Determines whether the reader must reuse Entity objects that it creates.</summary>
+        <value>If false (the default), the reader may create a new Entity object each time an entity is encoutered in the stream.  If true, the reader must return the same Entity object each time it encounters a reference to the same entity.</value>
+        <remarks>Setting this property to true may slow down the performance of the reader, as it may need to consult a hashtable each time a URI is read mapping the URI to an Entity it has previously created.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Select">
+      <MemberSignature Language="C#" Value="public abstract void Select (SemWeb.StatementSink sink);" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="sink" Type="SemWeb.StatementSink" />
+      </Parameters>
+      <Docs>
+        <param name="sink">Each statement found in the stream is added to the statement sink via <see cref="M:SemWeb.StatementSink.Add(SemWeb.Statement)" />.</param>
+        <summary>Reads the stream into the statement sink.</summary>
+        <remarks>User code should call <see cref="M:SemWeb.Store.Import(SemWeb.StatementSource)" /> rather than calling this method directly.</remarks>
+      </Docs>
+      <ImplementsInterfaceMethods>
+        <InterfaceImpl Type="SemWeb.StatementSource" Member="Select" cref="M:SemWeb.StatementSource.Select(SemWeb.StatementSink)" />
+      </ImplementsInterfaceMethods>
+    </Member>
+    <Member MemberName="SemWeb.StatementSource.Distinct">
+      <MemberSignature Language="C#" Value="bool StatementSource.Distinct { get; };" />
+      <MemberType>Property</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Boolean</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+        <value>To be added.</value>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="System.IDisposable.Dispose">
+      <MemberSignature Language="C#" Value="void IDisposable.Dispose ();" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters />
+      <Docs>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Variables">
+      <MemberSignature Language="C#" Value="public System.Collections.Generic.ICollection&lt;SemWeb.Variable&gt; Variables { get; };" />
+      <MemberType>Property</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Collections.Generic.ICollection&lt;SemWeb.Variable&gt;</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>A list of <see cref="T:SemWeb.Variable" />s found in the stream.</summary>
+        <value>A list of <see cref="T:SemWeb.Variable" />s found in the stream.</value>
+        <remarks>Not all readers support variables.  (N3-formatted RDF does, but XML formatted RDF doesn't.)</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Warnings">
+      <MemberSignature Language="C#" Value="public System.Collections.Generic.ICollection&lt;string&gt; Warnings { get; };" />
+      <MemberType>Property</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Collections.Generic.ICollection&lt;System.String&gt;</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Gets a list of warnings generated while parsing the input stream.</summary>
+        <value>A list of warnings generated while parsing the input stream.  Each element of the list is a string.</value>
+        <remarks>None.</remarks>
+      </Docs>
+    </Member>
   </Members>
-  <Docs>
-    <summary>The base class of types that read statements from streams.</summary>
-    <remarks>
-      <para>This is an abstract class.  Two subclasses are provided: <see cref="T:SemWeb.N3Reader" /> and <see cref="T:SemWeb.RdfXmlReader" />.</para>
-      <para>
-        <see cref="M:SemWeb.RdfReader.LoadFromUri(System.Uri)" /> can be used to load RDF data, in either N3 or XML format, from a web address.</para>
-      <para>
-        <see cref="M:SemWeb.RdfReader.Create(string,string)" /> can be used to create a reader in the factory paradigm.</para>
-    </remarks>
-  </Docs>
 </Type>

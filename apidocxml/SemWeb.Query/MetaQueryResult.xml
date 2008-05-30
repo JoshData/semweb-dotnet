@@ -2,12 +2,16 @@
   <TypeSignature Language="C#" Value="public struct MetaQueryResult" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
-    <AssemblyVersion>1.0.5.0</AssemblyVersion>
+    <AssemblyVersion>1.0.6.0</AssemblyVersion>
   </AssemblyInfo>
   <Base>
     <BaseTypeName>System.ValueType</BaseTypeName>
   </Base>
   <Interfaces />
+  <Docs>
+    <summary>This structure is used by <see cref="M:SemWeb.QueryableSource.MetaQuery(SemWeb.Statement[],SemWeb.Query.QueryOptions)" /> when asking for the querying capabilities of a data source.</summary>
+    <remarks>See the fields of this structure for more information.</remarks>
+  </Docs>
   <Members>
     <Member MemberName="IsDefinitive">
       <MemberSignature Language="C#" Value="public bool[] IsDefinitive;" />
@@ -43,8 +47,4 @@
       </Docs>
     </Member>
   </Members>
-  <Docs>
-    <summary>This structure is used by <see cref="M:SemWeb.QueryableSource.MetaQuery(SemWeb.Statement[],SemWeb.Query.QueryOptions)" /> when asking for the querying capabilities of a data source.</summary>
-    <remarks>See the fields of this structure for more information.</remarks>
-  </Docs>
 </Type>
