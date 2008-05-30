@@ -1,3 +1,5 @@
+2008-05-30 Version 1.06
+
 	* SPARQL:
 	  - ORDER BY was broken in the previous update. Related bugs were also
 	    fixed, including now being able to use built-in functions in ORDER

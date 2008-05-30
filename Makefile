@@ -42,7 +42,7 @@ endif
 
 ifeq "$(PROFILE)" "DOTNET3"
 BIN=bin_linq
-MCS=gmcs -d:DOTNET2 -d:DOTNET3 -langversion:linq
+MCS=gmcs -d:DOTNET2 -d:DOTNET3
 MCS_LIBS=-r:System.Data -r:System.Web
 endif
 

@@ -1,7 +1,7 @@
 SPARQL=work-copy
 SPARQL_RELEASE=upstream
 
-JAVA_HOME=/usr/lib/jvm/java-6-sun-1.6.0.03
+JAVA_HOME=/usr/lib/jvm/java-6-sun-1.6.0.06
 IKVM_BIN=ikvm-0.34.0.2/bin
 IKVM=$(IKVM_BIN)/ikvmc.exe
 ANT=JAVA_HOME=$(JAVA_HOME) /usr/bin/ant
