@@ -80,7 +80,15 @@ namespace SemWeb.Stores {
 			
 			using (IDataReader reader = RunReader("show variables like \"version\"")) {
 				reader.Read();
-				version = new Version(reader.GetString(1));
+				
+				// I get 5.0.51a-3ubuntu5.1.
+				string v = reader.GetString(1);
+				if (v.IndexOf('-') != -1)
+					v = v.Substring(0, v.IndexOf('-'));
+				while (char.IsLetter(v[v.Length-1]))
+					v = v.Substring(0, v.Length-1);
+				
+				version = new Version(v);
 			}
 		}
 		
