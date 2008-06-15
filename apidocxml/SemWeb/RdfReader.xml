@@ -92,7 +92,7 @@
               </description>
             </item>
             <item>
-              <term>"n3", "text/n3", "application/n3", "application/turtle", "application/x-turtle"</term>
+              <term>"n3", "text/n3", "text/rdf+n3", "application/n3", "text/turtle", "application/turtle", "application/x-turtle"</term>
               <description>
                 <see cref="T:SemWeb.N3Reader" />
               </description>
@@ -250,7 +250,7 @@
       </ImplementsInterfaceMethods>
     </Member>
     <Member MemberName="SemWeb.StatementSource.Distinct">
-      <MemberSignature Language="C#" Value="bool StatementSource.Distinct { get; };" />
+      <MemberSignature Language="C#" Value="bool SemWeb.StatementSource.Distinct { get; };" />
       <MemberType>Property</MemberType>
       <ReturnValue>
         <ReturnType>System.Boolean</ReturnType>

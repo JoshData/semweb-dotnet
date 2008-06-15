@@ -62,6 +62,10 @@ namespace SemWeb {
 					#endif
 				case "n3":
 					return new N3Writer(output);
+				case "turtle":
+					N3Writer w = new N3Writer(output);
+					w.Format = N3Writer.Formats.Turtle;
+					return w;
 				default:
 					throw new ArgumentException("Unknown parser or MIME type: " + type);
 			}
@@ -77,6 +81,10 @@ namespace SemWeb {
 					#endif
 				case "n3":
 					return new N3Writer(file);
+				case "turtle":
+					N3Writer w = new N3Writer(file);
+					w.Format = N3Writer.Formats.Turtle;
+					return w;
 				default:
 					throw new ArgumentException("Unknown parser or MIME type: " + type);
 			}

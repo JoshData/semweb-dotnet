@@ -88,9 +88,12 @@ namespace SemWeb {
 				case "text/n3":
 				case "text/rdf+n3":
 				case "application/n3":
+					return "n3";
+
+				case "text/turtle":
 				case "application/turtle":
 				case "application/x-turtle":
-					return "n3";
+					return "turtle";
 			}
 			
 			return type;
@@ -103,6 +106,7 @@ namespace SemWeb {
 				case "xml":
 					return new RdfXmlReader(source);
 				case "n3":
+				case "turtle":
 					return new N3Reader(source);
 				default:
 					throw new ArgumentException("Unknown parser or MIME type: " + type);
@@ -116,6 +120,7 @@ namespace SemWeb {
 				case "xml":
 					return new RdfXmlReader(source);
 				case "n3":
+				case "turtle":
 					return new N3Reader(new StreamReader(source, System.Text.Encoding.UTF8));
 				default:
 					throw new ArgumentException("Unknown parser or MIME type: " + type);
@@ -140,7 +145,7 @@ namespace SemWeb {
 			if (mimetype == "xml" || mimetype == "application/rss+xml")
 				reader = new RdfXmlReader(resp.GetResponseStream());
 					
-			else if (mimetype == "n3")
+			else if (mimetype == "n3" || mimetype == "turtle")
 				reader = new N3Reader(new StreamReader(resp.GetResponseStream(), System.Text.Encoding.UTF8));
 			
 			else if (webresource.LocalPath.EndsWith(".rdf") || webresource.LocalPath.EndsWith(".xml") || webresource.LocalPath.EndsWith(".rss"))
