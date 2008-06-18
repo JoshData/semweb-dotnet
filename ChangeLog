@@ -3,7 +3,7 @@
 	  write Turtle and not N3.
 	* MySQLStore has trouble finding the server version on Ubuntu.
 	* SPARQL server HTML and CSV output fixed for unbound variables.
-	* Fix build of rdfstorage.cs.
+	* Fix build of rdfstorage.cs (reported by Steve, thanks!).
 	* Re-enabled C# 3.0 build in bin_linq.
 
 2008-05-30 Version 1.06
