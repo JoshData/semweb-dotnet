@@ -148,8 +148,11 @@ namespace SemWeb.Query {
 			foreach (Variable var in result.Variables) {
 				if (var.LocalName == null) continue;
 				Resource varTarget = result[var];
-				string t = varTarget.ToString();
-				if (varTarget is Literal) t = ((Literal)varTarget).Value;
+				string t = "";
+				if (varTarget != null) {
+					t = varTarget.ToString();
+					if (varTarget is Literal) t = ((Literal)varTarget).Value;
+				}
 				t = t.Replace("&", "&amp;");
 				t = t.Replace("<", "&lt;");
 				output.WriteLine("<td>" + t + "</td>");
@@ -184,9 +187,12 @@ namespace SemWeb.Query {
 			foreach (Variable var in result.Variables) {
 				if (var.LocalName == null) continue;
 				Resource varTarget = result[var];
-				string t = varTarget.ToString();
-				if (varTarget is Literal) t = ((Literal)varTarget).Value;
-				if (varTarget.Uri != null) t = varTarget.Uri;
+				string t = "";
+				if (varTarget != null) {
+					t = varTarget.ToString();
+					if (varTarget is Literal) t = ((Literal)varTarget).Value;
+					if (varTarget.Uri != null) t = varTarget.Uri;
+				}
 				if (t.IndexOfAny(reservedChars) >= 0 || t != t.Trim())
 					t = "\"" + t.Replace("\"", "\"\"") + "\"";
 				if (!first) output.Write(","); first = false;
