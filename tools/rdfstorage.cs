@@ -167,17 +167,17 @@ public class RDFStorage {
 					StatementFilterSink filter = new StatementFilterSink(storage);
 				
 					if (format != "spec") {
-						RdfReader parser = RdfReader.Create(format, infile);
-						parser.BaseUri = baseuri;
-						if (meta != null) parser.Meta = meta;
+						using (RdfReader parser = RdfReader.Create(format, infile)) {
+							parser.BaseUri = baseuri;
+							if (meta != null) parser.Meta = meta;
 						
-						if (storage is RdfWriter)
-							((RdfWriter)storage).Namespaces.AddFrom(parser.Namespaces);
+							if (storage is RdfWriter)
+								((RdfWriter)storage).Namespaces.AddFrom(parser.Namespaces);
 						
-						parser.Select(filter);
-						foreach (string warning in parser.Warnings)
-							Console.Error.WriteLine(warning);
-						parser.Dispose();
+							parser.Select(filter);
+							foreach (string warning in parser.Warnings)
+								Console.Error.WriteLine(warning);
+						}
 					} else {
 						StatementSource src = Store.Create(infile);
 						src.Select(filter);

@@ -2,6 +2,7 @@
 	  static constructors, and when Turtle is asked for, actually
 	  write Turtle and not N3.
 	* MySQLStore has trouble finding the server version on Ubuntu.
+	* Fix build of rdfstorage.cs.
 
 2008-05-30 Version 1.06
 
