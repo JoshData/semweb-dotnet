@@ -23,7 +23,7 @@ all:
 	PROFILE=DOTNET1 make
 	PROFILE=DOTNET2 make
 	PROFILE=SILVERLIGHT make
-#	PROFILE=DOTNET3 make
+	PROFILE=DOTNET3 make
 
 # If we have a PROFILE specified.
 else

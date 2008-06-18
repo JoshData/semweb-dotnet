@@ -4,6 +4,7 @@
 	* MySQLStore has trouble finding the server version on Ubuntu.
 	* SPARQL server HTML and CSV output fixed for unbound variables.
 	* Fix build of rdfstorage.cs.
+	* Re-enabled C# 3.0 build in bin_linq.
 
 2008-05-30 Version 1.06
 
