@@ -1,3 +1,5 @@
+2008-06-19 Version 1.061
+
 	* RdfXmlReader: Reading datatyped properties failed in the
 	  .NET 2.0 build since the last release, broken in rev 697
 	  (reported by Peter Willems).
