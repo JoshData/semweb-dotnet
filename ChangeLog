@@ -1,3 +1,6 @@
+	* RdfXmlReader: Reading datatyped properties failed in the
+	  .NET 2.0 build since the last release, broken in rev 697
+	  (reported by Peter Willems).
 	* Recognize text/rdf+n3, text/turtle in the RdfReader/Writer
 	  static constructors, and when Turtle is asked for, actually
 	  write Turtle and not N3.

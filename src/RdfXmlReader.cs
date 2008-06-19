@@ -335,7 +335,7 @@ namespace SemWeb {
 			string predicate = CurNode();
 			if (predicate == NS.RDF + "li")
 				predicate = NS.RDF + "_" + (liIndex++);
-
+				
 			if (IsRestrictedName(predicate))
 				OnError(xml.Name + " cannot be used as a property name.");
 			if (IsDeprecatedName(predicate))
@@ -440,11 +440,15 @@ namespace SemWeb {
 				} else {
 					#if !DOTNET2
 					objct = new Literal(xml.ReadString(), null, datatype);
-					#else
-					objct = new Literal(xml.ReadElementContentAsString(), null, datatype);
-					#endif
 					if (xml.NodeType != XmlNodeType.EndElement)
 						OnError("XML markup may not appear in a datatyped literal property.");
+					#else
+					try {
+						objct = new Literal(xml.ReadElementContentAsString(), null, datatype);
+					} catch (XmlException) {
+						OnError("XML markup may not appear in a datatyped literal property.");
+					}
+					#endif
 				}
 			
 			} else {
