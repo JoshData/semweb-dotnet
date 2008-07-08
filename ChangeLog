@@ -1,3 +1,9 @@
+	* RdfReader: New property ValidateLiterals, defaulting to True
+	  except in the Silverlight build, which issues a warning if
+	  any datatype'd literal values in the document have a value
+	  out of the lexical space of the datatype, for recognized
+	  types.
+	* RdfXmlReader, N3Reader: Implement literal validation.
 	* SparqlClient: Fix a bug with Query and generated FILTERs.
 	* GraphMatch: Make sure we don't pass an invalid list of
 	  distinguished variables down into a subquery.

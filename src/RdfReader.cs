@@ -25,6 +25,13 @@ namespace SemWeb {
 		VariableSet variables = new VariableSet();
 		bool reuseentities = false;
 		NamespaceManager nsmgr = new NamespaceManager();
+		bool validateLiterals = true;
+		
+		public RdfReader() {
+			#if SILVERLIGHT
+			validateLiterals = false;
+			#endif
+		}
 
 		public Entity Meta {
 			get {
@@ -52,6 +59,19 @@ namespace SemWeb {
 				reuseentities = value;
 			}
 		}
+
+		public bool ValidateLiterals {
+			get {
+				return validateLiterals;
+			}
+			set {
+				#if SILVERLIGHT
+				if (value) throw new InvalidOperationException("Typed literal validation is not supported in the Linq build of SemWeb.");
+				#endif
+				
+				validateLiterals = value;
+			}
+		}
 		
 		bool StatementSource.Distinct { get { return false; } }
 		
@@ -67,6 +87,17 @@ namespace SemWeb {
 		
 		protected void AddVariable(Variable variable) {
 			variables[variable] = variable;
+		}
+
+		protected void ValidateLiteral(Literal literal) {
+			#if !SILVERLIGHT
+			if (!validateLiterals) return;
+			try {
+				literal.ParseValue();
+			} catch (FormatException e) {
+				OnWarning("Typed literal has an invalid lexical value: " + e.Message + ": " + literal);
+			}
+			#endif
 		}
 
 		public abstract void Select(StatementSink sink);

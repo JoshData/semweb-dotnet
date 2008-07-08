@@ -387,6 +387,7 @@ namespace SemWeb {
 				// http://www.w3.org/TR/2002/REC-xml-exc-c14n-20020718/ ?
 				
 				objct = new Literal(xml.ReadInnerXml(), null, datatype);
+				ValidateLiteral((Literal)objct);
 
 			} else if (parseType != null && parseType == "Resource") {
 				objct = new BNode();
@@ -437,6 +438,7 @@ namespace SemWeb {
 					
 				if (xml.IsEmptyElement) {
 					objct = new Literal("", null, datatype);
+					ValidateLiteral((Literal)objct);
 				} else {
 					#if !DOTNET2
 					objct = new Literal(xml.ReadString(), null, datatype);
@@ -449,6 +451,7 @@ namespace SemWeb {
 						OnError("XML markup may not appear in a datatyped literal property.");
 					}
 					#endif
+					ValidateLiteral((Literal)objct);
 				}
 			
 			} else {

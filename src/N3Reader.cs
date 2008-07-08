@@ -390,7 +390,9 @@ namespace SemWeb {
 					}
 				}
 				
-				return new Literal(litvalue, litlang, litdt);
+				Literal literal = new Literal(litvalue, litlang, litdt);
+				ValidateLiteral(literal);
+				return literal;
 
 			} else if (char.IsLetter((char)firstchar) || firstchar == '?' || firstchar == '@' || firstchar == ':' || firstchar == '_') {
 				// Something starting with @
