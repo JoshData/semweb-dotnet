@@ -363,18 +363,36 @@ namespace SemWeb.Query {
 					// the query plus any that we need to tie these results to past and future
 					// bindings (any variable used previously or used later and used in this query).
 					if (distinguishedVars != null) {
+						// See what variables are used in this part of the query.
+						ResSet qvars = new ResSet();
+						for (int si = 0; si < part.Graph.Length; si++)
+							for (int sc = 0; sc < 4; sc++)
+								if (part.Graph[si].GetComponent(sc) is Variable)
+									qvars.Add(part.Graph[si].GetComponent(sc));
+						
+						// See which variables are needed elsewhere or are distinguished themselves.
+						// Only add variables to dvars that are used in this query part.
 						VariableList dvars = new VariableList();
-						dvars.AddRange(distinguishedVars);
+						foreach (Variable v in distinguishedVars)
+							if (qvars.Contains(v))
+								dvars.Add(v);
 						for (int jPart = 0; jPart < queryParts.Length; jPart++) {
 							if (jPart == iPart) continue;
 							foreach (Statement s in queryParts[jPart].Graph) {
 								for (int jc = 0; jc < 4; jc++) {
-									if (s.GetComponent(jc) is Variable) // don't bother checking if it's actually used in this query part
+									if (qvars.Contains(s.GetComponent(jc)))
 										dvars.Add((Variable)s.GetComponent(jc));
 								}
 							}
 						}
-						opts.DistinguishedVariables = dvars;
+						
+						// If none of the variables we need are used in this part of
+						// the query, meaning none of the variables in this part of
+						// the query have any utility, then we may not set the
+						// DistinguishedVariables option. Additionally, we should
+						// issue a warning.
+						if (dvars.Count > 0)
+							opts.DistinguishedVariables = dvars;
 					}
 					
 					vars = null;
