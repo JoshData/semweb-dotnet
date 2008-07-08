@@ -102,15 +102,15 @@ namespace SemWeb.Remote {
 					query = "ASK { ";
 				else
 					query = "SELECT * WHERE { ";
-				query += S(subjects, "subject");
+				query += S(subjects, "?subject");
 				query += " ";
-				query += S(predicates, "predicate");
+				query += S(predicates, "?predicate");
 				query += " ";
-				query += S(objects, "object");
+				query += S(objects, "?object");
 				query += " . ";
-				query += SL(subjects, "subject", false);
-				query += SL(predicates, "predicate", false);
-				query += SL(objects, "object", false);
+				query += SL(subjects, "?subject", false);
+				query += SL(predicates, "?predicate", false);
+				query += SL(objects, "?object", false);
 				query += " }";
 				
 				// TODO: Pass literal filters to server.
@@ -170,7 +170,7 @@ namespace SemWeb.Remote {
 		}
 		
 		string S(Resource[] r, string v) {
-			if (r == null || r.Length != 1) return "?" + v;
+			if (r == null || r.Length != 1) return v;
 			return S(r[0], null);
 		}
 		string SL(Resource[] r, string v, bool includeIfJustOne) {
@@ -181,7 +181,6 @@ namespace SemWeb.Remote {
 			for (int i = 0; i < r.Length; i++) {
 				if (r[i].Uri == null) continue;
 				if (!first) ret.Append(" || "); first = false;
-				ret.Append('?');
 				ret.Append(v);
 				ret.Append("=<");
 				if (r[i].Uri != null)
@@ -230,7 +229,6 @@ namespace SemWeb.Remote {
 			if (Debug) {
 				Console.Error.WriteLine("> " + url);
 				Console.Error.WriteLine(query);
-				Console.Error.WriteLine();
 			}
 			
 			if (method == "GET") {
@@ -258,6 +256,9 @@ namespace SemWeb.Remote {
 				ProcessResponse(mimetype, resp.GetResponseStream(), outputObj);
 			} finally {
 				resp.Close();
+				if (Debug) {
+					Console.Error.WriteLine();
+				}
 			}
 		}
 		
@@ -283,6 +284,10 @@ namespace SemWeb.Remote {
 						int len = reader.Read(buffer, 0, buffer.Length);
 						if (len <= 0) break;
 						tw.Write(buffer, 0, len);
+						
+						if (Debug) {
+							Console.Error.WriteLine(">> " + new String(buffer, 0, len));
+						}
 					}
 				}
 				tw.Flush();
@@ -326,6 +331,10 @@ namespace SemWeb.Remote {
 					bw.value = (value == "true");
 				}
 						
+				if (Debug) {
+					Console.Error.WriteLine(">> " + bw.value);
+				}
+				
 				return;
 			}
 			
@@ -336,6 +345,9 @@ namespace SemWeb.Remote {
 				if (mimetype != null && mimetype == "application/sparql-results+xml") mimetype = "text/xml";
 				using (RdfReader reader = RdfReader.Create(mimetype, stream))
 					reader.Select((StatementSink)outputObj);
+				if (Debug) {
+					Console.Error.WriteLine(">> (read as statements)");
+				}
 				return;
 			}
 			
@@ -445,6 +457,9 @@ namespace SemWeb.Remote {
 							}
 							
 							sink.Add(new VariableBindings(variablesArray, valuesArray));
+							if (Debug) {
+								Console.Error.WriteLine(">> " + new VariableBindings(variablesArray, valuesArray));
+							}
 							
 						} else if (xmldoc.NodeType == XmlNodeType.EndElement) {
 							break;
@@ -463,6 +478,9 @@ namespace SemWeb.Remote {
 		}
 
 		public void Query(Statement[] graph, QueryOptions options, QueryResultSink sink) {
+			if (options.DistinguishedVariables != null && options.DistinguishedVariables.Count == 0)
+				throw new ArgumentException("options.DistinguishedVariables cannot be an empty list.");
+		
 			StringBuilder query = new StringBuilder();
 			
 			query.Append("SELECT ");
@@ -492,9 +510,17 @@ namespace SemWeb.Remote {
 					: variableNames.Keys) {
 				if (!variableNames.ContainsKey(v)) continue; // in case distinguished variables list
 															 // has more than what actually appears in query
+				if (selectedVars.Contains(v)) continue; // don't select more than once
 				query.Append(variableNames[v]);
 				query.Append(' ');
 				selectedVars.Add(v);
+			}
+			
+			if (selectedVars.Count == 0) {
+				if (options.DistinguishedVariables == null)
+					throw new ArgumentException("There were no variables in the query.");
+				else
+					throw new ArgumentException("None of the variables in the query were distinguished.");
 			}
 			
 			// Bnodes are not allowed here -- we can't query on them.
