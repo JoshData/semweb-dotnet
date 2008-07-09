@@ -542,32 +542,6 @@ namespace SemWeb {
 			return Value;
 		}
 		
-		public class XsdDateTime {
-			public readonly DateTime Date;
-			public readonly TimeSpan Time;
-			public readonly TimeSpan TimeZoneOffset;
-			public readonly bool HasDate, HasTime, HasTimeZone;
-
-			public XsdDateTime(DateTime date, TimeSpan time, TimeSpan offset, bool hasDate, bool hasTime, bool hasTimeZone) {
-				Date = date;
-				Time = time;
-				TimeZoneOffset = offset;
-				HasDate = hasDate;
-				HasTime = hasTime;
-				HasTimeZone = hasTimeZone;
-			}
-			
-			public override string ToString() {
-				string ret = "";
-				if (HasDate) ret += Date.Date.ToString("yyyy-MM-dd");
-				if (HasDate && HasTime) ret += "T";
-				if (HasTime) ret += Time.ToString();
-				if (HasTimeZone && TimeZoneOffset >= TimeSpan.Zero) ret += "+" + (DateTime.Now.Date + TimeZoneOffset).ToString("HH:mm");
-				if (HasTimeZone && TimeZoneOffset < TimeSpan.Zero) ret += "-" + (DateTime.Now.Date - TimeZoneOffset).ToString("HH:mm");
-				return ret;
-			}
-		}
-		
 		private XsdDateTime ParseDateTime(string value) {
 			int t = value.IndexOf('T');
 			if (t == -1) throw new FormatException("xsd:dateTime value is missing a 'T'");
@@ -578,7 +552,7 @@ namespace SemWeb {
 			date = ParseDate(value.Substring(0, t), false);
 			time = ParseTime(value.Substring(t+1), true);
 			
-			return new XsdDateTime(date.Date, time.Time, time.TimeZoneOffset, true, true, time.HasTimeZone);
+			return new XsdDateTime(date.Date, time.Time, time.TimeZoneOffset, true, true, time.HasTimeZoneOffset);
 		}
 		
 		bool TryParse(string value, out int parsedValue) {
@@ -631,7 +605,7 @@ namespace SemWeb {
 			  || !TryParse(fields[2], out day))
 				throw new FormatException("Date must look like CCYY-MM-DD");
 				
-			return new XsdDateTime(new DateTime(year, month, day), TimeSpan.Zero, tz.TimeZoneOffset, true, false, tz.HasTimeZone);
+			return new XsdDateTime(new DateTime(year, month, day), TimeSpan.Zero, tz.TimeZoneOffset, true, false, tz.HasTimeZoneOffset);
 		}
 
 		private XsdDateTime ParseTime(string value, bool allowTz) {
@@ -648,7 +622,7 @@ namespace SemWeb {
 			  || !TryParse(fields[2], out seconds))
 				throw new FormatException("Time must look like HH:MM:SS[.SSS]");
 				
-			return new XsdDateTime(DateTime.MinValue, new TimeSpan(hour, minute, 0).Add(TimeSpan.FromSeconds(seconds)), tz.TimeZoneOffset, false, true, tz.HasTimeZone);
+			return new XsdDateTime(DateTime.MinValue, new TimeSpan(hour, minute, 0).Add(TimeSpan.FromSeconds(seconds)), tz.TimeZoneOffset, false, true, tz.HasTimeZoneOffset);
 		}
 			
 		static readonly char[] pm = {'+', '-'};
@@ -758,6 +732,33 @@ namespace SemWeb {
 			} else {
 				return new Literal((DateTime.Today + value).ToString("HH\\:mm\\:ss.FFFFFFF0"), null, NS.XMLSCHEMA + "time");
 			}
+		}
+	}
+
+
+	public class XsdDateTime {
+		public readonly DateTime Date;
+		public readonly TimeSpan Time;
+		public readonly TimeSpan TimeZoneOffset;
+		public readonly bool HasDate, HasTime, HasTimeZoneOffset;
+		
+		public XsdDateTime(DateTime date, TimeSpan time, TimeSpan offset, bool hasDate, bool hasTime, bool hasTimeZoneOffset) {
+			Date = date;
+			Time = time;
+			TimeZoneOffset = offset;
+			HasDate = hasDate;
+			HasTime = hasTime;
+			HasTimeZoneOffset = hasTimeZoneOffset;
+		}
+		
+		public override string ToString() {
+			string ret = "";
+			if (HasDate) ret += Date.Date.ToString("yyyy-MM-dd");
+			if (HasDate && HasTime) ret += "T";
+			if (HasTime) ret += Time.ToString();
+			if (HasTimeZoneOffset && TimeZoneOffset >= TimeSpan.Zero) ret += "+" + (DateTime.Now.Date + TimeZoneOffset).ToString("HH:mm");
+			if (HasTimeZoneOffset && TimeZoneOffset < TimeSpan.Zero) ret += "-" + (DateTime.Now.Date - TimeZoneOffset).ToString("HH:mm");
+			return ret;
 		}
 	}
 
@@ -944,4 +945,5 @@ namespace SemWeb.Util.Bind {
 			}
 		}
 	}
+	
 }

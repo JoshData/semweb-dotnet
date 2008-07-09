@@ -1,0 +1,105 @@
+<Type Name="XsdDateTime" FullName="SemWeb.XsdDateTime">
+  <TypeSignature Language="C#" Value="public class XsdDateTime" />
+  <AssemblyInfo>
+    <AssemblyName>SemWeb</AssemblyName>
+    <AssemblyVersion>1.0.6.1</AssemblyVersion>
+  </AssemblyInfo>
+  <Base>
+    <BaseTypeName>System.Object</BaseTypeName>
+  </Base>
+  <Interfaces />
+  <Docs>
+    <summary>Represents an XSD dateTime, date, or time.</summary>
+    <remarks>This class is returned by <see href="M:SemWeb.Literal.ParseValue()"/> for xsd:dateTime, xsd:date, and xsd:time values. Use the HasDate and HasTime fields to determine which data type the value came from.</remarks>
+  </Docs>
+  <Members>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public XsdDateTime (DateTime date, TimeSpan time, TimeSpan offset, bool hasDate, bool hasTime, bool hasTimeZoneOffset);" />
+      <MemberType>Constructor</MemberType>
+      <Parameters>
+        <Parameter Name="date" Type="System.DateTime" />
+        <Parameter Name="time" Type="System.TimeSpan" />
+        <Parameter Name="offset" Type="System.TimeSpan" />
+        <Parameter Name="hasDate" Type="System.Boolean" />
+        <Parameter Name="hasTime" Type="System.Boolean" />
+        <Parameter Name="hasTimeZoneOffset" Type="System.Boolean" />
+      </Parameters>
+      <Docs>
+        <param name="date">The date, if present in the value.</param>
+        <param name="time">The time, if present in the value.</param>
+        <param name="offset">The time's offset from UTC, if present in the value.</param>
+        <param name="hasDate">Whether the value includes a date.</param>
+        <param name="hasTime">Whether the value includes a time.</param>
+        <param name="hasTimeZoneOffset">Whether the value includes a time zone offset.</param>
+        <summary>Creates a new instance of XsdDateTime.</summary>
+        <remarks>None.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Date">
+      <MemberSignature Language="C#" Value="public readonly DateTime Date;" />
+      <MemberType>Field</MemberType>
+      <ReturnValue>
+        <ReturnType>System.DateTime</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>A date, if present in the value.</summary>
+        <remarks>This field is only applicable if HasDate is true. Only the date portion of the DateTime value is used.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="HasDate">
+      <MemberSignature Language="C#" Value="public readonly bool HasDate;" />
+      <MemberType>Field</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Boolean</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Indicates whether a date is present in the value.</summary>
+        <remarks>None.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="HasTime">
+      <MemberSignature Language="C#" Value="public readonly bool HasTime;" />
+      <MemberType>Field</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Boolean</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Indicates whether a time is present in the value.</summary>
+        <remarks>None.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="HasTimeZoneOffset">
+      <MemberSignature Language="C#" Value="public readonly bool HasTimeZoneOffset;" />
+      <MemberType>Field</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Boolean</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Indicates whether a time zone offset is present in the value. If not, the time is a local time. If so, the TimeZoneOffset gives the offset of the time from UTC.</summary>
+        <remarks>None.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Time">
+      <MemberSignature Language="C#" Value="public readonly TimeSpan Time;" />
+      <MemberType>Field</MemberType>
+      <ReturnValue>
+        <ReturnType>System.TimeSpan</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>A time, if present in the value.</summary>
+        <remarks>This field is only applicable if HasTime is true.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="TimeZoneOffset">
+      <MemberSignature Language="C#" Value="public readonly TimeSpan TimeZoneOffset;" />
+      <MemberType>Field</MemberType>
+      <ReturnValue>
+        <ReturnType>System.TimeSpan</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>An offset from UTC, if time zone information is present in the value.</summary>
+        <remarks>This field is only applicable if HasTimeZoneOffset is true.</remarks>
+      </Docs>
+    </Member>
+  </Members>
+</Type>

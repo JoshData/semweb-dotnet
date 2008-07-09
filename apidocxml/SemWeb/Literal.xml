@@ -2,7 +2,7 @@
   <TypeSignature Language="C#" Value="public sealed class Literal : SemWeb.Resource" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
-    <AssemblyVersion>1.0.6.0</AssemblyVersion>
+    <AssemblyVersion>1.0.6.1</AssemblyVersion>
   </AssemblyInfo>
   <Base>
     <BaseTypeName>SemWeb.Resource</BaseTypeName>
@@ -467,7 +467,7 @@ Console.WriteLine(thing3.DataType);</code>
             </item>
             <item>
               <term>dateTime, date, time</term>
-              <description>The literal's value as a <see cref="T:SemWeb.Literal.XsdDateTime" />.</description>
+              <description>The literal's value as a <see cref="T:SemWeb.XsdDateTime" />.</description>
             </item>
             <item>
               <term>long, int, short, byte</term>
