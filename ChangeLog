@@ -4,7 +4,7 @@
 	  out of the lexical space of the datatype, for recognized
 	  types.
 	* Literal: ParseValue xsd:dateTime, date, and time were incorrect.
-	  Now they return instances of SemWeb.Literal.XsdDateTime.
+	  Now they return instances of SemWeb.XsdDateTime.
 	* RdfXmlReader, N3Reader: Implement literal validation.
 	* SparqlClient: Fix a bug with Query and generated FILTERs.
 	* GraphMatch: Make sure we don't pass an invalid list of
