@@ -3,10 +3,15 @@
 	  any datatype'd literal values in the document have a value
 	  out of the lexical space of the datatype, for recognized
 	  types.
+	* Literal: ParseValue xsd:dateTime, date, and time were incorrect.
+	  Now they return instances of SemWeb.Literal.XsdDateTime.
 	* RdfXmlReader, N3Reader: Implement literal validation.
 	* SparqlClient: Fix a bug with Query and generated FILTERs.
 	* GraphMatch: Make sure we don't pass an invalid list of
 	  distinguished variables down into a subquery.
+	* Added SemWeb.IO.GraphViz class to write out graphs in
+	  GraphViz format. Store.Create and RdfReader.Create now
+	  accept "dot" as a format name.
 
 2008-06-19 Version 1.061
 

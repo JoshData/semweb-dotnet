@@ -466,8 +466,8 @@ Console.WriteLine(thing3.DataType);</code>
               <description>The literal's value as a <see cref="T:System.TimeSpan" /> using <see cref="M:System.TimeSpan.Parse(string)" />.</description>
             </item>
             <item>
-              <term>dateTime, time, date</term>
-              <description>The literal's value as a <see cref="T:System.DateTime" /> using <see cref="M:System.DateTime.Parse(string)" />.</description>
+              <term>dateTime, date, time</term>
+              <description>The literal's value as a <see cref="T:SemWeb.Literal.XsdDateTime" />.</description>
             </item>
             <item>
               <term>long, int, short, byte</term>
