@@ -6,6 +6,7 @@
 	* Literal: ParseValue xsd:dateTime, date, and time were incorrect.
 	  Now they return instances of SemWeb.XsdDateTime.
 	* RdfXmlReader, N3Reader: Implement literal validation.
+	* RdfXmlReader: Report line/column number in error messages/warnings.
 	* SparqlClient: Fix a bug with Query and generated FILTERs.
 	* GraphMatch: Make sure we don't pass an invalid list of
 	  distinguished variables down into a subquery.

@@ -229,7 +229,7 @@ namespace SemWeb {
 			string curnode = CurNode();
 			if (curnode != NS.RDF + "Description") {
 				if (IsRestrictedName(curnode) || IsDeprecatedName(curnode))
-					OnError(xml.Name + " cannot be the type of a resource.");
+					OnError(xml.Name + " cannot be the type of a resource");
 				if (curnode == NS.RDF + "li") OnError("rdf:li cannot be the type of a resource");
 				storage.Add(new Statement(entity, rdfType, (Entity)curnode, Meta));
 			}
@@ -265,7 +265,7 @@ namespace SemWeb {
 				if (IsRestrictedName(curnode))
 					continue;
 				if (IsDeprecatedName(curnode))
-					OnError(xml.Name + " is deprecated.");
+					OnError(xml.Name + " is deprecated");
 				
 				// Properties which are invalid as attributes.
 				if (curnode == NS.RDF + "li")
@@ -337,9 +337,9 @@ namespace SemWeb {
 				predicate = NS.RDF + "_" + (liIndex++);
 				
 			if (IsRestrictedName(predicate))
-				OnError(xml.Name + " cannot be used as a property name.");
+				OnError(xml.Name + " cannot be used as a property name");
 			if (IsDeprecatedName(predicate))
-				OnError(xml.Name + " has been deprecated and cannot be used as a property name.");
+				OnError(xml.Name + " has been deprecated and cannot be used as a property name");
 
 			string ID = xml.GetAttribute("ID", NS.RDF);
 
@@ -376,7 +376,7 @@ namespace SemWeb {
 			
 			} else if (parseType != null && parseType == "Literal") {
 				if (datatype != null)
-					OnError("The attribute rdf:datatype is not valid on a predicate whose parseType is Literal.");
+					OnError("The attribute rdf:datatype is not valid on a predicate whose parseType is Literal");
 
 				datatype = "http://www.w3.org/1999/02/22-rdf-syntax-ns#XMLLiteral";
 				
@@ -443,12 +443,12 @@ namespace SemWeb {
 					#if !DOTNET2
 					objct = new Literal(xml.ReadString(), null, datatype);
 					if (xml.NodeType != XmlNodeType.EndElement)
-						OnError("XML markup may not appear in a datatyped literal property.");
+						OnError("XML markup may not appear in a datatyped literal property");
 					#else
 					try {
 						objct = new Literal(xml.ReadElementContentAsString(), null, datatype);
 					} catch (XmlException) {
-						OnError("XML markup may not appear in a datatyped literal property.");
+						OnError("XML markup may not appear in a datatyped literal property");
 					}
 					#endif
 					ValidateLiteral((Literal)objct);
@@ -487,7 +487,7 @@ namespace SemWeb {
 							if (hadText)
 								OnError("Both text and elements are present as a property value");
 							if (hadElement)
-								OnError("A property node cannot contain more than one entity description.  " + objct + " already found.");
+								OnError("A property node cannot contain more than one entity description.  " + objct + " already found");
 							
 							hadElement = true;
 							
@@ -570,7 +570,7 @@ namespace SemWeb {
 			base.OnWarning(message);
 		}
 		
-		private class XmlBaseAwareReader : XmlReader {
+		private class XmlBaseAwareReader : XmlReader, IXmlLineInfo {
 			XmlReader _reader;
 			Stack _bases = new Stack();
 		    Uri _baseUri;
@@ -673,6 +673,12 @@ namespace SemWeb {
 			public override bool HasValue { get { return _reader.HasValue; } }
 			public override char QuoteChar { get { return _reader.QuoteChar; } }
 			#endif
+			
+			bool IXmlLineInfo.HasLineInfo() {
+				return (_reader is IXmlLineInfo) && ((IXmlLineInfo)_reader).HasLineInfo();
+			}
+			int IXmlLineInfo.LineNumber { get { return ((IXmlLineInfo)_reader).LineNumber; } }
+			int IXmlLineInfo.LinePosition { get { return ((IXmlLineInfo)_reader).LinePosition; } }
 		}		
 	}
 }
