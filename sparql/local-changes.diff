@@ -67,6 +67,690 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj'
 +    public Iterator getStatements(Value[] subj, Value[] pred, Value[] obj, Object[] litFilters, int limit);
 +}
 +
+diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj' upstream/src/main/name/levering/ryan/sparql/common/impl/DateTime.java work-copy/src/main/name/levering/ryan/sparql/common/impl/DateTime.java
+--- upstream/src/main/name/levering/ryan/sparql/common/impl/DateTime.java	2006-08-20 20:01:00.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/common/impl/DateTime.java	2008-08-06 18:20:06.000000000 -0400
+@@ -33,6 +33,9 @@
+ import java.util.NoSuchElementException;
+ import java.util.StringTokenizer;
+ 
++import name.levering.ryan.sparql.common.URI;
++import name.levering.ryan.sparql.common.SPARQLConstants;
++
+ /**
+  * This class provides utility functions for comparisons operating on
+  * <code>xml:dateTime</code> datatypes as specified in <a
+@@ -47,6 +50,9 @@
+ 	/** Day part of the dateTime object as int */
+ 	private int days;
+ 
++	/** Whether or not this dateTime has time information (is a date or dateTime) */
++	private boolean hasTime = true;
++
+ 	/** Fractional seconds part of the dateTime object as int */
+ 	private int fractionalSeconds;
+ 
+@@ -90,6 +96,27 @@
+ 	}
+ 
+ 	/**
++	 * Creates a new DateTime object for the supplied xsd:dateTime or xsd:date string value.
++	 * 
++	 * @param dateTimeString An xsd:date or xsd:dateTime value, for example
++	 *            <tt>1999-05-31T13:20:00-05:00</tt>.
++	 */
++	public DateTime(String dateTimeString, URI datatype) {
++		DateTimeFields fields;
++		if (datatype.equals(SPARQLConstants.DATETIME_TYPE)) {
++			fields = parseDateTimeString(dateTimeString);
++		} else if (datatype.equals(SPARQLConstants.DATE_TYPE)) {
++			fields = parseDateString(dateTimeString);
++			hasTime = false;
++		} else {
++			throw new IllegalArgumentException("datatype is not xsd:date or xsd:dateTime");
++		}
++		setNumericFields(fields, dateTimeString);
++		validateFieldValues(fields, dateTimeString);
++		System.err.println(toString());
++	}
++
++	/**
+ 	 * Wraps the standard memory cloning to throw a runtime exception rather
+ 	 * than the more annoying CloneNotSupportedException.
+ 	 * 
+@@ -300,18 +327,19 @@
+ 		result.append(formatInt(this.months, 2));
+ 		result.append('-');
+ 		result.append(formatInt(this.days, 2));
+-		result.append('T');
+-		result.append(formatInt(this.hours, 2));
+-		result.append(':');
+-		result.append(formatInt(this.minutes, 2));
+-		result.append(':');
+-		result.append(formatInt(this.seconds, 2));
+-
+-		if (this.fractionalSeconds > 0) {
+-			result.append('.');
+-			result.append(this.fractionalSeconds);
++		if (hasTime) {
++			result.append('T');
++			result.append(formatInt(this.hours, 2));
++			result.append(':');
++			result.append(formatInt(this.minutes, 2));
++			result.append(':');
++			result.append(formatInt(this.seconds, 2));
++	
++			if (this.fractionalSeconds > 0) {
++				result.append('.');
++				result.append(this.fractionalSeconds);
++			}
+ 		}
+-
+ 		if (this.hasTimeZone) {
+ 			if (this.hoursTimeZone == 0 && this.minutesTimeZone == 0) {
+ 				result.append("Z");
+@@ -409,6 +437,52 @@
+ 		return fields;
+ 	}
+ 
++	private DateTimeFields parseDateString(String dateString) {
++		if (dateString.length() < 10) {
++			throw new IllegalArgumentException("String value too short to be a valid xsd:date value: "
++					+ dateString);
++		}
++
++		DateTimeFields fields = new DateTimeFields();
++
++		String errMsg = "Invalid xsd:date value: " + dateString;
++
++		StringTokenizer st = new StringTokenizer(dateString, "+-TZ", true);
++		try {
++			fields.yearString = st.nextToken();
++			fields.isNegativeYear = fields.yearString.equals("-");
++			if (fields.isNegativeYear) {
++				fields.yearString = st.nextToken();
++			}
++			verifyTokenValue(st.nextToken(), "-", errMsg);
++			fields.monthsString = st.nextToken();
++			verifyTokenValue(st.nextToken(), "-", errMsg);
++			fields.daysString = st.nextToken();
++			fields.hoursString = "00";
++			fields.minutesString = "00";
++			fields.secondsString = "00";
++
++			String token = st.hasMoreTokens() ? st.nextToken() : null;
++
++			if ("+".equals(token) || "-".equals(token)) {
++				fields.isNegativeTimeZone = "-".equals(token);
++				fields.hoursTimeZoneString = st.nextToken();
++				verifyTokenValue(st.nextToken(), ":", errMsg);
++				fields.minutesTimeZoneString = st.nextToken();
++			} else if ("Z".equals(token)) {
++				fields.isNegativeTimeZone = false;
++				fields.hoursTimeZoneString = fields.minutesTimeZoneString = "00";
++			}
++
++			if (st.hasMoreTokens()) {
++				throw new IllegalArgumentException(errMsg);
++			}
++		} catch (NoSuchElementException e) {
++			throw new IllegalArgumentException(errMsg);
++		}
++		return fields;
++	}
++
+ 	private void setNumericFields(DateTimeFields fields, String dateTimeString) {
+ 		try {
+ 			this.year = Integer.parseInt(fields.yearString);
+diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj' upstream/src/main/name/levering/ryan/sparql/common/impl/DateTime.java~ work-copy/src/main/name/levering/ryan/sparql/common/impl/DateTime.java~
+--- upstream/src/main/name/levering/ryan/sparql/common/impl/DateTime.java~	1969-12-31 19:00:00.000000000 -0500
++++ work-copy/src/main/name/levering/ryan/sparql/common/impl/DateTime.java~	2007-10-21 12:35:14.000000000 -0400
+@@ -0,0 +1,545 @@
++/*  Sesame - Storage and Querying architecture for RDF and RDF Schema
++ *  Copyright (C) 2005 ECCA - eTourism Competence Center Austria
++ *
++ *  Contact: 
++ *  	ECCA - eTourism Competence Center Austria
++ *  	Technikerstrasse 21a
++ *  	ICT-Technologiepark
++ *  	6020 Innsbruck
++ *  	Austria 
++ *  
++ *  This library is free software; you can redistribute it and/or
++ *  modify it under the terms of the GNU Lesser General Public
++ *  License as published by the Free Software Foundation; either
++ *  version 2.1 of the License, or (at your option) any later version.
++ *
++ *  This library is distributed in the hope that it will be useful,
++ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
++ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++ *  Lesser General Public License for more details.
++ *
++ *  You should have received a copy of the GNU Lesser General Public
++ *  License along with this library; if not, write to the Free Software
++ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
++ *  
++ * SPARQL Engine
++ * Copyright (C) 2005 Ryan Levering, All rights reserved.
++ * See LICENSE for full license information
++ */
++package name.levering.ryan.sparql.common.impl;
++
++import java.util.Calendar;
++import java.util.GregorianCalendar;
++import java.util.NoSuchElementException;
++import java.util.StringTokenizer;
++
++/**
++ * This class provides utility functions for comparisons operating on
++ * <code>xml:dateTime</code> datatypes as specified in <a
++ * href="http://www.w3.org/TR/xmlschema-2/#dateTime">W3C, XML Schema Part 2:
++ * Datatypes Second Edition</a>
++ * <p>
++ * This class is a modified version of the Sesame version, streamlined and
++ * re-formatted.
++ */
++public class DateTime implements Cloneable, Comparable {
++
++	/** Day part of the dateTime object as int */
++	private int days;
++
++	/** Fractional seconds part of the dateTime object as int */
++	private int fractionalSeconds;
++
++	/** Whether or not this dateTime specifies a time zone */
++	private boolean hasTimeZone = false;
++
++	/** Hour part of the dateTime object as int */
++	private int hours;
++
++	/** Hours part of the optional timezone as int */
++	private int hoursTimeZone;
++
++	/** Flag indicating whether the values have been normalized. */
++	private boolean isNormalized = false;
++
++	/** Minute part of the dateTime object as int */
++	private int minutes;
++
++	/** Minutes part of the optional timezone as int */
++	private int minutesTimeZone;
++
++	/** Month part of the dateTime object as int */
++	private int months;
++
++	/** Second part of the dateTime object as int */
++	private int seconds;
++
++	/** Year part of the dateTime object as int */
++	private int year;
++
++	/**
++	 * Creates a new DateTime object for the supplied xsd:dateTime string value.
++	 * 
++	 * @param dateTimeString An xsd:dateTime value, for example
++	 *            <tt>1999-05-31T13:20:00-05:00</tt>.
++	 */
++	public DateTime(String dateTimeString) {
++		DateTimeFields fields = parseDateTimeString(dateTimeString);
++		setNumericFields(fields, dateTimeString);
++		validateFieldValues(fields, dateTimeString);
++	}
++
++	/**
++	 * Wraps the standard memory cloning to throw a runtime exception rather
++	 * than the more annoying CloneNotSupportedException.
++	 * 
++	 * @return the straight memory clone of the Object class
++	 */
++	public Object clone() {
++		try {
++			return super.clone();
++		} catch (CloneNotSupportedException e) {
++			throw new RuntimeException(e);
++		}
++	}
++
++	/**
++	 * Compares this DateTime object to another DateTime object.
++	 * 
++	 * @param other the other dateTime object to compare to
++	 * @return a negative number if this date is before the other
++	 * @throws ClassCastException If <tt>other</tt> is not a DateTime object.
++	 */
++	public int compareTo(Object other) {
++		DateTime thisDT = this;
++		DateTime otherDT = (DateTime) other;
++
++		if (thisDT.hasTimeZone && (thisDT.hoursTimeZone != 0 || thisDT.minutesTimeZone != 0)) {
++			// Create a normalized copy of this DateTime object
++			thisDT = (DateTime) thisDT.clone();
++			thisDT.normalize();
++		}
++
++		if (otherDT.hasTimeZone && (otherDT.hoursTimeZone != 0 || otherDT.minutesTimeZone != 0)) {
++			// Create a normalized copy of this DateTime object
++			otherDT = (DateTime) otherDT.clone();
++			otherDT.normalize();
++		}
++
++		int result = 0;
++		if (thisDT.year != otherDT.year) {
++			result = thisDT.year - otherDT.year;
++		} else if (thisDT.months != otherDT.months) {
++			result = thisDT.months - otherDT.months;
++		} else if (thisDT.days != otherDT.days) {
++			result = thisDT.days - otherDT.days;
++		} else if (thisDT.hours != otherDT.hours) {
++			result = thisDT.hours - otherDT.hours;
++		} else if (thisDT.minutes != otherDT.minutes) {
++			result = thisDT.minutes - otherDT.minutes;
++		} else if (thisDT.seconds != otherDT.seconds) {
++			result = thisDT.seconds - otherDT.seconds;
++		} else if (thisDT.fractionalSeconds != otherDT.fractionalSeconds) {
++			result = thisDT.fractionalSeconds - otherDT.fractionalSeconds;
++		}
++
++		return result;
++	}
++
++	/**
++	 * Gets the day field of this dateTime.
++	 * 
++	 * @return the day value, as an integer from 1-31
++	 */
++	public int getDay() {
++		return this.days;
++	}
++
++	/**
++	 * Gets the hour field of this dateTime.
++	 * 
++	 * @return the hour value, as an integer from 0-24
++	 */
++	public int getHour() {
++		return this.hours;
++	}
++
++	/**
++	 * Gets the milliseconds field of this dateTime.
++	 * 
++	 * @return the milliseconds value, as an integer from 0-999
++	 */
++	public int getMilliseconds() {
++		return (int) (Double.parseDouble("0." + this.fractionalSeconds) * 1000);
++	}
++
++	/**
++	 * Gets the minute field of this dateTime.
++	 * 
++	 * @return the minute value, as an integer from 0-60
++	 */
++	public int getMinute() {
++		return this.minutes;
++	}
++
++	/**
++	 * Gets the month field of this dateTime.
++	 * 
++	 * @return the month value, as an integer from 1-12
++	 */
++	public int getMonth() {
++		return this.months;
++	}
++
++	/**
++	 * Gets the seconds field of this dateTime.
++	 * 
++	 * @return the seconds value, as an integer from 0-59
++	 */
++	public int getSecond() {
++		return this.seconds;
++	}
++
++	/**
++	 * Gets the hours field of the optional time zone of this dateTime.
++	 * 
++	 * @return the time zone hour value, as an integer from 0-23
++	 */
++	public int getTimeZoneHours() {
++		return this.hoursTimeZone;
++	}
++
++	/**
++	 * Gets the minutes field of the optional time zone of this dateTime.
++	 * 
++	 * @return the time zone minutes value, as an integer from 0-59
++	 */
++	public int getTimeZoneMinutes() {
++		return this.minutesTimeZone;
++	}
++
++	/**
++	 * Gets the year field of this dateTime.
++	 * 
++	 * @return the year value, as an integer from -MIN_VALUE to -MAX_VALUE,
++	 *         excluding 0
++	 */
++	public int getYear() {
++		return this.year;
++	}
++
++	/**
++	 * Checks whether this object has already been normalized (24:00 rolled and
++	 * time zone zeroed).
++	 * 
++	 * @return true if the date time is normalized
++	 */
++	public boolean isNormalized() {
++		return this.isNormalized;
++	}
++
++	/**
++	 * Normalizes this dateTime object. Rolls 24:00 to the next day and time
++	 * zone zeroed and modified.
++	 */
++	public void normalize() {
++		if (this.isNormalized) {
++			// Values already normalized
++			return;
++		}
++
++		if (this.hours == 24 || this.hasTimeZone && (this.hoursTimeZone != 0 || this.minutesTimeZone != 0)) {
++			// Normalize the timezone to Coordinated Universal Time (UTC)
++
++			// Insert values into a GregorianCalendar object.
++			// Note: GregorianCalendar uses 0-based months
++			Calendar cal = new GregorianCalendar(Math.abs(this.year), this.months - 1, this.days, this.hours,
++					this.minutes, this.seconds);
++			if (this.year < 0) {
++				cal.set(Calendar.ERA, GregorianCalendar.BC);
++			}
++
++			// Add/subtract the timezone
++			if (this.hoursTimeZone < 0) {
++				cal.add(Calendar.HOUR_OF_DAY, -this.hoursTimeZone);
++				cal.add(Calendar.MINUTE, this.minutesTimeZone);
++			} else {
++				cal.add(Calendar.HOUR_OF_DAY, -this.hoursTimeZone);
++				cal.add(Calendar.MINUTE, -this.minutesTimeZone);
++			}
++
++			// Get the updated fields
++			this.year = cal.get(Calendar.YEAR);
++			if (cal.get(Calendar.ERA) == GregorianCalendar.BC) {
++				this.year = -this.year;
++			}
++			this.months = cal.get(Calendar.MONTH) + 1;
++			this.days = cal.get(Calendar.DAY_OF_MONTH);
++			this.hours = cal.get(Calendar.HOUR_OF_DAY);
++			this.minutes = cal.get(Calendar.MINUTE);
++			this.seconds = cal.get(Calendar.SECOND);
++
++			if (this.hasTimeZone) {
++				this.hoursTimeZone = this.minutesTimeZone = 0;
++			}
++		}
++
++		this.isNormalized = true;
++	}
++
++	/**
++	 * Returns the xsd:dateTime string-representation of this object.
++	 * 
++	 * @return An xsd:dateTime value, e.g. <tt>1999-05-31T13:20:00-05:00</tt>.
++	 */
++	public String toString() {
++		StringBuffer result = new StringBuffer(32);
++
++		result.append(formatInt(this.year, 4));
++		result.append('-');
++		result.append(formatInt(this.months, 2));
++		result.append('-');
++		result.append(formatInt(this.days, 2));
++		result.append('T');
++		result.append(formatInt(this.hours, 2));
++		result.append(':');
++		result.append(formatInt(this.minutes, 2));
++		result.append(':');
++		result.append(formatInt(this.seconds, 2));
++
++		if (this.fractionalSeconds > 0) {
++			result.append('.');
++			result.append(this.fractionalSeconds);
++		}
++
++		if (this.hasTimeZone) {
++			if (this.hoursTimeZone == 0 && this.minutesTimeZone == 0) {
++				result.append("Z");
++			} else {
++				result.append(formatInt(this.hoursTimeZone, 2));
++				result.append(':');
++				result.append(formatInt(this.minutesTimeZone, 2));
++			}
++		}
++
++		return result.toString();
++	}
++
++	/**
++	 * Converts an integer to a string, enforcing the resulting string to have
++	 * at least <tt>minDigits</tt> digits by prepending zeros if it has less
++	 * than that amount of digits.
++	 * 
++	 * @param iValue the integer value to convert to a String
++	 * @param minDigits the minimum number of characters to produce, including
++	 *            zeroes
++	 * @return a string value of the integer, with potentially leading zeroes
++	 */
++	private String formatInt(int iValue, int minDigits) {
++		String result = String.valueOf(Math.abs(iValue));
++
++		int zeroCount = minDigits - result.length();
++		if (zeroCount > 0) {
++			StringBuffer buf = new StringBuffer(minDigits);
++			if (iValue < 0) {
++				buf.append('-');
++			}
++			for (int i = 0; i < zeroCount; i++) {
++				buf.append('0');
++			}
++			buf.append(result);
++
++			result = buf.toString();
++		}
++
++		return result;
++	}
++
++	private DateTimeFields parseDateTimeString(String dateTimeString) {
++		if (dateTimeString.length() < 19) {
++			throw new IllegalArgumentException("String value too short to be a valid xsd:dateTime value: "
++					+ dateTimeString);
++		}
++
++		DateTimeFields fields = new DateTimeFields();
++
++		String errMsg = "Invalid xsd:dateTime value: " + dateTimeString;
++
++		StringTokenizer st = new StringTokenizer(dateTimeString, "+-:.TZ", true);
++		try {
++			fields.yearString = st.nextToken();
++			fields.isNegativeYear = fields.yearString.equals("-");
++			if (fields.isNegativeYear) {
++				fields.yearString = st.nextToken();
++			}
++			verifyTokenValue(st.nextToken(), "-", errMsg);
++			fields.monthsString = st.nextToken();
++			verifyTokenValue(st.nextToken(), "-", errMsg);
++			fields.daysString = st.nextToken();
++			verifyTokenValue(st.nextToken(), "T", errMsg);
++			fields.hoursString = st.nextToken();
++			verifyTokenValue(st.nextToken(), ":", errMsg);
++			fields.minutesString = st.nextToken();
++			verifyTokenValue(st.nextToken(), ":", errMsg);
++			fields.secondsString = st.nextToken();
++
++			String token = st.hasMoreTokens() ? st.nextToken() : null;
++
++			if (".".equals(token)) {
++				fields.fractionalSecondsString = st.nextToken();
++				token = st.hasMoreTokens() ? st.nextToken() : null;
++			}
++
++			if ("+".equals(token) || "-".equals(token)) {
++				fields.isNegativeTimeZone = "-".equals(token);
++				fields.hoursTimeZoneString = st.nextToken();
++				verifyTokenValue(st.nextToken(), ":", errMsg);
++				fields.minutesTimeZoneString = st.nextToken();
++			} else if ("Z".equals(token)) {
++				fields.isNegativeTimeZone = false;
++				fields.hoursTimeZoneString = fields.minutesTimeZoneString = "00";
++			}
++
++			if (st.hasMoreTokens()) {
++				throw new IllegalArgumentException(errMsg);
++			}
++		} catch (NoSuchElementException e) {
++			throw new IllegalArgumentException(errMsg);
++		}
++		return fields;
++	}
++
++	private void setNumericFields(DateTimeFields fields, String dateTimeString) {
++		try {
++			this.year = Integer.parseInt(fields.yearString);
++			if (fields.isNegativeYear) {
++				this.year = -this.year;
++			}
++			this.months = Integer.parseInt(fields.monthsString);
++			this.days = Integer.parseInt(fields.daysString);
++			this.hours = Integer.parseInt(fields.hoursString);
++			this.minutes = Integer.parseInt(fields.minutesString);
++			this.seconds = Integer.parseInt(fields.secondsString);
++
++			if (fields.fractionalSecondsString != null) {
++				this.fractionalSeconds = Integer.parseInt(fields.fractionalSecondsString);
++			}
++			if (fields.hoursTimeZoneString != null) {
++				this.hasTimeZone = true;
++				this.hoursTimeZone = Integer.parseInt(fields.hoursTimeZoneString);
++				if (fields.isNegativeTimeZone) {
++					this.hoursTimeZone = -this.hoursTimeZone;
++				}
++			}
++			if (fields.minutesTimeZoneString != null) {
++				this.minutesTimeZone = Integer.parseInt(fields.minutesTimeZoneString);
++			}
++		} catch (NumberFormatException e) {
++			throw new IllegalArgumentException("All fields must be numbers: " + dateTimeString);
++		}
++	}
++
++	private void validateFieldValues(DateTimeFields fields, String dateTimeString) {
++		if (fields.yearString.length() < 4) {
++			throw new IllegalArgumentException("Year field requires at least 4 digits: " + dateTimeString);
++		}
++		if (fields.monthsString.length() != 2) {
++			throw new IllegalArgumentException("Month field must be two digits: " + dateTimeString);
++		}
++		if (fields.daysString.length() != 2) {
++			throw new IllegalArgumentException("Days field must be two digits: " + dateTimeString);
++		}
++		if (fields.hoursString.length() != 2) {
++			throw new IllegalArgumentException("Hours field must be two digits: " + dateTimeString);
++		}
++		if (fields.minutesString.length() != 2) {
++			throw new IllegalArgumentException("Minutes field must be two digits: " + dateTimeString);
++		}
++		if (fields.secondsString.length() != 2) {
++			throw new IllegalArgumentException("Seconds field must be two digits: " + dateTimeString);
++		}
++		if (fields.hoursTimeZoneString != null) {
++			if (fields.hoursTimeZoneString.length() != 2) {
++				throw new IllegalArgumentException("Timezone-hours field must be two digits: " + dateTimeString);
++			}
++			if (fields.minutesTimeZoneString.length() != 2) {
++				throw new IllegalArgumentException("Timezone-minutes field must be two digits: " + dateTimeString);
++			}
++		}
++
++		if (fields.yearString.length() > 4 && fields.yearString.charAt(0) == '0') {
++			throw new IllegalArgumentException("Leading zeros in years with more than 4 digits are prohibited: "
++					+ dateTimeString);
++		}
++		if (this.year == 0) {
++			throw new IllegalArgumentException("0000 is not a valid year: " + dateTimeString);
++		}
++		if (this.hours > 24) {
++			throw new IllegalArgumentException("Invalid hour value: " + dateTimeString);
++		}
++		if (this.minutes > 59) {
++			throw new IllegalArgumentException("Invalid minute value: " + dateTimeString);
++		}
++		if (this.seconds > 59) {
++			throw new IllegalArgumentException("Invalid second value: " + dateTimeString);
++		}
++		if (this.hours == 24 && (this.minutes != 0 || this.seconds != 0)) {
++			throw new IllegalArgumentException("Invalid time: " + dateTimeString);
++		}
++		if (this.hoursTimeZone > 14 || this.minutesTimeZone > 59 || this.hoursTimeZone == 14
++				&& this.minutesTimeZone != 0) {
++			throw new IllegalArgumentException("Invalid timezone: " + dateTimeString);
++		}
++	}
++
++	private void verifyTokenValue(String token, String expected, String errMsg) {
++		if (!token.equals(expected)) {
++			throw new IllegalArgumentException(errMsg);
++		}
++	}
++
++	/**
++	 * Helper date class used to pass parsed dateTime field values to the
++	 * validation and setting methods.
++	 * 
++	 * @author Ryan Levering
++	 * @version 1.0
++	 */
++	class DateTimeFields {
++		/** day part of the dateTime object as String */
++		String daysString;
++
++		/** fractional seconds part of the dateTime object as String */
++		String fractionalSecondsString;
++
++		/** hour part of the dateTime object as String */
++		String hoursString;
++
++		/** hours part of the optional timezone as String */
++		String hoursTimeZoneString;
++
++		/**
++		 * Flag indicating whether the timezone, if any, is positive or
++		 * negative.
++		 */
++		boolean isNegativeTimeZone;
++
++		/** Flag indicating whether the year is positive or negative. */
++		boolean isNegativeYear;
++
++		/** minutes part of the dateTime object as String */
++		String minutesString;
++
++		/** minutes part of the optional timezone as String */
++		String minutesTimeZoneString;
++
++		/** month part of the dateTime object as String */
++		String monthsString;
++
++		/** seconds part of the dateTime object as String */
++		String secondsString;
++
++		/** year part of the dateTime object as String */
++		String yearString;
++	}
++}
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj' upstream/src/main/name/levering/ryan/sparql/common/impl/InternalSPARQLValueFactory.java work-copy/src/main/name/levering/ryan/sparql/common/impl/InternalSPARQLValueFactory.java
 --- upstream/src/main/name/levering/ryan/sparql/common/impl/InternalSPARQLValueFactory.java	2007-10-07 07:19:17.000000000 -0400
 +++ work-copy/src/main/name/levering/ryan/sparql/common/impl/InternalSPARQLValueFactory.java	2007-10-21 12:35:15.000000000 -0400
@@ -1519,8 +2203,8 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj'
  						// And check to make sure this wasn't a final set, so we
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj' upstream/src/main/name/levering/ryan/sparql/logic/DefaultNumericPromotionLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/DefaultNumericPromotionLogic.java
 --- upstream/src/main/name/levering/ryan/sparql/logic/DefaultNumericPromotionLogic.java	2007-10-07 07:19:19.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/logic/DefaultNumericPromotionLogic.java	2008-07-11 15:28:33.000000000 -0400
-@@ -56,6 +56,11 @@
++++ work-copy/src/main/name/levering/ryan/sparql/logic/DefaultNumericPromotionLogic.java	2008-08-06 17:52:19.000000000 -0400
+@@ -56,6 +56,16 @@
  
          URI leftDatatype = leftLiteral.getDatatype();
          URI rightDatatype = rightLiteral.getDatatype();
@@ -1529,10 +2213,15 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj'
 +			  leftDatatype = SPARQLConstants.STRING_TYPE;
 +		  if (rightDatatype == null)
 +			  rightDatatype = SPARQLConstants.STRING_TYPE;
++		  
++		  // Exit fast because if we are dealing with non-numeric types like dateTime,
++		  // we don't want to attempt to promote to a number.
++		  if (leftDatatype.equals(rightDatatype))
++			  return literals;
  
          if (leftDatatype.equals(SPARQLConstants.DOUBLE_TYPE)
                  || rightDatatype.equals(SPARQLConstants.DOUBLE_TYPE)) {
-@@ -67,8 +72,14 @@
+@@ -67,8 +77,14 @@
              return new Literal[] { promoteFloat(leftLiteral),
                      promoteFloat(rightLiteral) };
          }
@@ -1549,7 +2238,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj'
  
      }
  
-@@ -83,7 +94,7 @@
+@@ -83,7 +99,7 @@
          try {
              result = Double.valueOf(numeral.getLabel());
          } catch (NumberFormatException e) {
@@ -1558,7 +2247,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj'
          }
          return this.factory.createLiteral(result.toString(), SPARQLConstants.DOUBLE_TYPE);
      }
-@@ -99,7 +110,7 @@
+@@ -99,7 +115,7 @@
          try {
              result = Float.valueOf(numeral.getLabel());
          } catch (NumberFormatException e) {
@@ -1567,7 +2256,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj'
          }
          return this.factory.createLiteral(result.toString(), SPARQLConstants.FLOAT_TYPE);
      }
-@@ -111,12 +122,28 @@
+@@ -111,12 +127,28 @@
       * @return a xsd:double literal with the passed in literals value
       */
      private Literal promoteDecimal(Literal numeral) {
@@ -1599,6 +2288,159 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj'
 +        return this.factory.createLiteral(result.toString(), SPARQLConstants.INTEGER_TYPE);
 +    }
  }
+diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj' upstream/src/main/name/levering/ryan/sparql/logic/DefaultNumericPromotionLogic.java~ work-copy/src/main/name/levering/ryan/sparql/logic/DefaultNumericPromotionLogic.java~
+--- upstream/src/main/name/levering/ryan/sparql/logic/DefaultNumericPromotionLogic.java~	1969-12-31 19:00:00.000000000 -0500
++++ work-copy/src/main/name/levering/ryan/sparql/logic/DefaultNumericPromotionLogic.java~	2008-07-11 15:28:33.000000000 -0400
+@@ -0,0 +1,149 @@
++/*
++ * SPARQL Engine
++ * Copyright (C) 2005 Ryan Levering, All rights reserved.
++ * See LICENSE for full license information
++ */
++package name.levering.ryan.sparql.logic;
++
++import name.levering.ryan.sparql.common.SPARQLConstants;
++import name.levering.ryan.sparql.logic.expression.TypeError;
++import name.levering.ryan.sparql.model.logic.NumericPromotionLogic;
++
++import name.levering.ryan.sparql.common.Literal;
++import name.levering.ryan.sparql.common.SPARQLValueFactory;
++import name.levering.ryan.sparql.common.URI;
++
++/**
++ * This is the default logic handling Numeric Type Promotion, as first defined
++ * in XPath, but outlined in the SPARQL specification section 11.1.1. Basically,
++ * this means promotion from highest to lowest:
++ * <ul>
++ * <li>xs:double
++ * <li>xs:float
++ * <li>xs:decimal
++ * </ul>
++ * where xs:integer is considered a subtype of xs:decimal
++ * 
++ * @author Ryan Levering
++ * @version 1.0
++ */
++public class DefaultNumericPromotionLogic implements NumericPromotionLogic {
++
++    /**
++     * The value factory to create the new literals to hold the promoted values.
++     */
++    private final SPARQLValueFactory factory;
++
++    /**
++     * Creates a new default numeric promotion logic object with a particular
++     * value factory to create new literals.
++     * 
++     * @param factory the factory used to create new objects
++     */
++    public DefaultNumericPromotionLogic(SPARQLValueFactory factory) {
++        this.factory = factory;
++    }
++
++    /**
++     * Promotes the array of literals to the highest numeric type present.
++     * 
++     * @param literals an array of literals to promote to the same numeric type
++     * @return literals of the same datatype
++     */
++    public Literal[] promote(Literal[] literals) {
++        Literal leftLiteral = literals[0];
++        Literal rightLiteral = literals[1];
++
++        URI leftDatatype = leftLiteral.getDatatype();
++        URI rightDatatype = rightLiteral.getDatatype();
++		  
++		  if (leftDatatype == null)
++			  leftDatatype = SPARQLConstants.STRING_TYPE;
++		  if (rightDatatype == null)
++			  rightDatatype = SPARQLConstants.STRING_TYPE;
++
++        if (leftDatatype.equals(SPARQLConstants.DOUBLE_TYPE)
++                || rightDatatype.equals(SPARQLConstants.DOUBLE_TYPE)) {
++            return new Literal[] { promoteDouble(leftLiteral),
++                    promoteDouble(rightLiteral) };
++        }
++        if (leftDatatype.equals(SPARQLConstants.FLOAT_TYPE)
++                || rightDatatype.equals(SPARQLConstants.FLOAT_TYPE)) {
++            return new Literal[] { promoteFloat(leftLiteral),
++                    promoteFloat(rightLiteral) };
++        }
++
++        if (leftDatatype.equals(SPARQLConstants.DECIMAL_TYPE)
++                || rightDatatype.equals(SPARQLConstants.DECIMAL_TYPE)) {
++            return new Literal[] { promoteDecimal(leftLiteral),
++                    promoteDecimal(rightLiteral) };
++        }
++        return new Literal[] { promoteInteger(leftLiteral),
++                promoteInteger(rightLiteral) };
++
++    }
++
++    /**
++     * Promotes a literal to a double datatype, reparsing the label.
++     * 
++     * @param numeral the literal to promote to a double datatype
++     * @return a xsd:double literal with the passed in literals value
++     */
++    private Literal promoteDouble(Literal numeral) {
++        Double result;
++        try {
++            result = Double.valueOf(numeral.getLabel());
++        } catch (NumberFormatException e) {
++            throw new TypeError("Cannot promote non-numeral (" + numeral.getLabel() + "^^" + numeral.getDatatype() + ") to a double value");
++        }
++        return this.factory.createLiteral(result.toString(), SPARQLConstants.DOUBLE_TYPE);
++    }
++
++    /**
++     * Promotes a literal to a float datatype, reparsing the label.
++     * 
++     * @param numeral the literal to promote to a float datatype
++     * @return a xsd:double literal with the passed in literals value
++     */
++    private Literal promoteFloat(Literal numeral) {
++        Float result;
++        try {
++            result = Float.valueOf(numeral.getLabel());
++        } catch (NumberFormatException e) {
++            throw new TypeError("Cannot promote non-numeral (" + numeral.getLabel() + "^^" + numeral.getDatatype() + ") to a float value");
++        }
++        return this.factory.createLiteral(result.toString(), SPARQLConstants.FLOAT_TYPE);
++    }
++
++    /**
++     * Promotes a literal to a decimal datatype, reparsing the label.
++     * 
++     * @param numeral the literal to promote to a decimal datatype
++     * @return a xsd:double literal with the passed in literals value
++     */
++    private Literal promoteDecimal(Literal numeral) {
++        java.math.BigDecimal result;
++        try {
++            result = new java.math.BigDecimal(numeral.getLabel());
++        } catch (NumberFormatException e) {
++            throw new TypeError("Cannot promote " + numeral.getLabel() + " to a decimal value");
++        }
++        return this.factory.createLiteral(result.toString(), SPARQLConstants.DECIMAL_TYPE);
++    }
++	 
++    /**
++     * Promotes a literal to an integer datatype, reparsing the label.
++     * 
++     * @param numeral the literal to promote to a decimal datatype
++     * @return a xsd:double literal with the passed in literals value
++     */
++    private Literal promoteInteger(Literal numeral) {
++        java.math.BigInteger result;
++        try {
++            result = new java.math.BigInteger(numeral.getLabel());
++        } catch (NumberFormatException e) {
++            throw new TypeError("Cannot promote non-numeral (" + numeral.getLabel() + "^^" + numeral.getDatatype() + ") to an integer value");
++        }
++        return this.factory.createLiteral(result.toString(), SPARQLConstants.INTEGER_TYPE);
++    }
++}
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj' upstream/src/main/name/levering/ryan/sparql/logic/DefaultOrderExpressionLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/DefaultOrderExpressionLogic.java
 --- upstream/src/main/name/levering/ryan/sparql/logic/DefaultOrderExpressionLogic.java	2006-08-20 20:01:01.000000000 -0400
 +++ work-copy/src/main/name/levering/ryan/sparql/logic/DefaultOrderExpressionLogic.java	2008-04-27 11:18:16.000000000 -0400
@@ -1741,8 +2583,8 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj'
  
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj' upstream/src/main/name/levering/ryan/sparql/logic/DefaultValueConversionLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/DefaultValueConversionLogic.java
 --- upstream/src/main/name/levering/ryan/sparql/logic/DefaultValueConversionLogic.java	2007-10-07 07:19:19.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/logic/DefaultValueConversionLogic.java	2008-07-11 15:28:33.000000000 -0400
-@@ -57,14 +57,19 @@
++++ work-copy/src/main/name/levering/ryan/sparql/logic/DefaultValueConversionLogic.java	2008-08-06 18:19:24.000000000 -0400
+@@ -57,26 +57,34 @@
              if (datatype.equals(SPARQLConstants.DOUBLE_TYPE)) {
                  return new Double(convertDouble(literal));
              }
@@ -1766,7 +2608,14 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj'
              }
              if (datatype.equals(SPARQLConstants.BOOLEAN_TYPE)) {
                  return new Boolean(convertBoolean(literal));
-@@ -76,7 +81,7 @@
+             }
+             if (datatype.equals(SPARQLConstants.DATE_TYPE)) {
++                return convertDate(literal);
++            }
++            if (datatype.equals(SPARQLConstants.DATETIME_TYPE)) {
+                 return convertDateTime(literal);
+             }
+             if (datatype.equals(SPARQLConstants.STRING_TYPE)) {
                  return convertString(literal);
              }
              throw new ConversionException(
@@ -1775,7 +2624,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj'
          } else {
              return convertString(literal);
          }
-@@ -95,14 +100,14 @@
+@@ -95,14 +103,14 @@
          if (o instanceof Double) {
              return convertDouble(((Double) o).doubleValue());
          }
@@ -1794,7 +2643,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj'
          }
          if (o instanceof Boolean) {
              return convertBoolean(((Boolean) o).booleanValue());
-@@ -191,27 +196,27 @@
+@@ -191,27 +199,27 @@
      }
  
      /**
@@ -1830,7 +2679,32 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj'
          } catch (NumberFormatException e) {
              throw new ConversionException(
                      "Could not parse literal label to int type");
-@@ -275,27 +280,27 @@
+@@ -232,6 +240,24 @@
+     /**
+      * Converts a literal to a DateTime value.
+      * 
++     * @param literal the xsd:date to convert
++     * @return a DateTime value equating to the literal value
++     * @throws ConversionException if the literal is of an incorrect type or is
++     *             unparseable
++     */
++    public DateTime convertDate(Literal literal) {
++        try {
++            return new DateTime(literal.getLabel(), literal.getDatatype());
++        } catch (IllegalArgumentException e) {
++  				System.err.println(e);
++            throw new ConversionException(
++                    "Could not parse literal label to datetime type");
++        }
++    }
++
++    /**
++     * Converts a literal to a DateTime value.
++     * 
+      * @param literal the xsd:dateTime to convert
+      * @return a DateTime value equating to the literal value
+      * @throws ConversionException if the literal is of an incorrect type or is
+@@ -275,27 +301,27 @@
      }
  
      /**
@@ -1866,9 +2740,323 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj'
          } catch (NumberFormatException e) {
              throw new ConversionException(
                      "Could not parse literal label to long type");
+diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj' upstream/src/main/name/levering/ryan/sparql/logic/DefaultValueConversionLogic.java~ work-copy/src/main/name/levering/ryan/sparql/logic/DefaultValueConversionLogic.java~
+--- upstream/src/main/name/levering/ryan/sparql/logic/DefaultValueConversionLogic.java~	1969-12-31 19:00:00.000000000 -0500
++++ work-copy/src/main/name/levering/ryan/sparql/logic/DefaultValueConversionLogic.java~	2008-07-11 15:28:33.000000000 -0400
+@@ -0,0 +1,310 @@
++/*
++ * SPARQL Engine
++ * Copyright (C) 2005 Ryan Levering, All rights reserved.
++ * See LICENSE for full license information
++ */
++package name.levering.ryan.sparql.logic;
++
++import name.levering.ryan.sparql.common.SPARQLConstants;
++import name.levering.ryan.sparql.common.impl.DateTime;
++import name.levering.ryan.sparql.model.logic.helper.ConversionException;
++import name.levering.ryan.sparql.model.logic.helper.ValueConversionLogic;
++
++import name.levering.ryan.sparql.common.Literal;
++import name.levering.ryan.sparql.common.SPARQLValueFactory;
++import name.levering.ryan.sparql.common.URI;
++
++/**
++ * This class handles the value conversion, covered under the semantics of
++ * datatypes in both the SPARQL specification and the XMLSchema datatypes
++ * specification. It is used to convert SPARQL literal datatypes to Java types
++ * and back, in order to consolidate the interpretation of various String
++ * labels, which are slightly different in the W3C representation as in Java.
++ * 
++ * @author Ryan Levering
++ * @version 1.0
++ */
++public class DefaultValueConversionLogic implements ValueConversionLogic {
++
++    /**
++     * The value factory to create the new literals to hold the promoted values.
++     */
++    private final SPARQLValueFactory factory;
++
++    /**
++     * Creates a new default value conversion logic object with a particular
++     * value factory to create new literals.
++     * 
++     * @param factory the factory used to create new objects
++     */
++    public DefaultValueConversionLogic(SPARQLValueFactory factory) {
++        this.factory = factory;
++    }
++
++    /**
++     * Converts a typed literal to a wrapped Java primitive, according to the
++     * datatype in the literal.
++     * 
++     * @param literal the literal to convert
++     * @return a wrapped primitive object corresponding to one of the recognized
++     *         datatypes
++     * @throws ConversionException if the literal isn't of a recognized
++     *             convertible type
++     */
++    public Object convertLiteral(Literal literal) {
++        if (literal.getDatatype() != null) {
++            URI datatype = literal.getDatatype();
++            if (datatype.equals(SPARQLConstants.DOUBLE_TYPE)) {
++                return new Double(convertDouble(literal));
++            }
++            if (datatype.equals(SPARQLConstants.FLOAT_TYPE)) {
++                return new Float(convertFloat(literal));
++            }
++            if (datatype.equals(SPARQLConstants.DECIMAL_TYPE)) {
++					return convertDecimal(literal);
++				 }
++				 if (datatype.equals(SPARQLConstants.INTEGER_TYPE)
++					|| datatype.equals(SPARQLConstants.NONPOSITIVEINTEGER_TYPE) || datatype.equals(SPARQLConstants.NEGATIVEINTEGER_TYPE) || datatype.equals(SPARQLConstants.NONNEGATIVEINTEGER_TYPE) || datatype.equals(SPARQLConstants.POSITIVEINTEGER_TYPE)
++					|| datatype.equals(SPARQLConstants.LONG_TYPE)
++					|| datatype.equals(SPARQLConstants.UNSIGNEDLONG_TYPE)
++             || datatype.equals(SPARQLConstants.INT_TYPE) || datatype.equals(SPARQLConstants.SHORT_TYPE) || datatype.equals(SPARQLConstants.BYTE_TYPE)
++					|| datatype.equals(SPARQLConstants.UNSIGNEDINT_TYPE) || datatype.equals(SPARQLConstants.UNSIGNEDSHORT_TYPE) || datatype.equals(SPARQLConstants.UNSIGNEDBYTE_TYPE)) {
++                return convertInteger(literal);
++            }
++            if (datatype.equals(SPARQLConstants.BOOLEAN_TYPE)) {
++                return new Boolean(convertBoolean(literal));
++            }
++            if (datatype.equals(SPARQLConstants.DATE_TYPE)) {
++                return convertDateTime(literal);
++            }
++            if (datatype.equals(SPARQLConstants.STRING_TYPE)) {
++                return convertString(literal);
++            }
++            throw new ConversionException(
++						"Literal can't be converted to primitive object: Unrecognized datatype: " + datatype);
++        } else {
++            return convertString(literal);
++        }
++    }
++
++    /**
++     * Converts a Java object into a typed SPARQL literal, according to the
++     * runtime type of the object.
++     * 
++     * @param o the object to convert to a typed literal
++     * @return a literal of a recognized SPARQL type
++     * @throws ConversionException if the object isn't of a type recognized by
++     *             the converter
++     */
++    public Literal convertObject(Object o) {
++        if (o instanceof Double) {
++            return convertDouble(((Double) o).doubleValue());
++        }
++        if (o instanceof java.math.BigInteger) {
++            return convertInteger((java.math.BigInteger) o);
++        }
++        if (o instanceof Float) {
++            return convertFloat(((Float) o).floatValue());
++        }
++        if (o instanceof java.math.BigDecimal) {
++            return convertDecimal((java.math.BigDecimal) o);
++        }
++        if (o instanceof Boolean) {
++            return convertBoolean(((Boolean) o).booleanValue());
++        }
++        if (o instanceof DateTime) {
++            return convertDateTime((DateTime) o);
++        }
++        if (o instanceof String) {
++            return convertString((String) o);
++        }
++        throw new ConversionException(
++                "Object type is not a recognized convertible Literal");
++    }
++
++    /**
++     * Converts a boolean value to a xsd:boolean type literal.
++     * 
++     * @param value the boolean value to convert
++     * @return a correctly formed xsd:boolean literal
++     */
++    public Literal convertBoolean(boolean value) {
++        return value ? SPARQLConstants.TRUE_LITERAL
++                : SPARQLConstants.FALSE_LITERAL;
++    }
++
++    /**
++     * Converts a literal to a boolean value.
++     * 
++     * @param literal the xsd:boolean to convert
++     * @return a boolean value equating to the literal value
++     * @throws ConversionException if the literal is of an incorrect type or is
++     *             unparseable
++     */
++    public boolean convertBoolean(Literal literal) {
++        return Boolean.valueOf(literal.getLabel()).booleanValue();
++    }
++
++    /**
++     * Converts a String value to a xsd:string type literal.
++     * 
++     * @param value the String value to convert
++     * @return a correctly formed xsd:string literal
++     */
++    public Literal convertString(String value) {
++        return this.factory.createLiteral(value, SPARQLConstants.STRING_TYPE);
++    }
++
++    /**
++     * Converts a literal to a String value.
++     * 
++     * @param literal the xsd:string to convert
++     * @return a String value equating to the literal value
++     * @throws ConversionException if the literal is of an incorrect type or is
++     *             unparseable
++     */
++    public String convertString(Literal literal) {
++        return literal.getLabel();
++    }
++
++    /**
++     * Converts a double value to a xsd:double type literal.
++     * 
++     * @param value the double value to convert
++     * @return a correctly formed xsd:double literal
++     */
++    public Literal convertDouble(double value) {
++        return this.factory.createLiteral(Double.toString(value),
++                SPARQLConstants.DOUBLE_TYPE);
++    }
++
++    /**
++     * Converts a literal to a double value.
++     * 
++     * @param literal the xsd:double to convert
++     * @return a double value equating to the literal value
++     * @throws ConversionException if the literal is of an incorrect type or is
++     *             unparseable
++     */
++    public double convertDouble(Literal literal) {
++        try {
++            return Double.parseDouble(literal.getLabel());
++        } catch (NumberFormatException e) {
++            throw new ConversionException(
++                    "Could not parse literal label to double type");
++        }
++    }
++
++    /**
++     * Converts a java.math.BigInteger value to a xsd:integer type literal.
++     * 
++     * @param value the java.math.BigInteger value to convert
++     * @return a correctly formed xsd:integer literal
++     */
++    public Literal convertInteger(java.math.BigInteger value) {
++        return this.factory.createLiteral(value.toString(),
++                SPARQLConstants.INTEGER_TYPE);
++    }
++
++    /**
++     * Converts a literal to a java.math.BigInteger value.
++     * 
++     * @param literal the xsd:integer to convert
++     * @return a java.math.BigInteger value equating to the literal value
++     * @throws ConversionException if the literal is of an incorrect type or is
++     *             unparseable
++     */
++    public java.math.BigInteger convertInteger(Literal literal) {
++        try {
++            return new java.math.BigInteger(literal.getLabel());
++        } catch (NumberFormatException e) {
++            throw new ConversionException(
++                    "Could not parse literal label to int type");
++        }
++    }
++
++    /**
++     * Converts a DateTime value to a xsd:dateTime type literal.
++     * 
++     * @param value the DateTime value to convert
++     * @return a correctly formed xsd:dateTime literal
++     */
++    public Literal convertDateTime(DateTime value) {
++        return this.factory.createLiteral(value.toString(),
++                SPARQLConstants.DATE_TYPE);
++    }
++
++    /**
++     * Converts a literal to a DateTime value.
++     * 
++     * @param literal the xsd:dateTime to convert
++     * @return a DateTime value equating to the literal value
++     * @throws ConversionException if the literal is of an incorrect type or is
++     *             unparseable
++     */
++    public DateTime convertDateTime(Literal literal) {
++        try {
++            return new DateTime(literal.getLabel());
++        } catch (IllegalArgumentException e) {
++            throw new ConversionException(
++                    "Could not parse literal label to datetime type");
++        }
++    }
++
++    /**
++     * Converts a float value to a xsd:float type literal.
++     * 
++     * @param value the float value to convert
++     * @return a correctly formed xsd:float literal
++     */
++    public Literal convertFloat(float value) {
++        return this.factory.createLiteral(Float.toString(value),
++                SPARQLConstants.FLOAT_TYPE);
++    }
++
++    /**
++     * Converts a literal to a float value.
++     * 
++     * @param literal the xsd:float to convert
++     * @return a float value equating to the literal value
++     * @throws ConversionException if the literal is of an incorrect type or is
++     *             unparseable
++     */
++    public float convertFloat(Literal literal) {
++        try {
++            return Float.parseFloat(literal.getLabel());
++        } catch (NumberFormatException e) {
++            throw new ConversionException(
++                    "Could not parse literal label to float type");
++        }
++    }
++
++    /**
++     * Converts a java.math.BigDecimal value to a xsd:decimal type literal.
++     * 
++     * @param value the java.math.BigDecimal value to convert
++     * @return a correctly formed xsd:decimal literal
++     */
++    public Literal convertDecimal(java.math.BigDecimal value) {
++        return this.factory.createLiteral(value.toString(),
++                SPARQLConstants.DECIMAL_TYPE);
++    }
++
++    /**
++     * Converts a literal to a java.math.BigDecimal value.
++     * 
++     * @param literal the xsd:decimal to convert
++     * @return a java.math.BigDecimal value equating to the literal value
++     * @throws ConversionException if the literal is of an incorrect type or is
++     *             unparseable
++     */
++    public java.math.BigDecimal convertDecimal(Literal literal) {
++        try {
++            return new java.math.BigDecimal(literal.getLabel());
++        } catch (NumberFormatException e) {
++            throw new ConversionException(
++                    "Could not parse literal label to long type");
++        }
++    }
++
++}
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj' upstream/src/main/name/levering/ryan/sparql/logic/DefaultValueOrderingLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/DefaultValueOrderingLogic.java
 --- upstream/src/main/name/levering/ryan/sparql/logic/DefaultValueOrderingLogic.java	2007-10-07 07:19:19.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/logic/DefaultValueOrderingLogic.java	2008-07-11 15:28:33.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/logic/DefaultValueOrderingLogic.java	2008-08-06 17:51:26.000000000 -0400
 @@ -1,5 +1,10 @@
  package name.levering.ryan.sparql.logic;
  
@@ -1880,7 +3068,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj'
  import name.levering.ryan.sparql.model.logic.helper.ValueOrderingLogic;
  
  import name.levering.ryan.sparql.common.BNode;
-@@ -22,6 +27,13 @@
+@@ -22,9 +27,16 @@
   * @version 1.0
   */
  public class DefaultValueOrderingLogic implements ValueOrderingLogic {
@@ -1893,8 +3081,12 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj'
 +	}
  
  	/**
- 	 * Compares two value objects according to section 10.1.
-@@ -64,14 +76,44 @@
+-	 * Compares two value objects according to section 10.1.
++	 * Compares two value objects according to section 9.1.
+ 	 * 
+ 	 * @param value1 the first value
+ 	 * @param value2 the second value
+@@ -64,14 +76,61 @@
  			return -1;
  		}
  
@@ -1915,9 +3107,26 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj'
 +				if (((Literal) value2).getDatatype() == null)
 +					return 1;
 +				
-+				if (((Literal) value1).getDatatype().equals(SPARQLConstants.STRING_TYPE) && ((Literal) value2).getDatatype().equals(SPARQLConstants.STRING_TYPE))
-+					return ((Literal) value1).getLabel().compareTo(((Literal) value2).getLabel());
-+
++				// If the datatype is the same, some datatypes we can compare lexically, at least until
++				// we properly parse the values.
++				if (((Literal) value1).getDatatype().equals(((Literal) value2).getDatatype())) {
++					
++					if (((Literal) value1).getDatatype().equals(SPARQLConstants.STRING_TYPE))
++						return ((Literal) value1).getLabel().compareTo(((Literal) value2).getLabel());
++					
++					// This isn't defined by the specification but is useful.
++					
++					if (((Literal) value1).getDatatype().equals(SPARQLConstants.ANYURI_TYPE))
++						return ((Literal) value1).getLabel().compareTo(((Literal) value2).getLabel());
++					
++					/*if (((Literal) value1).getDatatype().equals(SPARQLConstants.DATE_TYPE))
++						return ((Literal) value1).getLabel().compareTo(((Literal) value2).getLabel());
++					if (((Literal) value1).getDatatype().equals(SPARQLConstants.DATETIME_TYPE))
++						return ((Literal) value1).getLabel().compareTo(((Literal) value2).getLabel());
++					if (((Literal) value1).getDatatype().equals(SPARQLConstants.TIME_TYPE))
++						return ((Literal) value1).getLabel().compareTo(((Literal) value2).getLabel());*/
++				}
++				
 +				Literal[] promoted = promoter.promote(new Literal[] { (Literal) value1, (Literal) value2 } );
 +				
 +				Object v1 = converter.convertLiteral(promoted[0]);
@@ -1945,6 +3154,156 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj'
  			return -1;
  		}
  
+diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj' upstream/src/main/name/levering/ryan/sparql/logic/DefaultValueOrderingLogic.java~ work-copy/src/main/name/levering/ryan/sparql/logic/DefaultValueOrderingLogic.java~
+--- upstream/src/main/name/levering/ryan/sparql/logic/DefaultValueOrderingLogic.java~	1969-12-31 19:00:00.000000000 -0500
++++ work-copy/src/main/name/levering/ryan/sparql/logic/DefaultValueOrderingLogic.java~	2008-08-05 08:17:49.000000000 -0400
+@@ -0,0 +1,146 @@
++package name.levering.ryan.sparql.logic;
++
++import name.levering.ryan.sparql.common.SPARQLConstants;
++import name.levering.ryan.sparql.common.impl.DateTime;
++
++import name.levering.ryan.sparql.model.logic.NumericPromotionLogic;
++import name.levering.ryan.sparql.model.logic.helper.ValueConversionLogic;
++import name.levering.ryan.sparql.model.logic.helper.ValueOrderingLogic;
++
++import name.levering.ryan.sparql.common.BNode;
++import name.levering.ryan.sparql.common.Literal;
++import name.levering.ryan.sparql.common.URI;
++import name.levering.ryan.sparql.common.Value;
++
++/**
++ * The default value ordering logic, according to section 10.1 of the
++ * specification. Orders values in the following order:
++ * <ol>
++ * <li>unbound
++ * <li>blank nodes
++ * <li>IRIs
++ * <li>untyped literals
++ * <li>typed literals
++ * </ol>
++ * 
++ * @author Ryan Levering
++ * @version 1.0
++ */
++public class DefaultValueOrderingLogic implements ValueOrderingLogic {
++	NumericPromotionLogic promoter;
++	ValueConversionLogic converter;
++	
++	public DefaultValueOrderingLogic(NumericPromotionLogic promoter, ValueConversionLogic converter) {
++		this.promoter = promoter;
++		this.converter = converter;
++	}
++
++	/**
++	 * Compares two value objects according to section 10.1.
++	 * 
++	 * @param value1 the first value
++	 * @param value2 the second value
++	 * @return negative number if the first argument is less than, zero if they
++	 *         are identical, or positive if it's greater
++	 */
++	public int compare(Value value1, Value value2) {
++		// Form a matrix of logical conclusions
++
++		// First value is unbound
++		if (value1 == null) {
++			if (value2 == null) {
++				return 0;
++			}
++			return -1;
++		}
++
++		// First value is a blank node
++		if (value1 instanceof BNode) {
++			if (value2 == null) {
++				return 1;
++			}
++			if (value2 instanceof BNode) {
++				return 0;
++			}
++			return -1;
++		}
++
++		// First value is an URI
++		if (value1 instanceof URI) {
++			if (value2 == null || value2 instanceof BNode) {
++				return 1;
++			}
++			if (value2 instanceof URI) {
++				return ((URI) value1).toString().compareTo(((URI) value2).toString());
++			}
++			return -1;
++		}
++
++		// First value is a literal
++		if (value1 instanceof Literal) {
++			if (value2 == null || value2 instanceof BNode || value2 instanceof URI)
++				return 1;
++
++			if (value2 instanceof Literal) {
++				if (((Literal) value1).getDatatype() == null && ((Literal) value2).getDatatype() == null)
++					return ((Literal) value1).getLabel().compareTo(((Literal) value2).getLabel());
++					
++				if (((Literal) value1).getDatatype() == null)
++					return -1;
++				if (((Literal) value2).getDatatype() == null)
++					return 1;
++				
++				// If the datatype is the same, some datatypes we can compare lexically, at least until
++				// we properly parse the values.
++				if (((Literal) value1).getDatatype().equals(((Literal) value2).getDatatype())) {
++					
++					if (((Literal) value1).getDatatype().equals(SPARQLConstants.STRING_TYPE))
++						return ((Literal) value1).getLabel().compareTo(((Literal) value2).getLabel());
++					if (((Literal) value1).getDatatype().equals(SPARQLConstants.ANYURI_TYPE))
++						return ((Literal) value1).getLabel().compareTo(((Literal) value2).getLabel());
++
++					if (((Literal) value1).getDatatype().equals(SPARQLConstants.DATE_TYPE))
++						return ((Literal) value1).getLabel().compareTo(((Literal) value2).getLabel());
++					if (((Literal) value1).getDatatype().equals(SPARQLConstants.DATETIME_TYPE))
++						return ((Literal) value1).getLabel().compareTo(((Literal) value2).getLabel());
++					if (((Literal) value1).getDatatype().equals(SPARQLConstants.TIME_TYPE))
++						return ((Literal) value1).getLabel().compareTo(((Literal) value2).getLabel());
++
++				}
++				
++				Literal[] promoted = promoter.promote(new Literal[] { (Literal) value1, (Literal) value2 } );
++				
++				Object v1 = converter.convertLiteral(promoted[0]);
++				Object v2 = converter.convertLiteral(promoted[1]);
++				
++				if (v1 instanceof Double)
++					return ((Double)v1).compareTo((Double)v2);
++				if (v1 instanceof Float)
++					return ((Float)v1).compareTo((Float)v2);
++				if (v1 instanceof java.math.BigDecimal)
++					return ((java.math.BigDecimal)v1).compareTo((java.math.BigDecimal)v2);
++				if (v1 instanceof java.math.BigInteger)
++					return ((java.math.BigInteger)v1).compareTo((java.math.BigInteger)v2);
++				if (v1 instanceof Boolean)
++					return ((Boolean)v1).compareTo((Boolean)v2);
++				if (v1 instanceof DateTime)
++					return ((DateTime)v1).compareTo((DateTime)v2);
++				if (v1 instanceof String)
++					return ((String)v1).compareTo((String)v2);
++			}
++			
++			return -1;
++		}
++
++		// First value is a typed literal
++		if (value2 == null || value2 instanceof BNode || value2 instanceof URI
++				|| (value2 instanceof Literal && ((Literal) value2).getDatatype() == null)) {
++			return 1;
++		}
++		
++		// At this point, Literal ordering is undefined
++		// However, it would be silly to not return a lexographic sort
++		return ((Literal) value1).getLabel().compareTo(((Literal) value2).getLabel());
++	}
++
++}
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj' upstream/src/main/name/levering/ryan/sparql/logic/DefaultVariableLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/DefaultVariableLogic.java
 --- upstream/src/main/name/levering/ryan/sparql/logic/DefaultVariableLogic.java	2007-10-07 07:19:19.000000000 -0400
 +++ work-copy/src/main/name/levering/ryan/sparql/logic/DefaultVariableLogic.java	1969-12-31 19:00:00.000000000 -0500
@@ -2753,7 +4112,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj'
  
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj' upstream/src/main/name/levering/ryan/sparql/logic/expression/RelationalLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/expression/RelationalLogic.java
 --- upstream/src/main/name/levering/ryan/sparql/logic/expression/RelationalLogic.java	2007-10-07 07:19:19.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/logic/expression/RelationalLogic.java	2008-07-11 15:28:33.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/logic/expression/RelationalLogic.java	2008-08-06 18:19:15.000000000 -0400
 @@ -30,6 +30,8 @@
  	private ValueConversionLogic converter;
  
@@ -2763,7 +4122,34 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj'
  
  	/**
  	 * Creates a new relational logic object with particular expression data to
-@@ -89,10 +91,10 @@
+@@ -65,16 +67,9 @@
+ 			Literal rightLiteral = (Literal) rightValue;
+ 			URI leftDatatype = leftLiteral.getDatatype();
+ 
+-			// First check numeric promotion
+-			if (leftDatatype != null
+-					&& (leftDatatype.equals(SPARQLConstants.FLOAT_TYPE)
+-							|| leftDatatype.equals(SPARQLConstants.DECIMAL_TYPE)
+-							|| leftDatatype.equals(SPARQLConstants.INTEGER_TYPE) || leftDatatype
+-							.equals(SPARQLConstants.DOUBLE_TYPE))) {
+-				Literal[] promoted = this.numLogic.promote(new Literal[] { leftLiteral, rightLiteral });
+-				leftLiteral = promoted[0];
+-				rightLiteral = promoted[1];
+-			}
++			Literal[] promoted = this.numLogic.promote(new Literal[] { leftLiteral, rightLiteral });
++			leftLiteral = promoted[0];
++			rightLiteral = promoted[1];
+ 
+ 			// Now convert to java types
+ 			Object leftEvaluate;
+@@ -83,16 +78,16 @@
+ 			try {
+ 				leftEvaluate = this.converter.convertLiteral(leftLiteral);
+ 				rightEvaluate = this.converter.convertLiteral(rightLiteral);
+-
++				
+ 				if (leftEvaluate instanceof Double && rightEvaluate instanceof Double) {
+ 					result = evaluateDouble(((Double) leftEvaluate).doubleValue(), ((Double) rightEvaluate)
  							.doubleValue());
  				} else if (leftEvaluate instanceof Float && rightEvaluate instanceof Float) {
  					result = evaluateFloat(((Float) leftEvaluate).floatValue(), ((Float) rightEvaluate).floatValue());
@@ -2778,7 +4164,15 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj'
  				} else if (leftEvaluate instanceof DateTime && rightEvaluate instanceof DateTime) {
  					result = evaluateDate((DateTime) leftEvaluate, (DateTime) rightEvaluate);
  				} else if (leftEvaluate instanceof String && rightEvaluate instanceof String) {
-@@ -129,7 +131,9 @@
+@@ -107,6 +102,7 @@
+ 					throw new TypeError("Could not find a valid operation to operate on the operands");
+ 				}
+ 			} catch (UnsupportedOperationException e) {
++				System.err.println(e);
+ 				throw new TypeError("Could not find a valid operation to operate on the operands");
+ 			}
+ 
+@@ -129,7 +125,9 @@
  	 * @param num2 the right value to compare
  	 * @return true if the underlying implementation evaluates the expression to be true
  	 */
@@ -2789,7 +4183,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj'
  
  	/**
  	 * Template method delegation to subclass relational logic implementation.
-@@ -138,7 +142,9 @@
+@@ -138,7 +136,9 @@
  	 * @param num2 the right value to compare
  	 * @return true if the underlying implementation evaluates the expression to be true
  	 */
@@ -2800,7 +4194,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj'
  
  	/**
  	 * Template method delegation to subclass relational logic implementation.
-@@ -147,7 +153,9 @@
+@@ -147,7 +147,9 @@
  	 * @param num2 the right value to compare
  	 * @return true if the underlying implementation evaluates the expression to be true
  	 */
@@ -2811,7 +4205,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj'
  
  	/**
  	 * Template method delegation to subclass relational logic implementation.
-@@ -156,7 +164,9 @@
+@@ -156,7 +158,9 @@
  	 * @param num2 the right value to compare
  	 * @return true if the underlying implementation evaluates the expression to be true
  	 */
@@ -2822,7 +4216,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj'
  
  	/**
  	 * Template method delegation to subclass relational logic implementation.
-@@ -165,7 +175,9 @@
+@@ -165,7 +169,9 @@
  	 * @param cal2 the right value to compare
  	 * @return true if the underlying implementation evaluates the expression to be true
  	 */
@@ -2833,7 +4227,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj'
  
  	/**
  	 * Template method delegation to subclass relational logic implementation.
-@@ -174,7 +186,9 @@
+@@ -174,7 +180,9 @@
  	 * @param string2 the right value to compare
  	 * @return true if the underlying implementation evaluates the expression to be true
  	 */
@@ -2844,7 +4238,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj'
  
  	/**
  	 * Template method delegation to subclass relational logic implementation.
-@@ -184,5 +198,7 @@
+@@ -184,5 +192,7 @@
  	 * @return true if the underlying implementation evaluates the expression to be true
  	 */
  	public abstract boolean evaluateValue(Value value1, Value value2);
@@ -2852,6 +4246,214 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj'
 +	protected abstract boolean comparisonResult(int comparison);
  
  }
+diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj' upstream/src/main/name/levering/ryan/sparql/logic/expression/RelationalLogic.java~ work-copy/src/main/name/levering/ryan/sparql/logic/expression/RelationalLogic.java~
+--- upstream/src/main/name/levering/ryan/sparql/logic/expression/RelationalLogic.java~	1969-12-31 19:00:00.000000000 -0500
++++ work-copy/src/main/name/levering/ryan/sparql/logic/expression/RelationalLogic.java~	2008-07-11 15:28:33.000000000 -0400
+@@ -0,0 +1,204 @@
++/*
++ * SPARQL Engine
++ * Copyright (C) 2005 Ryan Levering, All rights reserved.
++ * See LICENSE for full license information
++ */
++package name.levering.ryan.sparql.logic.expression;
++
++import name.levering.ryan.sparql.common.SPARQLConstants;
++import name.levering.ryan.sparql.common.impl.DateTime;
++import name.levering.ryan.sparql.model.data.BinaryExpressionData;
++import name.levering.ryan.sparql.model.logic.NumericPromotionLogic;
++import name.levering.ryan.sparql.model.logic.helper.ConversionException;
++import name.levering.ryan.sparql.model.logic.helper.ValueConversionLogic;
++
++import name.levering.ryan.sparql.common.Literal;
++import name.levering.ryan.sparql.common.URI;
++import name.levering.ryan.sparql.common.Value;
++
++/**
++ * An abstract superclass of all of the relational expression logic in this
++ * package. This is responsible for numberic promotion and RDF-to-Java
++ * conversion and then delegating the evaluation of the resulting Java objects
++ * to the subclasses.
++ * 
++ * @author Ryan Levering
++ * @version 1.0
++ */
++public abstract class RelationalLogic extends BinaryLogic {
++
++	private ValueConversionLogic converter;
++
++	private NumericPromotionLogic numLogic;
++	
++	
++
++	/**
++	 * Creates a new relational logic object with particular expression data to
++	 * evaluate along with numeric promotion logic and RDF-to-Java conversion
++	 * logic.
++	 * 
++	 * @param data the data containing two expressions for evaluation
++	 * @param numLogic the logic to do any numeric promotion
++	 * @param converter the logic to translate RDF to Java
++	 */
++	public RelationalLogic(BinaryExpressionData data, NumericPromotionLogic numLogic, ValueConversionLogic converter) {
++		super(data);
++		this.numLogic = numLogic;
++		this.converter = converter;
++	}
++
++	/**
++	 * Promote any numeric literal pairs, convert any literals to Java and then
++	 * delegate to an appropriate subclass implementation that performs the
++	 * actual logic.
++	 * 
++	 * @param leftValue the value object on the left half of the relational expression
++	 * @param rightValue the value object on the right half of the relational expression
++	 * @return a xsd:boolean value object corresponding to the results of the expression
++	 */
++	public Value evaluate(Value leftValue, Value rightValue) {
++		// TODO Fix this instanceof mess
++		boolean result;
++
++		// If they are typed literals, we'll try to compare the primitive values
++		if (leftValue instanceof Literal && rightValue instanceof Literal) {
++			Literal leftLiteral = (Literal) leftValue;
++			Literal rightLiteral = (Literal) rightValue;
++			URI leftDatatype = leftLiteral.getDatatype();
++
++			// First check numeric promotion
++			if (leftDatatype != null
++					&& (leftDatatype.equals(SPARQLConstants.FLOAT_TYPE)
++							|| leftDatatype.equals(SPARQLConstants.DECIMAL_TYPE)
++							|| leftDatatype.equals(SPARQLConstants.INTEGER_TYPE) || leftDatatype
++							.equals(SPARQLConstants.DOUBLE_TYPE))) {
++				Literal[] promoted = this.numLogic.promote(new Literal[] { leftLiteral, rightLiteral });
++				leftLiteral = promoted[0];
++				rightLiteral = promoted[1];
++			}
++
++			// Now convert to java types
++			Object leftEvaluate;
++			Object rightEvaluate;
++
++			try {
++				leftEvaluate = this.converter.convertLiteral(leftLiteral);
++				rightEvaluate = this.converter.convertLiteral(rightLiteral);
++
++				if (leftEvaluate instanceof Double && rightEvaluate instanceof Double) {
++					result = evaluateDouble(((Double) leftEvaluate).doubleValue(), ((Double) rightEvaluate)
++							.doubleValue());
++				} else if (leftEvaluate instanceof Float && rightEvaluate instanceof Float) {
++					result = evaluateFloat(((Float) leftEvaluate).floatValue(), ((Float) rightEvaluate).floatValue());
++				} else if (leftEvaluate instanceof java.math.BigDecimal && rightEvaluate instanceof java.math.BigDecimal) {
++					result = evaluateDecimal((java.math.BigDecimal) leftEvaluate, (java.math.BigDecimal) rightEvaluate);
++				} else if (leftEvaluate instanceof java.math.BigInteger && rightEvaluate instanceof java.math.BigInteger) {
++					result = evaluateInteger((java.math.BigInteger) leftEvaluate, (java.math.BigInteger) rightEvaluate);
++				} else if (leftEvaluate instanceof DateTime && rightEvaluate instanceof DateTime) {
++					result = evaluateDate((DateTime) leftEvaluate, (DateTime) rightEvaluate);
++				} else if (leftEvaluate instanceof String && rightEvaluate instanceof String) {
++					result = evaluateString((String) leftEvaluate, (String) rightEvaluate);
++				} else {
++					result = evaluateValue(leftValue, rightValue);
++				}
++			} catch (ConversionException e) {
++				try {
++					result = evaluateValue(leftValue, rightValue);
++				} catch (UnsupportedOperationException f) {
++					throw new TypeError("Could not find a valid operation to operate on the operands");
++				}
++			} catch (UnsupportedOperationException e) {
++				throw new TypeError("Could not find a valid operation to operate on the operands");
++			}
++
++		} else if (leftValue != null && rightValue != null) {
++			try {
++				result = evaluateValue(leftValue, rightValue);
++			} catch (UnsupportedOperationException e) {
++				throw new TypeError("Could not find a valid operation to operate on the operands");
++			}
++		} else {
++			result = false;
++		}
++		return this.converter.convertObject(new Boolean(result));
++	}
++
++	/**
++	 * Template method delegation to subclass relational logic implementation.
++	 * 
++	 * @param num1 the left value to compare
++	 * @param num2 the right value to compare
++	 * @return true if the underlying implementation evaluates the expression to be true
++	 */
++	 public boolean evaluateInteger(java.math.BigInteger num1, java.math.BigInteger num2) {
++		 return comparisonResult(num1.compareTo(num2));
++	 }
++
++	/**
++	 * Template method delegation to subclass relational logic implementation.
++	 * 
++	 * @param num1 the left value to compare
++	 * @param num2 the right value to compare
++	 * @return true if the underlying implementation evaluates the expression to be true
++	 */
++	 public boolean evaluateFloat(float num1, float num2) {
++		 return comparisonResult(Float.compare(num1, num2));
++	 }
++
++	/**
++	 * Template method delegation to subclass relational logic implementation.
++	 * 
++	 * @param num1 the left value to compare
++	 * @param num2 the right value to compare
++	 * @return true if the underlying implementation evaluates the expression to be true
++	 */
++	 public boolean evaluateDouble(double num1, double num2) {
++		 return comparisonResult(Double.compare(num1, num2));
++	 }
++
++	/**
++	 * Template method delegation to subclass relational logic implementation.
++	 * 
++	 * @param num1 the left value to compare
++	 * @param num2 the right value to compare
++	 * @return true if the underlying implementation evaluates the expression to be true
++	 */
++	 public boolean evaluateDecimal(java.math.BigDecimal num1, java.math.BigDecimal num2) {
++		 return comparisonResult(num1.compareTo(num2));
++	 }
++
++	/**
++	 * Template method delegation to subclass relational logic implementation.
++	 * 
++	 * @param cal1 the left value to compare
++	 * @param cal2 the right value to compare
++	 * @return true if the underlying implementation evaluates the expression to be true
++	 */
++	 public boolean evaluateDate(DateTime cal1, DateTime cal2) {
++		 return comparisonResult(cal1.compareTo(cal2));
++	 }
++
++	/**
++	 * Template method delegation to subclass relational logic implementation.
++	 * 
++	 * @param string1 the left value to compare
++	 * @param string2 the right value to compare
++	 * @return true if the underlying implementation evaluates the expression to be true
++	 */
++	 public boolean evaluateString(String string1, String string2) {
++		 return comparisonResult(string1.compareTo(string2));
++	 }
++
++	/**
++	 * Template method delegation to subclass relational logic implementation.
++	 * 
++	 * @param value1 the left value to compare
++	 * @param value2 the right value to compare
++	 * @return true if the underlying implementation evaluates the expression to be true
++	 */
++	public abstract boolean evaluateValue(Value value1, Value value2);
++	
++	protected abstract boolean comparisonResult(int comparison);
++
++}
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj' upstream/src/main/name/levering/ryan/sparql/logic/expression/SubtractionLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/expression/SubtractionLogic.java
 --- upstream/src/main/name/levering/ryan/sparql/logic/expression/SubtractionLogic.java	2006-08-20 20:01:00.000000000 -0400
 +++ work-copy/src/main/name/levering/ryan/sparql/logic/expression/SubtractionLogic.java	2008-07-11 15:28:33.000000000 -0400
@@ -2988,6 +4590,191 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj'
 -
 + 
  }
+diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj' upstream/src/main/name/levering/ryan/sparql/logic/function/CastFunction.java work-copy/src/main/name/levering/ryan/sparql/logic/function/CastFunction.java
+--- upstream/src/main/name/levering/ryan/sparql/logic/function/CastFunction.java	2007-10-07 07:19:19.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/logic/function/CastFunction.java	2008-08-06 17:56:01.000000000 -0400
+@@ -75,7 +75,7 @@
+         if (dataType.equals(SPARQLConstants.INTEGER_TYPE)) {
+             return castInteger(literal);
+         }
+-        if (dataType.equals(SPARQLConstants.DATE_TYPE)) {
++        if (dataType.equals(SPARQLConstants.DATETIME_TYPE)) {
+             return castDateTime(literal);
+         }
+         if (dataType.equals(SPARQLConstants.BOOLEAN_TYPE)) {
+diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj' upstream/src/main/name/levering/ryan/sparql/logic/function/CastFunction.java~ work-copy/src/main/name/levering/ryan/sparql/logic/function/CastFunction.java~
+--- upstream/src/main/name/levering/ryan/sparql/logic/function/CastFunction.java~	1969-12-31 19:00:00.000000000 -0500
++++ work-copy/src/main/name/levering/ryan/sparql/logic/function/CastFunction.java~	2007-10-21 12:35:15.000000000 -0400
+@@ -0,0 +1,169 @@
++/*
++ * SPARQL Engine
++ * Copyright (C) 2005 Ryan Levering, All rights reserved.
++ * See LICENSE for full license information
++ */
++package name.levering.ryan.sparql.logic.function;
++
++import name.levering.ryan.sparql.common.SPARQLConstants;
++
++import name.levering.ryan.sparql.common.Literal;
++import name.levering.ryan.sparql.common.SPARQLValueFactory;
++import name.levering.ryan.sparql.common.URI;
++import name.levering.ryan.sparql.common.Value;
++
++/**
++ * Templated class used to delegate the casting of a particular datatype of
++ * literal to the appropriate subclass method. This in effect forms a matrix of
++ * modular casting operations.
++ * 
++ * @author Ryan Levering
++ * @version 1.1
++ */
++public abstract class CastFunction extends ValueFunction {
++
++    /**
++     * The value factory used to create the new cast objects.
++     */
++    protected final SPARQLValueFactory factory;
++    
++    /**
++     * Creates a new cast function that casts objects into other values using the value factory.
++     * 
++     * @param factory the factory to use for value creation
++     */
++    protected CastFunction(SPARQLValueFactory factory) {
++        this.factory = factory;
++    }
++    
++    /**
++     * Checks the argument and then uses the datatype of the passed literal to
++     * delegate to a subclass, one for each type of cast function.
++     * 
++     * @param args the arguments, which should be just one literal
++     * @return a new literal of the cast type
++     * @throws ExternalFunctionException if the type can't be cast
++     */
++    public Value evaluate(Value value) throws ExternalFunctionException {
++        
++        if (value instanceof URI) {
++            return castIRI((URI) value);
++        }
++        if (!(value instanceof Literal)) {
++            throw new ExternalFunctionException(
++                    "Can only cast literals and IRIs");
++        }
++
++        Literal literal = (Literal) value;
++        if (literal.getDatatype() == null) {
++            return castLiteral(literal);
++        }
++
++        URI dataType = literal.getDatatype();
++        if (dataType.equals(SPARQLConstants.STRING_TYPE)) {
++            return castString(literal);
++        }
++        if (dataType.equals(SPARQLConstants.FLOAT_TYPE)) {
++            return castFloat(literal);
++        }
++        if (dataType.equals(SPARQLConstants.DOUBLE_TYPE)) {
++            return castDouble(literal);
++        }
++        if (dataType.equals(SPARQLConstants.DECIMAL_TYPE)) {
++            return castDecimal(literal);
++        }
++        if (dataType.equals(SPARQLConstants.INTEGER_TYPE)) {
++            return castInteger(literal);
++        }
++        if (dataType.equals(SPARQLConstants.DATE_TYPE)) {
++            return castDateTime(literal);
++        }
++        if (dataType.equals(SPARQLConstants.BOOLEAN_TYPE)) {
++            return castBoolean(literal);
++        }
++
++        throw new ExternalFunctionException(
++                "Unable to cast unknown typed object");
++    }
++
++    /**
++     * Casts a string literal to a type according to the subclass type.
++     * 
++     * @param literal the string value to cast
++     * @return a literal of the type the subclass casts to
++     */
++    public abstract Value castString(Literal literal)
++            throws IllegalCastException;
++
++    /**
++     * Casts a float literal to a type according to the subclass type.
++     * 
++     * @param literal the float value to cast
++     * @return a literal of the type the subclass casts to
++     */
++    public abstract Value castFloat(Literal literal)
++            throws IllegalCastException;
++
++    /**
++     * Casts a double literal to a type according to the subclass type.
++     * 
++     * @param literal the double value to cast
++     * @return a literal of the type the subclass casts to
++     */
++    public abstract Value castDouble(Literal literal)
++            throws IllegalCastException;
++
++    /**
++     * Casts a decimal literal to a type according to the subclass type.
++     * 
++     * @param literal the decimal value to cast
++     * @return a literal of the type the subclass casts to
++     */
++    public abstract Value castDecimal(Literal literal)
++            throws IllegalCastException;
++
++    /**
++     * Casts a integer literal to a type according to the subclass type.
++     * 
++     * @param literal the integer value to cast
++     * @return a literal of the type the subclass casts to
++     */
++    public abstract Value castInteger(Literal literal)
++            throws IllegalCastException;
++
++    /**
++     * Casts a dateTime literal to a type according to the subclass type.
++     * 
++     * @param literal the dateTime value to cast
++     * @return a literal of the type the subclass casts to
++     */
++    public abstract Value castDateTime(Literal literal)
++            throws IllegalCastException;
++
++    /**
++     * Casts a boolean literal to a type according to the subclass type.
++     * 
++     * @param literal the boolean value to cast
++     * @return a literal of the type the subclass casts to
++     */
++    public abstract Value castBoolean(Literal literal)
++            throws IllegalCastException;
++
++    /**
++     * Casts a URI to a type according to the subclass type.
++     * 
++     * @param iri the URI value to cast
++     * @return a literal of the type the subclass casts to
++     */
++    public abstract Value castIRI(URI iri) throws IllegalCastException;
++
++    /**
++     * Casts an untyped literal to a type according to the subclass.
++     * 
++     * @param literal an untyped literal
++     * @return a literal of the type the subclass casts to
++     */
++    public abstract Value castLiteral(Literal literal)
++            throws IllegalCastException;
++
++}
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj' upstream/src/main/name/levering/ryan/sparql/logic/function/DataTypeLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/function/DataTypeLogic.java
 --- upstream/src/main/name/levering/ryan/sparql/logic/function/DataTypeLogic.java	2007-10-07 07:19:19.000000000 -0400
 +++ work-copy/src/main/name/levering/ryan/sparql/logic/function/DataTypeLogic.java	2007-10-21 12:35:15.000000000 -0400
@@ -3024,6 +4811,202 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj'
  
  	/**
  	 * Evaluates the datatype of a typed literal that is an argument.
+diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj' upstream/src/main/name/levering/ryan/sparql/logic/function/DateTimeCastFunction.java work-copy/src/main/name/levering/ryan/sparql/logic/function/DateTimeCastFunction.java
+--- upstream/src/main/name/levering/ryan/sparql/logic/function/DateTimeCastFunction.java	2007-10-07 07:19:19.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/logic/function/DateTimeCastFunction.java	2008-08-06 17:58:32.000000000 -0400
+@@ -44,7 +44,7 @@
+     public Value castString(Literal literal) throws IllegalCastException {
+         try {
+             new DateTime(literal.getLabel());
+-            return this.factory.createLiteral(literal.getLabel(), SPARQLConstants.DATE_TYPE);
++            return this.factory.createLiteral(literal.getLabel(), SPARQLConstants.DATETIME_TYPE);
+         } catch (IllegalArgumentException e) {
+             throw new IllegalCastException("Unable to cast string to dateTime");
+         }
+@@ -101,7 +101,7 @@
+      * @return a literal of type xsd:dateTime, representing the cast value
+      */
+     public Value castDateTime(Literal literal) throws IllegalCastException {
+-        return this.factory.createLiteral(literal.getLabel(), SPARQLConstants.DATE_TYPE);
++        return this.factory.createLiteral(literal.getLabel(), SPARQLConstants.DATETIME_TYPE);
+     }
+ 
+     /**
+@@ -137,7 +137,7 @@
+     public Value castLiteral(Literal literal) throws IllegalCastException {
+         try {
+             new DateTime(literal.getLabel());
+-            return this.factory.createLiteral(literal.getLabel(), SPARQLConstants.DATE_TYPE);
++            return this.factory.createLiteral(literal.getLabel(), SPARQLConstants.DATETIME_TYPE);
+         } catch (IllegalArgumentException e) {
+             throw new IllegalCastException("Unable to cast string to dateTime");
+         }
+diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj' upstream/src/main/name/levering/ryan/sparql/logic/function/DateTimeCastFunction.java~ work-copy/src/main/name/levering/ryan/sparql/logic/function/DateTimeCastFunction.java~
+--- upstream/src/main/name/levering/ryan/sparql/logic/function/DateTimeCastFunction.java~	1969-12-31 19:00:00.000000000 -0500
++++ work-copy/src/main/name/levering/ryan/sparql/logic/function/DateTimeCastFunction.java~	2007-10-21 12:35:15.000000000 -0400
+@@ -0,0 +1,162 @@
++/*
++ * SPARQL Engine
++ * Copyright (C) 2005 Ryan Levering, All rights reserved.
++ * See LICENSE for full license information
++ */
++package name.levering.ryan.sparql.logic.function;
++
++import name.levering.ryan.sparql.common.SPARQLConstants;
++import name.levering.ryan.sparql.common.impl.DateTime;
++import name.levering.ryan.sparql.model.logic.LogicFactory;
++
++import name.levering.ryan.sparql.common.Literal;
++import name.levering.ryan.sparql.common.SPARQLValueFactory;
++import name.levering.ryan.sparql.common.URI;
++import name.levering.ryan.sparql.common.Value;
++
++/**
++ * Represents the logic of the xsd:dateTime column of the cast constructor table
++ * in the SPARQL specification. Responsible for casting all known SPARQL types
++ * to dateTimes, if possible.
++ * 
++ * @author Ryan Levering
++ * @version 1.2
++ */
++public class DateTimeCastFunction extends CastFunction {
++
++    /**
++     * Creates a dateTime cast function with a particular value factory to use for literal creation.
++     * 
++     * @param factory the factory to use for literal creation
++     */
++    public DateTimeCastFunction(SPARQLValueFactory factory) {
++        super(factory);
++    }
++    
++    /**
++     * Casts the passed xsd:string value to a dateTime literal, if it's
++     * correctly representing.
++     * 
++     * @param literal the value to cast to dateTime
++     * @return a literal of type xsd:dateTime, representing the cast value
++     * @throws IllegalCastException if the label can't be parsed as a dateTime
++     */
++    public Value castString(Literal literal) throws IllegalCastException {
++        try {
++            new DateTime(literal.getLabel());
++            return this.factory.createLiteral(literal.getLabel(), SPARQLConstants.DATE_TYPE);
++        } catch (IllegalArgumentException e) {
++            throw new IllegalCastException("Unable to cast string to dateTime");
++        }
++    }
++
++    /**
++     * Casts the passed xsd:float value to a dateTime literal.
++     * 
++     * @param literal the value to cast to dateTime
++     * @return never
++     * @throws IllegalCastException always
++     */
++    public Value castFloat(Literal literal) throws IllegalCastException {
++        throw new IllegalCastException("Unable to convert float to date time");
++    }
++
++    /**
++     * Casts the passed xsd:double value to a dateTime literal.
++     * 
++     * @param literal the value to cast to dateTime
++     * @return never
++     * @throws IllegalCastException always
++     */
++    public Value castDouble(Literal literal) throws IllegalCastException {
++        throw new IllegalCastException("Unable to convert double to date time");
++    }
++
++    /**
++     * Casts the passed xsd:decimal value to a dateTime literal.
++     * 
++     * @param literal the value to cast to dateTime
++     * @return never
++     * @throws IllegalCastException always
++     */
++    public Value castDecimal(Literal literal) throws IllegalCastException {
++        throw new IllegalCastException("Unable to convert decimal to date time");
++    }
++
++    /**
++     * Casts the passed xsd:integer value to a dateTime literal.
++     * 
++     * @param literal the value to cast to dateTime
++     * @return never
++     * @throws IllegalCastException always
++     */
++    public Value castInteger(Literal literal) throws IllegalCastException {
++        throw new IllegalCastException("Unable to convert integer to date time");
++    }
++
++    /**
++     * Casts the passed xsd:dateTime value to a dateTime literal.
++     * 
++     * @param literal the value to cast to dateTime
++     * @return a literal of type xsd:dateTime, representing the cast value
++     */
++    public Value castDateTime(Literal literal) throws IllegalCastException {
++        return this.factory.createLiteral(literal.getLabel(), SPARQLConstants.DATE_TYPE);
++    }
++
++    /**
++     * Casts the passed xsd:boolean value to a dateTime literal.
++     * 
++     * @param literal the value to cast to dateTime
++     * @return never
++     * @throws IllegalCastException always
++     */
++    public Value castBoolean(Literal literal) throws IllegalCastException {
++        throw new IllegalCastException("Unable to convert boolean to date time");
++    }
++
++    /**
++     * Casts the passed rdf:IRI value to a dateTime literal.
++     * 
++     * @param literal the value to cast to dateTime
++     * @return never
++     * @throws IllegalCastException always
++     */
++    public Value castIRI(URI iri) throws IllegalCastException {
++        throw new IllegalCastException("Unable to convert URI to date time");
++    }
++
++    /**
++     * Casts the passed untyped literal to a dateTime literal, if it's correctly
++     * representing.
++     * 
++     * @param literal the value to cast to dateTime
++     * @return a literal of type xsd:dateTime, representing the cast value
++     * @throws IllegalCastException if the label can't be parsed as a dateTime
++     */
++    public Value castLiteral(Literal literal) throws IllegalCastException {
++        try {
++            new DateTime(literal.getLabel());
++            return this.factory.createLiteral(literal.getLabel(), SPARQLConstants.DATE_TYPE);
++        } catch (IllegalArgumentException e) {
++            throw new IllegalCastException("Unable to cast string to dateTime");
++        }
++    }
++    
++	/**
++	 * Helper method to create a new factory that pulls out of the runtime logic
++	 * and value what this function needs.
++	 * 
++	 * @return a factory that creates functions
++	 */
++	public static ExternalFunctionFactory getFactory() {
++		return new ExternalFunctionFactory() {
++
++			public ExternalFunction create(LogicFactory logicFactory, SPARQLValueFactory valueFactory) {
++				return new DateTimeCastFunction(valueFactory);
++			}
++
++		};
++	}
++
++}
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj' upstream/src/main/name/levering/ryan/sparql/logic/function/DecimalCastFunction.java work-copy/src/main/name/levering/ryan/sparql/logic/function/DecimalCastFunction.java
 --- upstream/src/main/name/levering/ryan/sparql/logic/function/DecimalCastFunction.java	2007-10-07 07:19:19.000000000 -0400
 +++ work-copy/src/main/name/levering/ryan/sparql/logic/function/DecimalCastFunction.java	2007-10-21 12:35:15.000000000 -0400
@@ -3113,7 +5096,59 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj'
  	}
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj' upstream/src/main/name/levering/ryan/sparql/logic/function/FunctionLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/function/FunctionLogic.java
 --- upstream/src/main/name/levering/ryan/sparql/logic/function/FunctionLogic.java	1969-12-31 19:00:00.000000000 -0500
-+++ work-copy/src/main/name/levering/ryan/sparql/logic/function/FunctionLogic.java	2008-02-07 16:51:42.000000000 -0500
++++ work-copy/src/main/name/levering/ryan/sparql/logic/function/FunctionLogic.java	2008-08-06 17:38:02.000000000 -0400
+@@ -0,0 +1,48 @@
++/*
++ * SPARQL Engine
++ * Copyright (C) 2005 Ryan Levering, All rights reserved.
++ * See LICENSE for full license information
++ */
++package name.levering.ryan.sparql.logic.function;
++
++import java.util.Iterator;
++import java.util.Set;
++
++import name.levering.ryan.sparql.common.RdfBindingRow;
++import name.levering.ryan.sparql.common.Variable;
++import name.levering.ryan.sparql.model.data.CallExpressionData;
++import name.levering.ryan.sparql.model.logic.ExpressionLogic;
++import name.levering.ryan.sparql.model.logic.helper.ValueConversionLogic;
++
++import name.levering.ryan.sparql.common.Value;
++
++/**
++ * The base class of function-type logics.
++ * 
++ * @author Ryan Levering
++ * @version 1.0
++ */
++public abstract class FunctionLogic implements ExpressionLogic {
++
++    /**
++     * The data holding the arguments of the bound function.
++     */
++    protected CallExpressionData data;
++
++    /**
++     * Creates a new logic object that handles sop:bound function calls.
++     * 
++     * @param data the data holding the expression arguments to evaluate
++     * @param converter
++     */
++    public FunctionLogic(CallExpressionData data) {
++        this.data = data;
++    }
++
++	 public java.util.Set getVariables() {
++		 java.util.HashSet ret = new java.util.HashSet();
++		 for (Iterator i = this.data.getArguments().iterator(); i.hasNext(); )
++			 ret.addAll(((ExpressionLogic)i.next()).getVariables());
++		 return ret;
++	 }
++}
+diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj' upstream/src/main/name/levering/ryan/sparql/logic/function/FunctionLogic.java~ work-copy/src/main/name/levering/ryan/sparql/logic/function/FunctionLogic.java~
+--- upstream/src/main/name/levering/ryan/sparql/logic/function/FunctionLogic.java~	1969-12-31 19:00:00.000000000 -0500
++++ work-copy/src/main/name/levering/ryan/sparql/logic/function/FunctionLogic.java~	2008-02-07 16:51:42.000000000 -0500
 @@ -0,0 +1,48 @@
 +/*
 + * SPARQL Engine
@@ -5417,7 +7452,16 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj'
 +  import name.levering.ryan.sparql.common.impl.AbstractRdfBindingSet;
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj' upstream/src/main/name/levering/ryan/sparql/logic/StreamedLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/StreamedLogic.java
 --- upstream/src/main/name/levering/ryan/sparql/logic/StreamedLogic.java	2007-10-07 07:19:19.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/logic/StreamedLogic.java	2008-07-11 15:31:54.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/logic/StreamedLogic.java	2008-08-06 18:03:51.000000000 -0400
+@@ -151,7 +151,7 @@
+ 		registerExternalFunction(SPARQLConstants.DOUBLE_TYPE, DoubleCastFunction.getFactory());
+ 		registerExternalFunction(SPARQLConstants.DECIMAL_TYPE, DecimalCastFunction.getFactory());
+ 		registerExternalFunction(SPARQLConstants.INTEGER_TYPE, IntegerCastFunction.getFactory());
+-		registerExternalFunction(SPARQLConstants.DATE_TYPE, DateTimeCastFunction.getFactory());
++		registerExternalFunction(SPARQLConstants.DATETIME_TYPE, DateTimeCastFunction.getFactory());
+ 		registerExternalFunction(SPARQLConstants.BOOLEAN_TYPE, BooleanCastFunction.getFactory());
+ 		registerExternalFunction(SPARQLConstants.IRI_TYPE, IRICastFunction.getFactory());
+ 		registerExternalFunction(SPARQLConstants.LITERAL_TYPE, LiteralCastFunction.getFactory());
 @@ -248,7 +248,7 @@
  	 * @return the logic handling the ask query
  	 */
@@ -5460,9 +7504,425 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj'
  	}
  
  	/**
+diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj' upstream/src/main/name/levering/ryan/sparql/logic/StreamedLogic.java~ work-copy/src/main/name/levering/ryan/sparql/logic/StreamedLogic.java~
+--- upstream/src/main/name/levering/ryan/sparql/logic/StreamedLogic.java~	1969-12-31 19:00:00.000000000 -0500
++++ work-copy/src/main/name/levering/ryan/sparql/logic/StreamedLogic.java~	2008-07-11 15:31:54.000000000 -0400
+@@ -0,0 +1,403 @@
++/*
++ * SPARQL Engine
++ * Copyright (C) 2005 Ryan Levering, All rights reserved.
++ * See LICENSE for full license information
++ */
++package name.levering.ryan.sparql.logic;
++
++import java.util.HashMap;
++import java.util.Map;
++
++import name.levering.ryan.sparql.common.QueryException;
++import name.levering.ryan.sparql.common.SPARQLConstants;
++import name.levering.ryan.sparql.common.SPARQLValueFactory;
++import name.levering.ryan.sparql.common.URI;
++import name.levering.ryan.sparql.extensions.fpredicates.FunctionalPredicate;
++import name.levering.ryan.sparql.extensions.fpredicates.FunctionalPredicateConstants;
++import name.levering.ryan.sparql.extensions.fpredicates.FunctionalPredicateLogic;
++import name.levering.ryan.sparql.extensions.fpredicates.ListMemberProperty;
++import name.levering.ryan.sparql.extensions.fpredicates.RdfsMemberProperty;
++import name.levering.ryan.sparql.extensions.functions.FunctionConstants;
++import name.levering.ryan.sparql.extensions.functions.aggregate.CountFunction;
++import name.levering.ryan.sparql.extensions.functions.aggregate.IsMaxFunction;
++import name.levering.ryan.sparql.extensions.functions.aggregate.IsMinFunction;
++import name.levering.ryan.sparql.extensions.functions.aggregate.MaxFunction;
++import name.levering.ryan.sparql.extensions.functions.aggregate.MinFunction;
++import name.levering.ryan.sparql.extensions.functions.datetime.AddDayFunction;
++import name.levering.ryan.sparql.extensions.functions.datetime.AddHourFunction;
++import name.levering.ryan.sparql.extensions.functions.datetime.AddMinuteFunction;
++import name.levering.ryan.sparql.extensions.functions.datetime.AddMonthFunction;
++import name.levering.ryan.sparql.extensions.functions.datetime.AddSecondFunction;
++import name.levering.ryan.sparql.extensions.functions.datetime.AddYearFunction;
++import name.levering.ryan.sparql.extensions.functions.datetime.DayFunction;
++import name.levering.ryan.sparql.extensions.functions.datetime.FormatFunction;
++import name.levering.ryan.sparql.extensions.functions.datetime.HourFunction;
++import name.levering.ryan.sparql.extensions.functions.datetime.MinuteFunction;
++import name.levering.ryan.sparql.extensions.functions.datetime.MonthFunction;
++import name.levering.ryan.sparql.extensions.functions.datetime.ParseFunction;
++import name.levering.ryan.sparql.extensions.functions.datetime.SecondFunction;
++import name.levering.ryan.sparql.extensions.functions.datetime.YearFunction;
++import name.levering.ryan.sparql.extensions.functions.string.ConcatFunction;
++import name.levering.ryan.sparql.extensions.functions.string.ContainsFunction;
++import name.levering.ryan.sparql.extensions.functions.string.EndsWithFunction;
++import name.levering.ryan.sparql.extensions.functions.string.LengthFunction;
++import name.levering.ryan.sparql.extensions.functions.string.LowerCaseFunction;
++import name.levering.ryan.sparql.extensions.functions.string.ReplaceFunction;
++import name.levering.ryan.sparql.extensions.functions.string.StartsWithFunction;
++import name.levering.ryan.sparql.extensions.functions.string.SubstringAfterFunction;
++import name.levering.ryan.sparql.extensions.functions.string.SubstringBeforeFunction;
++import name.levering.ryan.sparql.extensions.functions.string.SubstringFunction;
++import name.levering.ryan.sparql.extensions.functions.string.TranslateFunction;
++import name.levering.ryan.sparql.extensions.functions.string.UpperCaseFunction;
++import name.levering.ryan.sparql.extensions.with.DefaultWithConstraintLogic;
++import name.levering.ryan.sparql.extensions.with.WithExtension;
++import name.levering.ryan.sparql.logic.function.BooleanCastFunction;
++import name.levering.ryan.sparql.logic.function.DateTimeCastFunction;
++import name.levering.ryan.sparql.logic.function.DecimalCastFunction;
++import name.levering.ryan.sparql.logic.function.DoubleCastFunction;
++import name.levering.ryan.sparql.logic.function.ExternalFunction;
++import name.levering.ryan.sparql.logic.function.ExternalFunctionFactory;
++import name.levering.ryan.sparql.logic.function.ExternalFunctionLogic;
++import name.levering.ryan.sparql.logic.function.FloatCastFunction;
++import name.levering.ryan.sparql.logic.function.IRICastFunction;
++import name.levering.ryan.sparql.logic.function.IntegerCastFunction;
++import name.levering.ryan.sparql.logic.function.LiteralCastFunction;
++import name.levering.ryan.sparql.logic.function.StringCastFunction;
++import name.levering.ryan.sparql.logic.naive.DefaultGroupConstraintLogic;
++import name.levering.ryan.sparql.logic.naive.DefaultOptionalConstraintLogic;
++import name.levering.ryan.sparql.logic.naive.DefaultUnionConstraintLogic;
++import name.levering.ryan.sparql.logic.naive.StaticGraphDistinctionLogic;
++import name.levering.ryan.sparql.logic.streamed.IndexedSetDistinctionLogic;
++import name.levering.ryan.sparql.logic.streamed.IndexedSetIntersectLogic;
++import name.levering.ryan.sparql.logic.streamed.IndexedSetJoinLogic;
++import name.levering.ryan.sparql.logic.streamed.StreamedFilterConstraintLogic;
++import name.levering.ryan.sparql.logic.streamed.StreamedGraphConstraintLogic;
++import name.levering.ryan.sparql.logic.streamed.StreamedSetProjectionLogic;
++import name.levering.ryan.sparql.logic.streamed.StreamedSetRangeLogic;
++import name.levering.ryan.sparql.logic.streamed.StreamedSetUnionLogic;
++import name.levering.ryan.sparql.logic.streamed.StreamedTripleConstraintLogic;
++import name.levering.ryan.sparql.model.data.AskQueryData;
++import name.levering.ryan.sparql.model.data.CallExpressionData;
++import name.levering.ryan.sparql.model.data.ConstructQueryData;
++import name.levering.ryan.sparql.model.data.DescribeQueryData;
++import name.levering.ryan.sparql.model.data.ExtendedConstructQueryData;
++import name.levering.ryan.sparql.model.data.FilterConstraintData;
++import name.levering.ryan.sparql.model.data.GraphConstraintData;
++import name.levering.ryan.sparql.model.data.GroupConstraintData;
++import name.levering.ryan.sparql.model.data.OptionalConstraintData;
++import name.levering.ryan.sparql.model.data.OrderExpressionData;
++import name.levering.ryan.sparql.model.data.SelectQueryData;
++import name.levering.ryan.sparql.model.data.TripleConstraintData;
++import name.levering.ryan.sparql.model.data.UnionConstraintData;
++import name.levering.ryan.sparql.model.data.WithConstraintData;
++import name.levering.ryan.sparql.model.logic.AskQueryLogic;
++import name.levering.ryan.sparql.model.logic.ConstraintLogic;
++import name.levering.ryan.sparql.model.logic.ConstructQueryLogic;
++import name.levering.ryan.sparql.model.logic.DescribeQueryLogic;
++import name.levering.ryan.sparql.model.logic.ExpressionLogic;
++import name.levering.ryan.sparql.model.logic.ExtendedLogicFactory;
++import name.levering.ryan.sparql.model.logic.OrderExpressionLogic;
++import name.levering.ryan.sparql.model.logic.SelectQueryLogic;
++
++/**
++ * This factory implements all the default logic for the SPARQL library
++ * implementation, along with the implementation specific extensions (WITH,
++ * functional predicates, functions). The logic is streamed, which means that
++ * the end result should be used with iterator() and will be evaluated as next()
++ * is called. This can result in some inefficiencies if the set is used multiple
++ * times, but it means that the memory use is incredibly small.
++ * <p>
++ * Developers wishing to tap into more efficient/specific logic should extend
++ * this class and specify their own logic implementations in place of the logic
++ * they want to replace.
++ * 
++ * @author Ryan Levering
++ * @version 1.2
++ */
++public class StreamedLogic extends BaseLogic implements ExtendedLogicFactory {
++
++	/**
++	 * Used to map function IRIs to external functions.
++	 */
++	private final Map functionMap = new HashMap();
++
++	/**
++	 * Used to map extension IRIs to graph extensions.
++	 */
++	private final Map extensionMap = new HashMap();
++
++	/**
++	 * Used to map virtual property IRIs to functional predicates.
++	 */
++	private final Map predicateMap = new HashMap();
++
++	/**
++	 * Creates a new default logic factory with the cast constructors registered
++	 * as external functions.
++	 */
++	public StreamedLogic() {
++		registerCastFunctions();
++		registerExtensionFunctions();
++		registerWithExtensions();
++		registerFunctionalPredicates();
++	}
++
++	/**
++	 * Intialize the function map with the standard SPARQL casting functions.
++	 */
++	protected void registerCastFunctions() {
++		registerExternalFunction(SPARQLConstants.STRING_TYPE, StringCastFunction.getFactory());
++		registerExternalFunction(SPARQLConstants.FLOAT_TYPE, FloatCastFunction.getFactory());
++		registerExternalFunction(SPARQLConstants.DOUBLE_TYPE, DoubleCastFunction.getFactory());
++		registerExternalFunction(SPARQLConstants.DECIMAL_TYPE, DecimalCastFunction.getFactory());
++		registerExternalFunction(SPARQLConstants.INTEGER_TYPE, IntegerCastFunction.getFactory());
++		registerExternalFunction(SPARQLConstants.DATE_TYPE, DateTimeCastFunction.getFactory());
++		registerExternalFunction(SPARQLConstants.BOOLEAN_TYPE, BooleanCastFunction.getFactory());
++		registerExternalFunction(SPARQLConstants.IRI_TYPE, IRICastFunction.getFactory());
++		registerExternalFunction(SPARQLConstants.LITERAL_TYPE, LiteralCastFunction.getFactory());
++	}
++
++	/**
++	 * Initialize the function map with the utility extension functions.
++	 */
++	protected void registerExtensionFunctions() {
++		registerExternalFunction(FunctionConstants.DT_ADD_DAY, AddDayFunction.getFactory());
++		registerExternalFunction(FunctionConstants.DT_ADD_HOUR, AddHourFunction.getFactory());
++		registerExternalFunction(FunctionConstants.DT_ADD_MINUTE, AddMinuteFunction.getFactory());
++		registerExternalFunction(FunctionConstants.DT_ADD_SECOND, AddSecondFunction.getFactory());
++		registerExternalFunction(FunctionConstants.DT_ADD_MONTH, AddMonthFunction.getFactory());
++		registerExternalFunction(FunctionConstants.DT_ADD_YEAR, AddYearFunction.getFactory());
++
++		registerExternalFunction(FunctionConstants.DT_DAY, DayFunction.getFactory());
++		registerExternalFunction(FunctionConstants.DT_HOUR, HourFunction.getFactory());
++		registerExternalFunction(FunctionConstants.DT_MINUTE, MinuteFunction.getFactory());
++		registerExternalFunction(FunctionConstants.DT_SECOND, SecondFunction.getFactory());
++		registerExternalFunction(FunctionConstants.DT_MONTH, MonthFunction.getFactory());
++		registerExternalFunction(FunctionConstants.DT_YEAR, YearFunction.getFactory());
++
++		registerExternalFunction(FunctionConstants.DT_PARSE, ParseFunction.getFactory());
++		registerExternalFunction(FunctionConstants.DT_FORMAT, FormatFunction.getFactory());
++
++		registerExternalFunction(FunctionConstants.STR_CONCAT, ConcatFunction.getFactory());
++		registerExternalFunction(FunctionConstants.STR_CONTAINS, ContainsFunction.getFactory());
++		registerExternalFunction(FunctionConstants.STR_ENDS_WITH, EndsWithFunction.getFactory());
++		registerExternalFunction(FunctionConstants.STR_LOWER_CASE, LowerCaseFunction.getFactory());
++		registerExternalFunction(FunctionConstants.STR_REPLACE, ReplaceFunction.getFactory());
++		registerExternalFunction(FunctionConstants.STR_STARTS_WITH, StartsWithFunction.getFactory());
++		registerExternalFunction(FunctionConstants.STR_LENGTH, LengthFunction.getFactory());
++		registerExternalFunction(FunctionConstants.STR_SUBSTRING_AFTER, SubstringAfterFunction.getFactory());
++		registerExternalFunction(FunctionConstants.STR_SUBSTRING_BEFORE, SubstringBeforeFunction.getFactory());
++		registerExternalFunction(FunctionConstants.STR_SUBSTRING, SubstringFunction.getFactory());
++		registerExternalFunction(FunctionConstants.STR_TRANSLATE, TranslateFunction.getFactory());
++		registerExternalFunction(FunctionConstants.STR_UPPER_CASE, UpperCaseFunction.getFactory());
++
++		registerExternalFunction(FunctionConstants.AGG_COUNT, CountFunction.getFactory());
++		registerExternalFunction(FunctionConstants.AGG_IS_MAX, IsMaxFunction.getFactory());
++		registerExternalFunction(FunctionConstants.AGG_IS_MIN, IsMinFunction.getFactory());
++		registerExternalFunction(FunctionConstants.AGG_MAX, MaxFunction.getFactory());
++		registerExternalFunction(FunctionConstants.AGG_MIN, MinFunction.getFactory());
++
++	}
++
++	protected void registerWithExtensions() {
++		// No WITH extensions currently...
++	}
++
++	protected void registerFunctionalPredicates() {
++		registerFunctionalPredicate(FunctionalPredicateConstants.RDFS_MEMBER, new RdfsMemberProperty());
++		registerFunctionalPredicate(FunctionalPredicateConstants.LIST_MEMBER, new ListMemberProperty());
++	}
++
++	/**
++	 * 
++	 */
++	public void registerWithExtension(URI extensionIRI, WithExtension extension) {
++		this.extensionMap.put(extensionIRI, extension);
++	}
++
++	public void registerFunctionalPredicate(URI propertyURI, FunctionalPredicate function) {
++		this.predicateMap.put(propertyURI, function);
++	}
++
++	/**
++	 * Gets the default construct query logic.
++	 * 
++	 * @param data the data containing the query constraint, template, and
++	 *            transformations
++	 * @return the logic handling the construct query
++	 */
++	public ConstructQueryLogic getConstructQueryLogic(ConstructQueryData data, SPARQLValueFactory valueFactory) {
++		return new DefaultConstructQueryLogic(data, new StreamedSetRangeLogic(), new DefaultGraphTranslationLogic(valueFactory));
++	}
++
++	/**
++	 * Gets the default construct query logic.
++	 * 
++	 * @param data the data containing the query constraint, template, and
++	 *            transformations
++	 * @return the logic handling the construct query
++	 */
++	public ConstructQueryLogic getConstructQueryLogic(ExtendedConstructQueryData data, SPARQLValueFactory valueFactory) {
++		return new ExtendedConstructQueryLogic(data, new StreamedSetRangeLogic(), new DefaultGraphTranslationLogic(valueFactory), new StaticGraphDistinctionLogic());
++	}
++
++	/**
++	 * Gets the default ask query logic.
++	 * 
++	 * @param data the data containing the query constraint
++	 * @return the logic handling the ask query
++	 */
++	public AskQueryLogic getAskQueryLogic(AskQueryData data) {
++		return new DefaultAskQueryLogic(data, new StreamedSetRangeLogic());
++	}
++
++	/**
++	 * Gets the default describe query logic.
++	 * 
++	 * @param data the data containing the query constraint and transformations
++	 * @return the logic handling the describe query
++	 */
++	public DescribeQueryLogic getDescribeQueryLogic(DescribeQueryData data, SPARQLValueFactory valueFactory) {
++		return new DefaultDescribeQueryLogic(data, new StreamedSetProjectionLogic(), new StreamedSetRangeLogic(), valueFactory);
++	}
++
++	/**
++	 * Gets the default select query logic.
++	 * 
++	 * @param data the data containing the query constraint and transformations
++	 * @param logic the logic used to do the set projection
++	 * @return the logic handling the select query
++	 */
++	public SelectQueryLogic getSelectQueryLogic(SelectQueryData data) {
++		return new DefaultSelectQueryLogic(data, new StreamedSetProjectionLogic(), new IndexedSetDistinctionLogic(),
++				new StreamedSetRangeLogic());
++	}
++
++	/**
++	 * Gets the default FILTER constraint logic.
++	 * 
++	 * @param data the data containing the expression to evaluate per row
++	 * @return the logic handling the FILTER constraint
++	 */
++	public ConstraintLogic getFilterConstraintLogic(FilterConstraintData data, SPARQLValueFactory valueFactory) {
++		return new StreamedFilterConstraintLogic(data, getEffectiveBooleanLogic(valueFactory),
++				getValueConversionLogic(valueFactory));
++	}
++
++	/**
++	 * Gets the default GRAPH constraint logic.
++	 * 
++	 * @param data the data containing the group constraint and graph binding
++	 * @return the logic handling the GRAPH constraint
++	 */
++	public ConstraintLogic getGraphConstraintLogic(GraphConstraintData data) {
++		return new StreamedGraphConstraintLogic(data, new StreamedSetUnionLogic());
++	}
++
++	/**
++	 * Gets the default group constraint logic.
++	 * 
++	 * @param data the data containing the sub constraints
++	 * @return the logic handling the group constraint
++	 */
++	public ConstraintLogic getGroupConstraintLogic(GroupConstraintData data) {
++		return new DefaultGroupConstraintLogic(data, new IndexedSetIntersectLogic(), new DefaultIntersectOrderLogic(
++				new IndexedSetIntersectLogic()));
++	}
++
++	/**
++	 * Gets the default triple constraint logic.
++	 * 
++	 * @param data the data containing the unbound statement to match from the
++	 *            source
++	 * @return the logic handling the triple constraint
++	 */
++	public ConstraintLogic getTripleConstraintLogic(TripleConstraintData data) {
++		if (data.getPredicateExpression() instanceof URI) {
++			if (this.predicateMap.containsKey(data.getPredicateExpression())) {
++				return new FunctionalPredicateLogic((FunctionalPredicate) this.predicateMap.get(data
++						.getPredicateExpression()), data);
++			}
++		}
++		return new StreamedTripleConstraintLogic(data);
++	}
++
++	/**
++	 * Gets the default UNION constraint logic.
++	 * 
++	 * @param data the data containing the sub group constraints
++	 * @return the logic handling the UNION constraint
++	 */
++	public ConstraintLogic getUnionConstraintLogic(UnionConstraintData data) {
++		return new DefaultUnionConstraintLogic(data, new StreamedSetUnionLogic());
++	}
++
++	/**
++	 * Gets the default OPTIONAL constraint logic.
++	 * 
++	 * @param data the data containing the group constraint
++	 * @return the logic handling the OPTIONAL constraint
++	 */
++	public ConstraintLogic getOptionalConstraintLogic(OptionalConstraintData data, SPARQLValueFactory valueFactory) {
++		return new DefaultOptionalConstraintLogic(data, new IndexedSetJoinLogic(getValueConversionLogic(valueFactory), getEffectiveBooleanLogic(valueFactory)), this);
++	}
++
++	/**
++	 * Gets the logic dealing with any external function calls, including cast
++	 * constructors.
++	 * 
++	 * @param data the function data containing arguments passed to the external
++	 *            function
++	 * @return the logic handling the external function processing
++	 * @throws IllegalArgumentException if data or the name of the function is
++	 *             null
++	 * @throws QueryException if the function map doesn't contain the called
++	 *             function
++	 */
++	public ExpressionLogic getExternalFunctionLogic(CallExpressionData data, SPARQLValueFactory valueFactory) {
++		URI functionName = data.getName();
++		if (functionName == null) {
++			throw new IllegalArgumentException("External function name cannot be null");
++		}
++		if (!this.functionMap.containsKey(functionName)) {
++			throw new QueryException("Could not find loaded external function '" + functionName + "'");
++		}
++		ExternalFunctionFactory functionFactory = (ExternalFunctionFactory) this.functionMap.get(functionName);
++		ExternalFunction function = functionFactory.create(this, valueFactory);
++
++		return new ExternalFunctionLogic(data, function, valueFactory);
++	}
++
++	/**
++	 * Gets the logic for dealing with ordering data.
++	 * 
++	 * @param data the data containing the expression to order on and the
++	 *            direction
++	 * @return the logic handling the ordering of an expression
++	 */
++	public OrderExpressionLogic getOrderExpressionLogic(OrderExpressionData data, SPARQLValueFactory valueFactory) {
++		return new DefaultOrderExpressionLogic(data, getValueOrderingLogic(valueFactory));
++	}
++
++	/**
++	 * Allows subclasses or implementations to register implementation specific
++	 * functions to be recognized in queries.
++	 * 
++	 * @param functionIRI the IRI that uniquely identifies the function
++	 * @param functionFactory the logic that handles the function evaluation
++	 */
++	public void registerExternalFunction(URI functionIRI, ExternalFunctionFactory functionFactory) {
++		this.functionMap.put(functionIRI, functionFactory);
++	}
++
++	public ConstraintLogic getWithConstraintLogic(WithConstraintData data) {
++		URI functionName = data.getName();
++		if (functionName == null) {
++			throw new IllegalArgumentException("WITH extension name cannot be null");
++		}
++		if (!this.extensionMap.containsKey(functionName)) {
++			throw new QueryException("Could not find loaded WITH extension '" + functionName + "'");
++		}
++		return new DefaultWithConstraintLogic(data, (WithExtension) this.extensionMap.get(functionName));
++	}
++}
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj' upstream/src/main/name/levering/ryan/sparql/logic/StreamedStrictLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/StreamedStrictLogic.java
 --- upstream/src/main/name/levering/ryan/sparql/logic/StreamedStrictLogic.java	2007-10-07 07:19:19.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/logic/StreamedStrictLogic.java	2008-07-11 15:31:54.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/logic/StreamedStrictLogic.java	2008-08-06 18:03:40.000000000 -0400
+@@ -100,7 +100,7 @@
+ 		registerExternalFunction(SPARQLConstants.DOUBLE_TYPE, DoubleCastFunction.getFactory());
+ 		registerExternalFunction(SPARQLConstants.DECIMAL_TYPE, DecimalCastFunction.getFactory());
+ 		registerExternalFunction(SPARQLConstants.INTEGER_TYPE, IntegerCastFunction.getFactory());
+-		registerExternalFunction(SPARQLConstants.DATE_TYPE, DateTimeCastFunction.getFactory());
++		registerExternalFunction(SPARQLConstants.DATETIME_TYPE, DateTimeCastFunction.getFactory());
+ 		registerExternalFunction(SPARQLConstants.BOOLEAN_TYPE, BooleanCastFunction.getFactory());
+ 		registerExternalFunction(SPARQLConstants.IRI_TYPE, IRICastFunction.getFactory());
+ 		registerExternalFunction(SPARQLConstants.LITERAL_TYPE, LiteralCastFunction.getFactory());
 @@ -140,7 +140,7 @@
  	 * @return the logic handling the ask query
  	 */
@@ -5506,6 +7966,296 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj'
  	}
  
  	/**
+diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj' upstream/src/main/name/levering/ryan/sparql/logic/StreamedStrictLogic.java~ work-copy/src/main/name/levering/ryan/sparql/logic/StreamedStrictLogic.java~
+--- upstream/src/main/name/levering/ryan/sparql/logic/StreamedStrictLogic.java~	1969-12-31 19:00:00.000000000 -0500
++++ work-copy/src/main/name/levering/ryan/sparql/logic/StreamedStrictLogic.java~	2008-07-11 15:31:54.000000000 -0400
+@@ -0,0 +1,286 @@
++/*
++ * SPARQL Engine
++ * Copyright (C) 2005 Ryan Levering, All rights reserved.
++ * See LICENSE for full license information
++ */
++package name.levering.ryan.sparql.logic;
++
++import java.util.Collection;
++import java.util.HashMap;
++import java.util.Iterator;
++import java.util.List;
++import java.util.Map;
++
++import name.levering.ryan.sparql.common.QueryException;
++import name.levering.ryan.sparql.common.SPARQLConstants;
++import name.levering.ryan.sparql.common.SPARQLValueFactory;
++import name.levering.ryan.sparql.common.URI;
++import name.levering.ryan.sparql.common.Value;
++import name.levering.ryan.sparql.common.Variable;
++import name.levering.ryan.sparql.logic.function.BooleanCastFunction;
++import name.levering.ryan.sparql.logic.function.DateTimeCastFunction;
++import name.levering.ryan.sparql.logic.function.DecimalCastFunction;
++import name.levering.ryan.sparql.logic.function.DoubleCastFunction;
++import name.levering.ryan.sparql.logic.function.ExternalFunction;
++import name.levering.ryan.sparql.logic.function.ExternalFunctionFactory;
++import name.levering.ryan.sparql.logic.function.ExternalFunctionLogic;
++import name.levering.ryan.sparql.logic.function.FloatCastFunction;
++import name.levering.ryan.sparql.logic.function.IRICastFunction;
++import name.levering.ryan.sparql.logic.function.IntegerCastFunction;
++import name.levering.ryan.sparql.logic.function.LiteralCastFunction;
++import name.levering.ryan.sparql.logic.function.StringCastFunction;
++import name.levering.ryan.sparql.logic.naive.DefaultGroupConstraintLogic;
++import name.levering.ryan.sparql.logic.naive.DefaultOptionalConstraintLogic;
++import name.levering.ryan.sparql.logic.naive.DefaultUnionConstraintLogic;
++import name.levering.ryan.sparql.logic.streamed.IndexedSetDistinctionLogic;
++import name.levering.ryan.sparql.logic.streamed.IndexedSetIntersectLogic;
++import name.levering.ryan.sparql.logic.streamed.IndexedSetJoinLogic;
++import name.levering.ryan.sparql.logic.streamed.StreamedFilterConstraintLogic;
++import name.levering.ryan.sparql.logic.streamed.StreamedGraphConstraintLogic;
++import name.levering.ryan.sparql.logic.streamed.StreamedSetProjectionLogic;
++import name.levering.ryan.sparql.logic.streamed.StreamedSetRangeLogic;
++import name.levering.ryan.sparql.logic.streamed.StreamedSetUnionLogic;
++import name.levering.ryan.sparql.logic.streamed.StreamedTripleConstraintLogic;
++import name.levering.ryan.sparql.model.data.AskQueryData;
++import name.levering.ryan.sparql.model.data.CallExpressionData;
++import name.levering.ryan.sparql.model.data.ConstructQueryData;
++import name.levering.ryan.sparql.model.data.DescribeQueryData;
++import name.levering.ryan.sparql.model.data.FilterConstraintData;
++import name.levering.ryan.sparql.model.data.GraphConstraintData;
++import name.levering.ryan.sparql.model.data.GroupConstraintData;
++import name.levering.ryan.sparql.model.data.OptionalConstraintData;
++import name.levering.ryan.sparql.model.data.OrderExpressionData;
++import name.levering.ryan.sparql.model.data.SelectQueryData;
++import name.levering.ryan.sparql.model.data.TripleConstraintData;
++import name.levering.ryan.sparql.model.data.UnboundStatement;
++import name.levering.ryan.sparql.model.data.UnionConstraintData;
++import name.levering.ryan.sparql.model.logic.AskQueryLogic;
++import name.levering.ryan.sparql.model.logic.ConstraintLogic;
++import name.levering.ryan.sparql.model.logic.ConstructQueryLogic;
++import name.levering.ryan.sparql.model.logic.DescribeQueryLogic;
++import name.levering.ryan.sparql.model.logic.ExpressionLogic;
++import name.levering.ryan.sparql.model.logic.OrderExpressionLogic;
++import name.levering.ryan.sparql.model.logic.SelectQueryLogic;
++
++/**
++ * This factory implements all the default logic for the SPARQL library
++ * implementation. The logic is streamed, which means that the end result should
++ * be used with iterator() and will be evaluated as next() is called. This can
++ * result in some inefficiencies if the set is used multiple times, but it means
++ * that the memory use is incredibly small.
++ * <p>
++ * Developers wishing to tap into more efficient/specific logic should extend
++ * this class and specify their own logic implementations in place of the logic
++ * they want to replace.
++ * 
++ * @author Ryan Levering
++ * @version 1.1
++ */
++public class StreamedStrictLogic extends BaseLogic {
++
++	/**
++	 * Used to map function IRIs to external functions.
++	 */
++	private final Map functionMap = new HashMap();
++
++	/**
++	 * Creates a new default logic factory with the cast constructors registered
++	 * as external functions.
++	 */
++	public StreamedStrictLogic() {
++		registerCastFunctions();
++	}
++
++	/**
++	 * Intialize the function map with the standard SPARQL casting functions.
++	 */
++	protected void registerCastFunctions() {
++		registerExternalFunction(SPARQLConstants.STRING_TYPE, StringCastFunction.getFactory());
++		registerExternalFunction(SPARQLConstants.FLOAT_TYPE, FloatCastFunction.getFactory());
++		registerExternalFunction(SPARQLConstants.DOUBLE_TYPE, DoubleCastFunction.getFactory());
++		registerExternalFunction(SPARQLConstants.DECIMAL_TYPE, DecimalCastFunction.getFactory());
++		registerExternalFunction(SPARQLConstants.INTEGER_TYPE, IntegerCastFunction.getFactory());
++		registerExternalFunction(SPARQLConstants.DATE_TYPE, DateTimeCastFunction.getFactory());
++		registerExternalFunction(SPARQLConstants.BOOLEAN_TYPE, BooleanCastFunction.getFactory());
++		registerExternalFunction(SPARQLConstants.IRI_TYPE, IRICastFunction.getFactory());
++		registerExternalFunction(SPARQLConstants.LITERAL_TYPE, LiteralCastFunction.getFactory());
++	}
++
++	/**
++	 * Gets the default construct query logic.
++	 * 
++	 * @param data the data containing the query constraint, template, and
++	 *            transformations
++	 * @param valueFactory the value factory used to make new blank nodes
++	 * @return the logic handling the construct query
++	 */
++	public ConstructQueryLogic getConstructQueryLogic(ConstructQueryData data, SPARQLValueFactory valueFactory) {
++		// Check to make sure there are no function calls in the construct
++		// template
++		Collection triples = data.getTriples();
++		for (Iterator constructStatements = triples.iterator(); constructStatements.hasNext();) {
++			UnboundStatement statement = (UnboundStatement) constructStatements.next();
++			if (!(statement.getSubjectExpression() instanceof Value || statement.getSubjectExpression() instanceof Variable)) {
++				throw new QueryException("Logic does not support function calls in construct templates");
++			}
++			if (!(statement.getPredicateExpression() instanceof Value || statement.getPredicateExpression() instanceof Variable)) {
++				throw new QueryException("Logic does not support function calls in construct templates");
++			}
++			if (!(statement.getObjectExpression() instanceof Value || statement.getObjectExpression() instanceof Variable)) {
++				throw new QueryException("Logic does not support function calls in construct templates");
++			}
++		}
++		return new DefaultConstructQueryLogic(data, new StreamedSetRangeLogic(), new DefaultGraphTranslationLogic(valueFactory));
++	}
++
++	/**
++	 * Gets the default ask query logic.
++	 * 
++	 * @param data the data containing the query constraint
++	 * @return the logic handling the ask query
++	 */
++	public AskQueryLogic getAskQueryLogic(AskQueryData data) {
++		return new DefaultAskQueryLogic(data, new StreamedSetRangeLogic());
++	}
++
++	/**
++	 * Gets the default describe query logic.
++	 * 
++	 * @param data the data containing the query constraint and transformations
++	 * @return the logic handling the describe query
++	 */
++	public DescribeQueryLogic getDescribeQueryLogic(DescribeQueryData data, SPARQLValueFactory valueFactory) {
++		return new DefaultDescribeQueryLogic(data, new StreamedSetProjectionLogic(), new StreamedSetRangeLogic(), valueFactory);
++	}
++
++	/**
++	 * Gets the default select query logic.
++	 * 
++	 * @param data the data containing the query constraint and transformations
++	 * @param logic the logic used to do the set projection
++	 * @return the logic handling the select query
++	 */
++	public SelectQueryLogic getSelectQueryLogic(SelectQueryData data) {
++		List variables = data.getQueryVariables();
++		for (Iterator vars = variables.iterator(); vars.hasNext();) {
++			if (!(vars.next() instanceof Variable)) {
++				throw new QueryException("Logic does not support expressions in select projection");
++			}
++		}
++		return new DefaultSelectQueryLogic(data, new StreamedSetProjectionLogic(), new IndexedSetDistinctionLogic(),
++				new StreamedSetRangeLogic());
++	}
++
++	/**
++	 * Gets the default FILTER constraint logic.
++	 * 
++	 * @param data the data containing the expression to evaluate per row
++	 * @return the logic handling the FILTER constraint
++	 */
++	public ConstraintLogic getFilterConstraintLogic(FilterConstraintData data, SPARQLValueFactory valueFactory) {
++		return new StreamedFilterConstraintLogic(data, getEffectiveBooleanLogic(valueFactory),
++				getValueConversionLogic(valueFactory));
++	}
++
++	/**
++	 * Gets the default GRAPH constraint logic.
++	 * 
++	 * @param data the data containing the group constraint and graph binding
++	 * @return the logic handling the GRAPH constraint
++	 */
++	public ConstraintLogic getGraphConstraintLogic(GraphConstraintData data) {
++		return new StreamedGraphConstraintLogic(data, new StreamedSetUnionLogic());
++	}
++
++	/**
++	 * Gets the default group constraint logic.
++	 * 
++	 * @param data the data containing the sub constraints
++	 * @return the logic handling the group constraint
++	 */
++	public ConstraintLogic getGroupConstraintLogic(GroupConstraintData data) {
++		return new DefaultGroupConstraintLogic(data, new IndexedSetIntersectLogic(), new DefaultIntersectOrderLogic(
++				new IndexedSetIntersectLogic()));
++	}
++
++	/**
++	 * Gets the default triple constraint logic.
++	 * 
++	 * @param data the data containing the unbound statement to match from the
++	 *            source
++	 * @return the logic handling the triple constraint
++	 */
++	public ConstraintLogic getTripleConstraintLogic(TripleConstraintData data) {
++		return new StreamedTripleConstraintLogic(data);
++	}
++
++	/**
++	 * Gets the default UNION constraint logic.
++	 * 
++	 * @param data the data containing the sub group constraints
++	 * @return the logic handling the UNION constraint
++	 */
++	public ConstraintLogic getUnionConstraintLogic(UnionConstraintData data) {
++		return new DefaultUnionConstraintLogic(data, new StreamedSetUnionLogic());
++	}
++
++	/**
++	 * Gets the default OPTIONAL constraint logic.
++	 * 
++	 * @param data the data containing the group constraint
++	 * @return the logic handling the OPTIONAL constraint
++	 */
++	public ConstraintLogic getOptionalConstraintLogic(OptionalConstraintData data, SPARQLValueFactory valueFactory) {
++		return new DefaultOptionalConstraintLogic(data, new IndexedSetJoinLogic(getValueConversionLogic(valueFactory),
++				getEffectiveBooleanLogic(valueFactory)), this);
++	}
++
++	/**
++	 * Gets the logic dealing with any external function calls, including cast
++	 * constructors.
++	 * 
++	 * @param data the function data containing arguments passed to the external
++	 *            function
++	 * @return the logic handling the external function processing
++	 * @throws IllegalArgumentException if data or the name of the function is
++	 *             null
++	 * @throws QueryException if the function map doesn't contain the called
++	 *             function
++	 */
++	public ExpressionLogic getExternalFunctionLogic(CallExpressionData data, SPARQLValueFactory valueFactory) {
++		URI functionName = data.getName();
++		if (functionName == null) {
++			throw new IllegalArgumentException("External function name cannot be null");
++		}
++		if (!this.functionMap.containsKey(functionName)) {
++			throw new QueryException("Could not find loaded external function '" + functionName + "'");
++		}
++		ExternalFunctionFactory functionFactory = (ExternalFunctionFactory) this.functionMap.get(functionName);
++		ExternalFunction function = functionFactory.create(this, valueFactory);
++
++		return new ExternalFunctionLogic(data, function, valueFactory);
++	}
++
++	/**
++	 * Gets the logic for dealing with ordering data.
++	 * 
++	 * @param data the data containing the expression to order on and the
++	 *            direction
++	 * @return the logic handling the ordering of an expression
++	 */
++	public OrderExpressionLogic getOrderExpressionLogic(OrderExpressionData data, SPARQLValueFactory valueFactory) {
++		return new DefaultOrderExpressionLogic(data, getValueOrderingLogic(valueFactory));
++	}
++
++	/**
++	 * Allows subclasses or implementations to register implementation specific
++	 * functions to be recognized in queries.
++	 * 
++	 * @param functionIRI the IRI that uniquely identifies the function
++	 * @param functionFactory the logic that handles the function evaluation
++	 */
++	public void registerExternalFunction(URI functionIRI, ExternalFunctionFactory functionFactory) {
++		this.functionMap.put(functionIRI, functionFactory);
++	}
++
++}
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj' upstream/src/main/name/levering/ryan/sparql/model/data/SelectQueryData.java work-copy/src/main/name/levering/ryan/sparql/model/data/SelectQueryData.java
 --- upstream/src/main/name/levering/ryan/sparql/model/data/SelectQueryData.java	2007-10-07 07:19:17.000000000 -0400
 +++ work-copy/src/main/name/levering/ryan/sparql/model/data/SelectQueryData.java	2007-10-21 12:35:15.000000000 -0400
@@ -6008,6 +8758,78 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj'
      }
      
      public String toString() {
+diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj' upstream/src/main/name/levering/ryan/sparql/parser/model/ASTFunctionCall.java work-copy/src/main/name/levering/ryan/sparql/parser/model/ASTFunctionCall.java
+--- upstream/src/main/name/levering/ryan/sparql/parser/model/ASTFunctionCall.java	2007-10-07 07:19:18.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/parser/model/ASTFunctionCall.java	2008-08-06 17:36:25.000000000 -0400
+@@ -27,7 +27,7 @@
+             Node child = this.jjtGetChild(i);
+             if (child instanceof ASTArguments) {
+                 for (int j = 0; j < child.jjtGetNumChildren(); j++) {
+-                    arguments.add(child.jjtGetChild(j));
++                    arguments.add(((ExpressionNode)child.jjtGetChild(j)).getExpressionLogic());
+                 }
+             }
+         }
+diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj' upstream/src/main/name/levering/ryan/sparql/parser/model/ASTFunctionCall.java~ work-copy/src/main/name/levering/ryan/sparql/parser/model/ASTFunctionCall.java~
+--- upstream/src/main/name/levering/ryan/sparql/parser/model/ASTFunctionCall.java~	1969-12-31 19:00:00.000000000 -0500
++++ work-copy/src/main/name/levering/ryan/sparql/parser/model/ASTFunctionCall.java~	2007-10-21 12:35:16.000000000 -0400
+@@ -0,0 +1,56 @@
++/* Generated By:JJTree: Do not edit this line. ASTFunctionCall.java */
++
++package name.levering.ryan.sparql.parser.model;
++
++import java.util.ArrayList;
++import java.util.Iterator;
++import java.util.List;
++
++import name.levering.ryan.sparql.common.QueryException;
++import name.levering.ryan.sparql.common.SPARQLValueFactory;
++import name.levering.ryan.sparql.common.URI;
++import name.levering.ryan.sparql.model.logic.ExpressionLogic;
++
++public class ASTFunctionCall extends FunctionNode {
++    
++    public ASTFunctionCall(int id) {
++        super(id);
++    }
++
++    public ExpressionLogic getLogic(LogicBinder binder) {
++        return binder.getLogicFactory().getExternalFunctionLogic(this, binder.getValueFactory());
++    }
++    
++    public List getArguments() {
++        List arguments = new ArrayList();
++        for (int i = 0; i < this.jjtGetNumChildren(); i++) {
++            Node child = this.jjtGetChild(i);
++            if (child instanceof ASTArguments) {
++                for (int j = 0; j < child.jjtGetNumChildren(); j++) {
++                    arguments.add(child.jjtGetChild(j));
++                }
++            }
++        }
++        return arguments;
++    }
++    
++    public String toString() {
++        StringBuffer output = new StringBuffer(this.jjtGetChild(0).toString() + "(");
++        for (Iterator i = getArguments().iterator(); i.hasNext(); ) {
++            output.append(i.next());
++            if (i.hasNext()) {
++                output.append(", ");
++            }
++        }
++        output.append(')');
++        return output.toString();
++    }
++
++    public URI getName(SPARQLValueFactory factory) {
++        if (this.jjtGetNumChildren() < 1) {
++            throw new QueryException("The query should have a URI node as the name of the function");
++        }
++        return (URI) this.jjtGetChild(0);
++    }
++
++}
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj' upstream/src/main/name/levering/ryan/sparql/parser/model/ASTGraphConstraint.java work-copy/src/main/name/levering/ryan/sparql/parser/model/ASTGraphConstraint.java
 --- upstream/src/main/name/levering/ryan/sparql/parser/model/ASTGraphConstraint.java	2006-08-20 20:01:00.000000000 -0400
 +++ work-copy/src/main/name/levering/ryan/sparql/parser/model/ASTGraphConstraint.java	2007-10-21 12:35:16.000000000 -0400
@@ -6735,7 +9557,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj'
  }
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj' upstream/src/main/name/levering/ryan/sparql/parser/model/SPARQLParserTreeConstants.java work-copy/src/main/name/levering/ryan/sparql/parser/model/SPARQLParserTreeConstants.java
 --- upstream/src/main/name/levering/ryan/sparql/parser/model/SPARQLParserTreeConstants.java	2007-10-07 07:19:57.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/parser/model/SPARQLParserTreeConstants.java	2008-07-11 15:33:41.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/parser/model/SPARQLParserTreeConstants.java	2008-08-06 18:19:30.000000000 -0400
 @@ -1,141 +1,139 @@
 -/* Generated By:JJTree: Do not edit this line. C:/workspaces/sparql/SPARQL Engine Trunk/src/main/name/levering/ryan/sparql/parser/model\SPARQLParserTreeConstants.java */
 -
@@ -7185,7 +10007,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj'
  }
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj' upstream/src/main/name/levering/ryan/sparql/parser/SPARQLParserConstants.java work-copy/src/main/name/levering/ryan/sparql/parser/SPARQLParserConstants.java
 --- upstream/src/main/name/levering/ryan/sparql/parser/SPARQLParserConstants.java	2007-10-07 07:19:57.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/parser/SPARQLParserConstants.java	2008-07-11 15:33:43.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/parser/SPARQLParserConstants.java	2008-08-06 18:19:31.000000000 -0400
 @@ -1,139 +1,136 @@
 -/* Generated By:JJTree&JavaCC: Do not edit this line. SPARQLParserConstants.java */
 -package name.levering.ryan.sparql.parser;
@@ -7464,7 +10286,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj'
 +}
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj' upstream/src/main/name/levering/ryan/sparql/parser/SPARQLParser.java work-copy/src/main/name/levering/ryan/sparql/parser/SPARQLParser.java
 --- upstream/src/main/name/levering/ryan/sparql/parser/SPARQLParser.java	2007-10-07 07:19:39.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/parser/SPARQLParser.java	2008-07-11 15:33:43.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/parser/SPARQLParser.java	2008-08-06 18:19:31.000000000 -0400
 @@ -1,4422 +1,3217 @@
 -/* Generated By:JJTree&JavaCC: Do not edit this line. SPARQLParser.java */
 -package name.levering.ryan.sparql.parser;
@@ -15104,7 +17926,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj'
 +}
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj' upstream/src/main/name/levering/ryan/sparql/parser/SPARQLParserTokenManager.java work-copy/src/main/name/levering/ryan/sparql/parser/SPARQLParserTokenManager.java
 --- upstream/src/main/name/levering/ryan/sparql/parser/SPARQLParserTokenManager.java	2007-10-07 07:19:57.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/parser/SPARQLParserTokenManager.java	2008-07-11 15:33:43.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/parser/SPARQLParserTokenManager.java	2008-08-06 18:19:31.000000000 -0400
 @@ -1,3660 +1,3997 @@
 -/* Generated By:JJTree&JavaCC: Do not edit this line. SPARQLParserTokenManager.java */
 -package name.levering.ryan.sparql.parser;
