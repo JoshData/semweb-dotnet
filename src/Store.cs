@@ -87,31 +87,16 @@ namespace SemWeb {
 				case "mem":
 					return new MemoryStore();
 				case "xml":
-					if (spec == "") throw new ArgumentException("Use: xml:filename");
-					if (output) {
-						#if !SILVERLIGHT
-							return new RdfXmlWriter(spec);
-						#else
-							throw new NotSupportedException("RDF/XML output is not supported in the Silverlight build of the SemWeb library.");
-						#endif
-					} else {
-						return new RdfXmlReader(spec);
-					}
 				case "n3":
 				case "ntriples":
 				case "nt":
 				case "turtle":
-					if (spec == "") throw new ArgumentException("Use: format:filename");
+				case "dot":
+					if (spec == "") throw new ArgumentException("Use: " + type + ":filename");
 					if (output) {
-						N3Writer ret = new N3Writer(spec); // turtle is default format
-						switch (type) {
-							case "nt": case "ntriples":
-								ret.Format = N3Writer.Formats.NTriples;
-								break;
-						}
-						return ret;
+						return RdfWriter.Create(type, spec);
 					} else {
-						return new N3Reader(spec);
+						return RdfReader.Create(type, spec);
 					}
 				
 				case "null":
