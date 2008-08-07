@@ -8,6 +8,8 @@ using SemWeb.Stores;
 namespace SemWeb.Query {
 
 	public class SparqlProtocolServerHandler : System.Web.IHttpHandler {
+		static bool Debug = System.Environment.GetEnvironmentVariable("SEMWEB_DEBUG_SPARQL") != null;
+	
 		public int MaximumLimit = -1;
 		
 		Hashtable sources = new Hashtable();
@@ -19,6 +21,11 @@ namespace SemWeb.Query {
 				string query = context.Request["query"];
 				if (query == null || query.Trim() == "")
 					throw new QueryFormatException("No query provided.");
+
+				if (Debug) {
+					Console.Error.WriteLine(query);
+					Console.Error.WriteLine();
+				}
 				
 				// Buffer the response so that any errors while
 				// executing don't get outputted after the response
@@ -70,11 +77,19 @@ namespace SemWeb.Query {
 				context.Response.StatusCode = 400;
 				context.Response.StatusDescription = e.Message;
 				context.Response.Write(e.Message);
+				if (Debug) {
+					Console.Error.WriteLine(e);
+					Console.Error.WriteLine();
+				}
 			} catch (QueryExecutionException e) {
 				context.Response.ContentType = "text/plain";
 				context.Response.StatusCode = 500;
 				context.Response.StatusDescription = e.Message;
 				context.Response.Write(e.Message);
+				if (Debug) {
+					Console.Error.WriteLine(e);
+					Console.Error.WriteLine();
+				}
 			}
 		}
 

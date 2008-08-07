@@ -14,6 +14,7 @@
 	  GraphViz format. Store.Create and RdfReader.Create now
 	  accept "dot" as a format name.
 	* SPARQL DESCRIBE now recurses a little bit on named nodes.
+	* Added debugging env var SEMWEB_DEBUG_SPARQL to SparqlProtocol.cs.
 
 2008-06-19 Version 1.061
 
