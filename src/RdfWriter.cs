@@ -2,6 +2,8 @@ using System;
 using System.Collections;
 using System.IO;
 
+using SemWeb.IO;
+
 namespace SemWeb {
 	public abstract class RdfWriter : IDisposable, StatementSink {
 		string baseuri;
@@ -66,6 +68,8 @@ namespace SemWeb {
 					N3Writer w = new N3Writer(output);
 					w.Format = N3Writer.Formats.Turtle;
 					return w;
+				case "dot":
+					return new GraphVizWriter(output);
 				default:
 					throw new ArgumentException("Unknown parser or MIME type: " + type);
 			}
@@ -85,6 +89,8 @@ namespace SemWeb {
 					N3Writer w = new N3Writer(file);
 					w.Format = N3Writer.Formats.Turtle;
 					return w;
+				case "dot":
+					return new GraphVizWriter(file);
 				default:
 					throw new ArgumentException("Unknown parser or MIME type: " + type);
 			}
