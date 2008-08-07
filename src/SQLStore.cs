@@ -1146,7 +1146,7 @@ namespace SemWeb.Stores {
 		void PrefetchResourceIds(IList resources) {
 			Hashtable seen_e = new Hashtable();
 			Hashtable seen_l = new Hashtable();
-			Hashtable res_map = new Hashtable();
+			ArrayList res_map = new ArrayList(); // We can't use a Hashtable because we want an object identity map
 			
 			int resStart = 0;
 			while (resStart < resources.Count) {
@@ -1170,15 +1170,15 @@ namespace SemWeb.Stores {
 				if ((object)r == (object)Statement.DefaultMeta || GetResourceKey(r) != null) // no need to prefetch
 					continue;
 					
-				ctr++;
-			
 				if (r.Uri != null) {
 					if (seen_e.ContainsKey(r.Uri)) {
 						// We can only query for a URI once, but it might be that multiple objects
 						// coming in have the same URI, so when we see a duplicate, associate the
 						// duplicate with the first instance of the URI we saw.
-						if ((object)r != (object)seen_e[r.Uri])
-							res_map[r] = seen_e[r.Uri];
+						if ((object)r != (object)seen_e[r.Uri]) {
+							res_map.Add(r); // append a pair to res_map, exploded out for simplicity
+							res_map.Add(seen_e[r.Uri]);
+						}
 						continue;
 					}
 					if (hasEnts)
@@ -1186,6 +1186,7 @@ namespace SemWeb.Stores {
 					EscapedAppend(cmd_e, r.Uri);
 					hasEnts = true;
 					seen_e[r.Uri] = r;
+					ctr++;
 				}
 
 				Literal lit = r as Literal;
@@ -1195,8 +1196,10 @@ namespace SemWeb.Stores {
 						// We can only query for a literal value once, but it might be that multiple objects
 						// coming in have the same value, so when we see a duplicate, associate the
 						// duplicate with the first instance of the value we saw.
-						if ((object)lit != (object)seen_l[hash])
-							res_map[lit] = seen_l[hash];
+						if ((object)lit != (object)seen_l[hash]) {
+							res_map.Add(lit); // append a pair to res_map, exploded out for simplicity
+							res_map.Add(seen_l[hash]);
+						}
 						continue;
 					}
 					
@@ -1207,6 +1210,7 @@ namespace SemWeb.Stores {
 					cmd_l.Append(quote);
 					hasLiterals = true;
 					seen_l[hash] = lit;
+					ctr++;
 				}
 			}
 			if (hasEnts) {
@@ -1234,8 +1238,8 @@ namespace SemWeb.Stores {
 			
 			}
 			
-			foreach (Resource r in res_map.Keys) {
-				SetResourceKey(r, GetResourceKey((Resource)res_map[r]));
+			for (int i = 0; i < res_map.Count; i += 2) {
+				SetResourceKey((Resource)res_map[i], GetResourceKey((Resource)res_map[i+1]));
 			}
 		}
 		

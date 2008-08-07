@@ -10,6 +10,8 @@
 	* SparqlClient: Fix a bug with Query and generated FILTERs.
 	* GraphMatch: Make sure we don't pass an invalid list of
 	  distinguished variables down into a subquery.
+	* SQLStore bug when a Select or Query uses a particular resource
+	  three or more times.
 	* Added SemWeb.IO.GraphViz class to write out graphs in
 	  GraphViz format. Store.Create and RdfReader.Create now
 	  accept "dot" as a format name.
