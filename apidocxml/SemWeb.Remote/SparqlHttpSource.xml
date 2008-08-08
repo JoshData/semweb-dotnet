@@ -3,6 +3,7 @@
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
     <AssemblyVersion>1.0.6.0</AssemblyVersion>
+    <AssemblyVersion>1.0.6.2</AssemblyVersion>
   </AssemblyInfo>
   <Base>
     <BaseTypeName>System.Object</BaseTypeName>
@@ -34,6 +35,9 @@
         <summary>Creates a new SPARQL data source ready to connect to the SPARQL server at the given URL.</summary>
         <remarks>A new HTTP connection is created on each call to a method in this class.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="Contains">
       <MemberSignature Language="C#" Value="public bool Contains (SemWeb.Resource resource);" />
@@ -56,6 +60,9 @@
       <ImplementsInterfaceMethods>
         <InterfaceImpl Type="SemWeb.SelectableSource" Member="Contains" cref="M:SemWeb.SelectableSource.Contains(SemWeb.Resource)" />
       </ImplementsInterfaceMethods>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="Contains">
       <MemberSignature Language="C#" Value="public bool Contains (SemWeb.Statement template);" />
@@ -75,9 +82,12 @@
       <ImplementsInterfaceMethods>
         <InterfaceImpl Type="SemWeb.SelectableSource" Member="Contains" cref="M:SemWeb.SelectableSource.Contains(SemWeb.Statement)" />
       </ImplementsInterfaceMethods>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="Distinct">
-      <MemberSignature Language="C#" Value="public bool Distinct { get; };" />
+      <MemberSignature Language="C#" Value="public bool Distinct { get; }" />
       <MemberType>Property</MemberType>
       <ReturnValue>
         <ReturnType>System.Boolean</ReturnType>
@@ -90,6 +100,9 @@
       <ImplementsInterfaceMethods>
         <InterfaceImpl Type="SemWeb.StatementSource" Member="Distinct" cref="P:SemWeb.StatementSource.Distinct" />
       </ImplementsInterfaceMethods>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="MetaQuery">
       <MemberSignature Language="C#" Value="public SemWeb.Query.MetaQueryResult MetaQuery (SemWeb.Statement[] graph, SemWeb.Query.QueryOptions options);" />
@@ -111,6 +124,9 @@
       <ImplementsInterfaceMethods>
         <InterfaceImpl Type="SemWeb.QueryableSource" Member="MetaQuery" cref="M:SemWeb.QueryableSource.MetaQuery(SemWeb.Statement[],SemWeb.Query.QueryOptions)" />
       </ImplementsInterfaceMethods>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="ParseSparqlResponse">
       <MemberSignature Language="C#" Value="public static void ParseSparqlResponse (System.IO.Stream sparqlResponse, SemWeb.Query.QueryResultSink queryResults);" />
@@ -128,6 +144,9 @@
         <summary>To be added.</summary>
         <remarks>To be added.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="ParseSparqlResponse">
       <MemberSignature Language="C#" Value="public static void ParseSparqlResponse (System.IO.Stream sparqlResponse, out bool askResult);" />
@@ -145,6 +164,9 @@
         <summary>To be added.</summary>
         <remarks>To be added.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="Query">
       <MemberSignature Language="C#" Value="public void Query (SemWeb.Statement[] graph, SemWeb.Query.QueryOptions options, SemWeb.Query.QueryResultSink sink);" />
@@ -167,6 +189,9 @@
       <ImplementsInterfaceMethods>
         <InterfaceImpl Type="SemWeb.QueryableSource" Member="Query" cref="M:SemWeb.QueryableSource.Query(SemWeb.Statement[],SemWeb.Query.QueryOptions,SemWeb.Query.QueryResultSink)" />
       </ImplementsInterfaceMethods>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="RunSparqlQuery">
       <MemberSignature Language="C#" Value="public void RunSparqlQuery (string sparqlQuery, SemWeb.Query.QueryResultSink selectResults);" />
@@ -187,6 +212,9 @@
       <ImplementsInterfaceMethods>
         <InterfaceImpl Type="SemWeb.Remote.SparqlSource" Member="RunSparqlQuery" cref="M:SemWeb.Remote.SparqlSource.RunSparqlQuery(System.String,SemWeb.Query.QueryResultSink)" />
       </ImplementsInterfaceMethods>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="RunSparqlQuery">
       <MemberSignature Language="C#" Value="public void RunSparqlQuery (string sparqlQuery, SemWeb.StatementSink statementResults);" />
@@ -207,6 +235,9 @@
       <ImplementsInterfaceMethods>
         <InterfaceImpl Type="SemWeb.Remote.SparqlSource" Member="RunSparqlQuery" cref="M:SemWeb.Remote.SparqlSource.RunSparqlQuery(System.String,SemWeb.StatementSink)" />
       </ImplementsInterfaceMethods>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="RunSparqlQuery">
       <MemberSignature Language="C#" Value="public void RunSparqlQuery (string sparqlQuery, out bool askResult);" />
@@ -227,6 +258,9 @@
       <ImplementsInterfaceMethods>
         <InterfaceImpl Type="SemWeb.Remote.SparqlSource" Member="RunSparqlQuery" cref="M:SemWeb.Remote.SparqlSource.RunSparqlQuery(System.String,System.Boolean@)" />
       </ImplementsInterfaceMethods>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="RunSparqlQuery">
       <MemberSignature Language="C#" Value="public void RunSparqlQuery (string sparqlQuery, System.IO.TextWriter output);" />
@@ -247,6 +281,9 @@
       <ImplementsInterfaceMethods>
         <InterfaceImpl Type="SemWeb.Remote.SparqlSource" Member="RunSparqlQuery" cref="M:SemWeb.Remote.SparqlSource.RunSparqlQuery(System.String,System.IO.TextWriter)" />
       </ImplementsInterfaceMethods>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="Select">
       <MemberSignature Language="C#" Value="public void Select (SemWeb.StatementSink sink);" />
@@ -265,6 +302,9 @@
       <ImplementsInterfaceMethods>
         <InterfaceImpl Type="SemWeb.StatementSource" Member="Select" cref="M:SemWeb.StatementSource.Select(SemWeb.StatementSink)" />
       </ImplementsInterfaceMethods>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="Select">
       <MemberSignature Language="C#" Value="public void Select (SemWeb.SelectFilter filter, SemWeb.StatementSink sink);" />
@@ -285,6 +325,9 @@
       <ImplementsInterfaceMethods>
         <InterfaceImpl Type="SemWeb.SelectableSource" Member="Select" cref="M:SemWeb.SelectableSource.Select(SemWeb.SelectFilter,SemWeb.StatementSink)" />
       </ImplementsInterfaceMethods>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="Select">
       <MemberSignature Language="C#" Value="public void Select (SemWeb.Statement template, SemWeb.StatementSink sink);" />
@@ -305,6 +348,9 @@
       <ImplementsInterfaceMethods>
         <InterfaceImpl Type="SemWeb.SelectableSource" Member="Select" cref="M:SemWeb.SelectableSource.Select(SemWeb.Statement,SemWeb.StatementSink)" />
       </ImplementsInterfaceMethods>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
   </Members>
 </Type>

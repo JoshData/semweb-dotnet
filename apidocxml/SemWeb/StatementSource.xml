@@ -3,6 +3,7 @@
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
     <AssemblyVersion>1.0.6.0</AssemblyVersion>
+    <AssemblyVersion>1.0.6.2</AssemblyVersion>
   </AssemblyInfo>
   <Interfaces />
   <Docs>
@@ -11,7 +12,7 @@
   </Docs>
   <Members>
     <Member MemberName="Distinct">
-      <MemberSignature Language="C#" Value="public bool Distinct { get; };" />
+      <MemberSignature Language="C#" Value="public bool Distinct { get; }" />
       <MemberType>Property</MemberType>
       <ReturnValue>
         <ReturnType>System.Boolean</ReturnType>
@@ -21,6 +22,9 @@
         <value>True if any call to Select (and its overloads when they are implemented) yields only distinct statements (i.e. no duplicates).</value>
         <remarks>None.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="Select">
       <MemberSignature Language="C#" Value="public void Select (SemWeb.StatementSink sink);" />
@@ -36,6 +40,9 @@
         <summary>Called to stream the statements in the source into a StatementSink.</summary>
         <remarks>The <see cref="M:SemWeb.StatementSink.Add(SemWeb.Statement)" /> method is called on <paramref name="sink" /> for each statement in this StatementSource.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
   </Members>
 </Type>

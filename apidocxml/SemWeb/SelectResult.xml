@@ -3,6 +3,7 @@
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
     <AssemblyVersion>1.0.6.0</AssemblyVersion>
+    <AssemblyVersion>1.0.6.2</AssemblyVersion>
   </AssemblyInfo>
   <Base>
     <BaseTypeName>System.Object</BaseTypeName>
@@ -21,7 +22,7 @@
   </Docs>
   <Members>
     <Member MemberName="Distinct">
-      <MemberSignature Language="C#" Value="public bool Distinct { get; };" />
+      <MemberSignature Language="C#" Value="public bool Distinct { get; }" />
       <MemberType>Property</MemberType>
       <ReturnValue>
         <ReturnType>System.Boolean</ReturnType>
@@ -34,6 +35,9 @@
       <ImplementsInterfaceMethods>
         <InterfaceImpl Type="SemWeb.StatementSource" Member="Distinct" cref="P:SemWeb.StatementSource.Distinct" />
       </ImplementsInterfaceMethods>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="Load">
       <MemberSignature Language="C#" Value="public SemWeb.MemoryStore Load ();" />
@@ -47,6 +51,9 @@
         <returns>A MemoryStore containing the matching statements.</returns>
         <remarks>Calling this method is not advised when the number of matching statements may be very large.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="Select">
       <MemberSignature Language="C#" Value="public abstract void Select (SemWeb.StatementSink sink);" />
@@ -65,9 +72,12 @@
       <ImplementsInterfaceMethods>
         <InterfaceImpl Type="SemWeb.StatementSource" Member="Select" cref="M:SemWeb.StatementSource.Select(SemWeb.StatementSink)" />
       </ImplementsInterfaceMethods>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="StatementCount">
-      <MemberSignature Language="C#" Value="public long StatementCount { get; };" />
+      <MemberSignature Language="C#" Value="public long StatementCount { get; }" />
       <MemberType>Property</MemberType>
       <ReturnValue>
         <ReturnType>System.Int64</ReturnType>
@@ -77,6 +87,9 @@
         <value>The number of matching statements.</value>
         <remarks>Upon accessing this property, all of the matching statements are loaded into memory as if through a call to <see cref="M:SemWeb.SelectResult.Load()" />.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="System.Collections.Generic.IEnumerable&lt;SemWeb.Statement&gt;.GetEnumerator">
       <MemberSignature Language="C#" Value="System.Collections.Generic.IEnumerator&lt;SemWeb.Statement&gt; IEnumerable&lt;Statement&gt;.GetEnumerator ();" />
@@ -90,6 +103,9 @@
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="System.Collections.IEnumerable.GetEnumerator">
       <MemberSignature Language="C#" Value="System.Collections.IEnumerator IEnumerable.GetEnumerator ();" />
@@ -103,6 +119,9 @@
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="ToArray">
       <MemberSignature Language="C#" Value="public SemWeb.Statement[] ToArray ();" />
@@ -116,6 +135,9 @@
         <returns>An array of matching statements.</returns>
         <remarks>Calling this method is not advised when the number of matching statements may be very large.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
   </Members>
 </Type>

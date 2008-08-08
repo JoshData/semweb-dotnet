@@ -3,6 +3,7 @@
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
     <AssemblyVersion>1.0.6.0</AssemblyVersion>
+    <AssemblyVersion>1.0.6.2</AssemblyVersion>
   </AssemblyInfo>
   <Interfaces />
   <Docs>
@@ -26,6 +27,9 @@
         <summary>Runs a SPARQL SELECT query and returns the results into a QueryResultSink.</summary>
         <remarks>Any exception may be thrown by this method depending on the implementation.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="RunSparqlQuery">
       <MemberSignature Language="C#" Value="public void RunSparqlQuery (string sparqlQuery, SemWeb.StatementSink statementResults);" />
@@ -43,6 +47,9 @@
         <summary>Runs a SPARQL CONSTRUCT or DESCRIBE query and returns the resulting statements into a StatementSink.</summary>
         <remarks>Any exception may be thrown by this method depending on the implementation.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="RunSparqlQuery">
       <MemberSignature Language="C#" Value="public void RunSparqlQuery (string sparqlQuery, out bool askResult);" />
@@ -60,6 +67,9 @@
         <summary>Runs a SPARQL ASK query and returns the boolean result.</summary>
         <remarks>Any exception may be thrown by this method depending on the implementation.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="RunSparqlQuery">
       <MemberSignature Language="C#" Value="public void RunSparqlQuery (string sparqlQuery, System.IO.TextWriter output);" />
@@ -77,6 +87,9 @@
         <summary>Runs a SPARQL query of any type and sends the output into a TextWriter.</summary>
         <remarks>Any exception may be thrown by this method depending on the implementation.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
   </Members>
 </Type>

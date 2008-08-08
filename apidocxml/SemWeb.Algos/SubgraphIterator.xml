@@ -3,6 +3,7 @@
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
     <AssemblyVersion>1.0.6.0</AssemblyVersion>
+    <AssemblyVersion>1.0.6.2</AssemblyVersion>
   </AssemblyInfo>
   <Base>
     <BaseTypeName>System.Object</BaseTypeName>
@@ -24,6 +25,9 @@
         <summary>To be added.</summary>
         <remarks>To be added.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="Next">
       <MemberSignature Language="C#" Value="public bool[] Next ();" />
@@ -37,6 +41,9 @@
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
   </Members>
 </Type>

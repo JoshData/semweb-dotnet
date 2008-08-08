@@ -3,6 +3,7 @@
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
     <AssemblyVersion>1.0.6.0</AssemblyVersion>
+    <AssemblyVersion>1.0.6.2</AssemblyVersion>
   </AssemblyInfo>
   <Base>
     <BaseTypeName>SemWeb.RdfWriter</BaseTypeName>
@@ -36,6 +37,9 @@
         <summary>Creates an RDF/XML writer that writes to the given TextWriter.</summary>
         <remarks>None.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName=".ctor">
       <MemberSignature Language="C#" Value="public RdfXmlWriter (string file);" />
@@ -48,6 +52,9 @@
         <summary>Creates an RDF/XML writer that writes to the named file.</summary>
         <remarks>None.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName=".ctor">
       <MemberSignature Language="C#" Value="public RdfXmlWriter (System.Xml.XmlDocument dest);" />
@@ -60,6 +67,9 @@
         <summary>Creates an RDF/XML writer that writes to the given XmlDocument.</summary>
         <remarks>The document must be empty.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName=".ctor">
       <MemberSignature Language="C#" Value="public RdfXmlWriter (System.Xml.XmlWriter writer);" />
@@ -72,6 +82,9 @@
         <summary>Creates an RDF/XML writer that writes to the given XmlWriter.</summary>
         <remarks>None.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName=".ctor">
       <MemberSignature Language="C#" Value="public RdfXmlWriter (System.IO.TextWriter writer, SemWeb.RdfXmlWriter.Options style);" />
@@ -86,6 +99,9 @@
         <summary>Creates an RDF/XML writer that writes to the given TextWriter with output style options.</summary>
         <remarks>None.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName=".ctor">
       <MemberSignature Language="C#" Value="public RdfXmlWriter (string file, SemWeb.RdfXmlWriter.Options style);" />
@@ -100,6 +116,9 @@
         <summary>Creates an RDF/XML writer that writes to the named file with output style options.</summary>
         <remarks>None.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName=".ctor">
       <MemberSignature Language="C#" Value="public RdfXmlWriter (System.Xml.XmlDocument dest, SemWeb.RdfXmlWriter.Options style);" />
@@ -114,6 +133,9 @@
         <summary>Creates an RDF/XML writer that writes to the given XmlDocument with output style options.</summary>
         <remarks>None.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName=".ctor">
       <MemberSignature Language="C#" Value="public RdfXmlWriter (System.Xml.XmlWriter writer, SemWeb.RdfXmlWriter.Options style);" />
@@ -128,6 +150,9 @@
         <summary>Creates an RDF/XML writer that writes to the given XmlWriter with output style options.</summary>
         <remarks>None.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
   </Members>
 </Type>

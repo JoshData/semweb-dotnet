@@ -3,6 +3,7 @@
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
     <AssemblyVersion>1.0.6.0</AssemblyVersion>
+    <AssemblyVersion>1.0.6.2</AssemblyVersion>
   </AssemblyInfo>
   <Base>
     <BaseTypeName>SemWeb.LiteralFilter</BaseTypeName>
@@ -26,6 +27,9 @@
         <summary>To be added.</summary>
         <remarks>To be added.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="Type">
       <MemberSignature Language="C#" Value="public readonly SemWeb.LiteralFilter.CompType Type;" />
@@ -37,6 +41,9 @@
         <summary>To be added.</summary>
         <remarks>To be added.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="Value">
       <MemberSignature Language="C#" Value="public readonly DateTime Value;" />
@@ -48,6 +55,9 @@
         <summary>To be added.</summary>
         <remarks>To be added.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
   </Members>
 </Type>

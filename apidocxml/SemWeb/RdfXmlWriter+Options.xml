@@ -3,6 +3,7 @@
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
     <AssemblyVersion>1.0.6.0</AssemblyVersion>
+    <AssemblyVersion>1.0.6.2</AssemblyVersion>
   </AssemblyInfo>
   <Base>
     <BaseTypeName>System.Object</BaseTypeName>
@@ -21,6 +22,9 @@
         <summary>This is the default public constructor.</summary>
         <remarks>None.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="EmbedNamedNodes">
       <MemberSignature Language="C#" Value="public bool EmbedNamedNodes;" />
@@ -48,6 +52,9 @@
 &lt;/rdf:Description&gt;</code>
         </remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="Full">
       <MemberSignature Language="C#" Value="public static SemWeb.RdfXmlWriter.Options Full;" />
@@ -59,6 +66,9 @@
         <summary>An instance of Options specifying that all output options are turned on.</summary>
         <remarks>All of the instance fields in this object are <see langword="true" />, providing general RDF/XML output with options to make the document more readable.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="UseParseTypeLiteral">
       <MemberSignature Language="C#" Value="public bool UseParseTypeLiteral;" />
@@ -83,6 +93,9 @@
 &lt;/rdf:Description&gt;</code>
         </remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="UsePredicateAttributes">
       <MemberSignature Language="C#" Value="public bool UsePredicateAttributes;" />
@@ -108,6 +121,9 @@
 &lt;/foaf:Person&gt;</code>
         </remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="UseRdfID">
       <MemberSignature Language="C#" Value="public bool UseRdfID;" />
@@ -128,6 +144,9 @@
 &lt;/foaf:Person&gt;</code>
         </remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="UseRdfLI">
       <MemberSignature Language="C#" Value="public bool UseRdfLI;" />
@@ -153,6 +172,9 @@
 &lt;/rdf:Bag&gt;</code>
         </remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="UseTypedNodes">
       <MemberSignature Language="C#" Value="public bool UseTypedNodes;" />
@@ -174,6 +196,9 @@
 &lt;/rdf:Description&gt;</code>
         </remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="XMP">
       <MemberSignature Language="C#" Value="public static SemWeb.RdfXmlWriter.Options XMP;" />
@@ -185,6 +210,9 @@
         <summary>An instance of Options with only the options turned on supported by the Adobe XMP metadata format.</summary>
         <remarks>The Adobe XMP format is a reduced version of RDF/XML used for embedding metadata in images and other files.  This class turns off the output options of the RdfXmlWriter that are not supported in XMP.  The UseTypedNodes, UseRdfID, UseParseTypeLiteral, and UsePredicateAttributes fields are set to <see langword="false" />.  The remaining fields are set to <see langword="true" />.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
   </Members>
 </Type>

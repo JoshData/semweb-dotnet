@@ -3,6 +3,7 @@
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
     <AssemblyVersion>1.0.6.0</AssemblyVersion>
+    <AssemblyVersion>1.0.6.2</AssemblyVersion>
   </AssemblyInfo>
   <Base>
     <BaseTypeName>System.Object</BaseTypeName>
@@ -34,6 +35,9 @@
         <summary>Creates an empty store with no data storage backing.</summary>
         <remarks>Use <see cref="M:SemWeb.Store.AddSource(SemWeb.SelectableSource)" /> to add data to the store.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName=".ctor">
       <MemberSignature Language="C#" Value="public Store (SemWeb.SelectableSource source);" />
@@ -46,6 +50,9 @@
         <summary>Creates a store that wraps the given SelectableSource.</summary>
         <remarks>Other data sources can be added with <see cref="M:SemWeb.Store.AddSource(SemWeb.SelectableSource)" />.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName=".ctor">
       <MemberSignature Language="C#" Value="public Store (SemWeb.StatementSource source);" />
@@ -58,6 +65,9 @@
         <summary>Creates a Store that loads the statements from the StatementSource into memory.</summary>
         <remarks>The store loads the statements into memory.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="Add">
       <MemberSignature Language="C#" Value="public void Add (SemWeb.Statement statement);" />
@@ -76,6 +86,9 @@
           <para>An <see cref="T:System.InvalidOperationException" /> is thrown if more than one data source has been added to the Store with AddSource (in which case SemWeb would not know which data source to add the statement to) or if the data source added is not a <see cref="T:SemWeb.ModifiableSource" />.</para>
         </remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="AddReasoner">
       <MemberSignature Language="C#" Value="public virtual void AddReasoner (SemWeb.Inference.Reasoner reasoner);" />
@@ -91,6 +104,9 @@
         <summary>Adds inferencing capabilities to the Select and Query methods of this Store.</summary>
         <remarks>The Select and Query methods will apply inferencing to the store.  The reasoners are applied recursively in the reverse order that they were added with this method.  That is, if reasoner A is added before reasoner B, then a call to select will start with reasoner B, but when reasoner B queries the underlying data it will query reasoner A, and reasoner A will actually access any underlying data.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="AddSource">
       <MemberSignature Language="C#" Value="public virtual void AddSource (SemWeb.SelectableSource source);" />
@@ -106,6 +122,9 @@
         <summary>Adds a data source to this store.</summary>
         <remarks>None.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="AddSource">
       <MemberSignature Language="C#" Value="public virtual void AddSource (SemWeb.SelectableSource source, string uri);" />
@@ -126,6 +145,9 @@
           <para>In calls to Contains(Statement), Select, Add, Remove, RemoveAll, and Replace(Statement,Statement), the Meta field of the statement argument is used to choose which data source added with AddSource to query for information.  When the supplied Meta field is <see langword="null" /> or when no named data sources have been added to the Store through a call to this method, all data sources are queried. However, when named data sources have been added with this method and the supplied Meta field is <see cref="F:SemWeb.Statement.DefaultMeta" />, only unnamed data sources added through the other AddSource method (<see cref="M:SemWeb.Store.AddSource(SemWeb.SelectableSource)" />) are queried, and when the supplied <see cref="F:SemWeb.Statement.DefaultMeta" />'s URI matches the URI of a named data source added through this method, only that data source is queried.</para>
         </remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="Clear">
       <MemberSignature Language="C#" Value="public void Clear ();" />
@@ -141,6 +163,9 @@
       <ImplementsInterfaceMethods>
         <InterfaceImpl Type="SemWeb.ModifiableSource" Member="Clear" cref="M:SemWeb.ModifiableSource.Clear" />
       </ImplementsInterfaceMethods>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="Contains">
       <MemberSignature Language="C#" Value="public bool Contains (SemWeb.Resource resource);" />
@@ -160,6 +185,9 @@
       <ImplementsInterfaceMethods>
         <InterfaceImpl Type="SemWeb.SelectableSource" Member="Contains" cref="M:SemWeb.SelectableSource.Contains(SemWeb.Resource)" />
       </ImplementsInterfaceMethods>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="Contains">
       <MemberSignature Language="C#" Value="public bool Contains (SemWeb.Statement template);" />
@@ -182,6 +210,9 @@ any statement matching the template.</returns>
       <ImplementsInterfaceMethods>
         <InterfaceImpl Type="SemWeb.SelectableSource" Member="Contains" cref="M:SemWeb.SelectableSource.Contains(SemWeb.Statement)" />
       </ImplementsInterfaceMethods>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="Create">
       <MemberSignature Language="C#" Value="public static SemWeb.Store Create (string spec);" />
@@ -213,6 +244,9 @@ n3:file1.n3|n3:file2.n3|...  (loads each of the files into memory and returns a 
           </example>
         </remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="CreateForInput">
       <MemberSignature Language="C#" Value="public static SemWeb.StatementSource CreateForInput (string spec);" />
@@ -281,6 +315,9 @@ Example:  "n3:mydata.n3"</description>
           <para>The SQL stores can be both read from and written to, despite the name of this method.</para>
         </remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="CreateForOutput">
       <MemberSignature Language="C#" Value="public static SemWeb.StatementSink CreateForOutput (string spec);" />
@@ -331,9 +368,12 @@ For Sqlite, MySQL, and PostgreSQL-based stores, use the spec string described in
           </list>
         </remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="DataSources">
-      <MemberSignature Language="C#" Value="public System.Collections.Generic.IList&lt;SemWeb.SelectableSource&gt; DataSources { get; };" />
+      <MemberSignature Language="C#" Value="public System.Collections.Generic.IList&lt;SemWeb.SelectableSource&gt; DataSources { get; }" />
       <MemberType>Property</MemberType>
       <ReturnValue>
         <ReturnType>System.Collections.Generic.IList&lt;SemWeb.SelectableSource&gt;</ReturnType>
@@ -343,6 +383,9 @@ For Sqlite, MySQL, and PostgreSQL-based stores, use the spec string described in
         <value>A list of all data sources aggregated by the store through calls to <see cref="M:SemWeb.Store.AddSource(SemWeb.SelectableSource)" />, <see cref="M:SemWeb.Store.AddSource(SemWeb.SelectableSource,string)" />, or added implicitly through the constructors <see cref="C:SemWeb.Store(SemWeb.StatementSource)" /> and <see cref="C:SemWeb.Store(SemWeb.SelectableSource)" />.</value>
         <remarks>To be added.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="DefaultContains">
       <MemberSignature Language="C#" Value="public static bool DefaultContains (SemWeb.SelectableSource source, SemWeb.Statement template);" />
@@ -361,6 +404,9 @@ For Sqlite, MySQL, and PostgreSQL-based stores, use the spec string described in
         <returns>Whether any statements in the source match the template.</returns>
         <remarks>This method is intended to be used by implementors of SelectableSource.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="DefaultReplace">
       <MemberSignature Language="C#" Value="public static void DefaultReplace (SemWeb.ModifiableSource source, SemWeb.Entity find, SemWeb.Entity replacement);" />
@@ -380,6 +426,9 @@ For Sqlite, MySQL, and PostgreSQL-based stores, use the spec string described in
         <summary>A default implementation of the <see cref="M:SemWeb.ModifiableSource.Replace(SemWeb.Resource,SemWeb.Resource)" /> method for implementors of <see cref="T:SemWeb.ModifiableSource" />.</summary>
         <remarks>To be added.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="DefaultReplace">
       <MemberSignature Language="C#" Value="public static void DefaultReplace (SemWeb.ModifiableSource source, SemWeb.Statement find, SemWeb.Statement replacement);" />
@@ -399,6 +448,9 @@ For Sqlite, MySQL, and PostgreSQL-based stores, use the spec string described in
         <summary>A default implementation of the <see cref="M:SemWeb.ModifiableSource.Replace(SemWeb.Statement,SemWeb.Statement)" /> method for implementors of <see cref="T:SemWeb.ModifiableSource" />.</summary>
         <remarks>To be added.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="DefaultSelect">
       <MemberSignature Language="C#" Value="public static void DefaultSelect (SemWeb.SelectableSource source, SemWeb.SelectFilter filter, SemWeb.StatementSink sink);" />
@@ -418,6 +470,9 @@ For Sqlite, MySQL, and PostgreSQL-based stores, use the spec string described in
         <summary>This method provides a default implementation of the Select method that takes a SelectFilter argument.</summary>
         <remarks>This method is intended to be used by subclasses of Store that do not want to provide their own implementation of Select with a SelectFilter.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="Dispose">
       <MemberSignature Language="C#" Value="public void Dispose ();" />
@@ -434,9 +489,12 @@ For Sqlite, MySQL, and PostgreSQL-based stores, use the spec string described in
       <ImplementsInterfaceMethods>
         <InterfaceImpl Type="System.IDisposable" Member="Dispose" cref="M:System.IDisposable.Dispose" />
       </ImplementsInterfaceMethods>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="Distinct">
-      <MemberSignature Language="C#" Value="public bool Distinct { get; };" />
+      <MemberSignature Language="C#" Value="public bool Distinct { get; }" />
       <MemberType>Property</MemberType>
       <ReturnValue>
         <ReturnType>System.Boolean</ReturnType>
@@ -449,6 +507,9 @@ For Sqlite, MySQL, and PostgreSQL-based stores, use the spec string described in
       <ImplementsInterfaceMethods>
         <InterfaceImpl Type="SemWeb.StatementSource" Member="Distinct" cref="P:SemWeb.StatementSource.Distinct" />
       </ImplementsInterfaceMethods>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="GetBNodeFromPersistentId">
       <MemberSignature Language="C#" Value="public SemWeb.BNode GetBNodeFromPersistentId (string persistentId);" />
@@ -468,6 +529,9 @@ For Sqlite, MySQL, and PostgreSQL-based stores, use the spec string described in
       <ImplementsInterfaceMethods>
         <InterfaceImpl Type="SemWeb.StaticSource" Member="GetBNodeFromPersistentId" cref="M:SemWeb.StaticSource.GetBNodeFromPersistentId(System.String)" />
       </ImplementsInterfaceMethods>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="GetEntities">
       <MemberSignature Language="C#" Value="public SemWeb.Entity[] GetEntities ();" />
@@ -484,6 +548,9 @@ For Sqlite, MySQL, and PostgreSQL-based stores, use the spec string described in
       <ImplementsInterfaceMethods>
         <InterfaceImpl Type="SemWeb.StaticSource" Member="GetEntities" cref="M:SemWeb.StaticSource.GetEntities" />
       </ImplementsInterfaceMethods>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="GetEntitiesOfType">
       <MemberSignature Language="C#" Value="public SemWeb.Entity[] GetEntitiesOfType (SemWeb.Entity type);" />
@@ -500,6 +567,9 @@ For Sqlite, MySQL, and PostgreSQL-based stores, use the spec string described in
         <returns>An array of all entities in the store whose type is known to be the given type.</returns>
         <remarks>Types are indicated using the rdf:type predicate.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="GetMetas">
       <MemberSignature Language="C#" Value="public SemWeb.Entity[] GetMetas ();" />
@@ -516,6 +586,9 @@ For Sqlite, MySQL, and PostgreSQL-based stores, use the spec string described in
       <ImplementsInterfaceMethods>
         <InterfaceImpl Type="SemWeb.StaticSource" Member="GetMetas" cref="M:SemWeb.StaticSource.GetMetas" />
       </ImplementsInterfaceMethods>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="GetPersistentBNodeId">
       <MemberSignature Language="C#" Value="public string GetPersistentBNodeId (SemWeb.BNode node);" />
@@ -535,6 +608,9 @@ For Sqlite, MySQL, and PostgreSQL-based stores, use the spec string described in
       <ImplementsInterfaceMethods>
         <InterfaceImpl Type="SemWeb.StaticSource" Member="GetPersistentBNodeId" cref="M:SemWeb.StaticSource.GetPersistentBNodeId(SemWeb.BNode)" />
       </ImplementsInterfaceMethods>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="GetPredicates">
       <MemberSignature Language="C#" Value="public SemWeb.Entity[] GetPredicates ();" />
@@ -551,6 +627,9 @@ For Sqlite, MySQL, and PostgreSQL-based stores, use the spec string described in
       <ImplementsInterfaceMethods>
         <InterfaceImpl Type="SemWeb.StaticSource" Member="GetPredicates" cref="M:SemWeb.StaticSource.GetPredicates" />
       </ImplementsInterfaceMethods>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="Import">
       <MemberSignature Language="C#" Value="public void Import (SemWeb.StatementSource source);" />
@@ -572,6 +651,9 @@ For Sqlite, MySQL, and PostgreSQL-based stores, use the spec string described in
       <ImplementsInterfaceMethods>
         <InterfaceImpl Type="SemWeb.ModifiableSource" Member="Import" cref="M:SemWeb.ModifiableSource.Import(SemWeb.StatementSource)" />
       </ImplementsInterfaceMethods>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="MetaQuery">
       <MemberSignature Language="C#" Value="public SemWeb.Query.MetaQueryResult MetaQuery (SemWeb.Statement[] graph, SemWeb.Query.QueryOptions options);" />
@@ -593,6 +675,9 @@ For Sqlite, MySQL, and PostgreSQL-based stores, use the spec string described in
       <ImplementsInterfaceMethods>
         <InterfaceImpl Type="SemWeb.QueryableSource" Member="MetaQuery" cref="M:SemWeb.QueryableSource.MetaQuery(SemWeb.Statement[],SemWeb.Query.QueryOptions)" />
       </ImplementsInterfaceMethods>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="Query">
       <MemberSignature Language="C#" Value="public System.Collections.Generic.ICollection&lt;SemWeb.Query.VariableBindings&gt; Query (SemWeb.Statement[] graph);" />
@@ -609,6 +694,9 @@ For Sqlite, MySQL, and PostgreSQL-based stores, use the spec string described in
         <returns>The variable bindings as a collection over <see cref="T:SemWeb.Query.VariableBindings" /> instances.</returns>
         <remarks>See <see cref="M:SemWeb.Store.Query(SemWeb.Statement[],SemWeb.Query.QueryOptions,SemWeb.Query.QueryResultSink)" /> for details.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="Query">
       <MemberSignature Language="C#" Value="public void Query (SemWeb.Statement[] graph, SemWeb.Query.QueryOptions options, SemWeb.Query.QueryResultSink sink);" />
@@ -631,6 +719,9 @@ For Sqlite, MySQL, and PostgreSQL-based stores, use the spec string described in
       <ImplementsInterfaceMethods>
         <InterfaceImpl Type="SemWeb.QueryableSource" Member="Query" cref="M:SemWeb.QueryableSource.Query(SemWeb.Statement[],SemWeb.Query.QueryOptions,SemWeb.Query.QueryResultSink)" />
       </ImplementsInterfaceMethods>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="Remove">
       <MemberSignature Language="C#" Value="public void Remove (SemWeb.Statement template);" />
@@ -649,6 +740,9 @@ For Sqlite, MySQL, and PostgreSQL-based stores, use the spec string described in
       <ImplementsInterfaceMethods>
         <InterfaceImpl Type="SemWeb.ModifiableSource" Member="Remove" cref="M:SemWeb.ModifiableSource.Remove(SemWeb.Statement)" />
       </ImplementsInterfaceMethods>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="RemoveAll">
       <MemberSignature Language="C#" Value="public void RemoveAll (SemWeb.Statement[] templates);" />
@@ -667,6 +761,9 @@ For Sqlite, MySQL, and PostgreSQL-based stores, use the spec string described in
       <ImplementsInterfaceMethods>
         <InterfaceImpl Type="SemWeb.ModifiableSource" Member="RemoveAll" cref="M:SemWeb.ModifiableSource.RemoveAll(SemWeb.Statement[])" />
       </ImplementsInterfaceMethods>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="Replace">
       <MemberSignature Language="C#" Value="public void Replace (SemWeb.Entity find, SemWeb.Entity replacement);" />
@@ -690,6 +787,9 @@ For Sqlite, MySQL, and PostgreSQL-based stores, use the spec string described in
       <ImplementsInterfaceMethods>
         <InterfaceImpl Type="SemWeb.ModifiableSource" Member="Replace" cref="M:SemWeb.ModifiableSource.Replace(SemWeb.Entity,SemWeb.Entity)" />
       </ImplementsInterfaceMethods>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="Replace">
       <MemberSignature Language="C#" Value="public void Replace (SemWeb.Statement find, SemWeb.Statement replacement);" />
@@ -713,6 +813,9 @@ For Sqlite, MySQL, and PostgreSQL-based stores, use the spec string described in
       <ImplementsInterfaceMethods>
         <InterfaceImpl Type="SemWeb.ModifiableSource" Member="Replace" cref="M:SemWeb.ModifiableSource.Replace(SemWeb.Statement,SemWeb.Statement)" />
       </ImplementsInterfaceMethods>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="Select">
       <MemberSignature Language="C#" Value="public SemWeb.SelectResult Select (SemWeb.SelectFilter filter);" />
@@ -729,6 +832,9 @@ For Sqlite, MySQL, and PostgreSQL-based stores, use the spec string described in
         <returns>A <see cref="T:SemWeb.SelectResult" /> representing the matching statements.</returns>
         <remarks>See <see cref="M:SemWeb.Store.Select(SemWeb.SelectFilter,SemWeb.StatementSink)" />.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="Select">
       <MemberSignature Language="C#" Value="public SemWeb.SelectResult Select (SemWeb.Statement template);" />
@@ -758,6 +864,9 @@ For Sqlite, MySQL, and PostgreSQL-based stores, use the spec string described in
             <paramref name="template" /> is a statement template, which means any field in <paramref name="template" /> may be <see langword="null" />, and those fields are excluded from the statement filter. For example, setting the Subject and Predicate fields but leaving the Object and Meta fields <see langword="null" /> will match all statements in the store that have the given Subject and Predicate, and anything in their Object and Meta fields.</para>
         </remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="Select">
       <MemberSignature Language="C#" Value="public void Select (SemWeb.StatementSink result);" />
@@ -776,6 +885,9 @@ For Sqlite, MySQL, and PostgreSQL-based stores, use the spec string described in
       <ImplementsInterfaceMethods>
         <InterfaceImpl Type="SemWeb.StatementSource" Member="Select" cref="M:SemWeb.StatementSource.Select(SemWeb.StatementSink)" />
       </ImplementsInterfaceMethods>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="Select">
       <MemberSignature Language="C#" Value="public void Select (SemWeb.SelectFilter filter, SemWeb.StatementSink result);" />
@@ -796,6 +908,9 @@ For Sqlite, MySQL, and PostgreSQL-based stores, use the spec string described in
       <ImplementsInterfaceMethods>
         <InterfaceImpl Type="SemWeb.SelectableSource" Member="Select" cref="M:SemWeb.SelectableSource.Select(SemWeb.SelectFilter,SemWeb.StatementSink)" />
       </ImplementsInterfaceMethods>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="Select">
       <MemberSignature Language="C#" Value="public void Select (SemWeb.Statement template, SemWeb.StatementSink result);" />
@@ -816,6 +931,9 @@ For Sqlite, MySQL, and PostgreSQL-based stores, use the spec string described in
       <ImplementsInterfaceMethods>
         <InterfaceImpl Type="SemWeb.SelectableSource" Member="Select" cref="M:SemWeb.SelectableSource.Select(SemWeb.Statement,SemWeb.StatementSink)" />
       </ImplementsInterfaceMethods>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="SelectObjects">
       <MemberSignature Language="C#" Value="public SemWeb.Resource[] SelectObjects (SemWeb.Entity subject, SemWeb.Entity predicate);" />
@@ -838,6 +956,9 @@ For Sqlite, MySQL, and PostgreSQL-based stores, use the spec string described in
           </block>
         </remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="SelectSubjects">
       <MemberSignature Language="C#" Value="public SemWeb.Entity[] SelectSubjects (SemWeb.Entity predicate, SemWeb.Resource object);" />
@@ -860,6 +981,9 @@ For Sqlite, MySQL, and PostgreSQL-based stores, use the spec string described in
           </block>
         </remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="SemWeb.StatementSink.Add">
       <MemberSignature Language="C#" Value="bool StatementSink.Add (SemWeb.Statement statement);" />
@@ -876,9 +1000,12 @@ For Sqlite, MySQL, and PostgreSQL-based stores, use the spec string described in
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="StatementCount">
-      <MemberSignature Language="C#" Value="public int StatementCount { get; };" />
+      <MemberSignature Language="C#" Value="public int StatementCount { get; }" />
       <MemberType>Property</MemberType>
       <ReturnValue>
         <ReturnType>System.Int32</ReturnType>
@@ -893,6 +1020,9 @@ For Sqlite, MySQL, and PostgreSQL-based stores, use the spec string described in
       <ImplementsInterfaceMethods>
         <InterfaceImpl Type="SemWeb.StaticSource" Member="StatementCount" cref="P:SemWeb.StaticSource.StatementCount" />
       </ImplementsInterfaceMethods>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="Write">
       <MemberSignature Language="C#" Value="public void Write (System.IO.TextWriter writer);" />
@@ -908,6 +1038,9 @@ For Sqlite, MySQL, and PostgreSQL-based stores, use the spec string described in
         <summary>Writes the contents of the store to a stream in N3 format.</summary>
         <remarks>None.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
   </Members>
 </Type>

@@ -3,6 +3,7 @@
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
     <AssemblyVersion>1.0.6.0</AssemblyVersion>
+    <AssemblyVersion>1.0.6.2</AssemblyVersion>
   </AssemblyInfo>
   <Base>
     <BaseTypeName>SemWeb.Entity</BaseTypeName>
@@ -31,6 +32,9 @@
         <summary>Creates a new blank node.</summary>
         <remarks>None.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName=".ctor">
       <MemberSignature Language="C#" Value="public BNode (string localName);" />
@@ -43,9 +47,12 @@
         <summary>Creates a new blank node with a local name.</summary>
         <remarks>The local name does not affect whether two BNodes are considered equal.  It is merely used as a suggestion when serializing a RDF graph.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="LocalName">
-      <MemberSignature Language="C#" Value="public string LocalName { get; };" />
+      <MemberSignature Language="C#" Value="public string LocalName { get; }" />
       <MemberType>Property</MemberType>
       <ReturnValue>
         <ReturnType>System.String</ReturnType>
@@ -55,6 +62,9 @@
         <value>The local name of the node, as it was found in some document or as it should be used when serializing the node.</value>
         <remarks>The local name is set when the BNode is created, usually by RDF readers of streams that give local names to blank nodes.  The local name does not affect whether two BNodes are considered equal.  It is merely used as a suggestion when serializing a RDF graph.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
   </Members>
 </Type>

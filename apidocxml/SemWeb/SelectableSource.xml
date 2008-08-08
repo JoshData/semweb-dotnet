@@ -3,6 +3,7 @@
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
     <AssemblyVersion>1.0.6.0</AssemblyVersion>
+    <AssemblyVersion>1.0.6.2</AssemblyVersion>
   </AssemblyInfo>
   <Interfaces>
     <Interface>
@@ -29,6 +30,9 @@
         <returns>A boolean value indicating whether the resource is mentioned in the store.</returns>
         <remarks>None.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="Contains">
       <MemberSignature Language="C#" Value="public bool Contains (SemWeb.Statement template);" />
@@ -53,6 +57,9 @@ any statement matching the template.</returns>
           </example>
         </remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="Select">
       <MemberSignature Language="C#" Value="public void Select (SemWeb.SelectFilter filter, SemWeb.StatementSink sink);" />
@@ -83,6 +90,9 @@ using (StatementSink sink = new N3Writer(Console.Out)) {
           </example>
         </remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="Select">
       <MemberSignature Language="C#" Value="public void Select (SemWeb.Statement template, SemWeb.StatementSink sink);" />
@@ -110,6 +120,9 @@ using (StatementSink sink = new N3Writer(Console.Out)) {
           </example>
         </remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
   </Members>
 </Type>

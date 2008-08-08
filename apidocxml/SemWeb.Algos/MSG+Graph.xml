@@ -3,6 +3,7 @@
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
     <AssemblyVersion>1.0.6.0</AssemblyVersion>
+    <AssemblyVersion>1.0.6.2</AssemblyVersion>
   </AssemblyInfo>
   <Base>
     <BaseTypeName>System.Object</BaseTypeName>
@@ -32,9 +33,12 @@
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="Distinct">
-      <MemberSignature Language="C#" Value="public bool Distinct { get; };" />
+      <MemberSignature Language="C#" Value="public bool Distinct { get; }" />
       <MemberType>Property</MemberType>
       <ReturnValue>
         <ReturnType>System.Boolean</ReturnType>
@@ -47,6 +51,9 @@
       <ImplementsInterfaceMethods>
         <InterfaceImpl Type="SemWeb.StatementSource" Member="Distinct" cref="P:SemWeb.StatementSource.Distinct" />
       </ImplementsInterfaceMethods>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="GetBNodes">
       <MemberSignature Language="C#" Value="public System.Collections.ICollection GetBNodes ();" />
@@ -60,6 +67,9 @@
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="LoadGraphs">
       <MemberSignature Language="C#" Value="public static void LoadGraphs (SemWeb.Algos.MSG.Graph[] graphs);" />
@@ -75,6 +85,9 @@
         <summary>To be added.</summary>
         <remarks>To be added.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="Select">
       <MemberSignature Language="C#" Value="public void Select (SemWeb.StatementSink s);" />
@@ -93,6 +106,9 @@
       <ImplementsInterfaceMethods>
         <InterfaceImpl Type="SemWeb.StatementSource" Member="Select" cref="M:SemWeb.StatementSource.Select(SemWeb.StatementSink)" />
       </ImplementsInterfaceMethods>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
   </Members>
 </Type>

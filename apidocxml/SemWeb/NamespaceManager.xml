@@ -3,6 +3,7 @@
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
     <AssemblyVersion>1.0.6.0</AssemblyVersion>
+    <AssemblyVersion>1.0.6.2</AssemblyVersion>
   </AssemblyInfo>
   <Base>
     <BaseTypeName>System.Object</BaseTypeName>
@@ -21,6 +22,9 @@
         <summary>Creates a new namespace manager.</summary>
         <remarks>None.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName=".ctor">
       <MemberSignature Language="C#" Value="public NamespaceManager (SemWeb.NamespaceManager parent);" />
@@ -33,6 +37,9 @@
         <summary>Creates a new namespace manager who will look in another namespace manager when it cannot find a matching prefix or URI.</summary>
         <remarks>When the new namespace manager cannot find a prefix or URI in its own table, it will consult <paramref name="parent" />'s table.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="AddFrom">
       <MemberSignature Language="C#" Value="public void AddFrom (SemWeb.NamespaceManager nsmgr);" />
@@ -48,6 +55,9 @@
         <summary>Adds all of the namespace declarations from another NamespaceManager.</summary>
         <remarks>None.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="AddNamespace">
       <MemberSignature Language="C#" Value="public virtual void AddNamespace (string uri, string prefix);" />
@@ -65,6 +75,9 @@
         <summary>Adds a prefix-URI mapping to the table.</summary>
         <remarks>If <paramref name="prefix" /> was already used in a call to this method, the previous prefix-to-URI mapping will be overwritten.  Likewise, if <paramref name="uri" /> was used before, the previous uri-to-prefix mapping will be overwritten.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="GetNamespace">
       <MemberSignature Language="C#" Value="public virtual string GetNamespace (string prefix);" />
@@ -81,6 +94,9 @@
         <returns>The corresponding namespace, or <see langword="null" /> if the prefix is not in the table.</returns>
         <remarks>None.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="GetNamespaces">
       <MemberSignature Language="C#" Value="public System.Collections.ICollection GetNamespaces ();" />
@@ -94,6 +110,9 @@
         <returns>A collection of all namespace URIs known to this namespace manager.</returns>
         <remarks>None.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="GetPrefix">
       <MemberSignature Language="C#" Value="public virtual string GetPrefix (string uri);" />
@@ -110,6 +129,9 @@
         <returns>The prefix associated with this namespace, or <see langword="null" /> if the URI is not associated with a prefix.</returns>
         <remarks>None.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="GetPrefixes">
       <MemberSignature Language="C#" Value="public System.Collections.ICollection GetPrefixes ();" />
@@ -123,6 +145,9 @@
         <returns>A collection of all prefixes known to this namespace manager.</returns>
         <remarks>None.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="Normalize">
       <MemberSignature Language="C#" Value="public string Normalize (string uri);" />
@@ -139,6 +164,9 @@
         <returns>If a namespace matches part of this URI, a QName (prefix:localname) is returned.  Otherwise, the URI is returned in angled brackets (&lt;uri&gt;).</returns>
         <remarks>A QName will only be returned if the localname consists only of valid characters for a QName.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="Normalize">
       <MemberSignature Language="C#" Value="public bool Normalize (string uri, out string prefix, out string localname);" />
@@ -159,6 +187,9 @@
         <returns>True if the URI could be split into a prefix and local name, false otherwise.</returns>
         <remarks>None.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="Resolve">
       <MemberSignature Language="C#" Value="public string Resolve (string qname);" />
@@ -175,6 +206,9 @@
         <returns>A URI equivalent to the QName.</returns>
         <remarks>The QName is split on its colon.  The prefix and colon are replaced by the namespace corresponding to the prefix.  An exception is thrown if the prefix is not known to the namespace manager.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
   </Members>
 </Type>

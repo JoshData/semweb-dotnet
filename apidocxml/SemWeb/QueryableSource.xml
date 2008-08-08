@@ -3,6 +3,7 @@
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
     <AssemblyVersion>1.0.6.0</AssemblyVersion>
+    <AssemblyVersion>1.0.6.2</AssemblyVersion>
   </AssemblyInfo>
   <Interfaces>
     <Interface>
@@ -49,6 +50,9 @@ Statement[] graph = new Statement[] {
         <returns>A <see cref="T:SemWeb.Query.MetaQueryResult" /> structure indicating whether and how the query will be executed.</returns>
         <remarks>Call this method before the Query method to check whether a query is supported on the data source and to get more information on how the query will be executed.  Use the same arguments for <paramref name="graph" /> and <paramref name="options" /> as you are about to pass to the Query method.  See the documentation for <see cref="T:SemWeb.Query.MetaQueryResult" /> for more information.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="Query">
       <MemberSignature Language="C#" Value="public void Query (SemWeb.Statement[] graph, SemWeb.Query.QueryOptions options, SemWeb.Query.QueryResultSink sink);" />
@@ -72,6 +76,9 @@ Statement[] graph = new Statement[] {
           <para>This method may throw a <see cref="T:System.NotSupportedException" /> if the query cannot even be processed.  No other exceptions, besides <see cref="T:System.ArgumentException" />, will be thrown.</para>
         </remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
   </Members>
 </Type>

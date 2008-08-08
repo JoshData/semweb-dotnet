@@ -3,6 +3,7 @@
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
     <AssemblyVersion>1.0.6.0</AssemblyVersion>
+    <AssemblyVersion>1.0.6.2</AssemblyVersion>
   </AssemblyInfo>
   <Base>
     <BaseTypeName>System.Object</BaseTypeName>
@@ -62,6 +63,9 @@ CREATE TABLE TABLEPREFIX_literals (id INT NOT NULL, value BLOB NOT NULL,
         <summary>The protected constructor used by inherited classes.</summary>
         <remarks>The two tables used by this store will be <paramref name="table" />_statements and <paramref name="table" />_literals.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="Add">
       <MemberSignature Language="C#" Value="public void Add (SemWeb.Statement statement);" />
@@ -77,6 +81,9 @@ CREATE TABLE TABLEPREFIX_literals (id INT NOT NULL, value BLOB NOT NULL,
         <summary>To be added.</summary>
         <remarks>To be added.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="BeginTransaction">
       <MemberSignature Language="C#" Value="protected virtual void BeginTransaction ();" />
@@ -89,6 +96,9 @@ CREATE TABLE TABLEPREFIX_literals (id INT NOT NULL, value BLOB NOT NULL,
         <summary>Called at the start of <see cref="M:SemWeb.Store.Import(SemWeb.RdfReader)" />.</summary>
         <remarks>Inheritors may override this method to put a lock on the tables or begin a transaction to speed up the process of adding many statements into the tables.  The default implementation does nothing.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="Clear">
       <MemberSignature Language="C#" Value="public void Clear ();" />
@@ -104,6 +114,9 @@ CREATE TABLE TABLEPREFIX_literals (id INT NOT NULL, value BLOB NOT NULL,
       <ImplementsInterfaceMethods>
         <InterfaceImpl Type="SemWeb.ModifiableSource" Member="Clear" cref="M:SemWeb.ModifiableSource.Clear" />
       </ImplementsInterfaceMethods>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="Close">
       <MemberSignature Language="C#" Value="public virtual void Close ();" />
@@ -116,6 +129,9 @@ CREATE TABLE TABLEPREFIX_literals (id INT NOT NULL, value BLOB NOT NULL,
         <summary>To be added.</summary>
         <remarks>To be added.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="Contains">
       <MemberSignature Language="C#" Value="public bool Contains (SemWeb.Resource resource);" />
@@ -135,6 +151,9 @@ CREATE TABLE TABLEPREFIX_literals (id INT NOT NULL, value BLOB NOT NULL,
       <ImplementsInterfaceMethods>
         <InterfaceImpl Type="SemWeb.SelectableSource" Member="Contains" cref="M:SemWeb.SelectableSource.Contains(SemWeb.Resource)" />
       </ImplementsInterfaceMethods>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="Contains">
       <MemberSignature Language="C#" Value="public bool Contains (SemWeb.Statement template);" />
@@ -154,6 +173,9 @@ CREATE TABLE TABLEPREFIX_literals (id INT NOT NULL, value BLOB NOT NULL,
       <ImplementsInterfaceMethods>
         <InterfaceImpl Type="SemWeb.SelectableSource" Member="Contains" cref="M:SemWeb.SelectableSource.Contains(SemWeb.Statement)" />
       </ImplementsInterfaceMethods>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="CreateEntityPrefixTest">
       <MemberSignature Language="C#" Value="protected virtual bool CreateEntityPrefixTest (string column, string prefix, System.Text.StringBuilder command);" />
@@ -174,6 +196,9 @@ CREATE TABLE TABLEPREFIX_literals (id INT NOT NULL, value BLOB NOT NULL,
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="CreateIndexes">
       <MemberSignature Language="C#" Value="protected virtual void CreateIndexes ();" />
@@ -186,6 +211,9 @@ CREATE TABLE TABLEPREFIX_literals (id INT NOT NULL, value BLOB NOT NULL,
         <summary>Creates the indexes on the tables.</summary>
         <remarks>Inheritors may override this method to change the way indexes are created on the tables used by the SQLStore.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="CreateLikeTest">
       <MemberSignature Language="C#" Value="protected abstract void CreateLikeTest (string column, string prefix, int method, System.Text.StringBuilder command);" />
@@ -207,6 +235,9 @@ CREATE TABLE TABLEPREFIX_literals (id INT NOT NULL, value BLOB NOT NULL,
         <summary>To be added.</summary>
         <remarks>To be added.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="CreateNullTest">
       <MemberSignature Language="C#" Value="protected abstract void CreateNullTest (string column, System.Text.StringBuilder command);" />
@@ -224,6 +255,9 @@ CREATE TABLE TABLEPREFIX_literals (id INT NOT NULL, value BLOB NOT NULL,
         <summary>To be added.</summary>
         <remarks>To be added.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="CreateTable">
       <MemberSignature Language="C#" Value="protected virtual void CreateTable ();" />
@@ -236,9 +270,12 @@ CREATE TABLE TABLEPREFIX_literals (id INT NOT NULL, value BLOB NOT NULL,
         <summary>Creates the tables needed by the SQLStore.</summary>
         <remarks>Inheritors may override this method to change the way tables are created by the SQLStore.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="Distinct">
-      <MemberSignature Language="C#" Value="public bool Distinct { get; };" />
+      <MemberSignature Language="C#" Value="public bool Distinct { get; }" />
       <MemberType>Property</MemberType>
       <ReturnValue>
         <ReturnType>System.Boolean</ReturnType>
@@ -251,6 +288,9 @@ CREATE TABLE TABLEPREFIX_literals (id INT NOT NULL, value BLOB NOT NULL,
       <ImplementsInterfaceMethods>
         <InterfaceImpl Type="SemWeb.StatementSource" Member="Distinct" cref="P:SemWeb.StatementSource.Distinct" />
       </ImplementsInterfaceMethods>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="EndTransaction">
       <MemberSignature Language="C#" Value="protected virtual void EndTransaction ();" />
@@ -263,6 +303,9 @@ CREATE TABLE TABLEPREFIX_literals (id INT NOT NULL, value BLOB NOT NULL,
         <summary>Called at the end of <see cref="M:SemWeb.Store.Import(SemWeb.RdfReader)" />.</summary>
         <remarks>Inheritors may override this method to end a lock or transaction started in <see cref="M:SemWeb.Stores.SQLStore.BeginTransaction()" />.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="EscapedAppend">
       <MemberSignature Language="C#" Value="protected void EscapedAppend (System.Text.StringBuilder b, string str);" />
@@ -280,6 +323,9 @@ CREATE TABLE TABLEPREFIX_literals (id INT NOT NULL, value BLOB NOT NULL,
         <summary>To be added.</summary>
         <remarks>To be added.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="EscapedAppend">
       <MemberSignature Language="C#" Value="protected virtual void EscapedAppend (System.Text.StringBuilder b, string str, bool quotes, bool forLike);" />
@@ -301,6 +347,9 @@ CREATE TABLE TABLEPREFIX_literals (id INT NOT NULL, value BLOB NOT NULL,
         <summary>To be added.</summary>
         <remarks>To be added.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="GetBNodeFromPersistentId">
       <MemberSignature Language="C#" Value="public SemWeb.BNode GetBNodeFromPersistentId (string persistentId);" />
@@ -320,6 +369,9 @@ CREATE TABLE TABLEPREFIX_literals (id INT NOT NULL, value BLOB NOT NULL,
       <ImplementsInterfaceMethods>
         <InterfaceImpl Type="SemWeb.StaticSource" Member="GetBNodeFromPersistentId" cref="M:SemWeb.StaticSource.GetBNodeFromPersistentId(System.String)" />
       </ImplementsInterfaceMethods>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="GetEntities">
       <MemberSignature Language="C#" Value="public SemWeb.Entity[] GetEntities ();" />
@@ -336,6 +388,9 @@ CREATE TABLE TABLEPREFIX_literals (id INT NOT NULL, value BLOB NOT NULL,
       <ImplementsInterfaceMethods>
         <InterfaceImpl Type="SemWeb.StaticSource" Member="GetEntities" cref="M:SemWeb.StaticSource.GetEntities" />
       </ImplementsInterfaceMethods>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="GetMetas">
       <MemberSignature Language="C#" Value="public SemWeb.Entity[] GetMetas ();" />
@@ -352,6 +407,9 @@ CREATE TABLE TABLEPREFIX_literals (id INT NOT NULL, value BLOB NOT NULL,
       <ImplementsInterfaceMethods>
         <InterfaceImpl Type="SemWeb.StaticSource" Member="GetMetas" cref="M:SemWeb.StaticSource.GetMetas" />
       </ImplementsInterfaceMethods>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="GetPersistentBNodeId">
       <MemberSignature Language="C#" Value="public string GetPersistentBNodeId (SemWeb.BNode node);" />
@@ -371,6 +429,9 @@ CREATE TABLE TABLEPREFIX_literals (id INT NOT NULL, value BLOB NOT NULL,
       <ImplementsInterfaceMethods>
         <InterfaceImpl Type="SemWeb.StaticSource" Member="GetPersistentBNodeId" cref="M:SemWeb.StaticSource.GetPersistentBNodeId(SemWeb.BNode)" />
       </ImplementsInterfaceMethods>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="GetPredicates">
       <MemberSignature Language="C#" Value="public SemWeb.Entity[] GetPredicates ();" />
@@ -387,6 +448,9 @@ CREATE TABLE TABLEPREFIX_literals (id INT NOT NULL, value BLOB NOT NULL,
       <ImplementsInterfaceMethods>
         <InterfaceImpl Type="SemWeb.StaticSource" Member="GetPredicates" cref="M:SemWeb.StaticSource.GetPredicates" />
       </ImplementsInterfaceMethods>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="GetQuoteChar">
       <MemberSignature Language="C#" Value="protected virtual char GetQuoteChar ();" />
@@ -400,6 +464,9 @@ CREATE TABLE TABLEPREFIX_literals (id INT NOT NULL, value BLOB NOT NULL,
         <returns>The string quotation character, usually an apostrophe or double-quote.</returns>
         <remarks>The default implementation returns a double-quote.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="GetStoreGuid">
       <MemberSignature Language="C#" Value="public string GetStoreGuid ();" />
@@ -413,9 +480,12 @@ CREATE TABLE TABLEPREFIX_literals (id INT NOT NULL, value BLOB NOT NULL,
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="HasUniqueStatementsConstraint">
-      <MemberSignature Language="C#" Value="protected abstract bool HasUniqueStatementsConstraint { get; };" />
+      <MemberSignature Language="C#" Value="protected abstract bool HasUniqueStatementsConstraint { get; }" />
       <MemberType>Property</MemberType>
       <ReturnValue>
         <ReturnType>System.Boolean</ReturnType>
@@ -425,6 +495,9 @@ CREATE TABLE TABLEPREFIX_literals (id INT NOT NULL, value BLOB NOT NULL,
         <value>To be added.</value>
         <remarks>To be added.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="Import">
       <MemberSignature Language="C#" Value="public void Import (SemWeb.StatementSource source);" />
@@ -443,9 +516,12 @@ CREATE TABLE TABLEPREFIX_literals (id INT NOT NULL, value BLOB NOT NULL,
       <ImplementsInterfaceMethods>
         <InterfaceImpl Type="SemWeb.ModifiableSource" Member="Import" cref="M:SemWeb.ModifiableSource.Import(SemWeb.StatementSource)" />
       </ImplementsInterfaceMethods>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="InsertIgnoreCommand">
-      <MemberSignature Language="C#" Value="protected abstract string InsertIgnoreCommand { get; };" />
+      <MemberSignature Language="C#" Value="protected abstract string InsertIgnoreCommand { get; }" />
       <MemberType>Property</MemberType>
       <ReturnValue>
         <ReturnType>System.String</ReturnType>
@@ -455,9 +531,12 @@ CREATE TABLE TABLEPREFIX_literals (id INT NOT NULL, value BLOB NOT NULL,
         <value>To be added.</value>
         <remarks>To be added.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="MaximumUriLength">
-      <MemberSignature Language="C#" Value="protected virtual int MaximumUriLength { get; };" />
+      <MemberSignature Language="C#" Value="protected virtual int MaximumUriLength { get; }" />
       <MemberType>Property</MemberType>
       <ReturnValue>
         <ReturnType>System.Int32</ReturnType>
@@ -467,6 +546,9 @@ CREATE TABLE TABLEPREFIX_literals (id INT NOT NULL, value BLOB NOT NULL,
         <value>To be added.</value>
         <remarks>To be added.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="MetaQuery">
       <MemberSignature Language="C#" Value="public SemWeb.Query.MetaQueryResult MetaQuery (SemWeb.Statement[] graph, SemWeb.Query.QueryOptions options);" />
@@ -488,6 +570,9 @@ CREATE TABLE TABLEPREFIX_literals (id INT NOT NULL, value BLOB NOT NULL,
       <ImplementsInterfaceMethods>
         <InterfaceImpl Type="SemWeb.QueryableSource" Member="MetaQuery" cref="M:SemWeb.QueryableSource.MetaQuery(SemWeb.Statement[],SemWeb.Query.QueryOptions)" />
       </ImplementsInterfaceMethods>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="Query">
       <MemberSignature Language="C#" Value="public void Query (SemWeb.Statement[] graph, SemWeb.Query.QueryOptions options, SemWeb.Query.QueryResultSink sink);" />
@@ -510,6 +595,9 @@ CREATE TABLE TABLEPREFIX_literals (id INT NOT NULL, value BLOB NOT NULL,
       <ImplementsInterfaceMethods>
         <InterfaceImpl Type="SemWeb.QueryableSource" Member="Query" cref="M:SemWeb.QueryableSource.Query(SemWeb.Statement[],SemWeb.Query.QueryOptions,SemWeb.Query.QueryResultSink)" />
       </ImplementsInterfaceMethods>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="Remove">
       <MemberSignature Language="C#" Value="public void Remove (SemWeb.Statement template);" />
@@ -528,6 +616,9 @@ CREATE TABLE TABLEPREFIX_literals (id INT NOT NULL, value BLOB NOT NULL,
       <ImplementsInterfaceMethods>
         <InterfaceImpl Type="SemWeb.ModifiableSource" Member="Remove" cref="M:SemWeb.ModifiableSource.Remove(SemWeb.Statement)" />
       </ImplementsInterfaceMethods>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="RemoveAll">
       <MemberSignature Language="C#" Value="public void RemoveAll (SemWeb.Statement[] templates);" />
@@ -546,6 +637,9 @@ CREATE TABLE TABLEPREFIX_literals (id INT NOT NULL, value BLOB NOT NULL,
       <ImplementsInterfaceMethods>
         <InterfaceImpl Type="SemWeb.ModifiableSource" Member="RemoveAll" cref="M:SemWeb.ModifiableSource.RemoveAll(SemWeb.Statement[])" />
       </ImplementsInterfaceMethods>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="Replace">
       <MemberSignature Language="C#" Value="public void Replace (SemWeb.Entity a, SemWeb.Entity b);" />
@@ -566,6 +660,9 @@ CREATE TABLE TABLEPREFIX_literals (id INT NOT NULL, value BLOB NOT NULL,
       <ImplementsInterfaceMethods>
         <InterfaceImpl Type="SemWeb.ModifiableSource" Member="Replace" cref="M:SemWeb.ModifiableSource.Replace(SemWeb.Entity,SemWeb.Entity)" />
       </ImplementsInterfaceMethods>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="Replace">
       <MemberSignature Language="C#" Value="public void Replace (SemWeb.Statement find, SemWeb.Statement replacement);" />
@@ -586,6 +683,9 @@ CREATE TABLE TABLEPREFIX_literals (id INT NOT NULL, value BLOB NOT NULL,
       <ImplementsInterfaceMethods>
         <InterfaceImpl Type="SemWeb.ModifiableSource" Member="Replace" cref="M:SemWeb.ModifiableSource.Replace(SemWeb.Statement,SemWeb.Statement)" />
       </ImplementsInterfaceMethods>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="RunCommand">
       <MemberSignature Language="C#" Value="protected abstract void RunCommand (string sql);" />
@@ -601,6 +701,9 @@ CREATE TABLE TABLEPREFIX_literals (id INT NOT NULL, value BLOB NOT NULL,
         <summary>Executes an SQL statement without a return value.</summary>
         <remarks>Inheritors must implemented this method.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="RunReader">
       <MemberSignature Language="C#" Value="protected abstract System.Data.IDataReader RunReader (string sql);" />
@@ -617,6 +720,9 @@ CREATE TABLE TABLEPREFIX_literals (id INT NOT NULL, value BLOB NOT NULL,
         <returns>An IDataReader containing the result of the tabular query.</returns>
         <remarks>Inheritors must implement this method.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="RunScalar">
       <MemberSignature Language="C#" Value="protected abstract object RunScalar (string sql);" />
@@ -633,6 +739,9 @@ CREATE TABLE TABLEPREFIX_literals (id INT NOT NULL, value BLOB NOT NULL,
         <returns>The numeric or text value.</returns>
         <remarks>Inheritors must implement this method.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="Select">
       <MemberSignature Language="C#" Value="public void Select (SemWeb.StatementSink result);" />
@@ -651,6 +760,9 @@ CREATE TABLE TABLEPREFIX_literals (id INT NOT NULL, value BLOB NOT NULL,
       <ImplementsInterfaceMethods>
         <InterfaceImpl Type="SemWeb.StatementSource" Member="Select" cref="M:SemWeb.StatementSource.Select(SemWeb.StatementSink)" />
       </ImplementsInterfaceMethods>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="Select">
       <MemberSignature Language="C#" Value="public void Select (SemWeb.SelectFilter filter, SemWeb.StatementSink result);" />
@@ -671,6 +783,9 @@ CREATE TABLE TABLEPREFIX_literals (id INT NOT NULL, value BLOB NOT NULL,
       <ImplementsInterfaceMethods>
         <InterfaceImpl Type="SemWeb.SelectableSource" Member="Select" cref="M:SemWeb.SelectableSource.Select(SemWeb.SelectFilter,SemWeb.StatementSink)" />
       </ImplementsInterfaceMethods>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="Select">
       <MemberSignature Language="C#" Value="public void Select (SemWeb.Statement template, SemWeb.StatementSink result);" />
@@ -691,6 +806,9 @@ CREATE TABLE TABLEPREFIX_literals (id INT NOT NULL, value BLOB NOT NULL,
       <ImplementsInterfaceMethods>
         <InterfaceImpl Type="SemWeb.SelectableSource" Member="Select" cref="M:SemWeb.SelectableSource.Select(SemWeb.Statement,SemWeb.StatementSink)" />
       </ImplementsInterfaceMethods>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="SemWeb.StatementSink.Add">
       <MemberSignature Language="C#" Value="bool StatementSink.Add (SemWeb.Statement statement);" />
@@ -707,9 +825,12 @@ CREATE TABLE TABLEPREFIX_literals (id INT NOT NULL, value BLOB NOT NULL,
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="StatementCount">
-      <MemberSignature Language="C#" Value="public int StatementCount { get; };" />
+      <MemberSignature Language="C#" Value="public int StatementCount { get; }" />
       <MemberType>Property</MemberType>
       <ReturnValue>
         <ReturnType>System.Int32</ReturnType>
@@ -722,9 +843,12 @@ CREATE TABLE TABLEPREFIX_literals (id INT NOT NULL, value BLOB NOT NULL,
       <ImplementsInterfaceMethods>
         <InterfaceImpl Type="SemWeb.StaticSource" Member="StatementCount" cref="P:SemWeb.StaticSource.StatementCount" />
       </ImplementsInterfaceMethods>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="SupportsInsertCombined">
-      <MemberSignature Language="C#" Value="protected abstract bool SupportsInsertCombined { get; };" />
+      <MemberSignature Language="C#" Value="protected abstract bool SupportsInsertCombined { get; }" />
       <MemberType>Property</MemberType>
       <ReturnValue>
         <ReturnType>System.Boolean</ReturnType>
@@ -734,9 +858,12 @@ CREATE TABLE TABLEPREFIX_literals (id INT NOT NULL, value BLOB NOT NULL,
         <value>If true, the more efficient multiple-row INSERT syntax is used, e.g.: INSERT INTO table VALUES (row1a, row1b), (row2a, row2b), .... ;</value>
         <remarks>None.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="SupportsLimitClause">
-      <MemberSignature Language="C#" Value="protected virtual bool SupportsLimitClause { get; };" />
+      <MemberSignature Language="C#" Value="protected virtual bool SupportsLimitClause { get; }" />
       <MemberType>Property</MemberType>
       <ReturnValue>
         <ReturnType>System.Boolean</ReturnType>
@@ -746,9 +873,12 @@ CREATE TABLE TABLEPREFIX_literals (id INT NOT NULL, value BLOB NOT NULL,
         <value>To be added.</value>
         <remarks>To be added.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="SupportsSubquery">
-      <MemberSignature Language="C#" Value="protected abstract bool SupportsSubquery { get; };" />
+      <MemberSignature Language="C#" Value="protected abstract bool SupportsSubquery { get; }" />
       <MemberType>Property</MemberType>
       <ReturnValue>
         <ReturnType>System.Boolean</ReturnType>
@@ -758,9 +888,12 @@ CREATE TABLE TABLEPREFIX_literals (id INT NOT NULL, value BLOB NOT NULL,
         <value>To be added.</value>
         <remarks>To be added.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="SupportsViews">
-      <MemberSignature Language="C#" Value="protected virtual bool SupportsViews { get; };" />
+      <MemberSignature Language="C#" Value="protected virtual bool SupportsViews { get; }" />
       <MemberType>Property</MemberType>
       <ReturnValue>
         <ReturnType>System.Boolean</ReturnType>
@@ -770,6 +903,9 @@ CREATE TABLE TABLEPREFIX_literals (id INT NOT NULL, value BLOB NOT NULL,
         <value>To be added.</value>
         <remarks>To be added.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="System.IDisposable.Dispose">
       <MemberSignature Language="C#" Value="void IDisposable.Dispose ();" />
@@ -782,9 +918,12 @@ CREATE TABLE TABLEPREFIX_literals (id INT NOT NULL, value BLOB NOT NULL,
         <summary>To be added.</summary>
         <remarks>To be added.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="TableName">
-      <MemberSignature Language="C#" Value="protected string TableName { get; };" />
+      <MemberSignature Language="C#" Value="protected string TableName { get; }" />
       <MemberType>Property</MemberType>
       <ReturnValue>
         <ReturnType>System.String</ReturnType>
@@ -794,6 +933,9 @@ CREATE TABLE TABLEPREFIX_literals (id INT NOT NULL, value BLOB NOT NULL,
         <value>The table prefix passed to the constructor.</value>
         <remarks>This property is protected and read-only.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
   </Members>
 </Type>

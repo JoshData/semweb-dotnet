@@ -7,100 +7,104 @@
   <Copyright>See <a href="http://razor.occams.info/code/semweb">http://razor.occams.info/code/semweb</a>.</Copyright>
   <Types>
     <Namespace Name="SemWeb">
-      <Type Name="BNode" />
-      <Type Name="CanForgetBNodes" />
-      <Type Name="Entity" />
-      <Type Name="Literal" />
-      <Type Name="LiteralFilter" />
-      <Type Name="LiteralFilter+CompType" />
-      <Type Name="MemoryStore" />
-      <Type Name="ModifiableSource" />
-      <Type Name="N3Reader" />
-      <Type Name="N3Writer" />
-      <Type Name="N3Writer+Formats" />
-      <Type Name="NamespaceManager" />
-      <Type Name="ParserException" />
-      <Type Name="QueryableSource" />
-      <Type Name="RdfReader" />
-      <Type Name="RdfWriter" />
-      <Type Name="RdfXmlReader" />
-      <Type Name="RdfXmlWriter" />
-      <Type Name="RdfXmlWriter+Options" />
-      <Type Name="Resource" />
-      <Type Name="SelectableSource" />
-      <Type Name="SelectFilter" />
-      <Type Name="SelectResult" />
-      <Type Name="Statement" />
-      <Type Name="StatementSink" />
-      <Type Name="StatementSource" />
-      <Type Name="StaticSource" />
-      <Type Name="Store" />
-      <Type Name="Variable" />
+      <Type Name="BNode" Kind="Class" />
+      <Type Name="CanForgetBNodes" Kind="Interface" />
+      <Type Name="Entity" Kind="Class" />
+      <Type Name="Literal" Kind="Class" />
+      <Type Name="LiteralFilter" Kind="Class" />
+      <Type Name="LiteralFilter+CompType" Kind="Enumeration" />
+      <Type Name="MemoryStore" Kind="Class" />
+      <Type Name="ModifiableSource" Kind="Interface" />
+      <Type Name="N3Reader" Kind="Class" />
+      <Type Name="N3Writer" Kind="Class" />
+      <Type Name="N3Writer+Formats" Kind="Enumeration" />
+      <Type Name="NamespaceManager" Kind="Class" />
+      <Type Name="ParserException" Kind="Class" />
+      <Type Name="QueryableSource" Kind="Interface" />
+      <Type Name="RdfReader" Kind="Class" />
+      <Type Name="RdfWriter" Kind="Class" />
+      <Type Name="RdfXmlReader" Kind="Class" />
+      <Type Name="RdfXmlWriter" Kind="Class" />
+      <Type Name="RdfXmlWriter+Options" Kind="Class" />
+      <Type Name="Resource" Kind="Class" />
+      <Type Name="SelectableSource" Kind="Interface" />
+      <Type Name="SelectFilter" Kind="Structure" />
+      <Type Name="SelectResult" Kind="Class" />
+      <Type Name="Statement" Kind="Structure" />
+      <Type Name="StatementSink" Kind="Interface" />
+      <Type Name="StatementSource" Kind="Interface" />
+      <Type Name="StaticSource" Kind="Interface" />
+      <Type Name="Store" Kind="Class" />
+      <Type Name="Variable" Kind="Class" />
+      <Type Name="XsdDateTime" Kind="Class" />
     </Namespace>
     <Namespace Name="SemWeb.Algos">
-      <Type Name="Connectivity" />
-      <Type Name="Lean" />
-      <Type Name="MSG" />
-      <Type Name="MSG+Graph" />
-      <Type Name="SubgraphIterator" />
+      <Type Name="Connectivity" Kind="Class" />
+      <Type Name="Lean" Kind="Class" />
+      <Type Name="MSG" Kind="Class" />
+      <Type Name="MSG+Graph" Kind="Class" />
+      <Type Name="SubgraphIterator" Kind="Class" />
     </Namespace>
     <Namespace Name="SemWeb.Filters">
-      <Type Name="DateTimeCompareFilter" />
-      <Type Name="FilterSink" />
-      <Type Name="NumericCompareFilter" />
-      <Type Name="StringCompareFilter" />
-      <Type Name="StringContainsFilter" />
-      <Type Name="StringEndsWithFilter" />
-      <Type Name="StringStartsWithFilter" />
-      <Type Name="TimeSpanCompareFilter" />
+      <Type Name="DateTimeCompareFilter" Kind="Class" />
+      <Type Name="FilterSink" Kind="Class" />
+      <Type Name="NumericCompareFilter" Kind="Class" />
+      <Type Name="StringCompareFilter" Kind="Class" />
+      <Type Name="StringContainsFilter" Kind="Class" />
+      <Type Name="StringEndsWithFilter" Kind="Class" />
+      <Type Name="StringStartsWithFilter" Kind="Class" />
+      <Type Name="TimeSpanCompareFilter" Kind="Class" />
     </Namespace>
     <Namespace Name="SemWeb.Inference">
-      <Type Name="Euler" />
-      <Type Name="Proof" />
-      <Type Name="ProofStep" />
-      <Type Name="RdfRelation" />
-      <Type Name="RDFS" />
-      <Type Name="Reasoner" />
-      <Type Name="Rule" />
-      <Type Name="SimpleEntailment" />
+      <Type Name="Euler" Kind="Class" />
+      <Type Name="Proof" Kind="Class" />
+      <Type Name="ProofStep" Kind="Class" />
+      <Type Name="RdfRelation" Kind="Class" />
+      <Type Name="RDFS" Kind="Class" />
+      <Type Name="Reasoner" Kind="Class" />
+      <Type Name="Rule" Kind="Class" />
+      <Type Name="SimpleEntailment" Kind="Class" />
+    </Namespace>
+    <Namespace Name="SemWeb.IO">
+      <Type Name="GraphVizWriter" Kind="Class" />
     </Namespace>
     <Namespace Name="SemWeb.Query">
-      <Type Name="GraphMatch" />
-      <Type Name="MetaQueryResult" />
-      <Type Name="Query" />
-      <Type Name="QueryExecutionException" />
-      <Type Name="QueryFormatException" />
-      <Type Name="QueryOptions" />
-      <Type Name="QueryResultBuffer" />
-      <Type Name="QueryResultSink" />
-      <Type Name="RdfFunction" />
-      <Type Name="SparqlEngine" />
-      <Type Name="SparqlEngine+QueryType" />
-      <Type Name="SparqlProtocolServerHandler" />
-      <Type Name="SparqlXmlQuerySink" />
-      <Type Name="VariableBindings" />
+      <Type Name="GraphMatch" Kind="Class" />
+      <Type Name="MetaQueryResult" Kind="Structure" />
+      <Type Name="Query" Kind="Class" />
+      <Type Name="QueryExecutionException" Kind="Class" />
+      <Type Name="QueryFormatException" Kind="Class" />
+      <Type Name="QueryOptions" Kind="Structure" />
+      <Type Name="QueryResultBuffer" Kind="Class" />
+      <Type Name="QueryResultSink" Kind="Class" />
+      <Type Name="RdfFunction" Kind="Class" />
+      <Type Name="SparqlEngine" Kind="Class" />
+      <Type Name="SparqlEngine+QueryType" Kind="Enumeration" />
+      <Type Name="SparqlProtocolServerHandler" Kind="Class" />
+      <Type Name="SparqlXmlQuerySink" Kind="Class" />
+      <Type Name="VariableBindings" Kind="Class" />
     </Namespace>
     <Namespace Name="SemWeb.Remote">
-      <Type Name="SparqlHttpSource" />
-      <Type Name="SparqlSource" />
+      <Type Name="SparqlHttpSource" Kind="Class" />
+      <Type Name="SparqlSource" Kind="Interface" />
     </Namespace>
     <Namespace Name="SemWeb.Stores">
-      <Type Name="CachedSource" />
-      <Type Name="DebuggedSource" />
-      <Type Name="SimpleSourceWrapper" />
-      <Type Name="SQLStore" />
+      <Type Name="CachedSource" Kind="Class" />
+      <Type Name="DebuggedSource" Kind="Class" />
+      <Type Name="SimpleSourceWrapper" Kind="Class" />
+      <Type Name="SQLStore" Kind="Class" />
     </Namespace>
     <Namespace Name="SemWeb.Util">
-      <Type Name="DistinctStatementsSink" />
-      <Type Name="StatementList" />
-      <Type Name="StatementMap" />
+      <Type Name="DistinctStatementsSink" Kind="Class" />
+      <Type Name="StatementList" Kind="Class" />
+      <Type Name="StatementMap" Kind="Class" />
     </Namespace>
     <Namespace Name="SemWeb.Util.Bind">
-      <Type Name="Any" />
+      <Type Name="Any" Kind="Class" />
     </Namespace>
   </Types>
   <Assemblies>
-    <Assembly Name="SemWeb" Version="1.0.6.0">
+    <Assembly Name="SemWeb" Version="1.0.6.2">
       <Attributes>
         <Attribute>
           <AttributeName>System.Runtime.CompilerServices.RuntimeCompatibility(WrapNonExceptionThrows=true)</AttributeName>

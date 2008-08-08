@@ -3,6 +3,7 @@
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
     <AssemblyVersion>1.0.6.0</AssemblyVersion>
+    <AssemblyVersion>1.0.6.2</AssemblyVersion>
   </AssemblyInfo>
   <Base>
     <BaseTypeName>System.Object</BaseTypeName>
@@ -30,6 +31,9 @@
         <summary>The protected no-arg constructor used by derived classes.</summary>
         <remarks>None.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="Add">
       <MemberSignature Language="C#" Value="public abstract void Add (SemWeb.Statement statement);" />
@@ -45,9 +49,12 @@
         <summary>Writes a statement to the stream.</summary>
         <remarks>None.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="BaseUri">
-      <MemberSignature Language="C#" Value="public string BaseUri { set; get; };" />
+      <MemberSignature Language="C#" Value="public string BaseUri { set; get; }" />
       <MemberType>Property</MemberType>
       <ReturnValue>
         <ReturnType>System.String</ReturnType>
@@ -57,6 +64,9 @@
         <value>A string containing the base URI of the output document, or <see langword="null" /> if the output document base URI is unknown or not applicable.</value>
         <remarks>A writer may choose to abbreviate URIs in the output according to the base URI.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="Close">
       <MemberSignature Language="C#" Value="public virtual void Close ();" />
@@ -69,6 +79,9 @@
         <summary>Completes writing the data and closes the stream.</summary>
         <remarks>None.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="Create">
       <MemberSignature Language="C#" Value="public static SemWeb.RdfWriter Create (string type, System.IO.TextWriter output);" />
@@ -88,6 +101,9 @@
         <remarks>The possible values for <paramref name="type" /> are:
           <list type="table"><listheader><term><paramref name="type" /></term><description>Reader</description></listheader><item><term>"xml", "text/xml", "application/xml", "application/rdf+xml"</term><description><see cref="T:SemWeb.RdfXmlWriter" /></description></item><item><term>"n3", "text/n3", "text/rdf+n3", "application/n3"</term><description><see cref="T:SemWeb.N3Writer" /></description></item><item><term>"text/turtle", "application/turtle", "application/x-turtle"</term><description><see cref="T:SemWeb.N3Writer" /> configured for Turtle output</description></item></list></remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="Create">
       <MemberSignature Language="C#" Value="public static SemWeb.RdfWriter Create (string type, string file);" />
@@ -106,6 +122,9 @@
         <returns>A new RdfWriter.</returns>
         <remarks>The possible values for <paramref name="type" /> are listed in the Remarks section of <see cref="M:SemWeb.RdfWriter.Create(System.String,System.IO.TextWriter)" /></remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="GetResourceKey">
       <MemberSignature Language="C#" Value="protected object GetResourceKey (SemWeb.Resource resource);" />
@@ -122,9 +141,12 @@
         <returns>A resource key associated with the resource and this writer.</returns>
         <remarks>See <see cref="M:SemWeb.Store.GetResourceKey(SemWeb.Resource)" />.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="Namespaces">
-      <MemberSignature Language="C#" Value="public abstract SemWeb.NamespaceManager Namespaces { get; };" />
+      <MemberSignature Language="C#" Value="public abstract SemWeb.NamespaceManager Namespaces { get; }" />
       <MemberType>Property</MemberType>
       <ReturnValue>
         <ReturnType>SemWeb.NamespaceManager</ReturnType>
@@ -134,6 +156,9 @@
         <value>A NamespaceManager.</value>
         <remarks>For some parsers, it is necessary to give a prefix for all namespaces that occur in the data model being written before the writing begins.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="SemWeb.StatementSink.Add">
       <MemberSignature Language="C#" Value="bool StatementSink.Add (SemWeb.Statement statement);" />
@@ -150,6 +175,9 @@
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="SetResourceKey">
       <MemberSignature Language="C#" Value="protected void SetResourceKey (SemWeb.Resource resource, object value);" />
@@ -167,6 +195,9 @@
         <summary>See <see cref="M:SemWeb.Store.SetResourceKey(SemWeb.Resource)" />.</summary>
         <remarks>See <see cref="M:SemWeb.Store.SetResourceKey(SemWeb.Resource)" />.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="System.IDisposable.Dispose">
       <MemberSignature Language="C#" Value="void IDisposable.Dispose ();" />
@@ -179,6 +210,9 @@
         <summary>To be added.</summary>
         <remarks>To be added.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="Write">
       <MemberSignature Language="C#" Value="public virtual void Write (SemWeb.StatementSource source);" />
@@ -194,6 +228,9 @@
         <summary>Writes out the contents of the StatementSource.</summary>
         <remarks>None.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
   </Members>
 </Type>

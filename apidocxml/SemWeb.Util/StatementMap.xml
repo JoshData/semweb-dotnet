@@ -3,6 +3,7 @@
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
     <AssemblyVersion>1.0.6.0</AssemblyVersion>
+    <AssemblyVersion>1.0.6.2</AssemblyVersion>
   </AssemblyInfo>
   <Base>
     <BaseTypeName>System.Object</BaseTypeName>
@@ -26,6 +27,9 @@
         <summary>Creates a new instance of this class.</summary>
         <remarks>None.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName=".ctor">
       <MemberSignature Language="C#" Value="public StatementMap (int capacity, float loadFactor);" />
@@ -40,6 +44,9 @@
         <summary>Creates a new instance of this class specifying a capacity and load factor.</summary>
         <remarks>None.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="Clear">
       <MemberSignature Language="C#" Value="public virtual void Clear ();" />
@@ -52,6 +59,9 @@
         <summary>Clears the contents of the StatementMap.</summary>
         <remarks>None.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="ContainsKey">
       <MemberSignature Language="C#" Value="public bool ContainsKey (SemWeb.Statement key);" />
@@ -68,9 +78,12 @@
         <returns>Whether the statement is a key that has been added to the StatementMap.</returns>
         <remarks>None.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="Count">
-      <MemberSignature Language="C#" Value="public int Count { get; };" />
+      <MemberSignature Language="C#" Value="public int Count { get; }" />
       <MemberType>Property</MemberType>
       <ReturnValue>
         <ReturnType>System.Int32</ReturnType>
@@ -80,9 +93,12 @@
         <value>The number of key-value pairs in the StatementMap.</value>
         <remarks>None.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="Item">
-      <MemberSignature Language="C#" Value="public object this[SemWeb.Statement key] { set; get; };" />
+      <MemberSignature Language="C#" Value="public object this[SemWeb.Statement key] { set; get; }" />
       <MemberType>Property</MemberType>
       <ReturnValue>
         <ReturnType>System.Object</ReturnType>
@@ -96,9 +112,12 @@
         <value>The corresponding value for the key.</value>
         <remarks>None.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="Keys">
-      <MemberSignature Language="C#" Value="public SemWeb.Util.StatementList Keys { get; };" />
+      <MemberSignature Language="C#" Value="public SemWeb.Util.StatementList Keys { get; }" />
       <MemberType>Property</MemberType>
       <ReturnValue>
         <ReturnType>SemWeb.Util.StatementList</ReturnType>
@@ -108,6 +127,9 @@
         <value>A StatementList containing the keys in the StatementMap.</value>
         <remarks>The returned object may not be a new instance; that is, the same instance may be returned by future calls to Keys, and so it should not be modified by the caller.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="Remove">
       <MemberSignature Language="C#" Value="public virtual void Remove (SemWeb.Statement key);" />
@@ -123,9 +145,12 @@
         <summary>Removes a mapping from the StatementMap using the key of the mapping.</summary>
         <remarks>None.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="Values">
-      <MemberSignature Language="C#" Value="public System.Collections.IEnumerable Values { get; };" />
+      <MemberSignature Language="C#" Value="public System.Collections.IEnumerable Values { get; }" />
       <MemberType>Property</MemberType>
       <ReturnValue>
         <ReturnType>System.Collections.IEnumerable</ReturnType>
@@ -135,6 +160,9 @@
         <value>A collection of all of the values in the StatementMap.</value>
         <remarks>The returned object may not be a new instance; that is, the same instance may be returned by future calls to Values, and so it should not be modified by the caller.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
   </Members>
 </Type>

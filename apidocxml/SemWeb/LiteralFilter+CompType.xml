@@ -3,6 +3,7 @@
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
     <AssemblyVersion>1.0.6.0</AssemblyVersion>
+    <AssemblyVersion>1.0.6.2</AssemblyVersion>
   </AssemblyInfo>
   <Base>
     <BaseTypeName>System.Enum</BaseTypeName>
@@ -21,6 +22,9 @@
       <Docs>
         <summary>Equal</summary>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="GE">
       <MemberSignature Language="C#" Value="GE" />
@@ -31,6 +35,9 @@
       <Docs>
         <summary>Greater than or equal</summary>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="GT">
       <MemberSignature Language="C#" Value="GT" />
@@ -41,6 +48,9 @@
       <Docs>
         <summary>Greater than</summary>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="LE">
       <MemberSignature Language="C#" Value="LE" />
@@ -51,6 +61,9 @@
       <Docs>
         <summary>Less than or equal</summary>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="LT">
       <MemberSignature Language="C#" Value="LT" />
@@ -61,6 +74,9 @@
       <Docs>
         <summary>Less than</summary>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="NE">
       <MemberSignature Language="C#" Value="NE" />
@@ -71,6 +87,9 @@
       <Docs>
         <summary>Not equal</summary>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
   </Members>
 </Type>

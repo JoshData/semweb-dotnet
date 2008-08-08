@@ -3,6 +3,7 @@
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
     <AssemblyVersion>1.0.6.0</AssemblyVersion>
+    <AssemblyVersion>1.0.6.2</AssemblyVersion>
   </AssemblyInfo>
   <Base>
     <BaseTypeName>System.Object</BaseTypeName>
@@ -27,13 +28,16 @@
   </Docs>
   <Members>
     <Member MemberName=".ctor">
-      <MemberSignature Language="C#" Value="protected RdfReader ();" />
+      <MemberSignature Language="C#" Value="public RdfReader ();" />
       <MemberType>Constructor</MemberType>
       <Parameters />
       <Docs>
         <summary>The protected no-arg constructor used by derived classes.</summary>
         <remarks>None.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="AddVariable">
       <MemberSignature Language="C#" Value="protected void AddVariable (SemWeb.Variable variable);" />
@@ -49,9 +53,12 @@
         <summary>Adds a Variable to the Variables collection.</summary>
         <remarks>Used by RdfReader implementations to add a variable into the Variables collection.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="BaseUri">
-      <MemberSignature Language="C#" Value="public string BaseUri { set; get; };" />
+      <MemberSignature Language="C#" Value="public string BaseUri { set; get; }" />
       <MemberType>Property</MemberType>
       <ReturnValue>
         <ReturnType>System.String</ReturnType>
@@ -61,6 +68,9 @@
         <value>The base URI for resolving relative URIs found in the stream.  May be, and is initially, <see langword="null" />.  </value>
         <remarks>When this property is <see langword="null" />, the reader will not correctly resolve relative URIs in the stream.  Always set this property before beginning reading when the base URI of the document is known.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="Create">
       <MemberSignature Language="C#" Value="public static SemWeb.RdfReader Create (string type, System.IO.Stream source);" />
@@ -101,6 +111,9 @@
         </returns>
         <remarks>None.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="Create">
       <MemberSignature Language="C#" Value="public static SemWeb.RdfReader Create (string type, string source);" />
@@ -141,6 +154,9 @@
         </returns>
         <remarks>None.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="Dispose">
       <MemberSignature Language="C#" Value="protected virtual void Dispose ();" />
@@ -156,6 +172,9 @@
       <ImplementsInterfaceMethods>
         <InterfaceImpl Type="System.IDisposable" Member="Dispose" cref="M:System.IDisposable.Dispose" />
       </ImplementsInterfaceMethods>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="LoadFromUri">
       <MemberSignature Language="C#" Value="public static SemWeb.RdfReader LoadFromUri (Uri webresource);" />
@@ -176,9 +195,12 @@
           <para>If the format could not be determined, a <see cref="T:System.InvalidOperationException" /> is thrown.</para>
         </remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="Meta">
-      <MemberSignature Language="C#" Value="public SemWeb.Entity Meta { set; get; };" />
+      <MemberSignature Language="C#" Value="public SemWeb.Entity Meta { set; get; }" />
       <MemberType>Property</MemberType>
       <ReturnValue>
         <ReturnType>SemWeb.Entity</ReturnType>
@@ -191,9 +213,12 @@
           <para>The default value of this property is <see cref="P:SemWeb.Statement.DefaultMeta" />, which is also the meta value used in the three-arg constructor for <see cref="T:SemWeb.Statement" />.  If the meta field is not important for the application, this field should be left unchanged.</para>
         </remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="Namespaces">
-      <MemberSignature Language="C#" Value="public SemWeb.NamespaceManager Namespaces { get; };" />
+      <MemberSignature Language="C#" Value="public SemWeb.NamespaceManager Namespaces { get; }" />
       <MemberType>Property</MemberType>
       <ReturnValue>
         <ReturnType>SemWeb.NamespaceManager</ReturnType>
@@ -203,6 +228,9 @@
         <value>A NamespaceManager that contains all of the namespace-prefix mappings used in the input stream.</value>
         <remarks>None.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="OnWarning">
       <MemberSignature Language="C#" Value="protected void OnWarning (string message);" />
@@ -218,9 +246,12 @@
         <summary>Implementors of RdfReader may call this method to indicate a parsing warning.</summary>
         <remarks>This is not currently used for anything.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="ReuseEntities">
-      <MemberSignature Language="C#" Value="public bool ReuseEntities { set; get; };" />
+      <MemberSignature Language="C#" Value="public bool ReuseEntities { set; get; }" />
       <MemberType>Property</MemberType>
       <ReturnValue>
         <ReturnType>System.Boolean</ReturnType>
@@ -230,6 +261,9 @@
         <value>If false (the default), the reader may create a new Entity object each time an entity is encoutered in the stream.  If true, the reader must return the same Entity object each time it encounters a reference to the same entity.</value>
         <remarks>Setting this property to true may slow down the performance of the reader, as it may need to consult a hashtable each time a URI is read mapping the URI to an Entity it has previously created.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="Select">
       <MemberSignature Language="C#" Value="public abstract void Select (SemWeb.StatementSink sink);" />
@@ -248,9 +282,12 @@
       <ImplementsInterfaceMethods>
         <InterfaceImpl Type="SemWeb.StatementSource" Member="Select" cref="M:SemWeb.StatementSource.Select(SemWeb.StatementSink)" />
       </ImplementsInterfaceMethods>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="SemWeb.StatementSource.Distinct">
-      <MemberSignature Language="C#" Value="bool SemWeb.StatementSource.Distinct { get; };" />
+      <MemberSignature Language="C#" Value="bool SemWeb.StatementSource.Distinct { get; }" />
       <MemberType>Property</MemberType>
       <ReturnValue>
         <ReturnType>System.Boolean</ReturnType>
@@ -260,6 +297,9 @@
         <value>To be added.</value>
         <remarks>To be added.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="System.IDisposable.Dispose">
       <MemberSignature Language="C#" Value="void IDisposable.Dispose ();" />
@@ -272,9 +312,45 @@
         <summary>To be added.</summary>
         <remarks>To be added.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
+    </Member>
+    <Member MemberName="ValidateLiteral">
+      <MemberSignature Language="C#" Value="protected void ValidateLiteral (SemWeb.Literal literal);" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="literal" Type="SemWeb.Literal" />
+      </Parameters>
+      <Docs>
+        <param name="literal">To be added.</param>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="ValidateLiterals">
+      <MemberSignature Language="C#" Value="public bool ValidateLiterals { set; get; }" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Boolean</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+        <value>To be added.</value>
+        <remarks>To be added.</remarks>
+      </Docs>
     </Member>
     <Member MemberName="Variables">
-      <MemberSignature Language="C#" Value="public System.Collections.Generic.ICollection&lt;SemWeb.Variable&gt; Variables { get; };" />
+      <MemberSignature Language="C#" Value="public System.Collections.Generic.ICollection&lt;SemWeb.Variable&gt; Variables { get; }" />
       <MemberType>Property</MemberType>
       <ReturnValue>
         <ReturnType>System.Collections.Generic.ICollection&lt;SemWeb.Variable&gt;</ReturnType>
@@ -284,9 +360,12 @@
         <value>A list of <see cref="T:SemWeb.Variable" />s found in the stream.</value>
         <remarks>Not all readers support variables.  (N3-formatted RDF does, but XML formatted RDF doesn't.)</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="Warnings">
-      <MemberSignature Language="C#" Value="public System.Collections.Generic.ICollection&lt;string&gt; Warnings { get; };" />
+      <MemberSignature Language="C#" Value="public System.Collections.Generic.ICollection&lt;string&gt; Warnings { get; }" />
       <MemberType>Property</MemberType>
       <ReturnValue>
         <ReturnType>System.Collections.Generic.ICollection&lt;System.String&gt;</ReturnType>
@@ -296,6 +375,9 @@
         <value>A list of warnings generated while parsing the input stream.  Each element of the list is a string.</value>
         <remarks>None.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
   </Members>
 </Type>

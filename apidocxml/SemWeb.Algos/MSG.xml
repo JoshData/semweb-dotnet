@@ -3,6 +3,7 @@
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
     <AssemblyVersion>1.0.6.0</AssemblyVersion>
+    <AssemblyVersion>1.0.6.2</AssemblyVersion>
   </AssemblyInfo>
   <Base>
     <BaseTypeName>System.Object</BaseTypeName>
@@ -21,6 +22,9 @@
         <summary>To be added.</summary>
         <remarks>To be added.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="FindMSG">
       <MemberSignature Language="C#" Value="public static SemWeb.MemoryStore FindMSG (SemWeb.SelectableSource store, SemWeb.Entity node);" />
@@ -39,6 +43,9 @@
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="FindMSG">
       <MemberSignature Language="C#" Value="public static void FindMSG (SemWeb.SelectableSource store, SemWeb.Entity node, SemWeb.StatementSink msg);" />
@@ -58,6 +65,9 @@
         <summary>To be added.</summary>
         <remarks>To be added.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="FindMSGs">
       <MemberSignature Language="C#" Value="public static SemWeb.Algos.MSG.Graph[] FindMSGs (SemWeb.SelectableSource source, bool loadIntoMemory);" />
@@ -76,6 +86,9 @@
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
   </Members>
 </Type>

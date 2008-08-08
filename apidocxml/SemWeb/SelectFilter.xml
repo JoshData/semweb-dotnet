@@ -3,6 +3,7 @@
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
     <AssemblyVersion>1.0.6.0</AssemblyVersion>
+    <AssemblyVersion>1.0.6.2</AssemblyVersion>
   </AssemblyInfo>
   <Base>
     <BaseTypeName>System.ValueType</BaseTypeName>
@@ -28,6 +29,9 @@
         <summary>Creates a new SelectFilter which selects for statements matching the template.</summary>
         <remarks>None.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName=".ctor">
       <MemberSignature Language="C#" Value="public SelectFilter (SemWeb.Entity[] subjects, SemWeb.Entity[] predicates, SemWeb.Resource[] objects, SemWeb.Entity[] metas);" />
@@ -50,6 +54,9 @@
         <summary>Creates a SelectFilter to select for matching statements.</summary>
         <remarks>None.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="All">
       <MemberSignature Language="C#" Value="public static SemWeb.SelectFilter All;" />
@@ -61,6 +68,9 @@
         <summary>A SelectFilter than selects for all statements.</summary>
         <remarks>This is equivalent to <see cref="F:SemWeb.Statement.All" />.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="FromGraph">
       <MemberSignature Language="C#" Value="public static SemWeb.SelectFilter[] FromGraph (SemWeb.Statement[] graph);" />
@@ -77,6 +87,9 @@
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="GetEnumerator">
       <MemberSignature Language="C#" Value="public System.Collections.IEnumerator GetEnumerator ();" />
@@ -93,6 +106,9 @@
       <ImplementsInterfaceMethods>
         <InterfaceImpl Type="System.Collections.IEnumerable" Member="GetEnumerator" cref="M:System.Collections.IEnumerable.GetEnumerator" />
       </ImplementsInterfaceMethods>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="Limit">
       <MemberSignature Language="C#" Value="public int Limit;" />
@@ -104,6 +120,9 @@
         <summary>Maximum number of statements to return.</summary>
         <remarks>Stores are free to ignore the limit provided.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="LiteralFilters">
       <MemberSignature Language="C#" Value="public SemWeb.LiteralFilter[] LiteralFilters;" />
@@ -115,6 +134,9 @@
         <summary>An array of filters that the object value of statements must match.</summary>
         <remarks>An array of filters that the object value of any matching statements must match.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="Metas">
       <MemberSignature Language="C#" Value="public SemWeb.Entity[] Metas;" />
@@ -127,6 +149,9 @@
         <remarks>
           <see langword="null" /> to match any entity, or an array of entities any of which match the filter.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="Objects">
       <MemberSignature Language="C#" Value="public SemWeb.Resource[] Objects;" />
@@ -139,6 +164,9 @@
         <remarks>
           <see langword="null" /> to match any resource, or an array of resources any of which match the filter.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="op_Equality">
       <MemberSignature Language="C#" Value="public static bool op_Equality (SemWeb.SelectFilter a, SemWeb.SelectFilter b);" />
@@ -157,6 +185,9 @@
         <returns>True if the two SelectFilters have equivalent values for all fields.</returns>
         <remarks>None.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="op_Inequality">
       <MemberSignature Language="C#" Value="public static bool op_Inequality (SemWeb.SelectFilter a, SemWeb.SelectFilter b);" />
@@ -175,6 +206,9 @@
         <returns>False if the two SelectFilters have equivalent values for all fields.</returns>
         <remarks>None.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="Predicates">
       <MemberSignature Language="C#" Value="public SemWeb.Entity[] Predicates;" />
@@ -187,6 +221,9 @@
         <remarks>
           <see langword="null" /> to match any entity, or an array of entities any of which match the filter.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="Subjects">
       <MemberSignature Language="C#" Value="public SemWeb.Entity[] Subjects;" />
@@ -199,6 +236,9 @@
         <remarks>
           <see langword="null" /> to match any entity, or an array of entities any of which match the filter.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
   </Members>
 </Type>

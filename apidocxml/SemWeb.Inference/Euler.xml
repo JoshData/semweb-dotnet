@@ -3,6 +3,7 @@
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
     <AssemblyVersion>1.0.6.0</AssemblyVersion>
+    <AssemblyVersion>1.0.6.2</AssemblyVersion>
   </AssemblyInfo>
   <Base>
     <BaseTypeName>SemWeb.Inference.Reasoner</BaseTypeName>
@@ -110,6 +111,9 @@ public class EulerTest {
         <summary>Constructs a new Euler inference engine with the inference rules provided in the given statement stream.</summary>
         <remarks>The source of inference statements usually comes from an N3 file with rules of the form "{ . . . antecedent statements . . . } =&gt; { . . . consequent statements . . . }", with variables such as "?var1" used in both parts. The "=&gt;" predicate is shorthand for the URI http://www.w3.org/2000/10/swap/log#implies.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="Prove">
       <MemberSignature Language="C#" Value="public SemWeb.Inference.Proof[] Prove (SemWeb.SelectableSource world, SemWeb.Statement[] goal);" />
@@ -128,6 +132,9 @@ public class EulerTest {
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
   </Members>
 </Type>

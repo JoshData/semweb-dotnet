@@ -39,6 +39,9 @@ query.Run(datamodel, Console.Out).  </code>
         <summary>Initialized the SPARQL query from a TextReader.</summary>
         <remarks>None.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName=".ctor">
       <MemberSignature Language="C#" Value="public SparqlEngine (string query);" />
@@ -51,6 +54,9 @@ query.Run(datamodel, Console.Out).  </code>
         <summary>Initializes the SPARQL query from a string.</summary>
         <remarks>None.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="AddExternalFunction">
       <MemberSignature Language="C#" Value="public void AddExternalFunction (SemWeb.Query.RdfFunction function);" />
@@ -66,6 +72,9 @@ query.Run(datamodel, Console.Out).  </code>
         <summary>Registers an external function that can be used in FILTER clauses.</summary>
         <remarks>None.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="AllowPersistBNodes">
       <MemberSignature Language="C#" Value="public bool AllowPersistBNodes;" />
@@ -77,6 +86,9 @@ query.Run(datamodel, Console.Out).  </code>
         <summary>To be added.</summary>
         <remarks>To be added.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="Ask">
       <MemberSignature Language="C#" Value="public bool Ask (SemWeb.SelectableSource source);" />
@@ -93,6 +105,9 @@ query.Run(datamodel, Console.Out).  </code>
         <returns>A boolean value giving the result of the ASK query.</returns>
         <remarks>None.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="Ask">
       <MemberSignature Language="C#" Value="public void Ask (SemWeb.SelectableSource source, System.IO.TextWriter output);" />
@@ -110,6 +125,9 @@ query.Run(datamodel, Console.Out).  </code>
         <summary>Executes an ASK query on the given data source and outputs the result of the query in the SPARQL results format to a TextWriter.</summary>
         <remarks>This method can also be called through <see cref="M:SemWeb.Query.Query.Run(SemWeb.SelectableSource,System.IO.TextWriter)" />.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="Construct">
       <MemberSignature Language="C#" Value="public void Construct (SemWeb.SelectableSource source, SemWeb.StatementSink sink);" />
@@ -127,6 +145,9 @@ query.Run(datamodel, Console.Out).  </code>
         <summary>Executes a CONSTRUCT query on the given data source and sends the constructed statements to a StatementSink.</summary>
         <remarks>None.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="Construct">
       <MemberSignature Language="C#" Value="public void Construct (SemWeb.SelectableSource source, System.IO.TextWriter output);" />
@@ -144,6 +165,9 @@ query.Run(datamodel, Console.Out).  </code>
         <summary>Executes a CONSTRUCT query on the given data source and outputs the result of the query in the SPARQL results format to a TextWriter.</summary>
         <remarks>This method can also be called through <see cref="M:SemWeb.Query.Query.Run(SemWeb.SelectableSource,System.IO.TextWriter)" />.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="Describe">
       <MemberSignature Language="C#" Value="public void Describe (SemWeb.SelectableSource source, SemWeb.StatementSink sink);" />
@@ -161,6 +185,9 @@ query.Run(datamodel, Console.Out).  </code>
         <summary>Executes a DESCRIBE query on the given data source and sends the constructed statements to a StatementSink.</summary>
         <remarks>None.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="Describe">
       <MemberSignature Language="C#" Value="public void Describe (SemWeb.SelectableSource source, System.IO.TextWriter output);" />
@@ -178,6 +205,9 @@ query.Run(datamodel, Console.Out).  </code>
         <summary>Executes a DESCRIBE query on the given data source and outputs the result of the query in the SPARQL results format to a TextWriter.</summary>
         <remarks>This method can also be called through <see cref="M:SemWeb.Query.Query.Run(SemWeb.SelectableSource,System.IO.TextWriter)" />.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="GetQueryPrefixes">
       <MemberSignature Language="C#" Value="public SemWeb.NamespaceManager GetQueryPrefixes ();" />
@@ -191,6 +221,9 @@ query.Run(datamodel, Console.Out).  </code>
         <returns>A NamespaceManager.</returns>
         <remarks>None.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="Select">
       <MemberSignature Language="C#" Value="public void Select (SemWeb.SelectableSource source, SemWeb.Query.QueryResultSink sink);" />
@@ -208,6 +241,9 @@ query.Run(datamodel, Console.Out).  </code>
         <summary>Executes a SELECT query on the given data source and sends the resulting variable bindings to a QueryResultSink.</summary>
         <remarks>None.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="Select">
       <MemberSignature Language="C#" Value="public void Select (SemWeb.SelectableSource source, System.IO.TextWriter output);" />
@@ -225,9 +261,12 @@ query.Run(datamodel, Console.Out).  </code>
         <summary>Executes a SELECT query on the given data source and outputs the result of the query in the SPARQL results format to a TextWriter.</summary>
         <remarks>This method can also be called through <see cref="M:SemWeb.Query.Query.Run(SemWeb.SelectableSource,System.IO.TextWriter)" />.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="Type">
-      <MemberSignature Language="C#" Value="public SemWeb.Query.SparqlEngine.QueryType Type { get; };" />
+      <MemberSignature Language="C#" Value="public SemWeb.Query.SparqlEngine.QueryType Type { get; }" />
       <MemberType>Property</MemberType>
       <ReturnValue>
         <ReturnType>SemWeb.Query.SparqlEngine+QueryType</ReturnType>
@@ -237,6 +276,9 @@ query.Run(datamodel, Console.Out).  </code>
         <value>The type of the query: SELECT, DESCRIBE, CONSTRUCT, or ASK.</value>
         <remarks>None.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
   </Members>
 </Type>

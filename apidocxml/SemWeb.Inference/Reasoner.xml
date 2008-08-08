@@ -3,6 +3,7 @@
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
     <AssemblyVersion>1.0.6.0</AssemblyVersion>
+    <AssemblyVersion>1.0.6.2</AssemblyVersion>
   </AssemblyInfo>
   <Base>
     <BaseTypeName>System.Object</BaseTypeName>
@@ -21,9 +22,12 @@
         <summary>To be added.</summary>
         <remarks>To be added.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="Distinct">
-      <MemberSignature Language="C#" Value="public abstract bool Distinct { get; };" />
+      <MemberSignature Language="C#" Value="public abstract bool Distinct { get; }" />
       <MemberType>Property</MemberType>
       <ReturnValue>
         <ReturnType>System.Boolean</ReturnType>
@@ -33,6 +37,9 @@
         <value>To be added.</value>
         <remarks>To be added.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="MetaQuery">
       <MemberSignature Language="C#" Value="public abstract SemWeb.Query.MetaQueryResult MetaQuery (SemWeb.Statement[] graph, SemWeb.Query.QueryOptions options, SemWeb.SelectableSource targetModel);" />
@@ -53,6 +60,9 @@
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="Query">
       <MemberSignature Language="C#" Value="public abstract void Query (SemWeb.Statement[] graph, SemWeb.Query.QueryOptions options, SemWeb.SelectableSource targetModel, SemWeb.Query.QueryResultSink result);" />
@@ -74,6 +84,9 @@
         <summary>To be added.</summary>
         <remarks>To be added.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="Select">
       <MemberSignature Language="C#" Value="public abstract void Select (SemWeb.SelectFilter filter, SemWeb.SelectableSource targetModel, SemWeb.StatementSink sink);" />
@@ -93,6 +106,9 @@
         <summary>To be added.</summary>
         <remarks>To be added.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="Select">
       <MemberSignature Language="C#" Value="public void Select (SemWeb.Statement template, SemWeb.SelectableSource targetModel, SemWeb.StatementSink sink);" />
@@ -112,6 +128,9 @@
         <summary>To be added.</summary>
         <remarks>To be added.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
   </Members>
 </Type>

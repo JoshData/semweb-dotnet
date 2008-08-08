@@ -3,6 +3,7 @@
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
     <AssemblyVersion>1.0.6.0</AssemblyVersion>
+    <AssemblyVersion>1.0.6.2</AssemblyVersion>
   </AssemblyInfo>
   <Base>
     <BaseTypeName>SemWeb.Store</BaseTypeName>
@@ -64,6 +65,9 @@ foreach (Resource res in store.SelectObjects(othersite, dctitle)) {
         <summary>Creates a new empty MemoryStore.</summary>
         <remarks>None.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName=".ctor">
       <MemberSignature Language="C#" Value="public MemoryStore (SemWeb.Statement[] statements);" />
@@ -76,6 +80,9 @@ foreach (Resource res in store.SelectObjects(othersite, dctitle)) {
         <summary>Creates a MemoryStore initialized with the given array of statements.</summary>
         <remarks>The statements in the array are added to the MemoryStore on creation.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName=".ctor">
       <MemberSignature Language="C#" Value="public MemoryStore (SemWeb.StatementSource source);" />
@@ -88,9 +95,12 @@ foreach (Resource res in store.SelectObjects(othersite, dctitle)) {
         <summary>Creates a new MemoryStore and reads the data from a StatementSource, which might be a <see cref="T:SemWeb.RdfReader" />, for instance.</summary>
         <remarks>None.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="Item">
-      <MemberSignature Language="C#" Value="public SemWeb.Statement this[int index] { get; };" />
+      <MemberSignature Language="C#" Value="public SemWeb.Statement this[int index] { get; }" />
       <MemberType>Property</MemberType>
       <ReturnValue>
         <ReturnType>SemWeb.Statement</ReturnType>
@@ -104,6 +114,9 @@ foreach (Resource res in store.SelectObjects(othersite, dctitle)) {
         <value>A <see cref="T:SemWeb.Statement" />.</value>
         <remarks>None.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="System.Collections.Generic.IEnumerable&lt;SemWeb.Statement&gt;.GetEnumerator">
       <MemberSignature Language="C#" Value="System.Collections.Generic.IEnumerator&lt;SemWeb.Statement&gt; IEnumerable&lt;Statement&gt;.GetEnumerator ();" />
@@ -117,6 +130,9 @@ foreach (Resource res in store.SelectObjects(othersite, dctitle)) {
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="System.Collections.IEnumerable.GetEnumerator">
       <MemberSignature Language="C#" Value="System.Collections.IEnumerator IEnumerable.GetEnumerator ();" />
@@ -130,6 +146,9 @@ foreach (Resource res in store.SelectObjects(othersite, dctitle)) {
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="ToArray">
       <MemberSignature Language="C#" Value="public SemWeb.Statement[] ToArray ();" />
@@ -143,6 +162,9 @@ foreach (Resource res in store.SelectObjects(othersite, dctitle)) {
         <returns>An array of Statements that make up the contents of the store.</returns>
         <remarks>None.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
   </Members>
   <Attributes>

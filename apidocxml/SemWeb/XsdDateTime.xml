@@ -3,6 +3,7 @@
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
     <AssemblyVersion>1.0.6.1</AssemblyVersion>
+    <AssemblyVersion>1.0.6.2</AssemblyVersion>
   </AssemblyInfo>
   <Base>
     <BaseTypeName>System.Object</BaseTypeName>
@@ -10,7 +11,7 @@
   <Interfaces />
   <Docs>
     <summary>Represents an XSD dateTime, date, or time.</summary>
-    <remarks>This class is returned by <see href="M:SemWeb.Literal.ParseValue()"/> for xsd:dateTime, xsd:date, and xsd:time values. Use the HasDate and HasTime fields to determine which data type the value came from.</remarks>
+    <remarks>This class is returned by <see href="M:SemWeb.Literal.ParseValue()" /> for xsd:dateTime, xsd:date, and xsd:time values. Use the HasDate and HasTime fields to determine which data type the value came from.</remarks>
   </Docs>
   <Members>
     <Member MemberName=".ctor">
@@ -34,6 +35,9 @@
         <summary>Creates a new instance of XsdDateTime.</summary>
         <remarks>None.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="Date">
       <MemberSignature Language="C#" Value="public readonly DateTime Date;" />
@@ -45,6 +49,9 @@
         <summary>A date, if present in the value.</summary>
         <remarks>This field is only applicable if HasDate is true. Only the date portion of the DateTime value is used.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="HasDate">
       <MemberSignature Language="C#" Value="public readonly bool HasDate;" />
@@ -56,6 +63,9 @@
         <summary>Indicates whether a date is present in the value.</summary>
         <remarks>None.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="HasTime">
       <MemberSignature Language="C#" Value="public readonly bool HasTime;" />
@@ -67,6 +77,9 @@
         <summary>Indicates whether a time is present in the value.</summary>
         <remarks>None.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="HasTimeZoneOffset">
       <MemberSignature Language="C#" Value="public readonly bool HasTimeZoneOffset;" />
@@ -78,6 +91,9 @@
         <summary>Indicates whether a time zone offset is present in the value. If not, the time is a local time. If so, the TimeZoneOffset gives the offset of the time from UTC.</summary>
         <remarks>None.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="Time">
       <MemberSignature Language="C#" Value="public readonly TimeSpan Time;" />
@@ -89,6 +105,9 @@
         <summary>A time, if present in the value.</summary>
         <remarks>This field is only applicable if HasTime is true.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="TimeZoneOffset">
       <MemberSignature Language="C#" Value="public readonly TimeSpan TimeZoneOffset;" />
@@ -100,6 +119,9 @@
         <summary>An offset from UTC, if time zone information is present in the value.</summary>
         <remarks>This field is only applicable if HasTimeZoneOffset is true.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
   </Members>
 </Type>

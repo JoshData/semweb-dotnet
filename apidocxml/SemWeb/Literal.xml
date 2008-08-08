@@ -3,6 +3,7 @@
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
     <AssemblyVersion>1.0.6.1</AssemblyVersion>
+    <AssemblyVersion>1.0.6.2</AssemblyVersion>
   </AssemblyInfo>
   <Base>
     <BaseTypeName>SemWeb.Resource</BaseTypeName>
@@ -38,6 +39,9 @@ Console.WriteLine(thing3.DataType);</code>
         <summary>Creates a new Literal with the given string value.</summary>
         <remarks>None.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName=".ctor">
       <MemberSignature Language="C#" Value="public Literal (string value, string language, string dataType);" />
@@ -54,9 +58,12 @@ Console.WriteLine(thing3.DataType);</code>
         <summary>Creates a new Literal with the given value, language, and datatype.</summary>
         <remarks>A language and datatype cannot both be specified, following to the RDF standard.  An exception will be thrown if both are given.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="DataType">
-      <MemberSignature Language="C#" Value="public string DataType { get; };" />
+      <MemberSignature Language="C#" Value="public string DataType { get; }" />
       <MemberType>Property</MemberType>
       <ReturnValue>
         <ReturnType>System.String</ReturnType>
@@ -66,6 +73,9 @@ Console.WriteLine(thing3.DataType);</code>
         <value>The datatype URI of the literal, or <see langword="null" />.</value>
         <remarks>None.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="FromValue">
       <MemberSignature Language="C#" Value="public static SemWeb.Literal FromValue (bool value);" />
@@ -82,6 +92,9 @@ Console.WriteLine(thing3.DataType);</code>
         <returns>A new Literal object with the indicated XSD datatype and a value in the lexical space of that datatype according to the parameters given.</returns>
         <remarks>None.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="FromValue">
       <MemberSignature Language="C#" Value="public static SemWeb.Literal FromValue (byte value);" />
@@ -98,6 +111,9 @@ Console.WriteLine(thing3.DataType);</code>
         <returns>A new Literal object with the indicated XSD datatype and a value in the lexical space of that datatype according to the parameters given.</returns>
         <remarks>None.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="FromValue">
       <MemberSignature Language="C#" Value="public static SemWeb.Literal FromValue (DateTime value);" />
@@ -114,6 +130,9 @@ Console.WriteLine(thing3.DataType);</code>
         <returns>A new Literal object with the indicated XSD datatype and a value in the lexical space of that datatype according to the parameters given.</returns>
         <remarks>None.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="FromValue">
       <MemberSignature Language="C#" Value="public static SemWeb.Literal FromValue (decimal value);" />
@@ -130,6 +149,9 @@ Console.WriteLine(thing3.DataType);</code>
         <returns>A new Literal object with the indicated XSD datatype and a value in the lexical space of that datatype according to the parameters given.</returns>
         <remarks>None.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="FromValue">
       <MemberSignature Language="C#" Value="public static SemWeb.Literal FromValue (double value);" />
@@ -146,6 +168,9 @@ Console.WriteLine(thing3.DataType);</code>
         <returns>A new Literal object with the indicated XSD datatype and a value in the lexical space of that datatype according to the parameters given.</returns>
         <remarks>None.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="FromValue">
       <MemberSignature Language="C#" Value="public static SemWeb.Literal FromValue (short value);" />
@@ -162,6 +187,9 @@ Console.WriteLine(thing3.DataType);</code>
         <returns>A new Literal object with the indicated XSD datatype and a value in the lexical space of that datatype according to the parameters given.</returns>
         <remarks>None.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="FromValue">
       <MemberSignature Language="C#" Value="public static SemWeb.Literal FromValue (int value);" />
@@ -178,6 +206,9 @@ Console.WriteLine(thing3.DataType);</code>
         <returns>A new Literal object with the indicated XSD datatype and a value in the lexical space of that datatype according to the parameters given.</returns>
         <remarks>None.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="FromValue">
       <MemberSignature Language="C#" Value="public static SemWeb.Literal FromValue (long value);" />
@@ -194,6 +225,9 @@ Console.WriteLine(thing3.DataType);</code>
         <returns>A new Literal object with the indicated XSD datatype and a value in the lexical space of that datatype according to the parameters given.</returns>
         <remarks>None.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="FromValue">
       <MemberSignature Language="C#" Value="public static SemWeb.Literal FromValue (sbyte value);" />
@@ -210,6 +244,9 @@ Console.WriteLine(thing3.DataType);</code>
         <returns>A new Literal object with the indicated XSD datatype and a value in the lexical space of that datatype according to the parameters given.</returns>
         <remarks>None.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="FromValue">
       <MemberSignature Language="C#" Value="public static SemWeb.Literal FromValue (float value);" />
@@ -226,6 +263,9 @@ Console.WriteLine(thing3.DataType);</code>
         <returns>A new Literal object with the indicated XSD datatype and a value in the lexical space of that datatype according to the parameters given.</returns>
         <remarks>None.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="FromValue">
       <MemberSignature Language="C#" Value="public static SemWeb.Literal FromValue (string value);" />
@@ -242,6 +282,9 @@ Console.WriteLine(thing3.DataType);</code>
         <returns>A new Literal object with the indicated XSD datatype and a value in the lexical space of that datatype according to the parameters given.</returns>
         <remarks>None.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="FromValue">
       <MemberSignature Language="C#" Value="public static SemWeb.Literal FromValue (TimeSpan value);" />
@@ -258,6 +301,9 @@ Console.WriteLine(thing3.DataType);</code>
         <returns>A new Literal object with the indicated XSD datatype and a value in the lexical space of that datatype according to the parameters given.</returns>
         <remarks>None.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="FromValue">
       <MemberSignature Language="C#" Value="public static SemWeb.Literal FromValue (ushort value);" />
@@ -274,6 +320,9 @@ Console.WriteLine(thing3.DataType);</code>
         <returns>A new Literal object with the indicated XSD datatype and a value in the lexical space of that datatype according to the parameters given.</returns>
         <remarks>None.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="FromValue">
       <MemberSignature Language="C#" Value="public static SemWeb.Literal FromValue (uint value);" />
@@ -290,6 +339,9 @@ Console.WriteLine(thing3.DataType);</code>
         <returns>A new Literal object with the indicated XSD datatype and a value in the lexical space of that datatype according to the parameters given.</returns>
         <remarks>None.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="FromValue">
       <MemberSignature Language="C#" Value="public static SemWeb.Literal FromValue (ulong value);" />
@@ -306,6 +358,9 @@ Console.WriteLine(thing3.DataType);</code>
         <returns>A new Literal object with the indicated XSD datatype and a value in the lexical space of that datatype according to the parameters given.</returns>
         <remarks>None.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="FromValue">
       <MemberSignature Language="C#" Value="public static SemWeb.Literal FromValue (Uri value);" />
@@ -322,6 +377,9 @@ Console.WriteLine(thing3.DataType);</code>
         <returns>A new Literal object with the indicated XSD datatype and a value in the lexical space of that datatype according to the parameters given.</returns>
         <remarks>None.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="FromValue">
       <MemberSignature Language="C#" Value="public static SemWeb.Literal FromValue (DateTime value, bool withTime, bool isLocalTime);" />
@@ -342,6 +400,9 @@ Console.WriteLine(thing3.DataType);</code>
         <returns>A new Literal object with the indicated XSD datatype and a value in the lexical space of that datatype according to the parameters given.</returns>
         <remarks>None.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="FromValue">
       <MemberSignature Language="C#" Value="public static SemWeb.Literal FromValue (TimeSpan value, bool asTime, bool isLocalTime);" />
@@ -362,9 +423,12 @@ Console.WriteLine(thing3.DataType);</code>
         <returns>A new Literal object with the indicated XSD datatype and a value in the lexical space of that datatype according to the parameters given.</returns>
         <remarks>None.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="Language">
-      <MemberSignature Language="C#" Value="public string Language { get; };" />
+      <MemberSignature Language="C#" Value="public string Language { get; }" />
       <MemberType>Property</MemberType>
       <ReturnValue>
         <ReturnType>System.String</ReturnType>
@@ -374,6 +438,9 @@ Console.WriteLine(thing3.DataType);</code>
         <value>The language identifier of the literal, or <see langword="null" />.</value>
         <remarks>None.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="Normalize">
       <MemberSignature Language="C#" Value="public SemWeb.Literal Normalize ();" />
@@ -387,6 +454,9 @@ Console.WriteLine(thing3.DataType);</code>
         <returns>A normalized form of the literal.</returns>
         <remarks>If this literal has a DataType recognized by the <see cref="M:SemWeb.Literal.ParseValue()" /> method, this method returns a new literal whose value is a normalized form of the value of this literal.  Otherwise, Normalize returns the literal unchanged.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="op_Explicit">
       <MemberSignature Language="C#" Value="public static SemWeb.Literal op_Explicit (string value);" />
@@ -405,6 +475,9 @@ Console.WriteLine(thing3.DataType);</code>
         and whose language and datatype are null.</returns>
         <remarks>This is an explicit cast operator.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="Parse">
       <MemberSignature Language="C#" Value="public static SemWeb.Literal Parse (string literal, SemWeb.NamespaceManager namespaces);" />
@@ -426,6 +499,9 @@ Console.WriteLine(thing3.DataType);</code>
           <para>If <paramref name="namespaces" /> is <see langword="null" /> and a datatype was provided as a QName, or if the QName prefix was not found in the namespace manager, an ArgumentException is thrown.</para>
         </remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="ParseValue">
       <MemberSignature Language="C#" Value="public object ParseValue ();" />
@@ -480,9 +556,12 @@ Console.WriteLine(thing3.DataType);</code>
           </list>
         </remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="Value">
-      <MemberSignature Language="C#" Value="public string Value { get; };" />
+      <MemberSignature Language="C#" Value="public string Value { get; }" />
       <MemberType>Property</MemberType>
       <ReturnValue>
         <ReturnType>System.String</ReturnType>
@@ -492,6 +571,9 @@ Console.WriteLine(thing3.DataType);</code>
         <value>The string value of the literal.</value>
         <remarks>None.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
   </Members>
 </Type>

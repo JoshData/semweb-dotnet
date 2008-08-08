@@ -3,6 +3,7 @@
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
     <AssemblyVersion>1.0.6.0</AssemblyVersion>
+    <AssemblyVersion>1.0.6.2</AssemblyVersion>
   </AssemblyInfo>
   <Base>
     <BaseTypeName>SemWeb.Resource</BaseTypeName>
@@ -38,6 +39,9 @@ Console.WriteLine(thing1.Uri)</code>
         <remarks>
           <paramref name="uri" /> may not be <see langword="null" />.  To construct a blank node, use <c>new <see cref="C:SemWeb.BNode()" /></c>.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="op_Equality">
       <MemberSignature Language="C#" Value="public static bool op_Equality (SemWeb.Entity a, SemWeb.Entity b);" />
@@ -62,6 +66,9 @@ Console.WriteLine(thing1.Uri)</code>
           <para>Note that the <see cref="T:SemWeb.Resource" /> class does not have an equality operator, so you must be comparing two variables typed as Entity to use this operator.</para>
         </remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="op_Implicit">
       <MemberSignature Language="C#" Value="public static SemWeb.Entity op_Implicit (string uri);" />
@@ -78,6 +85,9 @@ Console.WriteLine(thing1.Uri)</code>
         <returns>An entity whose URI is <paramref name="uri" />.</returns>
         <remarks>None.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="op_Inequality">
       <MemberSignature Language="C#" Value="public static bool op_Inequality (SemWeb.Entity a, SemWeb.Entity b);" />
@@ -96,6 +106,9 @@ Console.WriteLine(thing1.Uri)</code>
         <returns>The negation of the result of applying the equality operator.</returns>
         <remarks>See the equality operator.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="ValidateUri">
       <MemberSignature Language="C#" Value="public static string ValidateUri (string uri);" />
@@ -113,6 +126,9 @@ Console.WriteLine(thing1.Uri)</code>
           <see langword="null" /> if <paramref name="uri" /> is valid, otherwise a string describing the problem.</returns>
         <remarks>When creating an Entity instance, the string passed into the constructor as the URI is not validated (because validation is a somewhat expensive process). It is the caller's responsibility to validate the URI using this method.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
   </Members>
 </Type>

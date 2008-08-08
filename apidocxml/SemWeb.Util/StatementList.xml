@@ -3,6 +3,7 @@
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
     <AssemblyVersion>1.0.6.0</AssemblyVersion>
+    <AssemblyVersion>1.0.6.2</AssemblyVersion>
   </AssemblyInfo>
   <Base>
     <BaseTypeName>System.Object</BaseTypeName>
@@ -30,6 +31,9 @@
         <summary>Creates a new empty array of statements.</summary>
         <remarks>None.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName=".ctor">
       <MemberSignature Language="C#" Value="public StatementList (SemWeb.Statement[] statements);" />
@@ -42,6 +46,9 @@
         <summary>Creates a new StatementList and adds the statements in an array to the list.</summary>
         <remarks>None.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="Add">
       <MemberSignature Language="C#" Value="public int Add (SemWeb.Statement value);" />
@@ -58,6 +65,9 @@
         <returns>The index of the newly added statement.</returns>
         <remarks>None.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="Clear">
       <MemberSignature Language="C#" Value="public virtual void Clear ();" />
@@ -70,6 +80,9 @@
         <summary>Clears the array.</summary>
         <remarks>None.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="CopyTo">
       <MemberSignature Language="C#" Value="public void CopyTo (Array dest, int start);" />
@@ -90,9 +103,12 @@
       <ImplementsInterfaceMethods>
         <InterfaceImpl Type="System.Collections.ICollection" Member="CopyTo" cref="M:System.Collections.ICollection.CopyTo(System.Array,System.Int32)" />
       </ImplementsInterfaceMethods>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="Count">
-      <MemberSignature Language="C#" Value="public int Count { get; };" />
+      <MemberSignature Language="C#" Value="public int Count { get; }" />
       <MemberType>Property</MemberType>
       <ReturnValue>
         <ReturnType>System.Int32</ReturnType>
@@ -105,6 +121,9 @@
       <ImplementsInterfaceMethods>
         <InterfaceImpl Type="System.Collections.ICollection" Member="Count" cref="P:System.Collections.ICollection.Count" />
       </ImplementsInterfaceMethods>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="GetEnumerator">
       <MemberSignature Language="C#" Value="public System.Collections.IEnumerator GetEnumerator ();" />
@@ -121,9 +140,12 @@
       <ImplementsInterfaceMethods>
         <InterfaceImpl Type="System.Collections.IEnumerable" Member="GetEnumerator" cref="M:System.Collections.IEnumerable.GetEnumerator" />
       </ImplementsInterfaceMethods>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="IsSynchronized">
-      <MemberSignature Language="C#" Value="public bool IsSynchronized { get; };" />
+      <MemberSignature Language="C#" Value="public bool IsSynchronized { get; }" />
       <MemberType>Property</MemberType>
       <ReturnValue>
         <ReturnType>System.Boolean</ReturnType>
@@ -136,9 +158,12 @@
       <ImplementsInterfaceMethods>
         <InterfaceImpl Type="System.Collections.ICollection" Member="IsSynchronized" cref="P:System.Collections.ICollection.IsSynchronized" />
       </ImplementsInterfaceMethods>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="Item">
-      <MemberSignature Language="C#" Value="public SemWeb.Statement this[int index] { set; get; };" />
+      <MemberSignature Language="C#" Value="public SemWeb.Statement this[int index] { set; get; }" />
       <MemberType>Property</MemberType>
       <ReturnValue>
         <ReturnType>SemWeb.Statement</ReturnType>
@@ -152,6 +177,9 @@
         <value>The statement at the given index.</value>
         <remarks>This property is the default indexer for the class.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="op_Implicit">
       <MemberSignature Language="C#" Value="public static SemWeb.Statement[] op_Implicit (SemWeb.Util.StatementList list);" />
@@ -168,6 +196,9 @@
         <returns>A new array of statements containing the statements in the StatementList.</returns>
         <remarks>This just calls ToArray.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="Remove">
       <MemberSignature Language="C#" Value="public void Remove (SemWeb.Statement s);" />
@@ -183,6 +214,9 @@
         <summary>Removes a statement from the array.</summary>
         <remarks>The statement is removed by linearly searching for it in the array.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="RemoveAt">
       <MemberSignature Language="C#" Value="public virtual void RemoveAt (int index);" />
@@ -198,6 +232,9 @@
         <summary>Removes the statement at the given index.</summary>
         <remarks>None.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="Reverse">
       <MemberSignature Language="C#" Value="public void Reverse ();" />
@@ -210,6 +247,9 @@
         <summary>Reverses the array.</summary>
         <remarks>None.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="Sort">
       <MemberSignature Language="C#" Value="public void Sort ();" />
@@ -222,9 +262,12 @@
         <summary>Sorts the statements in the list.</summary>
         <remarks>The statements are sorted according to the sort order implemented in Statement's implementation of IComparable.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="SyncRoot">
-      <MemberSignature Language="C#" Value="public object SyncRoot { get; };" />
+      <MemberSignature Language="C#" Value="public object SyncRoot { get; }" />
       <MemberType>Property</MemberType>
       <ReturnValue>
         <ReturnType>System.Object</ReturnType>
@@ -237,6 +280,9 @@
       <ImplementsInterfaceMethods>
         <InterfaceImpl Type="System.Collections.ICollection" Member="SyncRoot" cref="P:System.Collections.ICollection.SyncRoot" />
       </ImplementsInterfaceMethods>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="ToArray">
       <MemberSignature Language="C#" Value="public SemWeb.Statement[] ToArray ();" />
@@ -250,6 +296,9 @@
         <returns>An array of statements.</returns>
         <remarks>None.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
   </Members>
 </Type>

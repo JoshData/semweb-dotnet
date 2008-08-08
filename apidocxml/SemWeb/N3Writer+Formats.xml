@@ -3,6 +3,7 @@
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
     <AssemblyVersion>1.0.6.0</AssemblyVersion>
+    <AssemblyVersion>1.0.6.2</AssemblyVersion>
   </AssemblyInfo>
   <Base>
     <BaseTypeName>System.Enum</BaseTypeName>
@@ -21,6 +22,9 @@
       <Docs>
         <summary>Notation3 adds to Turtle format <c>is...of</c> syntax and predicate abbreviations, such as <c>a</c> for <c>rdf:type</c>.</summary>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="NTriples">
       <MemberSignature Language="C#" Value="NTriples" />
@@ -38,6 +42,9 @@
           </para>
         </summary>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="Turtle">
       <MemberSignature Language="C#" Value="Turtle" />
@@ -48,6 +55,9 @@
       <Docs>
         <summary>Turtle format adds to NTriples <c>@prefix</c> notation for namespace declarations, qualified names in place of <c>&lt;URI&gt;</c> notation, and comma and semicolon abbreviation.</summary>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
   </Members>
 </Type>

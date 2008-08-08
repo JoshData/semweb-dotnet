@@ -3,6 +3,7 @@
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
     <AssemblyVersion>1.0.6.0</AssemblyVersion>
+    <AssemblyVersion>1.0.6.2</AssemblyVersion>
   </AssemblyInfo>
   <Base>
     <BaseTypeName>System.Object</BaseTypeName>
@@ -43,6 +44,9 @@
       <ImplementsInterfaceMethods>
         <InterfaceImpl Type="System.IComparable&lt;SemWeb.Resource&gt;" Member="CompareTo" cref="M:System.IComparable`1.CompareTo(SemWeb.Resource)" />
       </ImplementsInterfaceMethods>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="GetResourceKey">
       <MemberSignature Language="C#" Value="public object GetResourceKey (object key);" />
@@ -59,6 +63,9 @@
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="op_Equality">
       <MemberSignature Language="C#" Value="public static bool op_Equality (SemWeb.Resource a, SemWeb.Resource b);" />
@@ -83,6 +90,9 @@
         as representing the same entity; or if they are Literals, if
         they have the same value, language, and datatype.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="op_Inequality">
       <MemberSignature Language="C#" Value="public static bool op_Inequality (SemWeb.Resource a, SemWeb.Resource b);" />
@@ -101,6 +111,9 @@
         <returns>The negation of a == b.</returns>
         <remarks>See the Resource equality operator.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="SetResourceKey">
       <MemberSignature Language="C#" Value="public void SetResourceKey (object key, object value);" />
@@ -118,6 +131,9 @@
         <summary>To be added.</summary>
         <remarks>To be added.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="System.IComparable.CompareTo">
       <MemberSignature Language="C#" Value="int IComparable.CompareTo (object other);" />
@@ -134,9 +150,12 @@
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="Uri">
-      <MemberSignature Language="C#" Value="public abstract string Uri { get; };" />
+      <MemberSignature Language="C#" Value="public abstract string Uri { get; }" />
       <MemberType>Property</MemberType>
       <ReturnValue>
         <ReturnType>System.String</ReturnType>
@@ -146,6 +165,9 @@
         <value>The URI of the resource, or <see langword="null" /> if the resource is anonymous or a literal.</value>
         <remarks>None.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
   </Members>
 </Type>

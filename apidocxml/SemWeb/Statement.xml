@@ -3,6 +3,7 @@
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
     <AssemblyVersion>1.0.6.0</AssemblyVersion>
+    <AssemblyVersion>1.0.6.2</AssemblyVersion>
   </AssemblyInfo>
   <Base>
     <BaseTypeName>System.ValueType</BaseTypeName>
@@ -42,6 +43,9 @@
           <para>The value of the <see cref="P:SemWeb.Statement.Meta" /> is set to <see cref="P:SemWeb.Statement.DefaultMeta" />.</para>
         </remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName=".ctor">
       <MemberSignature Language="C#" Value="public Statement (SemWeb.Entity subject, SemWeb.Entity predicate, SemWeb.Resource object, SemWeb.Entity meta);" />
@@ -62,6 +66,9 @@
           <para>No arguments to this constructor may be <see langword="null" /> if this statement will be used in a call to the Add method of <see cref="T:SemWeb.Store" /> or <see cref="T:SemWeb.StatementSink" />.  Any of the arguments may be <see langword="null" /> if the statement will be used as a template for calls to a Contains or Select method.</para>
         </remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="All">
       <MemberSignature Language="C#" Value="public static SemWeb.Statement All;" />
@@ -81,9 +88,12 @@
           </example>
         </remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="AnyNull">
-      <MemberSignature Language="C#" Value="public bool AnyNull { get; };" />
+      <MemberSignature Language="C#" Value="public bool AnyNull { get; }" />
       <MemberType>Property</MemberType>
       <ReturnValue>
         <ReturnType>System.Boolean</ReturnType>
@@ -94,6 +104,9 @@
           <see langword="true" /> if any of the Subject, Predicate, Object, or Meta fields are <see langword="null" />.</value>
         <remarks>This is used to detect whether the Statement is a template.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="CompareTo">
       <MemberSignature Language="C#" Value="public int CompareTo (SemWeb.Statement s);" />
@@ -113,6 +126,9 @@
       <ImplementsInterfaceMethods>
         <InterfaceImpl Type="System.IComparable&lt;SemWeb.Statement&gt;" Member="CompareTo" cref="M:System.IComparable`1.CompareTo(SemWeb.Statement)" />
       </ImplementsInterfaceMethods>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="DefaultMeta">
       <MemberSignature Language="C#" Value="public static SemWeb.Entity DefaultMeta;" />
@@ -124,6 +140,9 @@
         <summary>The entity used for the <see cref="P:SemWeb.Statement.Meta" /> field of statements when a Meta value is not given by the caller.</summary>
         <remarks>None.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="Invert">
       <MemberSignature Language="C#" Value="public SemWeb.Statement Invert ();" />
@@ -137,6 +156,9 @@
         <returns>The inverse of this statement.</returns>
         <remarks>A <see cref="System.ArgumentException" /> is thrown if the object of the statement is not an entity, since subjects can only be entities.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="Matches">
       <MemberSignature Language="C#" Value="public bool Matches (SemWeb.Statement statement);" />
@@ -153,6 +175,9 @@
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="Meta">
       <MemberSignature Language="C#" Value="public SemWeb.Entity Meta;" />
@@ -164,6 +189,9 @@
         <summary>The meta field for the statement.</summary>
         <remarks>This field is often left as its default value, which is <see cref="F:SemWeb.Statement.DefaultMeta" />, but the value of this field can be used for any application-specific purpose.  Uses include tracking context and provenance, reification, and for formulas and named graphs.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="Object">
       <MemberSignature Language="C#" Value="public SemWeb.Resource Object;" />
@@ -175,6 +203,9 @@
         <summary>The object of the statement.</summary>
         <remarks>Objects can be entities or literals.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="op_Equality">
       <MemberSignature Language="C#" Value="public static bool op_Equality (SemWeb.Statement a, SemWeb.Statement b);" />
@@ -194,6 +225,9 @@
         <remarks>Statements are considered equal when their subjects, predicates, objects, and
         meta entities are considered equal, or both are <see langword="null" />.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="op_Inequality">
       <MemberSignature Language="C#" Value="public static bool op_Inequality (SemWeb.Statement a, SemWeb.Statement b);" />
@@ -213,6 +247,9 @@
         <remarks>Statements are considered equal when their subjects, predicates, objects, and
         meta entities are considered equal, or both are <see langword="null" />.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="Predicate">
       <MemberSignature Language="C#" Value="public SemWeb.Entity Predicate;" />
@@ -224,6 +261,9 @@
         <summary>The predicate of the statement.</summary>
         <remarks>None.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="Replace">
       <MemberSignature Language="C#" Value="public SemWeb.Statement Replace (System.Collections.Hashtable resourceMap);" />
@@ -240,6 +280,9 @@
         <returns>A new statement in which instances of the keys of <paramref name="resourceMap" /> have been replaced by their corresponding values.</returns>
         <remarks>An exception will be thrown if a resource in subject, predicate, or meta position is mapped to a literal value.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="Replace">
       <MemberSignature Language="C#" Value="public SemWeb.Statement Replace (SemWeb.Resource find, SemWeb.Resource replacement);" />
@@ -258,6 +301,9 @@
         <returns>A new statement in which occurrences of <paramref name="find" /> have been replaced with <paramref name="replacement" />.</returns>
         <remarks>An ArgumentException is thrown if <paramref name="find" /> is the subject, predicate, or meta of the statement and <paramref name="replacement" /> is not an <see cref="T:SemWeb.Entity" />.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="Subject">
       <MemberSignature Language="C#" Value="public SemWeb.Entity Subject;" />
@@ -269,6 +315,9 @@
         <summary>The subject of the statement.</summary>
         <remarks>None.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="System.IEquatable&lt;SemWeb.Statement&gt;.Equals">
       <MemberSignature Language="C#" Value="bool IEquatable&lt;Statement&gt;.Equals (SemWeb.Statement other);" />
@@ -285,6 +334,9 @@
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
   </Members>
 </Type>

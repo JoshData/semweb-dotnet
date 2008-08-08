@@ -3,6 +3,7 @@
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
     <AssemblyVersion>1.0.6.0</AssemblyVersion>
+    <AssemblyVersion>1.0.6.2</AssemblyVersion>
   </AssemblyInfo>
   <Base>
     <BaseTypeName>System.Object</BaseTypeName>
@@ -38,6 +39,9 @@
         <summary>Constructs a VariableBindings instance.</summary>
         <remarks>None.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="CompareTo">
       <MemberSignature Language="C#" Value="public int CompareTo (SemWeb.Query.VariableBindings other);" />
@@ -54,9 +58,12 @@
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="Count">
-      <MemberSignature Language="C#" Value="public int Count { get; };" />
+      <MemberSignature Language="C#" Value="public int Count { get; }" />
       <MemberType>Property</MemberType>
       <ReturnValue>
         <ReturnType>System.Int32</ReturnType>
@@ -66,9 +73,12 @@
         <value>The number of variables in the row.</value>
         <remarks>None.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="Item">
-      <MemberSignature Language="C#" Value="public SemWeb.Resource this[SemWeb.Variable variable] { get; };" />
+      <MemberSignature Language="C#" Value="public SemWeb.Resource this[SemWeb.Variable variable] { get; }" />
       <MemberType>Property</MemberType>
       <ReturnValue>
         <ReturnType>SemWeb.Resource</ReturnType>
@@ -82,9 +92,12 @@
         <value>The value of the variable, or <see langword="null" /> if the variable is unbound in this row.</value>
         <remarks>None.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="Item">
-      <MemberSignature Language="C#" Value="public SemWeb.Resource this[string variableName] { get; };" />
+      <MemberSignature Language="C#" Value="public SemWeb.Resource this[string variableName] { get; }" />
       <MemberType>Property</MemberType>
       <ReturnValue>
         <ReturnType>SemWeb.Resource</ReturnType>
@@ -98,6 +111,9 @@
         <value>The resource that is bound by the variable in this row of results, or <see langword="null" /> if the variable is not bound.</value>
         <remarks>If more than one variable (distinct Variable instance) has the same name in this row, the result of this function is unspecified. Use the other overload of this method instead.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="Substitute">
       <MemberSignature Language="C#" Value="public SemWeb.Statement Substitute (SemWeb.Statement template);" />
@@ -114,6 +130,9 @@
         <returns>A new statement will all occurrences of variables in this row of bindings replaced by their values.</returns>
         <remarks>If a variable in the Subject, Predicate, or Meta fields is bound by a Literal value, a <see cref="T:System.InvalidCastException" /> is thrown.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="System.IComparable.CompareTo">
       <MemberSignature Language="C#" Value="int IComparable.CompareTo (object other);" />
@@ -130,9 +149,12 @@
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="Values">
-      <MemberSignature Language="C#" Value="public System.Collections.Generic.IList&lt;SemWeb.Resource&gt; Values { get; };" />
+      <MemberSignature Language="C#" Value="public System.Collections.Generic.IList&lt;SemWeb.Resource&gt; Values { get; }" />
       <MemberType>Property</MemberType>
       <ReturnValue>
         <ReturnType>System.Collections.Generic.IList&lt;SemWeb.Resource&gt;</ReturnType>
@@ -142,9 +164,12 @@
         <value>The values of the variables, in the same order as the variables are in the Variables property.</value>
         <remarks>A value may be <see langword="null" /> to indicate an unbound variable.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="Variables">
-      <MemberSignature Language="C#" Value="public System.Collections.Generic.IList&lt;SemWeb.Variable&gt; Variables { get; };" />
+      <MemberSignature Language="C#" Value="public System.Collections.Generic.IList&lt;SemWeb.Variable&gt; Variables { get; }" />
       <MemberType>Property</MemberType>
       <ReturnValue>
         <ReturnType>System.Collections.Generic.IList&lt;SemWeb.Variable&gt;</ReturnType>
@@ -154,6 +179,9 @@
         <value>The variables bound in this row.</value>
         <remarks>None.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
   </Members>
 </Type>

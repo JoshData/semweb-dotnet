@@ -3,6 +3,7 @@
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
     <AssemblyVersion>1.0.6.0</AssemblyVersion>
+    <AssemblyVersion>1.0.6.2</AssemblyVersion>
   </AssemblyInfo>
   <Base>
     <BaseTypeName>SemWeb.Query.Query</BaseTypeName>
@@ -21,6 +22,9 @@
         <summary>Creates an empty GraphMatch object.</summary>
         <remarks>Set up the GraphMatch with calls to <see cref="M:SemWeb.Query.GraphMatch.AddEdge(SemWeb.Statement)" />.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName=".ctor">
       <MemberSignature Language="C#" Value="public GraphMatch (SemWeb.RdfReader query);" />
@@ -46,6 +50,9 @@ new GraphMatch(queryGraph).Run(targetData, Console.Out);  </code>
           </example>
         </remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName=".ctor">
       <MemberSignature Language="C#" Value="public GraphMatch (SemWeb.StatementSource queryModel);" />
@@ -58,6 +65,9 @@ new GraphMatch(queryGraph).Run(targetData, Console.Out);  </code>
         <summary>Creates a query based on a graph in <paramref name="queryModel" />.</summary>
         <remarks>None.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="AddGraphStatement">
       <MemberSignature Language="C#" Value="public void AddGraphStatement (SemWeb.Statement statement);" />
@@ -73,6 +83,9 @@ new GraphMatch(queryGraph).Run(targetData, Console.Out);  </code>
         <summary>Adds a statement to the graph pattern (the query).</summary>
         <remarks>Keep in mind that distinct instances of the <see cref="T:SemWeb.Variable" /> class are treated as separate variables, even if they have the same name.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="AddLiteralFilter">
       <MemberSignature Language="C#" Value="public void AddLiteralFilter (SemWeb.Variable variable, SemWeb.LiteralFilter filter);" />
@@ -90,6 +103,9 @@ new GraphMatch(queryGraph).Run(targetData, Console.Out);  </code>
         <summary>Adds a filter to be applied to literal values that match against a given variable.</summary>
         <remarks>None.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="ReorderQuery">
       <MemberSignature Language="C#" Value="public static SemWeb.Statement[] ReorderQuery (SemWeb.Statement[] graph, SemWeb.Variable[] fixedVariables, SemWeb.SelectableSource schema, bool[,] groupingPreference);" />
@@ -112,6 +128,9 @@ new GraphMatch(queryGraph).Run(targetData, Console.Out);  </code>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="SetDistinguishedVariable">
       <MemberSignature Language="C#" Value="public void SetDistinguishedVariable (SemWeb.Variable variable);" />
@@ -127,6 +146,9 @@ new GraphMatch(queryGraph).Run(targetData, Console.Out);  </code>
         <summary>Marks a variable as distinguished.</summary>
         <remarks>If this method is never called, all variables in the query are returned in the variable bindings. However, once this method is called, only variables distinguished by this method will be included the resulting bindings. This is useful to avoid getting distinct answers on variables that the user does not care about.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="SetVariableRange">
       <MemberSignature Language="C#" Value="public void SetVariableRange (SemWeb.Variable variable, System.Collections.Generic.ICollection&lt;SemWeb.Resource&gt; range);" />
@@ -144,6 +166,9 @@ new GraphMatch(queryGraph).Run(targetData, Console.Out);  </code>
         <summary>Sets the range of values that the variable's bindings must be drawn from.</summary>
         <remarks>All bindings for this variable will be in the provided set of resources.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
   </Members>
 </Type>

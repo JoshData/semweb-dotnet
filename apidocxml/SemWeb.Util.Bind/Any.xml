@@ -3,6 +3,7 @@
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
     <AssemblyVersion>1.0.6.0</AssemblyVersion>
+    <AssemblyVersion>1.0.6.2</AssemblyVersion>
   </AssemblyInfo>
   <Base>
     <BaseTypeName>System.Object</BaseTypeName>
@@ -26,6 +27,9 @@
         <summary>To be added.</summary>
         <remarks>To be added.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="AddValue">
       <MemberSignature Language="C#" Value="protected void AddValue (SemWeb.Entity predicate, object value, bool forward);" />
@@ -45,9 +49,12 @@
         <summary>To be added.</summary>
         <remarks>To be added.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="Entity">
-      <MemberSignature Language="C#" Value="public SemWeb.Entity Entity { get; };" />
+      <MemberSignature Language="C#" Value="public SemWeb.Entity Entity { get; }" />
       <MemberType>Property</MemberType>
       <ReturnValue>
         <ReturnType>SemWeb.Entity</ReturnType>
@@ -57,9 +64,12 @@
         <value>To be added.</value>
         <remarks>To be added.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="Model">
-      <MemberSignature Language="C#" Value="public SemWeb.Store Model { get; };" />
+      <MemberSignature Language="C#" Value="public SemWeb.Store Model { get; }" />
       <MemberType>Property</MemberType>
       <ReturnValue>
         <ReturnType>SemWeb.Store</ReturnType>
@@ -69,6 +79,9 @@
         <value>To be added.</value>
         <remarks>To be added.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="RemoveValue">
       <MemberSignature Language="C#" Value="protected void RemoveValue (SemWeb.Entity predicate, object value, bool forward);" />
@@ -88,6 +101,9 @@
         <summary>To be added.</summary>
         <remarks>To be added.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="SetFuncProperty">
       <MemberSignature Language="C#" Value="protected void SetFuncProperty (SemWeb.Entity predicate, object value, bool forward);" />
@@ -107,6 +123,9 @@
         <summary>To be added.</summary>
         <remarks>To be added.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="SetNonFuncProperty">
       <MemberSignature Language="C#" Value="protected void SetNonFuncProperty (SemWeb.Entity predicate, object[] values, bool forward);" />
@@ -126,9 +145,12 @@
         <summary>To be added.</summary>
         <remarks>To be added.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="Uri">
-      <MemberSignature Language="C#" Value="public string Uri { get; };" />
+      <MemberSignature Language="C#" Value="public string Uri { get; }" />
       <MemberType>Property</MemberType>
       <ReturnValue>
         <ReturnType>System.String</ReturnType>
@@ -138,6 +160,9 @@
         <value>To be added.</value>
         <remarks>To be added.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
   </Members>
 </Type>

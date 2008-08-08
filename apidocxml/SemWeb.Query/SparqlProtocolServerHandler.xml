@@ -95,6 +95,9 @@ LIMIT 10
         <summary>Creates a new SPARQL Protocol implementation class.</summary>
         <remarks>This class does not listen on an HTTP port by itself.  It is meant to be embedded in an ASP.NET site.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="CreateQuery">
       <MemberSignature Language="C#" Value="protected virtual SemWeb.Query.Query CreateQuery (string query);" />
@@ -113,6 +116,9 @@ LIMIT 10
         query.  Override in subclasses to create a query in a different way, or to set
         limits on the query.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="GetDataSource">
       <MemberSignature Language="C#" Value="protected virtual SemWeb.SelectableSource GetDataSource (out bool closeAfterQuery);" />
@@ -129,6 +135,9 @@ LIMIT 10
         <returns>A data source to query.</returns>
         <remarks>None.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="MaximumLimit">
       <MemberSignature Language="C#" Value="public int MaximumLimit;" />
@@ -140,6 +149,9 @@ LIMIT 10
         <summary>The maximum number of bindings to return for any query.</summary>
         <remarks>Set to -1, the default, to have no limit.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="ProcessRequest">
       <MemberSignature Language="C#" Value="public virtual void ProcessRequest (System.Web.HttpContext context);" />
@@ -158,6 +170,9 @@ LIMIT 10
       <ImplementsInterfaceMethods>
         <InterfaceImpl Type="System.Web.IHttpHandler" Member="ProcessRequest" cref="M:System.Web.IHttpHandler.ProcessRequest(System.Web.HttpContext)" />
       </ImplementsInterfaceMethods>
+      <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="RunQuery">
       <MemberSignature Language="C#" Value="protected virtual void RunQuery (SemWeb.Query.Query query, SemWeb.SelectableSource source, System.IO.TextWriter output);" />
@@ -180,9 +195,12 @@ LIMIT 10
         output the results in a different way, to run the query differently, or to set
         limits on the query or output.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="System.Web.IHttpHandler.IsReusable">
-      <MemberSignature Language="C#" Value="bool IHttpHandler.IsReusable { get; };" />
+      <MemberSignature Language="C#" Value="bool System.Web.IHttpHandler.IsReusable { get; }" />
       <MemberType>Property</MemberType>
       <ReturnValue>
         <ReturnType>System.Boolean</ReturnType>
@@ -192,6 +210,9 @@ LIMIT 10
         <value>To be added.</value>
         <remarks>To be added.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
   </Members>
 </Type>

@@ -3,6 +3,7 @@
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
     <AssemblyVersion>1.0.6.0</AssemblyVersion>
+    <AssemblyVersion>1.0.6.2</AssemblyVersion>
   </AssemblyInfo>
   <Base>
     <BaseTypeName>System.Object</BaseTypeName>
@@ -24,6 +25,9 @@
         <summary>The protected no-arg constructor used by subclasses.</summary>
         <remarks>None.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="GetExplanation">
       <MemberSignature Language="C#" Value="public abstract string GetExplanation ();" />
@@ -37,9 +41,12 @@
         <returns>A textual string describing the query or how the query will be performed.</returns>
         <remarks>This method is provided for debugging or for users to be able to optimize the query based on the information in the returned string.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="MimeType">
-      <MemberSignature Language="C#" Value="public virtual string MimeType { set; get; };" />
+      <MemberSignature Language="C#" Value="public virtual string MimeType { set; get; }" />
       <MemberType>Property</MemberType>
       <ReturnValue>
         <ReturnType>System.String</ReturnType>
@@ -55,9 +62,12 @@
           <para>Using the <see cref="T:SemWeb.Query.SparqlEngine" /> class, SPARQL SELECT queries support application/sparql-results+xml (or text/xml), text/csv, and text/html. SPARQL ASK queries support application/sparql-results+xml (or text/xml) and text/plain. SPARQL CONSTRUCT and DESCRIBE queries can be set to output in either RDF/XML or N3 format by setting this property to "application/n3" or any of the values listed in <see cref="M:SemWeb.RdfWriter.Create(System.String,System.IO.TextWriter)" />.</para>
         </remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="QueryMeta">
-      <MemberSignature Language="C#" Value="public SemWeb.Entity QueryMeta { set; get; };" />
+      <MemberSignature Language="C#" Value="public SemWeb.Entity QueryMeta { set; get; }" />
       <MemberType>Property</MemberType>
       <ReturnValue>
         <ReturnType>SemWeb.Entity</ReturnType>
@@ -67,9 +77,12 @@
         <value>The value of this property is <see langword="null" /> by default, meaning the Meta field of statements in the target graph is ignored for the purposes of the query.  Otherwise, the query is restricted to statements with the given entity as a Meta value.</value>
         <remarks>None.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="ReturnLimit">
-      <MemberSignature Language="C#" Value="public int ReturnLimit { set; get; };" />
+      <MemberSignature Language="C#" Value="public int ReturnLimit { set; get; }" />
       <MemberType>Property</MemberType>
       <ReturnValue>
         <ReturnType>System.Int32</ReturnType>
@@ -79,9 +92,12 @@
         <value>The maximum number of bindings to return, or -1 to return all bindings.</value>
         <remarks>All bindings are returned by default.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="ReturnStart">
-      <MemberSignature Language="C#" Value="public int ReturnStart { set; get; };" />
+      <MemberSignature Language="C#" Value="public int ReturnStart { set; get; }" />
       <MemberType>Property</MemberType>
       <ReturnValue>
         <ReturnType>System.Int32</ReturnType>
@@ -91,6 +107,9 @@
         <value>The index of the first binding to return.  The value of this property is 1-based.</value>
         <remarks>The first binding returned is by default the first binding.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="Run">
       <MemberSignature Language="C#" Value="public abstract void Run (SemWeb.SelectableSource source, SemWeb.Query.QueryResultSink resultsink);" />
@@ -108,6 +127,9 @@
         <summary>Runs the query on a data source, outputting to a QueryResultSink.</summary>
         <remarks>None.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="Run">
       <MemberSignature Language="C#" Value="public virtual void Run (SemWeb.SelectableSource source, System.IO.TextWriter output);" />
@@ -125,6 +147,9 @@
         <summary>Runs the query on a data source, outputting to a TextWriter.</summary>
         <remarks>The normal output format uses the <see cref="T:SemWeb.Query.SparqlXmlQuerySink" />.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
   </Members>
 </Type>

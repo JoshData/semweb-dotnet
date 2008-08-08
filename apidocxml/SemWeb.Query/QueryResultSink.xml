@@ -3,6 +3,7 @@
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
     <AssemblyVersion>1.0.6.0</AssemblyVersion>
+    <AssemblyVersion>1.0.6.2</AssemblyVersion>
   </AssemblyInfo>
   <Base>
     <BaseTypeName>System.Object</BaseTypeName>
@@ -21,6 +22,9 @@
         <summary>The protected no-arg constructor used by inherited classes.</summary>
         <remarks>None.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="Add">
       <MemberSignature Language="C#" Value="public abstract bool Add (SemWeb.Query.VariableBindings result);" />
@@ -37,6 +41,9 @@
         <returns>Return <see langword="true" /> to have the caller continue streaming results, otherwise the caller will abort the query.</returns>
         <remarks>None.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="AddComments">
       <MemberSignature Language="C#" Value="public virtual void AddComments (string comments);" />
@@ -52,6 +59,9 @@
         <summary>Adds comments about how the query has been processed.</summary>
         <remarks>This method may be called at any time, before, during, and after all bindings have been written.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="Finished">
       <MemberSignature Language="C#" Value="public virtual void Finished ();" />
@@ -64,6 +74,9 @@
         <summary>This method is called by a Query object after the last variable binding is added.</summary>
         <remarks>None.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="Init">
       <MemberSignature Language="C#" Value="public virtual void Init (SemWeb.Variable[] variables);" />
@@ -79,6 +92,9 @@
         <summary>Called by the Query to initialize the result sink.</summary>
         <remarks>None.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
   </Members>
 </Type>

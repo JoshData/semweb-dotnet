@@ -3,6 +3,7 @@
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
     <AssemblyVersion>1.0.6.0</AssemblyVersion>
+    <AssemblyVersion>1.0.6.2</AssemblyVersion>
   </AssemblyInfo>
   <Base>
     <BaseTypeName>SemWeb.RdfWriter</BaseTypeName>
@@ -35,6 +36,9 @@
         <summary>Creates an N3Writer that outputs statements to a TextWriter.</summary>
         <remarks>None.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName=".ctor">
       <MemberSignature Language="C#" Value="public N3Writer (string file);" />
@@ -47,9 +51,12 @@
         <summary>Creates an N3Writer that outputs statements to a file.</summary>
         <remarks>None.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="Format">
-      <MemberSignature Language="C#" Value="public SemWeb.N3Writer.Formats Format { set; get; };" />
+      <MemberSignature Language="C#" Value="public SemWeb.N3Writer.Formats Format { set; get; }" />
       <MemberType>Property</MemberType>
       <ReturnValue>
         <ReturnType>SemWeb.N3Writer+Formats</ReturnType>
@@ -59,6 +66,9 @@
         <value>A value from <see cref="T:SemWeb.N3Writer+Formats" /> that specifies the output format.</value>
         <remarks>The default format is Turtle.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
     <Member MemberName="SemWeb.CanForgetBNodes.ForgetBNode">
       <MemberSignature Language="C#" Value="void CanForgetBNodes.ForgetBNode (SemWeb.BNode bnode);" />
@@ -74,6 +84,9 @@
         <summary>To be added.</summary>
         <remarks>To be added.</remarks>
       </Docs>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.6.2</AssemblyVersion>
+      </AssemblyInfo>
     </Member>
   </Members>
 </Type>
