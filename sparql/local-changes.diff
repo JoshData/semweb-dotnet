@@ -2753,7 +2753,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj'
  
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj' upstream/src/main/name/levering/ryan/sparql/logic/expression/RelationalLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/expression/RelationalLogic.java
 --- upstream/src/main/name/levering/ryan/sparql/logic/expression/RelationalLogic.java	2007-10-07 07:19:19.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/logic/expression/RelationalLogic.java	2008-08-09 16:58:58.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/logic/expression/RelationalLogic.java	2008-08-09 17:02:35.000000000 -0400
 @@ -30,6 +30,8 @@
  	private ValueConversionLogic converter;
  
@@ -2763,7 +2763,34 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj'
  
  	/**
  	 * Creates a new relational logic object with particular expression data to
-@@ -89,10 +91,10 @@
+@@ -65,16 +67,9 @@
+ 			Literal rightLiteral = (Literal) rightValue;
+ 			URI leftDatatype = leftLiteral.getDatatype();
+ 
+-			// First check numeric promotion
+-			if (leftDatatype != null
+-					&& (leftDatatype.equals(SPARQLConstants.FLOAT_TYPE)
+-							|| leftDatatype.equals(SPARQLConstants.DECIMAL_TYPE)
+-							|| leftDatatype.equals(SPARQLConstants.INTEGER_TYPE) || leftDatatype
+-							.equals(SPARQLConstants.DOUBLE_TYPE))) {
+-				Literal[] promoted = this.numLogic.promote(new Literal[] { leftLiteral, rightLiteral });
+-				leftLiteral = promoted[0];
+-				rightLiteral = promoted[1];
+-			}
++			Literal[] promoted = this.numLogic.promote(new Literal[] { leftLiteral, rightLiteral });
++			leftLiteral = promoted[0];
++			rightLiteral = promoted[1];
+ 
+ 			// Now convert to java types
+ 			Object leftEvaluate;
+@@ -83,16 +78,16 @@
+ 			try {
+ 				leftEvaluate = this.converter.convertLiteral(leftLiteral);
+ 				rightEvaluate = this.converter.convertLiteral(rightLiteral);
+-
++				
+ 				if (leftEvaluate instanceof Double && rightEvaluate instanceof Double) {
+ 					result = evaluateDouble(((Double) leftEvaluate).doubleValue(), ((Double) rightEvaluate)
  							.doubleValue());
  				} else if (leftEvaluate instanceof Float && rightEvaluate instanceof Float) {
  					result = evaluateFloat(((Float) leftEvaluate).floatValue(), ((Float) rightEvaluate).floatValue());
@@ -2778,7 +2805,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj'
  				} else if (leftEvaluate instanceof DateTime && rightEvaluate instanceof DateTime) {
  					result = evaluateDate((DateTime) leftEvaluate, (DateTime) rightEvaluate);
  				} else if (leftEvaluate instanceof String && rightEvaluate instanceof String) {
-@@ -129,7 +131,9 @@
+@@ -129,7 +124,9 @@
  	 * @param num2 the right value to compare
  	 * @return true if the underlying implementation evaluates the expression to be true
  	 */
@@ -2789,7 +2816,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj'
  
  	/**
  	 * Template method delegation to subclass relational logic implementation.
-@@ -138,7 +142,9 @@
+@@ -138,7 +135,9 @@
  	 * @param num2 the right value to compare
  	 * @return true if the underlying implementation evaluates the expression to be true
  	 */
@@ -2800,7 +2827,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj'
  
  	/**
  	 * Template method delegation to subclass relational logic implementation.
-@@ -147,7 +153,9 @@
+@@ -147,7 +146,9 @@
  	 * @param num2 the right value to compare
  	 * @return true if the underlying implementation evaluates the expression to be true
  	 */
@@ -2811,7 +2838,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj'
  
  	/**
  	 * Template method delegation to subclass relational logic implementation.
-@@ -156,7 +164,9 @@
+@@ -156,7 +157,9 @@
  	 * @param num2 the right value to compare
  	 * @return true if the underlying implementation evaluates the expression to be true
  	 */
@@ -2822,7 +2849,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj'
  
  	/**
  	 * Template method delegation to subclass relational logic implementation.
-@@ -165,7 +175,9 @@
+@@ -165,7 +168,9 @@
  	 * @param cal2 the right value to compare
  	 * @return true if the underlying implementation evaluates the expression to be true
  	 */
@@ -2833,7 +2860,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj'
  
  	/**
  	 * Template method delegation to subclass relational logic implementation.
-@@ -174,7 +186,9 @@
+@@ -174,7 +179,9 @@
  	 * @param string2 the right value to compare
  	 * @return true if the underlying implementation evaluates the expression to be true
  	 */
@@ -2844,7 +2871,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj'
  
  	/**
  	 * Template method delegation to subclass relational logic implementation.
-@@ -184,5 +198,7 @@
+@@ -184,5 +191,7 @@
  	 * @return true if the underlying implementation evaluates the expression to be true
  	 */
  	public abstract boolean evaluateValue(Value value1, Value value2);
@@ -6747,7 +6774,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj'
  }
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj' upstream/src/main/name/levering/ryan/sparql/parser/model/SPARQLParserTreeConstants.java work-copy/src/main/name/levering/ryan/sparql/parser/model/SPARQLParserTreeConstants.java
 --- upstream/src/main/name/levering/ryan/sparql/parser/model/SPARQLParserTreeConstants.java	2007-10-07 07:19:57.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/parser/model/SPARQLParserTreeConstants.java	2008-08-09 16:59:07.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/parser/model/SPARQLParserTreeConstants.java	2008-08-09 16:59:56.000000000 -0400
 @@ -1,141 +1,139 @@
 -/* Generated By:JJTree: Do not edit this line. C:/workspaces/sparql/SPARQL Engine Trunk/src/main/name/levering/ryan/sparql/parser/model\SPARQLParserTreeConstants.java */
 -
