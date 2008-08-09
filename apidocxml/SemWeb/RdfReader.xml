@@ -102,7 +102,7 @@
               </description>
             </item>
             <item>
-              <term>"n3", "text/n3", "text/rdf+n3", "application/n3", "text/turtle", "application/turtle", "application/x-turtle"</term>
+              <term>"n3", "text/n3", "text/rdf+n3", "application/n3", "turtle", "text/turtle", "application/turtle", "application/x-turtle", "nt", "ntriples"</term>
               <description>
                 <see cref="T:SemWeb.N3Reader" />
               </description>
@@ -145,7 +145,7 @@
               </description>
             </item>
             <item>
-              <term>"n3", "text/n3", "application/n3", "application/turtle", "application/x-turtle"</term>
+              <term>"n3", "text/n3", "text/rdf+n3", "application/n3", "turtle", "text/turtle", "application/turtle", "application/x-turtle", "nt", "ntriples"</term>
               <description>
                 <see cref="T:SemWeb.N3Reader" />
               </description>
@@ -329,9 +329,9 @@
         <Parameter Name="literal" Type="SemWeb.Literal" />
       </Parameters>
       <Docs>
-        <param name="literal">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
+        <param name="literal">A literal whose lexical value is to be checked.</param>
+        <summary>If ValidateLiterals is true, checks that the literal's value is in the value space of the literal's datatype, if recognized, and issues a warning if not.</summary>
+        <remarks>Nothing happens if <see cref="P:SemWeb.RdfReader.ValidateLiterals" /> is false. If it is true, <see cref="M:SemWeb.Literal.ParseValue" /> is called. Any FormatException raised is recorded as a warning (see <see cref="P:SemWeb.RdfReader.Warnings" />).</remarks>
       </Docs>
     </Member>
     <Member MemberName="ValidateLiterals">
@@ -344,9 +344,9 @@
         <ReturnType>System.Boolean</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
+        <summary>Gets or sets whether literal values should be validated. If set, warnings are issued for invalid literal values.</summary>
+        <value>Whether warnings should be issued for literals of recognized datatypes with invalid lexical values.</value>
+        <remarks>The recognized datatypes are those listed in <see cref="M:SemWeb.Literal.ParseValue" />. (See <see cref="P:SemWeb.RdfReader.Warnings" />.)</remarks>
       </Docs>
     </Member>
     <Member MemberName="Variables">

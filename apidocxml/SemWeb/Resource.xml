@@ -86,7 +86,7 @@
         otherwise, if one argument is <see langword="null" />, returns false.</returns>
         <remarks>Two resources are equal if they are both entities
         and either 1) are the same object, 2) have the same URI, or
-        3) are anonymous entities created by the same Store and marked
+        3) are <see cref="T:SemWeb.BNode" />s created by the same Store and marked
         as representing the same entity; or if they are Literals, if
         they have the same value, language, and datatype.</remarks>
       </Docs>
@@ -145,10 +145,10 @@
         <Parameter Name="other" Type="System.Object" />
       </Parameters>
       <Docs>
-        <param name="other">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
+        <param name="other">A resource to be compared with.</param>
+        <summary>This implements the .NET 1.0 IComparable interface method to compare two Resources. The public method <see cref="M:SemWeb.Resource.CompareTo(SemWeb.Resource)" /> is also available, and in .NET 2.0 Resource additionally implements <see cref="T:System.IComparable&lt;SemWeb.Resource&gt;"/>.</summary>
+        <returns>The value that would be returned by calling <see cref="M:SemWeb.Resource.CompareTo(SemWeb.Resource)" />.</returns>
+        <remarks>This method calls <see cref="M:SemWeb.Resource.CompareTo(SemWeb.Resource)" />. A InvalidCastException is thrown if <paramref name="other" /> is not an instance of <see cref="T:SemWeb.Resource" />.</remarks>
       </Docs>
       <AssemblyInfo>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
@@ -162,7 +162,7 @@
       </ReturnValue>
       <Docs>
         <summary>The URI of this resource.</summary>
-        <value>The URI of the resource, or <see langword="null" /> if the resource is anonymous or a literal.</value>
+        <value>The URI of the resource, or <see langword="null" /> if the resource is a <see cref="T:SemWeb.BNode" /> or a <see cref="T:SemWeb.Literal" />.</value>
         <remarks>None.</remarks>
       </Docs>
       <AssemblyInfo>

@@ -329,10 +329,10 @@
         <Parameter Name="other" Type="SemWeb.Statement" />
       </Parameters>
       <Docs>
-        <param name="other">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
+        <param name="other">Another statement to be compared to.</param>
+        <summary>Compares two statements for equality.</summary>
+        <returns>Whether the statements are equal.</returns>
+        <remarks>See the equality operator.</remarks>
       </Docs>
       <AssemblyInfo>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>

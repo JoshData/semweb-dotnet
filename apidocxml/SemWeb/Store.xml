@@ -284,7 +284,6 @@ Example:  "xml:mydata.rdf" </description>
                 <para>n3:[filename]</para>
                 <para>turtle:[filename]</para>
                 <para>nt:[filename]</para>
-                <para>ntriples:[filename]</para>
               </term>
               <description>A <see cref="T:SemWeb.N3Reader" /> to read the N3/Turtle/NTriples file.
 Example:  "n3:mydata.n3"</description>
@@ -355,7 +354,6 @@ Example:  "xml:mydata.rdf"</description>
                 <para>n3:[filename]</para>
                 <para>turtle:[filename]</para>
                 <para>nt:[filename]</para>
-                <para>ntriples:[filename]</para>
               </term>
               <description>A <see cref="T:SemWeb.N3Writer" /> opened on the given file, writing in the indicated format.
 Example:  "turtle:mydata.turtle"</description>
@@ -364,6 +362,13 @@ Example:  "turtle:mydata.turtle"</description>
               <term>SQL-based stores</term>
               <description>
 For Sqlite, MySQL, and PostgreSQL-based stores, use the spec string described in <see cref="M:SemWeb.Store.CreateForInput(string)" />.  These stores can be both read from and written to, despite the name of this method.</description>
+            </item>
+            <item>
+              <term>
+                <para>dot:[filename]</para>
+              </term>
+              <description>A <see cref="T:SemWeb.IO.GraphVizWriter" /> opened on the given file writing the graph out
+in the GraphViz dot format. Example:  "dot:mydata.dot"</description>
             </item>
           </list>
         </remarks>
@@ -995,10 +1000,10 @@ For Sqlite, MySQL, and PostgreSQL-based stores, use the spec string described in
         <Parameter Name="statement" Type="SemWeb.Statement" />
       </Parameters>
       <Docs>
-        <param name="statement">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
+        <param name="statement">The statement to add to the store.</param>
+        <summary>Adds a statement to the store.</summary>
+        <returns>True.</returns>
+        <remarks>This method calls <see cref="M:SemWeb.Store.Add(SemWeb.Statement)" />.</remarks>
       </Docs>
       <AssemblyInfo>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
