@@ -1,3 +1,5 @@
+2008-08-09 Version 1.062
+
 	* RdfReader: New property ValidateLiterals, defaulting to True
 	  except in the Silverlight build, which issues a warning if
 	  any datatype'd literal values in the document have a value

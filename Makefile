@@ -1,4 +1,4 @@
-VERSION=1.061
+VERSION=1.062
     # don't forget to update src/AssemblyInfo.cs!!
 
 ########################
@@ -70,7 +70,8 @@ MAIN_SOURCES = \
 	src/RdfWriter.cs src/RdfXmlWriter.cs src/N3Writer.cs \
 	src/Query.cs src/GraphMatch.cs src/LiteralFilters.cs \
 	src/Inference.cs src/RDFS.cs src/Euler.cs src/SpecialRelations.cs \
-	src/Algos.cs src/SparqlClient.cs
+	src/Algos.cs src/SparqlClient.cs \
+	src/GraphVizWriter.cs
 
 $(BIN)/SemWeb.dll: $(MAIN_SOURCES) Makefile
 	mkdir -p $(BIN)
