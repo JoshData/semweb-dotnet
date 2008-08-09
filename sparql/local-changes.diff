@@ -1519,7 +1519,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj'
  						// And check to make sure this wasn't a final set, so we
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj' upstream/src/main/name/levering/ryan/sparql/logic/DefaultNumericPromotionLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/DefaultNumericPromotionLogic.java
 --- upstream/src/main/name/levering/ryan/sparql/logic/DefaultNumericPromotionLogic.java	2007-10-07 07:19:19.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/logic/DefaultNumericPromotionLogic.java	2008-07-11 15:28:33.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/logic/DefaultNumericPromotionLogic.java	2008-08-09 16:58:58.000000000 -0400
 @@ -56,6 +56,11 @@
  
          URI leftDatatype = leftLiteral.getDatatype();
@@ -1741,7 +1741,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj'
  
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj' upstream/src/main/name/levering/ryan/sparql/logic/DefaultValueConversionLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/DefaultValueConversionLogic.java
 --- upstream/src/main/name/levering/ryan/sparql/logic/DefaultValueConversionLogic.java	2007-10-07 07:19:19.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/logic/DefaultValueConversionLogic.java	2008-07-11 15:28:33.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/logic/DefaultValueConversionLogic.java	2008-08-09 16:58:58.000000000 -0400
 @@ -57,14 +57,19 @@
              if (datatype.equals(SPARQLConstants.DOUBLE_TYPE)) {
                  return new Double(convertDouble(literal));
@@ -1868,7 +1868,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj'
                      "Could not parse literal label to long type");
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj' upstream/src/main/name/levering/ryan/sparql/logic/DefaultValueOrderingLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/DefaultValueOrderingLogic.java
 --- upstream/src/main/name/levering/ryan/sparql/logic/DefaultValueOrderingLogic.java	2007-10-07 07:19:19.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/logic/DefaultValueOrderingLogic.java	2008-07-11 15:28:33.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/logic/DefaultValueOrderingLogic.java	2008-08-07 07:55:54.000000000 -0400
 @@ -1,5 +1,10 @@
  package name.levering.ryan.sparql.logic;
  
@@ -2753,7 +2753,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj'
  
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj' upstream/src/main/name/levering/ryan/sparql/logic/expression/RelationalLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/expression/RelationalLogic.java
 --- upstream/src/main/name/levering/ryan/sparql/logic/expression/RelationalLogic.java	2007-10-07 07:19:19.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/logic/expression/RelationalLogic.java	2008-07-11 15:28:33.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/logic/expression/RelationalLogic.java	2008-08-09 16:58:58.000000000 -0400
 @@ -30,6 +30,8 @@
  	private ValueConversionLogic converter;
  
@@ -3113,7 +3113,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj'
  	}
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj' upstream/src/main/name/levering/ryan/sparql/logic/function/FunctionLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/function/FunctionLogic.java
 --- upstream/src/main/name/levering/ryan/sparql/logic/function/FunctionLogic.java	1969-12-31 19:00:00.000000000 -0500
-+++ work-copy/src/main/name/levering/ryan/sparql/logic/function/FunctionLogic.java	2008-02-07 16:51:42.000000000 -0500
++++ work-copy/src/main/name/levering/ryan/sparql/logic/function/FunctionLogic.java	2008-08-06 17:38:02.000000000 -0400
 @@ -0,0 +1,48 @@
 +/*
 + * SPARQL Engine
@@ -5417,7 +5417,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj'
 +  import name.levering.ryan.sparql.common.impl.AbstractRdfBindingSet;
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj' upstream/src/main/name/levering/ryan/sparql/logic/StreamedLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/StreamedLogic.java
 --- upstream/src/main/name/levering/ryan/sparql/logic/StreamedLogic.java	2007-10-07 07:19:19.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/logic/StreamedLogic.java	2008-07-11 15:31:54.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/logic/StreamedLogic.java	2008-08-09 16:58:58.000000000 -0400
 @@ -248,7 +248,7 @@
  	 * @return the logic handling the ask query
  	 */
@@ -5462,7 +5462,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj'
  	/**
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj' upstream/src/main/name/levering/ryan/sparql/logic/StreamedStrictLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/StreamedStrictLogic.java
 --- upstream/src/main/name/levering/ryan/sparql/logic/StreamedStrictLogic.java	2007-10-07 07:19:19.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/logic/StreamedStrictLogic.java	2008-07-11 15:31:54.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/logic/StreamedStrictLogic.java	2008-08-09 16:58:58.000000000 -0400
 @@ -140,7 +140,7 @@
  	 * @return the logic handling the ask query
  	 */
@@ -6008,6 +6008,18 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj'
      }
      
      public String toString() {
+diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj' upstream/src/main/name/levering/ryan/sparql/parser/model/ASTFunctionCall.java work-copy/src/main/name/levering/ryan/sparql/parser/model/ASTFunctionCall.java
+--- upstream/src/main/name/levering/ryan/sparql/parser/model/ASTFunctionCall.java	2007-10-07 07:19:18.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/parser/model/ASTFunctionCall.java	2008-08-06 17:36:25.000000000 -0400
+@@ -27,7 +27,7 @@
+             Node child = this.jjtGetChild(i);
+             if (child instanceof ASTArguments) {
+                 for (int j = 0; j < child.jjtGetNumChildren(); j++) {
+-                    arguments.add(child.jjtGetChild(j));
++                    arguments.add(((ExpressionNode)child.jjtGetChild(j)).getExpressionLogic());
+                 }
+             }
+         }
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj' upstream/src/main/name/levering/ryan/sparql/parser/model/ASTGraphConstraint.java work-copy/src/main/name/levering/ryan/sparql/parser/model/ASTGraphConstraint.java
 --- upstream/src/main/name/levering/ryan/sparql/parser/model/ASTGraphConstraint.java	2006-08-20 20:01:00.000000000 -0400
 +++ work-copy/src/main/name/levering/ryan/sparql/parser/model/ASTGraphConstraint.java	2007-10-21 12:35:16.000000000 -0400
@@ -6735,7 +6747,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj'
  }
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj' upstream/src/main/name/levering/ryan/sparql/parser/model/SPARQLParserTreeConstants.java work-copy/src/main/name/levering/ryan/sparql/parser/model/SPARQLParserTreeConstants.java
 --- upstream/src/main/name/levering/ryan/sparql/parser/model/SPARQLParserTreeConstants.java	2007-10-07 07:19:57.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/parser/model/SPARQLParserTreeConstants.java	2008-07-11 15:33:41.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/parser/model/SPARQLParserTreeConstants.java	2008-08-09 16:59:07.000000000 -0400
 @@ -1,141 +1,139 @@
 -/* Generated By:JJTree: Do not edit this line. C:/workspaces/sparql/SPARQL Engine Trunk/src/main/name/levering/ryan/sparql/parser/model\SPARQLParserTreeConstants.java */
 -
@@ -7185,7 +7197,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj'
  }
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj' upstream/src/main/name/levering/ryan/sparql/parser/SPARQLParserConstants.java work-copy/src/main/name/levering/ryan/sparql/parser/SPARQLParserConstants.java
 --- upstream/src/main/name/levering/ryan/sparql/parser/SPARQLParserConstants.java	2007-10-07 07:19:57.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/parser/SPARQLParserConstants.java	2008-07-11 15:33:43.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/parser/SPARQLParserConstants.java	2008-08-09 16:59:09.000000000 -0400
 @@ -1,139 +1,136 @@
 -/* Generated By:JJTree&JavaCC: Do not edit this line. SPARQLParserConstants.java */
 -package name.levering.ryan.sparql.parser;
@@ -7464,7 +7476,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj'
 +}
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj' upstream/src/main/name/levering/ryan/sparql/parser/SPARQLParser.java work-copy/src/main/name/levering/ryan/sparql/parser/SPARQLParser.java
 --- upstream/src/main/name/levering/ryan/sparql/parser/SPARQLParser.java	2007-10-07 07:19:39.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/parser/SPARQLParser.java	2008-07-11 15:33:43.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/parser/SPARQLParser.java	2008-08-09 16:59:09.000000000 -0400
 @@ -1,4422 +1,3217 @@
 -/* Generated By:JJTree&JavaCC: Do not edit this line. SPARQLParser.java */
 -package name.levering.ryan.sparql.parser;
@@ -15104,7 +15116,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj'
 +}
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj' upstream/src/main/name/levering/ryan/sparql/parser/SPARQLParserTokenManager.java work-copy/src/main/name/levering/ryan/sparql/parser/SPARQLParserTokenManager.java
 --- upstream/src/main/name/levering/ryan/sparql/parser/SPARQLParserTokenManager.java	2007-10-07 07:19:57.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/parser/SPARQLParserTokenManager.java	2008-07-11 15:33:43.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/parser/SPARQLParserTokenManager.java	2008-08-09 16:59:09.000000000 -0400
 @@ -1,3660 +1,3997 @@
 -/* Generated By:JJTree&JavaCC: Do not edit this line. SPARQLParserTokenManager.java */
 -package name.levering.ryan.sparql.parser;

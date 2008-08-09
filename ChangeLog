@@ -15,9 +15,13 @@
 	* Added SemWeb.IO.GraphViz class to write out graphs in
 	  GraphViz format. Store.Create and RdfReader.Create now
 	  accept "dot" as a format name.
-	* SPARQL DESCRIBE now recurses a little bit on named nodes.
+	* SPARQL DESCRIBE now recurses a little bit on named nodes
+	  to add enough information like rdfs:label so that named
+	  nodes can be displayed to users by clients without accessing
+	  more information on each.
 	* Refactored Store.Create.
 	* Added debugging env var SEMWEB_DEBUG_SPARQL to SparqlProtocol.cs.
+	* SPARQL bug fixes in ASTFunctionCall.
 
 2008-06-19 Version 1.061
 
