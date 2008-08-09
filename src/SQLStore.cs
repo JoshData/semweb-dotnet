@@ -677,8 +677,9 @@ namespace SemWeb.Stores {
 			// This complicated code here adjusts the size of the add
 			// buffer dynamically to maximize performance.
 			int thresh = importAddBufferSize;
-			if (importAddBufferRotation == 1) thresh += 100; // experiment with changing
-			if (importAddBufferRotation == 2) thresh -= 100; // the buffer size
+			int dt = thresh / 4;
+			if (importAddBufferRotation == -1) thresh += dt; // experiment with changing
+			if (importAddBufferRotation == -2) thresh -= dt; // the buffer size
 			
 			if (addStatementBuffer.Count >= thresh) {
 				DateTime start = DateTime.Now;
@@ -689,14 +690,20 @@ namespace SemWeb.Stores {
 					Console.Error.WriteLine(thresh + "\t" + thresh/duration.TotalSeconds);
 				
 				// If there was an improvement in speed, per statement, on an 
-				// experimental change in buffer size, keep the change.
-				if (importAddBufferRotation != 0
+				// experimental change in buffer size, and on an increase if we haven't exceeded
+				// a time-per-block limit (to avoid issuing statements that exceed
+				// a timeout at the database layer), keep the change.
+				if (importAddBufferRotation < 0
 					&& duration.TotalSeconds/thresh < importAddBufferTime.TotalSeconds/importAddBufferSize
-					&& thresh >= 200 && thresh <= 10000)
+					&& (importAddBufferRotation == -2 || duration.TotalSeconds < 15)
+					&& thresh >= 200 && thresh <= 20000)
 					importAddBufferSize = thresh;
-				importAddBufferTime = duration;
+
+				if (importAddBufferRotation >= 0)
+					importAddBufferTime = duration;
+
 				importAddBufferRotation++;
-				if (importAddBufferRotation == 3) importAddBufferRotation = 0;
+				if (importAddBufferRotation == 3) importAddBufferRotation = -2;
 			}
 		}
 		

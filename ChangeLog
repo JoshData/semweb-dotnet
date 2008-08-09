@@ -24,6 +24,9 @@
 	* SPARQL bug fixes in ASTFunctionCall, numeric promotions in
 	  relational expressions, xsd:date constructor should have been
 	  xsd:dateTime, and comparisons of xsd:date values are now implemented.
+	* SQLStore: During Import(), experiment less with how many
+	  statements to insert at once. Increased the maximum, but added
+	  a time limit so we don't do commands that might timeout prematurely.
 
 2008-06-19 Version 1.061
 
