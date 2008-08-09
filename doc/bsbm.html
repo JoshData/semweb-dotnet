@@ -1,0 +1,238 @@
+<html>
+	<head>
+		<title>SemWeb: Docs: Berlin SPAQRL Benchmark</title>
+		<link rel="stylesheet" type="text/css" href="stylesheet.css"/>
+	</head>
+	
+	<body>
+
+<p><a href="index.html">SemWeb Documentation</a></p>
+<h1>SemWeb: Berlin SPAQRL Benchmark</h1>
+
+<p>This will run the <a href="http://www4.wiwiss.fu-berlin.de/bizer/BerlinSPARQLBenchmark/">Berlin SPARQL Benchmark (BSBM) </a> against the SPARQL server provided by the SemWeb .NET library. The data will be loaded into a local MySQL database. The SPARQL server will run as a local ASP.NET server on port 8080.</p>
+
+<h4>Prerequisites:</h4>
+<ul>
+<li>While the library is intended to be cross-platform, the instructions below assume you are running Linux and have Mono (<a href="http://www.mono-project.com">http://www.mono-project.com</a>) installed.</li>
+<li>You will need to have access to a local MySQL database.</li>
+<li>You will also need the BSBM data generator and test driver ready to run.</li>
+</ul>
+
+<h4>Notes</h4>
+<ul>
+<li>The first time I ran the tests I found the library had several bugs/limitations: a bug preveting ORDER BY with dataTime values, an error parsing function calls in FILTER expressions, a glitch in the translation of the query to SQL, and inability to compare xsd:date values (which is not a part of the specification). I corrected these problems.</li>
+<li>Query 10 must be modified to change the ordering to ORDER BY xsd:double(str(?price)), which adds xsd:double(str(...)), since ordering by the custom USD datatype is not supported.</li>
+</ul>
+
+<h4>Instructions:</h4>
+
+<p>Create a test dataset using the BSBM dataset generator. Below <i>products</i> is the data set scale factor. Use 1915 to get a 1 million triples data set.</p>
+
+<pre class="code">$ java -cp bin:lib/ssj.jar benchmark.generator.Generator -pc <i>products</i> \
+	-s nt -dir <i>datadir</i> -fn <i>datadir</i>/dataset</pre>
+	
+<p>Download the current version of the SemWeb .NET library from the website <a href="http://razor.occams.info/code/semweb">http://razor.occams.info/code/semweb</a>. At the time of writing, you can run:</p>
+
+<pre class="code">$ wget http://razor.occams.info/code/semweb/semweb-1.061.tgz</pre>
+
+<p>Extract the files.</p>
+
+<pre class="code">$ tar -zxf semweb-1.061.tgz</pre>
+
+<p>For compatibility with other benchmarks, the following MySQL configuration lines were set:</p>
+
+<pre class="code">bulk_insert_buffer_size = 32M
+query_cache_size = 512M</pre>
+
+<p>Start MySQL. Have a database available to load the data into. We'll assume the 'test' database is available and doesn't require any user permissions to access.</p>
+
+<p>Load the dataset into the database. You may have to change the path to SemWeb and to the dataset.nt N-Triples file, depending on your setup. Additionally, you can change "Database=test" below to any connection string described in the <a href="http://dev.mysql.com/doc/refman/5.0/en/connector-net-using-connecting.html#connector-net-using-connecting-connection-string">MySQL Connector documentation</a>.</p>
+
+<pre class="code">$ export SEMWEB_MYSQL_IMPORT_MODE=LOCK
+$ time mono semweb-1.061/bin_generics/rdfstorage.exe -out "mysql:bsbm:Database=test" -clear dataset.nt</pre>
+
+<p>There are three data import modes for MySQL. The default wraps the import in a transaction, and is the slowest method. The next method locks the tables for reading and writing while importing the data. This is what is used here, activated by the environment variable, and speeds up the import a bit.</p>
+
+<p>On the 1915-product 1M-triples data set, I get the following output:</p>
+
+<pre class="code">dataset.nt  3m44s, 996396 statements, 4441 st/sec</pre>
+
+<p>Create a file web.config with the contents below. This will configure the ASP.NET server that will run the SPARQL endpoint. Replace "Database=test" with the same connection string above, if you changed it.</p>
+
+<pre class="code">&lt;configuration>
+     &lt;configSections>
+          &lt;section name="sparqlSources" type="System.Configuration.NameValueSectionHandler,System"/>
+     &lt;/configSections>
+
+     &lt;system.web>
+          &lt;httpHandlers>
+               &lt;!-- This line associates the SPARQL Protocol implementation with a path on your
+                    website. With this, you get a SPARQL server at http://yourdomain.com/sparql.  -->
+               &lt;add verb="*" path="sparql" type="SemWeb.Query.SparqlProtocolServerHandler, SemWeb.Sparql" />
+          &lt;/httpHandlers>
+     &lt;/system.web>
+
+     &lt;sparqlSources>
+          &lt;!-- This line configures the data source associated with each SPARQL server added above.
+                  This sets the server to query the RDF/XML file at the given path.  You can use any
+                  spec string described in SemWeb.Store.CreateForInput(). -->
+          &lt;add key="/sparql" value="mysql:bsbm:Database=test"/>
+     &lt;/sparqlSources>
+&lt;/configuration></pre>
+
+<p>Start the SPARQL endpoint:</p>
+
+<pre class="code">$ MONO_PATH=semweb-1.061/bin_generics xsp2</pre>
+
+<p>Verify the SPARQL endpoint is working by visiting in your browser:</p>
+
+<pre class="code"><a href="http://localhost:8080/sparql?query=DESCRIBE+&lt;http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/ProductType1&gt;">http://localhost:8080/sparql?query=DESCRIBE+&lt;http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/ProductType1></a></pre>
+
+<p>This will also force the SPARQL server to load up, which takes a brief moment.</p>
+
+<p>In another terminal (since the ASP.NET server is still running), start the tests against the SPARQL endpoint at <a href=" http://localhost:8080/sparql">http://localhost:8080/sparql</a>:</p>
+
+<pre class="code">java -cp bin:lib/* benchmark.testdriver.TestDriver http://localhost:8080/sparql -idir <i>datapath</i> -o <i>datapath</i>/benchmark_result.xml</pre>
+
+<h4>Results</h4>
+
+<p>Benchmark results reported below are for my desktop: Intel Core2 Duo at 3.00GHz, 2 GB RAM, 32bit Ubuntu 8.04 on Linux 2.6.24-19-generic, Java 1.6.0_06 for the benchmark tools, and Mono 1.9.1. This seems roughly comparable to the machine used in the BSBM.</p>
+
+<p>Load time (in seconds and triples/sec) is reported below for each of the different data set sizes.</p>
+
+<table style="text-align: center;" border="1" cellpadding="8" cellspacing="1">
+<tbody>
+<tr>
+<th/>
+<th>50K</th>
+<th>250K</th>
+<th>1M</th>
+<th>5M</th>
+<th>25M</th>
+</tr>
+<tr>
+<td>Time</td>
+<td></td>
+<td></td>
+<td>224</td>
+<td></td>
+<td>16129 (4:28:49)</td>
+    </tr>
+<tr>
+<td>triples/sec</td>
+<td></td>
+<td></td>
+<td>4441</td>
+<td></td>
+<td>1544</td>
+    </tr>
+</tbody>
+</table>
+
+<p>The 25M dataset was loaded with the DISABLEKEYS MySQL import mode, rather than LOCK.</p>
+
+<p>For comparison, load time for the 1M data set was 224 seconds. This is about double-to-2.5 times the time of Jena SDB (Hash) with MySQL over Joseki3 (117s) and  Virtuoso Open-Source Edition v5.0.6 and v5.0.7 (87s), as reported in the BSBM results.</p>
+
+<p>Results for query execution are reported below. Note that it is entirely unknown whether the query results are correct. Query 4 on the 25M dataset (I am not sure about the other dataset sizes) always yielded no results, for instance.</p>
+
+<p>AQET (Average Query Execution Time, in seconds) is reported below for each of the queries for different data set sizes.</p>
+
+<table style="text-align: center;;" border="1" cellpadding="8" cellspacing="1">
+<tbody>
+<tr>
+<th><br>
+</th>
+<th>50K</th>
+<th>250K</th>
+<th>1M</th>
+<th>5M</th>
+<th>25M</th>
+</tr>
+<tr>
+<td><b><a href="http://www4.wiwiss.fu-berlin.de/bizer/BerlinSPARQLBenchmark/spec/index.html#queryTripleQ1">Query 1</a></b></td>
+<td></td>
+<td></td>
+<td>0.019184</td>
+<td></td>
+<td>0.049200</td>
+    </tr>
+<tr>
+<td><b><a href="http://www4.wiwiss.fu-berlin.de/bizer/BerlinSPARQLBenchmark/spec/index.html#queryTripleQ2">Query 2</a></b></td>
+<td></td>
+<td></td>
+<td>0.051187</td>
+<td></td>
+<td>0.048590</td>
+    </tr>
+<tr>
+<td><b><a href="http://www4.wiwiss.fu-berlin.de/bizer/BerlinSPARQLBenchmark/spec/index.html#queryTripleQ3">Query 3</a></b></td>
+<td></td>
+<td></td>
+<td>0.030508</td>
+<td></td>
+<td>0.079187</td>
+</tr>
+<tr>
+<td><b><a href="http://www4.wiwiss.fu-berlin.de/bizer/BerlinSPARQLBenchmark/spec/index.html#queryTripleQ4">Query 4</a></b></td>
+<td></td>
+<td></td>
+<td>0.032693</td>
+<td></td>
+<td>0.075603</td>
+    </tr>
+<tr>
+<td><b><a href="http://www4.wiwiss.fu-berlin.de/bizer/BerlinSPARQLBenchmark/spec/index.html#queryTripleQ5">Query 5</a></b></td>
+<td></td>
+<td></td>
+<td>0.172283</td>
+<td></td>
+<td>0.342828</td>
+    </tr>
+<tr>
+<td><b><a href="http://www4.wiwiss.fu-berlin.de/bizer/BerlinSPARQLBenchmark/spec/index.html#queryTripleQ6">Query 6</a></b></td>
+<td></td>
+<td></td>
+<td>0.102105</td>
+<td></td>
+<td>3.277656</td>
+    </tr>
+<tr>
+<td><b><a href="http://www4.wiwiss.fu-berlin.de/bizer/BerlinSPARQLBenchmark/spec/index.html#queryTripleQ7">Query 7</a></b></td>
+<td></td>
+<td></td>
+<td>0.256491</td>
+<td></td>
+<td>1.108414</td>
+    </tr>
+<tr>
+<td><b><a href="http://www4.wiwiss.fu-berlin.de/bizer/BerlinSPARQLBenchmark/spec/index.html#queryTripleQ8">Query 8</a></b></td>
+<td></td>
+<td></td>
+<td>0.175357</td>
+<td></td>
+<td>0.572258</td>
+    </tr>
+<tr>
+<td><b><a href="http://www4.wiwiss.fu-berlin.de/bizer/BerlinSPARQLBenchmark/spec/index.html#queryTripleQ9">Query 9</a></b></td>
+<td></td>
+<td></td>
+<td>0.059674</td>
+<td></td>
+<td>0.088451</td>
+</tr>
+<tr>
+<td><b><a href="http://www4.wiwiss.fu-berlin.de/bizer/BerlinSPARQLBenchmark/spec/index.html#queryTripleQ10">Query 10</a></b></td>
+<td></td>
+<td></td>
+<td>0.089215</td>
+<td></td>
+<td>0.322246</td>
+    </tr>
+</tbody>
+</table>
+
+
+</body>
+</html>
+
+
