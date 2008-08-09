@@ -31,13 +31,7 @@
 <pre class="code">$ java -cp bin:lib/ssj.jar benchmark.generator.Generator -pc <i>products</i> \
 	-s nt -dir <i>datadir</i> -fn <i>datadir</i>/dataset</pre>
 	
-<p>Download the current version of the SemWeb .NET library from the website <a href="http://razor.occams.info/code/semweb">http://razor.occams.info/code/semweb</a>. At the time of writing, you can run:</p>
-
-<pre class="code">$ wget http://razor.occams.info/code/semweb/semweb-1.061.tgz</pre>
-
-<p>Extract the files.</p>
-
-<pre class="code">$ tar -zxf semweb-1.061.tgz</pre>
+<p>Download the current version of the SemWeb .NET library from the website <a href="http://razor.occams.info/code/semweb">http://razor.occams.info/code/semweb</a>. Save and extract the library package into a directory within your BSBM directory. We'll call the directory <tt>semweb</tt>.</p>
 
 <p>For compatibility with other benchmarks, the following MySQL configuration lines were set:</p>
 
@@ -49,7 +43,7 @@ query_cache_size = 512M</pre>
 <p>Load the dataset into the database. You may have to change the path to SemWeb and to the dataset.nt N-Triples file, depending on your setup. Additionally, you can change "Database=test" below to any connection string described in the <a href="http://dev.mysql.com/doc/refman/5.0/en/connector-net-using-connecting.html#connector-net-using-connecting-connection-string">MySQL Connector documentation</a>.</p>
 
 <pre class="code">$ export SEMWEB_MYSQL_IMPORT_MODE=LOCK
-$ time mono semweb-1.061/bin_generics/rdfstorage.exe -out "mysql:bsbm:Database=test" -clear dataset.nt</pre>
+$ time mono semweb/bin_generics/rdfstorage.exe -out "mysql:bsbm:Database=test" -clear dataset.nt</pre>
 
 <p>There are three data import modes for MySQL. The default wraps the import in a transaction, and is the slowest method. The next method locks the tables for reading and writing while importing the data. This is what is used here, activated by the environment variable, and speeds up the import a bit.</p>
 
@@ -80,9 +74,9 @@ $ time mono semweb-1.061/bin_generics/rdfstorage.exe -out "mysql:bsbm:Database=t
      &lt;/sparqlSources>
 &lt;/configuration></pre>
 
-<p>Start the SPARQL endpoint:</p>
+<p>Start the SPARQL endpoint. <tt>xsp2</tt> is the standalone ASP.NET server from Mono. The MONO_PATH environment variable tells Mono where to look for the binaries that implement the SPARQL Protocol.</p>
 
-<pre class="code">$ MONO_PATH=semweb-1.061/bin_generics xsp2</pre>
+<pre class="code">$ MONO_PATH=semweb/bin_generics xsp2</pre>
 
 <p>Verify the SPARQL endpoint is working by visiting in your browser:</p>
 
@@ -116,7 +110,7 @@ $ time mono semweb-1.061/bin_generics/rdfstorage.exe -out "mysql:bsbm:Database=t
 <td></td>
 <td>224</td>
 <td></td>
-<td>16129 (4:28:49)</td>
+<td>16129<!--(4:28:49)--></td>
     </tr>
 <tr>
 <td>triples/sec</td>
