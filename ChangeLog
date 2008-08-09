@@ -22,7 +22,8 @@
 	* Refactored Store.Create.
 	* Added debugging env var SEMWEB_DEBUG_SPARQL to SparqlProtocol.cs.
 	* SPARQL bug fixes in ASTFunctionCall, numeric promotions in
-	  relational expressions.
+	  relational expressions, xsd:date constructor should have been
+	  xsd:dateTime, and comparisons of xsd:date values are now implemented.
 
 2008-06-19 Version 1.061
 

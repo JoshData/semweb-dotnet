@@ -67,6 +67,149 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj'
 +    public Iterator getStatements(Value[] subj, Value[] pred, Value[] obj, Object[] litFilters, int limit);
 +}
 +
+diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj' upstream/src/main/name/levering/ryan/sparql/common/impl/DateTime.java work-copy/src/main/name/levering/ryan/sparql/common/impl/DateTime.java
+--- upstream/src/main/name/levering/ryan/sparql/common/impl/DateTime.java	2006-08-20 20:01:00.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/common/impl/DateTime.java	2008-08-09 17:06:38.000000000 -0400
+@@ -33,6 +33,9 @@
+ import java.util.NoSuchElementException;
+ import java.util.StringTokenizer;
+ 
++import name.levering.ryan.sparql.common.URI;
++import name.levering.ryan.sparql.common.SPARQLConstants;
++
+ /**
+  * This class provides utility functions for comparisons operating on
+  * <code>xml:dateTime</code> datatypes as specified in <a
+@@ -47,6 +50,9 @@
+ 	/** Day part of the dateTime object as int */
+ 	private int days;
+ 
++	/** Whether or not this dateTime has time information (is a date or dateTime) */
++	private boolean hasTime = true;
++
+ 	/** Fractional seconds part of the dateTime object as int */
+ 	private int fractionalSeconds;
+ 
+@@ -90,6 +96,26 @@
+ 	}
+ 
+ 	/**
++	 * Creates a new DateTime object for the supplied xsd:dateTime or xsd:date string value.
++	 * 
++	 * @param dateTimeString An xsd:date or xsd:dateTime value, for example
++	 *            <tt>1999-05-31T13:20:00-05:00</tt>.
++	 */
++	public DateTime(String dateTimeString, URI datatype) {
++		DateTimeFields fields;
++		if (datatype.equals(SPARQLConstants.DATETIME_TYPE)) {
++			fields = parseDateTimeString(dateTimeString);
++		} else if (datatype.equals(SPARQLConstants.DATE_TYPE)) {
++			fields = parseDateString(dateTimeString);
++			hasTime = false;
++		} else {
++			throw new IllegalArgumentException("datatype is not xsd:date or xsd:dateTime");
++		}
++		setNumericFields(fields, dateTimeString);
++		validateFieldValues(fields, dateTimeString);
++	}
++
++	/**
+ 	 * Wraps the standard memory cloning to throw a runtime exception rather
+ 	 * than the more annoying CloneNotSupportedException.
+ 	 * 
+@@ -133,6 +159,8 @@
+ 			result = thisDT.months - otherDT.months;
+ 		} else if (thisDT.days != otherDT.days) {
+ 			result = thisDT.days - otherDT.days;
++		} else if (!hasTime) {
++			result = 0;
+ 		} else if (thisDT.hours != otherDT.hours) {
+ 			result = thisDT.hours - otherDT.hours;
+ 		} else if (thisDT.minutes != otherDT.minutes) {
+@@ -300,18 +328,19 @@
+ 		result.append(formatInt(this.months, 2));
+ 		result.append('-');
+ 		result.append(formatInt(this.days, 2));
+-		result.append('T');
+-		result.append(formatInt(this.hours, 2));
+-		result.append(':');
+-		result.append(formatInt(this.minutes, 2));
+-		result.append(':');
+-		result.append(formatInt(this.seconds, 2));
+-
+-		if (this.fractionalSeconds > 0) {
+-			result.append('.');
+-			result.append(this.fractionalSeconds);
++		if (hasTime) {
++			result.append('T');
++			result.append(formatInt(this.hours, 2));
++			result.append(':');
++			result.append(formatInt(this.minutes, 2));
++			result.append(':');
++			result.append(formatInt(this.seconds, 2));
++	
++			if (this.fractionalSeconds > 0) {
++				result.append('.');
++				result.append(this.fractionalSeconds);
++			}
+ 		}
+-
+ 		if (this.hasTimeZone) {
+ 			if (this.hoursTimeZone == 0 && this.minutesTimeZone == 0) {
+ 				result.append("Z");
+@@ -409,6 +438,52 @@
+ 		return fields;
+ 	}
+ 
++	private DateTimeFields parseDateString(String dateString) {
++		if (dateString.length() < 10) {
++			throw new IllegalArgumentException("String value too short to be a valid xsd:date value: "
++					+ dateString);
++		}
++
++		DateTimeFields fields = new DateTimeFields();
++
++		String errMsg = "Invalid xsd:date value: " + dateString;
++
++		StringTokenizer st = new StringTokenizer(dateString, "+-TZ", true);
++		try {
++			fields.yearString = st.nextToken();
++			fields.isNegativeYear = fields.yearString.equals("-");
++			if (fields.isNegativeYear) {
++				fields.yearString = st.nextToken();
++			}
++			verifyTokenValue(st.nextToken(), "-", errMsg);
++			fields.monthsString = st.nextToken();
++			verifyTokenValue(st.nextToken(), "-", errMsg);
++			fields.daysString = st.nextToken();
++			fields.hoursString = "00";
++			fields.minutesString = "00";
++			fields.secondsString = "00";
++
++			String token = st.hasMoreTokens() ? st.nextToken() : null;
++
++			if ("+".equals(token) || "-".equals(token)) {
++				fields.isNegativeTimeZone = "-".equals(token);
++				fields.hoursTimeZoneString = st.nextToken();
++				verifyTokenValue(st.nextToken(), ":", errMsg);
++				fields.minutesTimeZoneString = st.nextToken();
++			} else if ("Z".equals(token)) {
++				fields.isNegativeTimeZone = false;
++				fields.hoursTimeZoneString = fields.minutesTimeZoneString = "00";
++			}
++
++			if (st.hasMoreTokens()) {
++				throw new IllegalArgumentException(errMsg);
++			}
++		} catch (NoSuchElementException e) {
++			throw new IllegalArgumentException(errMsg);
++		}
++		return fields;
++	}
++
+ 	private void setNumericFields(DateTimeFields fields, String dateTimeString) {
+ 		try {
+ 			this.year = Integer.parseInt(fields.yearString);
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj' upstream/src/main/name/levering/ryan/sparql/common/impl/InternalSPARQLValueFactory.java work-copy/src/main/name/levering/ryan/sparql/common/impl/InternalSPARQLValueFactory.java
 --- upstream/src/main/name/levering/ryan/sparql/common/impl/InternalSPARQLValueFactory.java	2007-10-07 07:19:17.000000000 -0400
 +++ work-copy/src/main/name/levering/ryan/sparql/common/impl/InternalSPARQLValueFactory.java	2007-10-21 12:35:15.000000000 -0400
@@ -1746,8 +1889,8 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj'
  
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj' upstream/src/main/name/levering/ryan/sparql/logic/DefaultValueConversionLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/DefaultValueConversionLogic.java
 --- upstream/src/main/name/levering/ryan/sparql/logic/DefaultValueConversionLogic.java	2007-10-07 07:19:19.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/logic/DefaultValueConversionLogic.java	2008-08-09 16:58:58.000000000 -0400
-@@ -57,14 +57,19 @@
++++ work-copy/src/main/name/levering/ryan/sparql/logic/DefaultValueConversionLogic.java	2008-08-09 17:06:38.000000000 -0400
+@@ -57,26 +57,34 @@
              if (datatype.equals(SPARQLConstants.DOUBLE_TYPE)) {
                  return new Double(convertDouble(literal));
              }
@@ -1771,7 +1914,14 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj'
              }
              if (datatype.equals(SPARQLConstants.BOOLEAN_TYPE)) {
                  return new Boolean(convertBoolean(literal));
-@@ -76,7 +81,7 @@
+             }
+             if (datatype.equals(SPARQLConstants.DATE_TYPE)) {
++                return convertDate(literal);
++            }
++            if (datatype.equals(SPARQLConstants.DATETIME_TYPE)) {
+                 return convertDateTime(literal);
+             }
+             if (datatype.equals(SPARQLConstants.STRING_TYPE)) {
                  return convertString(literal);
              }
              throw new ConversionException(
@@ -1780,7 +1930,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj'
          } else {
              return convertString(literal);
          }
-@@ -95,14 +100,14 @@
+@@ -95,14 +103,14 @@
          if (o instanceof Double) {
              return convertDouble(((Double) o).doubleValue());
          }
@@ -1799,7 +1949,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj'
          }
          if (o instanceof Boolean) {
              return convertBoolean(((Boolean) o).booleanValue());
-@@ -191,27 +196,27 @@
+@@ -191,27 +199,27 @@
      }
  
      /**
@@ -1835,7 +1985,32 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj'
          } catch (NumberFormatException e) {
              throw new ConversionException(
                      "Could not parse literal label to int type");
-@@ -275,27 +280,27 @@
+@@ -232,6 +240,24 @@
+     /**
+      * Converts a literal to a DateTime value.
+      * 
++     * @param literal the xsd:date to convert
++     * @return a DateTime value equating to the literal value
++     * @throws ConversionException if the literal is of an incorrect type or is
++     *             unparseable
++     */
++    public DateTime convertDate(Literal literal) {
++        try {
++            return new DateTime(literal.getLabel(), literal.getDatatype());
++        } catch (IllegalArgumentException e) {
++  				System.err.println(e);
++            throw new ConversionException(
++                    "Could not parse literal label to datetime type");
++        }
++    }
++
++    /**
++     * Converts a literal to a DateTime value.
++     * 
+      * @param literal the xsd:dateTime to convert
+      * @return a DateTime value equating to the literal value
+      * @throws ConversionException if the literal is of an incorrect type or is
+@@ -275,27 +301,27 @@
      }
  
      /**
@@ -3020,6 +3195,18 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj'
 -
 + 
  }
+diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj' upstream/src/main/name/levering/ryan/sparql/logic/function/CastFunction.java work-copy/src/main/name/levering/ryan/sparql/logic/function/CastFunction.java
+--- upstream/src/main/name/levering/ryan/sparql/logic/function/CastFunction.java	2007-10-07 07:19:19.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/logic/function/CastFunction.java	2008-08-09 17:06:38.000000000 -0400
+@@ -75,7 +75,7 @@
+         if (dataType.equals(SPARQLConstants.INTEGER_TYPE)) {
+             return castInteger(literal);
+         }
+-        if (dataType.equals(SPARQLConstants.DATE_TYPE)) {
++        if (dataType.equals(SPARQLConstants.DATETIME_TYPE)) {
+             return castDateTime(literal);
+         }
+         if (dataType.equals(SPARQLConstants.BOOLEAN_TYPE)) {
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj' upstream/src/main/name/levering/ryan/sparql/logic/function/DataTypeLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/function/DataTypeLogic.java
 --- upstream/src/main/name/levering/ryan/sparql/logic/function/DataTypeLogic.java	2007-10-07 07:19:19.000000000 -0400
 +++ work-copy/src/main/name/levering/ryan/sparql/logic/function/DataTypeLogic.java	2007-10-21 12:35:15.000000000 -0400
@@ -3056,6 +3243,36 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj'
  
  	/**
  	 * Evaluates the datatype of a typed literal that is an argument.
+diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj' upstream/src/main/name/levering/ryan/sparql/logic/function/DateTimeCastFunction.java work-copy/src/main/name/levering/ryan/sparql/logic/function/DateTimeCastFunction.java
+--- upstream/src/main/name/levering/ryan/sparql/logic/function/DateTimeCastFunction.java	2007-10-07 07:19:19.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/logic/function/DateTimeCastFunction.java	2008-08-09 17:06:38.000000000 -0400
+@@ -44,7 +44,7 @@
+     public Value castString(Literal literal) throws IllegalCastException {
+         try {
+             new DateTime(literal.getLabel());
+-            return this.factory.createLiteral(literal.getLabel(), SPARQLConstants.DATE_TYPE);
++            return this.factory.createLiteral(literal.getLabel(), SPARQLConstants.DATETIME_TYPE);
+         } catch (IllegalArgumentException e) {
+             throw new IllegalCastException("Unable to cast string to dateTime");
+         }
+@@ -101,7 +101,7 @@
+      * @return a literal of type xsd:dateTime, representing the cast value
+      */
+     public Value castDateTime(Literal literal) throws IllegalCastException {
+-        return this.factory.createLiteral(literal.getLabel(), SPARQLConstants.DATE_TYPE);
++        return this.factory.createLiteral(literal.getLabel(), SPARQLConstants.DATETIME_TYPE);
+     }
+ 
+     /**
+@@ -137,7 +137,7 @@
+     public Value castLiteral(Literal literal) throws IllegalCastException {
+         try {
+             new DateTime(literal.getLabel());
+-            return this.factory.createLiteral(literal.getLabel(), SPARQLConstants.DATE_TYPE);
++            return this.factory.createLiteral(literal.getLabel(), SPARQLConstants.DATETIME_TYPE);
+         } catch (IllegalArgumentException e) {
+             throw new IllegalCastException("Unable to cast string to dateTime");
+         }
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj' upstream/src/main/name/levering/ryan/sparql/logic/function/DecimalCastFunction.java work-copy/src/main/name/levering/ryan/sparql/logic/function/DecimalCastFunction.java
 --- upstream/src/main/name/levering/ryan/sparql/logic/function/DecimalCastFunction.java	2007-10-07 07:19:19.000000000 -0400
 +++ work-copy/src/main/name/levering/ryan/sparql/logic/function/DecimalCastFunction.java	2007-10-21 12:35:15.000000000 -0400
@@ -5449,7 +5666,16 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj'
 +  import name.levering.ryan.sparql.common.impl.AbstractRdfBindingSet;
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj' upstream/src/main/name/levering/ryan/sparql/logic/StreamedLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/StreamedLogic.java
 --- upstream/src/main/name/levering/ryan/sparql/logic/StreamedLogic.java	2007-10-07 07:19:19.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/logic/StreamedLogic.java	2008-08-09 16:58:58.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/logic/StreamedLogic.java	2008-08-09 17:06:38.000000000 -0400
+@@ -151,7 +151,7 @@
+ 		registerExternalFunction(SPARQLConstants.DOUBLE_TYPE, DoubleCastFunction.getFactory());
+ 		registerExternalFunction(SPARQLConstants.DECIMAL_TYPE, DecimalCastFunction.getFactory());
+ 		registerExternalFunction(SPARQLConstants.INTEGER_TYPE, IntegerCastFunction.getFactory());
+-		registerExternalFunction(SPARQLConstants.DATE_TYPE, DateTimeCastFunction.getFactory());
++		registerExternalFunction(SPARQLConstants.DATETIME_TYPE, DateTimeCastFunction.getFactory());
+ 		registerExternalFunction(SPARQLConstants.BOOLEAN_TYPE, BooleanCastFunction.getFactory());
+ 		registerExternalFunction(SPARQLConstants.IRI_TYPE, IRICastFunction.getFactory());
+ 		registerExternalFunction(SPARQLConstants.LITERAL_TYPE, LiteralCastFunction.getFactory());
 @@ -248,7 +248,7 @@
  	 * @return the logic handling the ask query
  	 */
@@ -5494,7 +5720,16 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj'
  	/**
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj' upstream/src/main/name/levering/ryan/sparql/logic/StreamedStrictLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/StreamedStrictLogic.java
 --- upstream/src/main/name/levering/ryan/sparql/logic/StreamedStrictLogic.java	2007-10-07 07:19:19.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/logic/StreamedStrictLogic.java	2008-08-09 16:58:58.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/logic/StreamedStrictLogic.java	2008-08-09 17:06:38.000000000 -0400
+@@ -100,7 +100,7 @@
+ 		registerExternalFunction(SPARQLConstants.DOUBLE_TYPE, DoubleCastFunction.getFactory());
+ 		registerExternalFunction(SPARQLConstants.DECIMAL_TYPE, DecimalCastFunction.getFactory());
+ 		registerExternalFunction(SPARQLConstants.INTEGER_TYPE, IntegerCastFunction.getFactory());
+-		registerExternalFunction(SPARQLConstants.DATE_TYPE, DateTimeCastFunction.getFactory());
++		registerExternalFunction(SPARQLConstants.DATETIME_TYPE, DateTimeCastFunction.getFactory());
+ 		registerExternalFunction(SPARQLConstants.BOOLEAN_TYPE, BooleanCastFunction.getFactory());
+ 		registerExternalFunction(SPARQLConstants.IRI_TYPE, IRICastFunction.getFactory());
+ 		registerExternalFunction(SPARQLConstants.LITERAL_TYPE, LiteralCastFunction.getFactory());
 @@ -140,7 +140,7 @@
  	 * @return the logic handling the ask query
  	 */
@@ -6779,7 +7014,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj'
  }
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj' upstream/src/main/name/levering/ryan/sparql/parser/model/SPARQLParserTreeConstants.java work-copy/src/main/name/levering/ryan/sparql/parser/model/SPARQLParserTreeConstants.java
 --- upstream/src/main/name/levering/ryan/sparql/parser/model/SPARQLParserTreeConstants.java	2007-10-07 07:19:57.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/parser/model/SPARQLParserTreeConstants.java	2008-08-09 16:59:56.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/parser/model/SPARQLParserTreeConstants.java	2008-08-09 17:04:46.000000000 -0400
 @@ -1,141 +1,139 @@
 -/* Generated By:JJTree: Do not edit this line. C:/workspaces/sparql/SPARQL Engine Trunk/src/main/name/levering/ryan/sparql/parser/model\SPARQLParserTreeConstants.java */
 -
@@ -7229,7 +7464,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj'
  }
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj' upstream/src/main/name/levering/ryan/sparql/parser/SPARQLParserConstants.java work-copy/src/main/name/levering/ryan/sparql/parser/SPARQLParserConstants.java
 --- upstream/src/main/name/levering/ryan/sparql/parser/SPARQLParserConstants.java	2007-10-07 07:19:57.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/parser/SPARQLParserConstants.java	2008-08-09 17:02:41.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/parser/SPARQLParserConstants.java	2008-08-09 17:04:47.000000000 -0400
 @@ -1,139 +1,136 @@
 -/* Generated By:JJTree&JavaCC: Do not edit this line. SPARQLParserConstants.java */
 -package name.levering.ryan.sparql.parser;
@@ -7508,7 +7743,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj'
 +}
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj' upstream/src/main/name/levering/ryan/sparql/parser/SPARQLParser.java work-copy/src/main/name/levering/ryan/sparql/parser/SPARQLParser.java
 --- upstream/src/main/name/levering/ryan/sparql/parser/SPARQLParser.java	2007-10-07 07:19:39.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/parser/SPARQLParser.java	2008-08-09 17:02:41.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/parser/SPARQLParser.java	2008-08-09 17:04:47.000000000 -0400
 @@ -1,4422 +1,3217 @@
 -/* Generated By:JJTree&JavaCC: Do not edit this line. SPARQLParser.java */
 -package name.levering.ryan.sparql.parser;
@@ -15148,7 +15383,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj'
 +}
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj' upstream/src/main/name/levering/ryan/sparql/parser/SPARQLParserTokenManager.java work-copy/src/main/name/levering/ryan/sparql/parser/SPARQLParserTokenManager.java
 --- upstream/src/main/name/levering/ryan/sparql/parser/SPARQLParserTokenManager.java	2007-10-07 07:19:57.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/parser/SPARQLParserTokenManager.java	2008-08-09 17:02:41.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/parser/SPARQLParserTokenManager.java	2008-08-09 17:04:47.000000000 -0400
 @@ -1,3660 +1,3997 @@
 -/* Generated By:JJTree&JavaCC: Do not edit this line. SPARQLParserTokenManager.java */
 -package name.levering.ryan.sparql.parser;
