@@ -138,6 +138,8 @@ namespace SemWeb {
 					return new RdfXmlReader(source);
 				case "n3":
 				case "turtle":
+				case "nt":
+				case "ntriples":
 					return new N3Reader(source);
 				default:
 					throw new ArgumentException("Unknown parser or MIME type: " + type);
@@ -152,6 +154,8 @@ namespace SemWeb {
 					return new RdfXmlReader(source);
 				case "n3":
 				case "turtle":
+				case "nt":
+				case "ntriples":
 					return new N3Reader(new StreamReader(source, System.Text.Encoding.UTF8));
 				default:
 					throw new ArgumentException("Unknown parser or MIME type: " + type);

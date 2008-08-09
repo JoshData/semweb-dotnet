@@ -68,6 +68,11 @@ namespace SemWeb {
 					N3Writer w = new N3Writer(output);
 					w.Format = N3Writer.Formats.Turtle;
 					return w;
+				case "nt":
+				case "ntriples":
+					N3Writer w2 = new N3Writer(output);
+					w2.Format = N3Writer.Formats.NTriples;
+					return w2;
 				case "dot":
 					return new GraphVizWriter(output);
 				default:
@@ -89,6 +94,11 @@ namespace SemWeb {
 					N3Writer w = new N3Writer(file);
 					w.Format = N3Writer.Formats.Turtle;
 					return w;
+				case "nt":
+				case "ntriples":
+					N3Writer w2 = new N3Writer(file);
+					w2.Format = N3Writer.Formats.Turtle;
+					return w2;
 				case "dot":
 					return new GraphVizWriter(file);
 				default:
