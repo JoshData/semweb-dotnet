@@ -1,5 +1,8 @@
 2008-08-09 Version 1.062
 
+	* Added a new page to the documentation (doc/bsbm.html) that
+	  documents how to run the BSBM SPARQL benchmark. It is also
+	  a good example of setting up a ASP.NET SPARQL endpoint.
 	* RdfReader: New property ValidateLiterals, defaulting to True
 	  except in the Silverlight build, which issues a warning if
 	  any datatype'd literal values in the document have a value
