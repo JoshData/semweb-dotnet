@@ -35,6 +35,7 @@ using LitFilterMap = System.Collections.Generic.Dictionary<SemWeb.Variable,Syste
 namespace SemWeb.Query {
 
 	public class SparqlEngine : SemWeb.Query.Query {
+		static bool DisableQuery = System.Environment.GetEnvironmentVariable("SEMWEB_DISABLE_QUERY") != null;
 	
 		private const string BNodePersistUri = "tag:taubz.for.net,2005:bnode_persist_uri/";
 
@@ -142,7 +143,19 @@ namespace SemWeb.Query {
 			return query.ToString();
 		}
 		
-		/* QUERY EXECUTION METHODS */
+		public string[] GetDefaultDatasets() {
+			ArrayList ret = new ArrayList();
+			java.util.Collection c = query.getDefaultDatasets();
+
+			object[] c2 = c.toArray();
+			for (int i = 0; i < c2.Length; i++) {
+				name.levering.ryan.sparql.common.URI uri = (name.levering.ryan.sparql.common.URI)c2.GetValue(i);
+				ret.Add(uri.getURI());
+			}
+			return (string[])ret.ToArray(typeof(string));
+		}
+        
+      /* QUERY EXECUTION METHODS */
 	
 		public override void Run(SelectableSource source, TextWriter output) {
 			if (query is AskQuery)
@@ -349,7 +362,7 @@ namespace SemWeb.Query {
 		/* INTERNAL METHODS TO CONTROL QUERY EXECUTION */
 		
 		private RdfSourceWrapper BindLogic(SelectableSource source) {
-			RdfSourceWrapper sourcewrapper = new RdfSourceWrapper(source, QueryMeta, this);
+			RdfSourceWrapper sourcewrapper = new RdfSourceWrapper(source, this);
 			
 			MyLogicFactory logic = new MyLogicFactory();
 			foreach (RdfFunction f in extFunctions)
@@ -373,14 +386,12 @@ namespace SemWeb.Query {
 				
 			public readonly SelectableSource source;
 			Hashtable bnodes = new Hashtable();
-			Entity QueryMeta;
 			SparqlEngine sparql;
 			
 			System.Text.StringBuilder log = new System.Text.StringBuilder();
 			
-			public RdfSourceWrapper(SelectableSource source, Entity meta, SparqlEngine sparql) {
+			public RdfSourceWrapper(SelectableSource source, SparqlEngine sparql) {
 				this.source = source;
-				QueryMeta = meta;
 				this.sparql = sparql;
 			}
 			
@@ -395,19 +406,27 @@ namespace SemWeb.Query {
 				return ret;
 			}
 		
-			private java.util.Iterator GetIterator(Statement statement, bool defaultGraph, int limit) {
+			private java.util.Iterator GetIterator(Statement statement, int limit) {
 				return GetIterator(statement.Subject == null ? null : new Entity[] { statement.Subject },
 					statement.Predicate == null ? null : new Entity[] { statement.Predicate },
 					statement.Object == null ? null : new Resource[] { statement.Object },
 					statement.Meta == null ? null : new Entity[] { statement.Meta },
 					null,
-					defaultGraph,
 					limit);
 			}
 			
-			private java.util.Iterator GetIterator(Entity[] subjects, Entity[] predicates, Resource[] objects, Entity[] metas, object[] litFilters, bool defaultGraph, int limit) {
+			private java.util.Iterator GetIterator(Statement statement, Entity[] metas, int limit) {
+				return GetIterator(statement.Subject == null ? null : new Entity[] { statement.Subject },
+					statement.Predicate == null ? null : new Entity[] { statement.Predicate },
+					statement.Object == null ? null : new Resource[] { statement.Object },
+					metas,
+					null,
+					limit);
+			}
+
+			private java.util.Iterator GetIterator(Entity[] subjects, Entity[] predicates, Resource[] objects, Entity[] metas, object[] litFilters, int limit) {
 				if (subjects == null && predicates == null && objects == null && limit == -1)
-					throw new QueryExecutionException("Query would select all statements in the store.");
+					throw new QueryExecutionException("Query would select all statements in the store!");
 				
 				if (subjects != null) Depersist(subjects);
 				if (predicates != null) Depersist(predicates);
@@ -429,55 +448,65 @@ namespace SemWeb.Query {
 					filter.Limit = 1;
 				else if (limit > 0)
 					filter.Limit = limit;
-
-				return new StatementIterator(source, filter, this, defaultGraph && metas == null);
+					
+				return new StatementIterator(source, filter, this);
 			}
 			
-		    /**
-		     * Gets all the statements that come from the default graph and have a
-		     * certain subject, predicate, and object. Any of the parameters can be
-		     * null, in which case it assumes these are "wildcards" and all statements
-		     * that match the remainding parameters will be returned.
-     		 */ 
-     		public java.util.Iterator getDefaultStatements (name.levering.ryan.sparql.common.Value subject, name.levering.ryan.sparql.common.URI predicate, name.levering.ryan.sparql.common.Value @object) {
-				return GetIterator( new Statement(ToEntity(subject), ToEntity(predicate), ToResource(@object), QueryMeta), true, -1 );
+			/**
+			 * Gets all statements with a specific subject, predicate and/or object in
+			 * the default graph of the repository. All three parameters may be null to
+			 * indicate wildcards. This is only used in SPARQL queries when no graph
+			 * names are indicated.
+			 * 
+			 * @param subj subject of pattern
+			 * @param pred predicate of pattern
+			 * @param obj object of pattern
+			 * @return iterator over statements
+			 */
+     		public java.util.Iterator getDefaultGraphStatements (name.levering.ryan.sparql.common.Value subject, name.levering.ryan.sparql.common.URI predicate, name.levering.ryan.sparql.common.Value @object) {
+				return GetIterator( new Statement(ToEntity(subject), ToEntity(predicate), ToResource(@object), Statement.DefaultMeta), -1 );
 			}
 
-     		public java.util.Iterator getDefaultStatements (name.levering.ryan.sparql.common.Value[] subject, name.levering.ryan.sparql.common.Value[] predicate, name.levering.ryan.sparql.common.Value[] @object, object[] litFilters, int limit) {
-				return GetIterator( ToEntities(subject), ToEntities(predicate), ToResources(@object), QueryMeta == null ? null : new Entity[] { QueryMeta }, litFilters, true, limit );
+     		public java.util.Iterator getDefaultGraphStatements (name.levering.ryan.sparql.common.Value[] subject, name.levering.ryan.sparql.common.Value[] predicate, name.levering.ryan.sparql.common.Value[] @object, object[] litFilters, int limit) {
+				return GetIterator( ToEntities(subject), ToEntities(predicate), ToResources(@object), new Entity[] { Statement.DefaultMeta }, litFilters, limit );
      		}
 			
-		    /**
-		     * Gets all the statements that come from any graph and have a certain
-		     * subject, predicate, and object. Any of the parameters can be null, in
-		     * which case it assumes these are "wildcards" and all statements that match
-		     * the remainding parameters will be returned.
-		     * 
-		     * @param the subj the subject to match statements against
-		     * @param pred the predicate to match statements against
-		     * @param obj the object to match statements against
-		     * @return an Iterator over the matching statements
-		     */
-     		public java.util.Iterator getStatements (name.levering.ryan.sparql.common.Value subject, name.levering.ryan.sparql.common.URI predicate, name.levering.ryan.sparql.common.Value @object) {
-				return GetIterator(  new Statement(ToEntity(subject), ToEntity(predicate), ToResource(@object), null), false, -1 );
+			/**
+			 * Gets all statements with a specific subject, predicate and/or object in
+			 * a named graph of the repository. All three parameters may be null to
+			 * indicate wildcards. This is only used in SPARQL queries when no graph			 * names are indicated.
+			 * 
+			 * @param subj subject of pattern
+			 * @param pred predicate of pattern
+			 * @param obj object of pattern
+			 * @return iterator over statements
+			 */
+     		public java.util.Iterator getNamedGraphStatements (name.levering.ryan.sparql.common.Value subject, name.levering.ryan.sparql.common.URI predicate, name.levering.ryan.sparql.common.Value @object) {
+				return GetIterator( new Statement(ToEntity(subject), ToEntity(predicate), ToResource(@object), null), -1 );
 			}
-	
-     		public java.util.Iterator getStatements (name.levering.ryan.sparql.common.Value[] subject, name.levering.ryan.sparql.common.Value[] predicate, name.levering.ryan.sparql.common.Value[] @object, object[] litFilters, int limit) {
-				return GetIterator(  ToEntities(subject), ToEntities(predicate), ToResources(@object), null, litFilters, false, limit );
+
+     		public java.util.Iterator getNamedGraphStatements (name.levering.ryan.sparql.common.Value[] subject, name.levering.ryan.sparql.common.Value[] predicate, name.levering.ryan.sparql.common.Value[] @object, object[] litFilters, int limit) {
+				return GetIterator( ToEntities(subject), ToEntities(predicate), ToResources(@object), null, litFilters, limit );
      		}
      		
-		    /**
-		     * Gets all the statements that come from a particular named graph and have
-		     * a certain subject, predicate, and object. Any of the parameters can be
-		     * null, in which case it assumes these are "wildcards" and all statements
-		     * that match the remainding parameters will be returned.
-		     */
-     		public java.util.Iterator getStatements (name.levering.ryan.sparql.common.Value subject, name.levering.ryan.sparql.common.URI predicate, name.levering.ryan.sparql.common.Value @object, name.levering.ryan.sparql.common.URI graph) {
-				return GetIterator( new Statement(ToEntity(subject), ToEntity(predicate), ToResource(@object), ToEntity(graph)), false, -1 );
+			/**
+			 * Gets all statements with a specific subject, predicate and/or object, within
+			 * a certain set of graphs. The graphs might be from FROM or FROM NAMED clauses.
+			 * subj, pred, and obj, and graph may be null. If graph is null, both FROM and
+			 * FROM NAMED graphs may match.
+			 * 
+			 * @param subj subject of pattern
+			 * @param pred predicate of pattern
+			 * @param obj object of pattern
+			 * @param graph the context with which to match the statements against
+			 * @return iterator over statements
+			 */
+     		public java.util.Iterator getStatements (name.levering.ryan.sparql.common.Value subject, name.levering.ryan.sparql.common.URI predicate, name.levering.ryan.sparql.common.Value @object, name.levering.ryan.sparql.common.URI[] graphs) {
+				return GetIterator( new Statement(ToEntity(subject), ToEntity(predicate), ToResource(@object)), ToEntities(graphs), -1 );
 			}
 			
-     		public java.util.Iterator getStatements (name.levering.ryan.sparql.common.Value[] subject, name.levering.ryan.sparql.common.Value[] predicate, name.levering.ryan.sparql.common.Value[] @object, name.levering.ryan.sparql.common.URI[] graph, object[] litFilters, int limit) {
-				return GetIterator( ToEntities(subject), ToEntities(predicate), ToResources(@object), ToEntities(graph), litFilters, false, limit );
+     		public java.util.Iterator getStatements (name.levering.ryan.sparql.common.Value[] subject, name.levering.ryan.sparql.common.Value[] predicate, name.levering.ryan.sparql.common.Value[] @object, name.levering.ryan.sparql.common.URI[] graphs, object[] litFilters, int limit) {
+				return GetIterator( ToEntities(subject), ToEntities(predicate), ToResources(@object), ToEntities(graphs), litFilters, limit );
      		}
      		
 			public name.levering.ryan.sparql.common.SPARQLValueFactory getValueFactory() {
@@ -490,16 +519,27 @@ namespace SemWeb.Query {
 				return ret;
 			}
 			
-			public bool hasDefaultStatement (name.levering.ryan.sparql.common.Value subject, name.levering.ryan.sparql.common.URI @predicate, name.levering.ryan.sparql.common.Value @object) {
-				return has(new Statement(ToEntity(subject), ToEntity(predicate), ToResource(@object), QueryMeta));
+			private bool has(Statement statement, Entity[] graphs) {
+				foreach (Entity e in graphs) {
+					statement.Meta = e;
+					bool ret = source.Contains(statement);
+					Log("CONTAINS: " + statement + " ("  + ret + ")");
+					if (ret)
+						return true;
+				}
+				return false;
+			}
+
+			public bool hasDefaultGraphStatement (name.levering.ryan.sparql.common.Value subject, name.levering.ryan.sparql.common.URI @predicate, name.levering.ryan.sparql.common.Value @object) {
+				return has(new Statement(ToEntity(subject), ToEntity(predicate), ToResource(@object), Statement.DefaultMeta));
 			}
 			
-			public bool hasStatement (name.levering.ryan.sparql.common.Value subject, name.levering.ryan.sparql.common.URI @predicate, name.levering.ryan.sparql.common.Value @object) {
+			public bool hasNamedGraphStatement (name.levering.ryan.sparql.common.Value subject, name.levering.ryan.sparql.common.URI @predicate, name.levering.ryan.sparql.common.Value @object) {
 				return has(new Statement(ToEntity(subject), ToEntity(predicate), ToResource(@object), null));
 			}
 	
-			public bool hasStatement (name.levering.ryan.sparql.common.Value subject, name.levering.ryan.sparql.common.URI @predicate, name.levering.ryan.sparql.common.Value @object, name.levering.ryan.sparql.common.URI graph) {
-				return has(new Statement(ToEntity(subject), ToEntity(predicate), ToResource(@object), ToEntity(graph)));
+			public bool hasStatement (name.levering.ryan.sparql.common.Value subject, name.levering.ryan.sparql.common.URI @predicate, name.levering.ryan.sparql.common.Value @object, name.levering.ryan.sparql.common.URI[] graphs) {
+				return has(new Statement(ToEntity(subject), ToEntity(predicate), ToResource(@object)), ToEntities(graphs));
 			}
 			
 			public Entity ToEntity(name.levering.ryan.sparql.common.Value ent) {
@@ -715,11 +755,11 @@ namespace SemWeb.Query {
 			
 			Hashtable cache = new Hashtable();
 		
-			public StatementIterator(SelectableSource source, SelectFilter filter, RdfSourceWrapper wrapper, bool wantMetas) {
+			public StatementIterator(SelectableSource source, SelectFilter filter, RdfSourceWrapper wrapper) {
 				this.source = source;
 				this.filter = filter;
 				this.wrapper = wrapper;
-				this.wantMetas = wantMetas;
+				this.wantMetas = true;
 			}
 			
 			public bool hasNext() {
@@ -872,6 +912,9 @@ namespace SemWeb.Query {
 		    
 		    protected override RdfBindingSet runTripleConstraints(java.util.List tripleConstraints, 
 		    	name.levering.ryan.sparql.model.logic.ConstraintLogic.CallParams p) {
+		    	if (DisableQuery)
+		    		return null;
+		    	
 		    	RdfSourceWrapper s = (RdfSourceWrapper)p.source;
 		    	
 		    	if (s.source is QueryableSource) {
@@ -883,11 +926,42 @@ namespace SemWeb.Query {
 					VariableList distinguishedVars = new VariableList();
 					VariableList undistinguishedVars = new VariableList();
 					
-                    opts.VariableKnownValues = new VarKnownValuesType();
+               opts.VariableKnownValues = new VarKnownValuesType();
 		    		
 		    		Statement[] graph = new Statement[tripleConstraints.size()];
 		    		Hashtable varMap1 = new Hashtable();
 		    		Hashtable varMap2 = new Hashtable();
+
+			    	Entity metaField;
+		    		// In this case, we want to treat the meta fields of all of the statements
+		    		// in this group as bound by a single variable.
+			    	if (p.graphVariable != null) {
+			    		metaField = ToRes(p.graphVariable, p.knownValues, true, varMap1, varMap2, s, opts, distinguishedVars, undistinguishedVars, p.distinguishedVariables) as Entity;
+			    		
+		    		// Otherwise, we are told what graph to use. If sourceDatasets is null, 
+		    		// we are looking in the default graph.
+		    		} else if (p.sourceDatasets == null) {
+		    			if (p.defaultDatasets.size() == 0) {
+	    					metaField = Statement.DefaultMeta;
+	    				} else if (p.defaultDatasets.size() == 1) {
+	    					metaField = s.ToEntity((Value)p.defaultDatasets.iterator().next());
+	    				} else {
+	    					metaField = new SemWebVariable();
+	    					opts.VariableKnownValues[(Variable)metaField] = s.ToEntities((Value[])p.defaultDatasets.toArray(new Value[0]));
+	    				}
+		    		
+		    		// Otherwise, we are looking in the indicated graphs.
+			    	} else {
+		    			if (p.sourceDatasets.size() == 0) {
+	    					metaField = new SemWebVariable();
+	    				} else if (p.sourceDatasets.size() == 1) {
+	    					metaField = s.ToEntity((Value)p.sourceDatasets.iterator().next());
+	    				} else {
+	    					metaField = new SemWebVariable();
+	    					opts.VariableKnownValues[(Variable)metaField] = s.ToEntities((Value[])p.sourceDatasets.toArray(new Value[0]));
+	    				}
+			    	}
+		    	
 		    		for (int i = 0; i < tripleConstraints.size(); i++) {
 		    			TripleConstraintData triple = tripleConstraints.get(i) as TripleConstraintData;
 		    			if (triple == null) return null;
@@ -896,9 +970,9 @@ namespace SemWeb.Query {
 		    			graph[i].Subject = ToRes(triple.getSubjectExpression(), p.knownValues, true, varMap1, varMap2, s, opts, distinguishedVars, undistinguishedVars, p.distinguishedVariables) as Entity;
 		    			graph[i].Predicate = ToRes(triple.getPredicateExpression(), p.knownValues, true, varMap1, varMap2, s, opts, distinguishedVars, undistinguishedVars, p.distinguishedVariables) as Entity;
 		    			graph[i].Object = ToRes(triple.getObjectExpression(), p.knownValues, false, varMap1, varMap2, s, opts, distinguishedVars, undistinguishedVars, p.distinguishedVariables);
-		    			graph[i].Meta = new Variable(); // each part of the statement can have difference provenance
+		    			graph[i].Meta = metaField;
 		    			if (graph[i].AnyNull) return new RdfBindingSetImpl();
-		    			if (!(graph[i].Subject is Variable) && !(graph[i].Predicate is Variable) && !(graph[i].Object is Variable))
+		    			if (!(graph[i].Subject is Variable) && !(graph[i].Predicate is Variable) && !(graph[i].Object is Variable) && !(graph[i].Meta is Variable))
 		    				return null; // we could use Contains(), but we'll just abandon the Query() path altogether
 		    		}
 
@@ -957,7 +1031,6 @@ namespace SemWeb.Query {
 				public override bool Add(VariableBindings result) {
 					RdfBindingRowImpl row = new RdfBindingRowImpl(bindings);
 					for (int i = 0; i < result.Count; i++) {
-						if (varMap[result.Variables[i]] == null) continue; // because of the bad treatment of meta
 						row.addBinding( (SparqlVariable)varMap[result.Variables[i]], RdfSourceWrapper.Wrap(result.Values[i]) );
 					}
 					bindings.addRow(row);
