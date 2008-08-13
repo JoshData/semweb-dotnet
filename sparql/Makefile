@@ -14,7 +14,8 @@ get-sources:
 	mkdir -p ../bin ../bin_generics
 
 build-sparql:
-	diff -urN $(SPARQL_RELEASE) $(SPARQL) --exclude=.svn --exclude=.settings --exclude=META-INF --exclude=*.jj | grep -v "Binary files "  > local-changes.diff || true
+	diff -urN $(SPARQL_RELEASE) $(SPARQL) --exclude=.svn --exclude=.settings --exclude=META-INF --exclude=*.jj --exclude=*.rej | grep -v "Binary files "  > local-changes.diff || true
+	sed -i "s/ upstream\// work-copy\//" local-changes.diff
 	cd $(SPARQL); $(ANT) grammar jar;
 	mono $(IKVM) -out:sparql-core.dll -nostacktraceinfo \
 		$(SPARQL)/dist/sparql-core.jar 
