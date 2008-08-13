@@ -40,8 +40,8 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj'
  void LimitClause() #Limit :
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj' --exclude='*.rej' work-copy/src/main/name/levering/ryan/sparql/common/AdvancedRdfSource.java work-copy/src/main/name/levering/ryan/sparql/common/AdvancedRdfSource.java
 --- work-copy/src/main/name/levering/ryan/sparql/common/AdvancedRdfSource.java	1969-12-31 19:00:00.000000000 -0500
-+++ work-copy/src/main/name/levering/ryan/sparql/common/AdvancedRdfSource.java	2007-10-21 12:35:15.000000000 -0400
-@@ -0,0 +1,25 @@
++++ work-copy/src/main/name/levering/ryan/sparql/common/AdvancedRdfSource.java	2008-08-13 16:22:22.000000000 -0400
+@@ -0,0 +1,61 @@
 +/*
 + * SPARQL Engine
 + * Copyright (C) 2005 Ryan Levering, All rights reserved.
@@ -62,9 +62,45 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj'
 + * @version 1.0
 + */
 +public interface AdvancedRdfSource extends RdfSource {
++    /**
++     * Gets all statements with a specific subject, predicate and/or object, within
++     * a certain set of graphs. The graphs might be from FROM or FROM NAMED clauses.
++     * subj, pred, obj, and graph may be null. If graph is null, both FROM and
++     * FROM NAMED graphs may match.
++     * 
++     * @param subj subject of pattern
++     * @param pred predicate of pattern
++     * @param obj object of pattern
++     * @param graph the context with which to match the statements against
++     * @return iterator over statements
++     */
 +    public Iterator getStatements(Value[] subj, Value[] pred, Value[] obj, URI[] graph, Object[] litFilters, int limit);
-+    public Iterator getDefaultStatements(Value[] subj, Value[] pred, Value[] obj, Object[] litFilters, int limit);
-+    public Iterator getStatements(Value[] subj, Value[] pred, Value[] obj, Object[] litFilters, int limit);
++
++    /**
++     * Gets all statements with a specific subject, predicate and/or object in
++     * the default graph of the repository. All three parameters may be null to
++     * indicate wildcards. This is only used in SPARQL queries when no graph
++     * names are indicated.
++     * 
++     * @param subj subject of pattern
++     * @param pred predicate of pattern
++     * @param obj object of pattern
++     * @return iterator over statements
++     */
++    public Iterator getDefaultGraphStatements(Value[] subj, Value[] pred, Value[] obj, Object[] litFilters, int limit);
++    
++    /**
++     * Gets all statements with a specific subject, predicate and/or object in
++     * a named graph of the repository. All three parameters may be null to
++     * indicate wildcards. This is only used in SPARQL queries when no graph     * names are indicated.
++     * 
++     * @param subj subject of pattern
++     * @param pred predicate of pattern
++     * @param obj object of pattern
++     * @return iterator over statements
++     */
++    public Iterator getNamedGraphStatements(Value[] subj, Value[] pred, Value[] obj, Object[] litFilters, int limit);
++    
 +}
 +
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj' --exclude='*.rej' work-copy/src/main/name/levering/ryan/sparql/common/impl/DateTime.java work-copy/src/main/name/levering/ryan/sparql/common/impl/DateTime.java
@@ -366,6 +402,119 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj'
 +		return ret;
 +	}
  }
+diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj' --exclude='*.rej' work-copy/src/main/name/levering/ryan/sparql/common/RdfSource.java work-copy/src/main/name/levering/ryan/sparql/common/RdfSource.java
+--- work-copy/src/main/name/levering/ryan/sparql/common/RdfSource.java	2007-10-07 07:19:17.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/common/RdfSource.java	2008-08-13 16:17:09.000000000 -0400
+@@ -19,8 +19,10 @@
+ public interface RdfSource {
+ 
+     /**
+-     * Gets all statements with a specific subject, predicate and/or object. All
+-     * three parameters may be null to indicate wildcards.
++     * Gets all statements with a specific subject, predicate and/or object, within
++     * a certain set of graphs. The graphs might be from FROM or FROM NAMED clauses.
++     * subj, pred, and obj, and graph may be null. If graph is null, both FROM and
++     * FROM NAMED graphs may match.
+      * 
+      * @param subj subject of pattern
+      * @param pred predicate of pattern
+@@ -28,7 +30,7 @@
+      * @param graph the context with which to match the statements against
+      * @return iterator over statements
+      */
+-    public Iterator getStatements(Value subj, URI pred, Value obj, URI graph);
++    public Iterator getStatements(Value subj, URI pred, Value obj, URI[] graph);
+ 
+     /**
+      * Gets all statements with a specific subject, predicate and/or object in
+@@ -41,57 +43,56 @@
+      * @param obj object of pattern
+      * @return iterator over statements
+      */
+-    public Iterator getDefaultStatements(Value subj, URI pred, Value obj);
++    public Iterator getDefaultGraphStatements(Value subj, URI pred, Value obj);
+ 
+     /**
+-     * Gets all the statements, regardless of graph context, with a specific
+-     * subject, predicate and/or object in the default graph of the repository.
+-     * All three parameters may be null to indicate wildcards.
++     * Gets all statements with a specific subject, predicate and/or object in
++     * a named graph of the repository. All three parameters may be null to
++     * indicate wildcards. This is only used in SPARQL queries when no graph     * names are indicated.
+      * 
+      * @param subj subject of pattern
+      * @param pred predicate of pattern
+      * @param obj object of pattern
+      * @return iterator over statements
+      */
+-    public Iterator getStatements(Value subj, URI pred, Value obj);
++    public Iterator getNamedGraphStatements(Value subj, URI pred, Value obj);
+ 
+     /**
+-     * Checks whether some statement with a specific subject, predicate and/or
+-     * object is present in the default graph of the repository. All three
+-     * parameters may be null to indicate wildcards. This is only used in SPARQL
+-     * queries when no graph names are indicated.
++     * Checks whether the statement exist with a specific subject, predicate and/or object, within
++     * a certain set of graphs. The graphs might be from FROM or FROM NAMED clauses.
++     * subj, pred, and obj may not be null.
+      * 
+-     * @param subj subject of statement
+-     * @param pred predicate of statement
+-     * @param obj object of statement
+-     * @return boolean indicating if specified statement is present
++     * @param subj subject of pattern
++     * @param pred predicate of pattern
++     * @param obj object of pattern
++     * @param graph the context with which to match the statements against
++     * @return iterator over statements
+      */
+-    public boolean hasDefaultStatement(Value subj, URI pred, Value obj);
++    public boolean hasStatement(Value subj, URI pred, Value obj, URI[] graph);
+ 
+     /**
+-     * Checks whether some statement with a specific subject, predicate and/or
+-     * object is present in any graph of the repository. All three parameters
+-     * may be null to indicate wildcards.
++     * Checks whether the statement exists with a specific subject, predicate and/or object in
++     * the default graph of the repository. No parameters may be null.
++     * This is only used in SPARQL queries when no graph names are indicated.
+      * 
+-     * @param subj subject of statement
+-     * @param pred predicate of statement
+-     * @param obj object of statement
+-     * @return boolean indicating if specified statement is present
++     * @param subj subject of pattern
++     * @param pred predicate of pattern
++     * @param obj object of pattern
++     * @return iterator over statements
+      */
+-    public boolean hasStatement(Value subj, URI pred, Value obj);
++    public boolean hasDefaultGraphStatement(Value subj, URI pred, Value obj);
+ 
+     /**
+-     * Checks whether some statement with a specific subject, predicate and/or
+-     * object is present in the repository. All three parameters may be null to
+-     * indicate wildcards.
++     * Checks whether the statement exists with a specific subject, predicate and/or object in
++     * a named graph of the repository. No parameters may be null.
++     * This is only used in SPARQL queries when no graph names are indicated.
+      * 
+-     * @param subj subject of statement
+-     * @param pred predicate of statement
+-     * @param obj object of statement
+-     * @param graph the context to match the statements against
+-     * @return boolean indicating if specified statement is present
++     * @param subj subject of pattern
++     * @param pred predicate of pattern
++     * @param obj object of pattern
++     * @return iterator over statements
+      */
+-    public boolean hasStatement(Value subj, URI pred, Value obj, URI graph);
++    public boolean hasNamedGraphStatement(Value subj, URI pred, Value obj);
+ 
+     /**
+      * This useful method returns a value factory that is actually used by the
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj' --exclude='*.rej' work-copy/src/main/name/levering/ryan/sparql/common/SPARQLConstants.java work-copy/src/main/name/levering/ryan/sparql/common/SPARQLConstants.java
 --- work-copy/src/main/name/levering/ryan/sparql/common/SPARQLConstants.java	2007-10-07 07:19:17.000000000 -0400
 +++ work-copy/src/main/name/levering/ryan/sparql/common/SPARQLConstants.java	2008-03-06 07:55:03.000000000 -0500
@@ -531,7 +680,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj'
  }
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj' --exclude='*.rej' work-copy/src/main/name/levering/ryan/sparql/extensions/fpredicates/FunctionalPredicateLogic.java work-copy/src/main/name/levering/ryan/sparql/extensions/fpredicates/FunctionalPredicateLogic.java
 --- work-copy/src/main/name/levering/ryan/sparql/extensions/fpredicates/FunctionalPredicateLogic.java	2006-08-20 20:00:59.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/extensions/fpredicates/FunctionalPredicateLogic.java	2007-10-21 12:35:16.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/extensions/fpredicates/FunctionalPredicateLogic.java	2008-08-13 16:14:08.000000000 -0400
 @@ -1,6 +1,7 @@
  package name.levering.ryan.sparql.extensions.fpredicates;
  
@@ -540,8 +689,14 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj'
  
  import name.levering.ryan.sparql.common.RdfBindingSet;
  import name.levering.ryan.sparql.common.RdfSource;
-@@ -41,10 +42,9 @@
- 	 * @param namedDatasets the named graphs, ignored
+@@ -35,16 +36,11 @@
+ 	 * Delegates to the function to return a binding set based on the source and
+ 	 * the subject and object of the functional predicate statement.
+ 	 * 
+-	 * @param bindings the current bindings, ignored
+-	 * @param source the RDF source to pass to the function
+-	 * @param defaultDatasets the default named graphs, ignored
+-	 * @param namedDatasets the named graphs, ignored
  	 * @return a binding set according to the function
  	 */
 -	public RdfBindingSet constrain(RdfBindingSet bindings, RdfSource source, Collection defaultDatasets,
@@ -553,6 +708,38 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj'
  	}
  
  }
+diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj' --exclude='*.rej' work-copy/src/main/name/levering/ryan/sparql/extensions/fpredicates/ListMemberProperty.java work-copy/src/main/name/levering/ryan/sparql/extensions/fpredicates/ListMemberProperty.java
+--- work-copy/src/main/name/levering/ryan/sparql/extensions/fpredicates/ListMemberProperty.java	2007-10-07 07:19:16.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/extensions/fpredicates/ListMemberProperty.java	2008-08-13 16:17:49.000000000 -0400
+@@ -65,14 +65,14 @@
+ 
+ 			// Start off with two server queries to cache the members of all
+ 			// lists and the edges between lists
+-			Iterator edgeStatements = source.getStatements(null, SPARQLConstants.LIST_REST, null); // list
++			Iterator edgeStatements = source.getStatements(null, SPARQLConstants.LIST_REST, null, null); // list
+ 			// edges
+ 			while (edgeStatements.hasNext()) {
+ 				Statement statement = (Statement) edgeStatements.next();
+ 				edgeCache.put(statement.getSubject(), statement.getObject());
+ 			}
+ 
+-			Iterator memberStatements = source.getStatements(null, SPARQLConstants.LIST_FIRST, null); // list
++			Iterator memberStatements = source.getStatements(null, SPARQLConstants.LIST_FIRST, null, null); // list
+ 			// members
+ 			while (memberStatements.hasNext()) {
+ 				Statement statement = (Statement) memberStatements.next();
+diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj' --exclude='*.rej' work-copy/src/main/name/levering/ryan/sparql/extensions/fpredicates/RdfsMemberProperty.java work-copy/src/main/name/levering/ryan/sparql/extensions/fpredicates/RdfsMemberProperty.java
+--- work-copy/src/main/name/levering/ryan/sparql/extensions/fpredicates/RdfsMemberProperty.java	2007-10-07 07:19:16.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/extensions/fpredicates/RdfsMemberProperty.java	2008-08-13 16:44:25.000000000 -0400
+@@ -83,7 +83,7 @@
+ 				objVar = (Value) this.objExpression;
+ 			}
+ 
+-			return new RdfsMemberIterator(this.source.getStatements(subjVar, null, objVar));
++			return new RdfsMemberIterator(this.source.getStatements(subjVar, null, objVar, null));
+ 		}
+ 
+ 		/**
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj' --exclude='*.rej' work-copy/src/main/name/levering/ryan/sparql/extensions/functions/aggregate/CountFunction.java work-copy/src/main/name/levering/ryan/sparql/extensions/functions/aggregate/CountFunction.java
 --- work-copy/src/main/name/levering/ryan/sparql/extensions/functions/aggregate/CountFunction.java	2007-10-07 07:19:16.000000000 -0400
 +++ work-copy/src/main/name/levering/ryan/sparql/extensions/functions/aggregate/CountFunction.java	2008-07-11 15:28:33.000000000 -0400
@@ -794,7 +981,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj'
  	}
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj' --exclude='*.rej' work-copy/src/main/name/levering/ryan/sparql/extensions/with/DefaultWithConstraintLogic.java work-copy/src/main/name/levering/ryan/sparql/extensions/with/DefaultWithConstraintLogic.java
 --- work-copy/src/main/name/levering/ryan/sparql/extensions/with/DefaultWithConstraintLogic.java	2006-08-20 20:00:59.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/extensions/with/DefaultWithConstraintLogic.java	2007-10-21 12:35:16.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/extensions/with/DefaultWithConstraintLogic.java	2008-08-13 16:14:32.000000000 -0400
 @@ -1,6 +1,7 @@
  package name.levering.ryan.sparql.extensions.with;
  
@@ -803,8 +990,14 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj'
  
  import name.levering.ryan.sparql.common.RdfBindingSet;
  import name.levering.ryan.sparql.common.RdfSource;
-@@ -43,10 +44,9 @@
- 	 * @param namedDatasets the named data sets to query against, ignored
+@@ -37,16 +38,11 @@
+ 	 * Ignores the inputs and just lets the extension return a binding set to be
+ 	 * intersected with the current running set.
+ 	 * 
+-	 * @param bindings the current bindings, ignored
+-	 * @param source the source to query against, passed to the WITH extension
+-	 * @param defaultDatasets the default data sets to query against, ignored
+-	 * @param namedDatasets the named data sets to query against, ignored
  	 * @return the binding set created by the extension
  	 */
 -	public RdfBindingSet constrain(RdfBindingSet bindings, RdfSource source, Collection defaultDatasets,
@@ -875,7 +1068,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj'
  }
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj' --exclude='*.rej' work-copy/src/main/name/levering/ryan/sparql/logic/BNodeRenamingConstructQueryLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/BNodeRenamingConstructQueryLogic.java
 --- work-copy/src/main/name/levering/ryan/sparql/logic/BNodeRenamingConstructQueryLogic.java	2007-10-07 07:19:19.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/logic/BNodeRenamingConstructQueryLogic.java	2008-02-05 08:43:57.000000000 -0500
++++ work-copy/src/main/name/levering/ryan/sparql/logic/BNodeRenamingConstructQueryLogic.java	2008-08-13 14:57:43.000000000 -0400
 @@ -22,6 +22,7 @@
  import name.levering.ryan.sparql.model.GroupConstraint;
  import name.levering.ryan.sparql.model.TripleConstraint;
@@ -1278,7 +1471,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj'
  
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj' --exclude='*.rej' work-copy/src/main/name/levering/ryan/sparql/logic/DefaultDescribeQueryLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/DefaultDescribeQueryLogic.java
 --- work-copy/src/main/name/levering/ryan/sparql/logic/DefaultDescribeQueryLogic.java	2007-10-07 07:19:19.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/logic/DefaultDescribeQueryLogic.java	2008-07-11 15:31:54.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/logic/DefaultDescribeQueryLogic.java	2008-08-13 16:45:44.000000000 -0400
 @@ -7,6 +7,7 @@
  
  import java.util.ArrayList;
@@ -1434,9 +1627,9 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj'
 +			
 +			Iterator statements;
 +			if (i == 0) // forward
-+				statements = source.getDefaultStatements(value, null, null);
++				statements = source.getDefaultGraphStatements(value, null, null);
 +			else // back links
-+				statements = source.getDefaultStatements(null, null, value);
++				statements = source.getDefaultGraphStatements(null, null, value);
 +				
 +			// Accumulate statements and objects by predicate.
 +			HashMap statementsByPred = new HashMap();
@@ -1486,9 +1679,9 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj'
 +						if (v instanceof BNode) {
 +							descriptions.addAll(describe(v, source, alreadyDescribed, direction, depth+1));
 +						} else {
-+							descriptions.addAll(toCollection(source.getDefaultStatements(v, valueFactory.createURI("http://www.w3.org/2000/01/rdf-schema#label"), null)));
-+							descriptions.addAll(toCollection(source.getDefaultStatements(v, valueFactory.createURI("http://purl.org/dc/elements/1.1/title"), null)));
-+							descriptions.addAll(toCollection(source.getDefaultStatements(v, valueFactory.createURI("http://xmlns.com/foaf/0.1/name"), null)));
++							descriptions.addAll(toCollection(source.getDefaultGraphStatements(v, valueFactory.createURI("http://www.w3.org/2000/01/rdf-schema#label"), null)));
++							descriptions.addAll(toCollection(source.getDefaultGraphStatements(v, valueFactory.createURI("http://purl.org/dc/elements/1.1/title"), null)));
++							descriptions.addAll(toCollection(source.getDefaultGraphStatements(v, valueFactory.createURI("http://xmlns.com/foaf/0.1/name"), null)));
 +						}
 +					}
  				}
@@ -3054,7 +3247,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj'
  }
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj' --exclude='*.rej' work-copy/src/main/name/levering/ryan/sparql/logic/ExtendedConstructQueryLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/ExtendedConstructQueryLogic.java
 --- work-copy/src/main/name/levering/ryan/sparql/logic/ExtendedConstructQueryLogic.java	2007-10-07 07:19:19.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/logic/ExtendedConstructQueryLogic.java	2008-02-05 15:36:31.000000000 -0500
++++ work-copy/src/main/name/levering/ryan/sparql/logic/ExtendedConstructQueryLogic.java	2008-08-13 16:13:21.000000000 -0400
 @@ -87,32 +87,23 @@
  	 * @return an RDF graph containing the formed triples
  	 */
@@ -3817,7 +4010,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj'
  	 * Evaluates the argument to the function and does simplistic conversion to
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj' --exclude='*.rej' work-copy/src/main/name/levering/ryan/sparql/logic/naive/DefaultFilterConstraintLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/naive/DefaultFilterConstraintLogic.java
 --- work-copy/src/main/name/levering/ryan/sparql/logic/naive/DefaultFilterConstraintLogic.java	2007-10-07 07:19:19.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/logic/naive/DefaultFilterConstraintLogic.java	2008-02-09 15:24:09.000000000 -0500
++++ work-copy/src/main/name/levering/ryan/sparql/logic/naive/DefaultFilterConstraintLogic.java	2008-08-13 15:24:48.000000000 -0400
 @@ -8,6 +8,7 @@
  import java.util.Collection;
  import java.util.Collections;
@@ -3826,8 +4019,15 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj'
  
  import name.levering.ryan.sparql.common.RdfBindingRow;
  import name.levering.ryan.sparql.common.RdfBindingSet;
-@@ -74,17 +75,16 @@
-      *            this constraint
+@@ -67,24 +68,18 @@
+      * Filters the passed in binding set, only adding those rows that return a
+      * true boolean value to the returned binding set.
+      * 
+-     * @param bindings the current bound values
+-     * @param source the RDF source, not used in this constraint
+-     * @param defaultDatasets the datasets to query, not used in this constraint
+-     * @param namedDatasets the named datasets for graph queries, not used in
+-     *            this constraint
       * @return a binding set with values that pass through the filter expression
       */
 -    public RdfBindingSet constrain(RdfBindingSet bindings, RdfSource source,
@@ -3847,7 +4047,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj'
              RdfBindingRow row = (RdfBindingRow) rows.next();
              try {
                  Value rawEvaluate = filterExpression.evaluate(row);
-@@ -97,16 +97,4 @@
+@@ -97,16 +92,4 @@
          }
          return newBindings;
      }
@@ -3866,7 +4066,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj'
  }
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj' --exclude='*.rej' work-copy/src/main/name/levering/ryan/sparql/logic/naive/DefaultGroupConstraintLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/naive/DefaultGroupConstraintLogic.java
 --- work-copy/src/main/name/levering/ryan/sparql/logic/naive/DefaultGroupConstraintLogic.java	2006-08-20 20:01:01.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/logic/naive/DefaultGroupConstraintLogic.java	2008-04-27 11:31:38.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/logic/naive/DefaultGroupConstraintLogic.java	2008-08-13 15:24:36.000000000 -0400
 @@ -9,6 +9,7 @@
  import java.util.Iterator;
  import java.util.LinkedList;
@@ -3875,9 +4075,18 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj'
  
  import name.levering.ryan.sparql.common.RdfBindingSet;
  import name.levering.ryan.sparql.common.RdfSource;
-@@ -73,18 +74,19 @@
- 	 * @param namedDatasets the named datasets to query in an unbound graph
- 	 *            query, passed on to subconstraints
+@@ -64,27 +65,20 @@
+ 	/**
+ 	 * Applies each subconstraint in turn, saving filter and optional
+ 	 * constraints for last, as according to specification.
+-	 * 
+-	 * @param bindings the current running bindings, ignored here
+-	 * @param source the source to query RDF triples, passed on to
+-	 *            subconstraints
+-	 * @param defaultDatasets the datasets to query by default, passed on to
+-	 *            subconstraints
+-	 * @param namedDatasets the named datasets to query in an unbound graph
+-	 *            query, passed on to subconstraints
  	 */
 -	public RdfBindingSet constrain(RdfBindingSet bindings, RdfSource source, Collection defaultDatasets,
 -			Collection namedDatasets) {
@@ -3900,7 +4109,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj'
  		RdfBindingSet current = null;
  		// Constrain in order, unless we hit an optional, graph, or value filter
  		// These things all kind of depend on the previous bindings
-@@ -99,7 +101,7 @@
+@@ -99,7 +93,7 @@
  			} else if (c instanceof GraphConstraintData) {
  				graphQueue.add(c);
  			} else {
@@ -3909,7 +4118,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj'
  			}
  
  		}
-@@ -108,10 +110,18 @@
+@@ -108,10 +102,18 @@
  		// This scoped graphing isn't required by the spec, but it's allowed
  		for (Iterator graphs = graphQueue.iterator(); graphs.hasNext();) {
  			ConstraintLogic c = (ConstraintLogic) graphs.next();
@@ -3930,7 +4139,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj'
  			}
  		}
  
-@@ -123,12 +133,18 @@
+@@ -123,12 +125,18 @@
  
  		for (Iterator optionals = optionalQueue.iterator(); optionals.hasNext();) {
  			ConstraintLogic c = (ConstraintLogic) optionals.next();
@@ -3953,7 +4162,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj'
  
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj' --exclude='*.rej' work-copy/src/main/name/levering/ryan/sparql/logic/naive/DefaultOptionalConstraintLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/naive/DefaultOptionalConstraintLogic.java
 --- work-copy/src/main/name/levering/ryan/sparql/logic/naive/DefaultOptionalConstraintLogic.java	2006-08-20 20:01:01.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/logic/naive/DefaultOptionalConstraintLogic.java	2008-02-09 15:26:55.000000000 -0500
++++ work-copy/src/main/name/levering/ryan/sparql/logic/naive/DefaultOptionalConstraintLogic.java	2008-08-13 15:24:56.000000000 -0400
 @@ -6,9 +6,12 @@
  package name.levering.ryan.sparql.logic.naive;
  
@@ -3991,7 +4200,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj'
  
  	/**
  	 * Creates a new optional constraint logic object that expands a binding set
-@@ -54,12 +59,10 @@
+@@ -54,75 +59,56 @@
  	 * @param data the data that holds the constraints
  	 * @param logic the logic to calculate the set join operation
  	 */
@@ -4006,9 +4215,16 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj'
  	}
  
  	/**
-@@ -74,55 +77,46 @@
- 	 * @param namedDatasets the named datasets for named queries, passed onto
- 	 *            the grouped constraint
+ 	 * Calculates a new binding set by expanding the passed bindings with the
+ 	 * bindings from the enclosed constraints.
+-	 * 
+-	 * @param bindings the current value bindings, used as the base for
+-	 *            expansion
+-	 * @param source the RDF triple source, passed onto the grouped constraint
+-	 * @param defaultDatasets the datasets to query, passed onto the grouped
+-	 *            constraint
+-	 * @param namedDatasets the named datasets for named queries, passed onto
+-	 *            the grouped constraint
  	 */
 -	public RdfBindingSet constrain(RdfBindingSet bindings, RdfSource source, Collection defaultDatasets,
 -			Collection namedDatasets) {
@@ -4095,18 +4311,29 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj'
  }
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj' --exclude='*.rej' work-copy/src/main/name/levering/ryan/sparql/logic/naive/DefaultTripleConstraintLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/naive/DefaultTripleConstraintLogic.java
 --- work-copy/src/main/name/levering/ryan/sparql/logic/naive/DefaultTripleConstraintLogic.java	2007-10-07 07:19:19.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/logic/naive/DefaultTripleConstraintLogic.java	2008-02-05 16:03:00.000000000 -0500
-@@ -9,6 +9,7 @@
++++ work-copy/src/main/name/levering/ryan/sparql/logic/naive/DefaultTripleConstraintLogic.java	2008-08-13 17:50:32.000000000 -0400
+@@ -9,7 +9,10 @@
  import java.util.Collection;
  import java.util.Iterator;
  import java.util.List;
 +import java.util.Map;
++import java.util.Set;
  
++import name.levering.ryan.sparql.common.AdvancedRdfSource;
  import name.levering.ryan.sparql.common.GraphStatement;
  import name.levering.ryan.sparql.common.LenientStatement;
-@@ -62,8 +63,7 @@
-      *            used in this constraint
+ import name.levering.ryan.sparql.common.RdfBindingSet;
+@@ -54,16 +57,8 @@
+      * Returns a binding set of bound values matching a particular subject,
+      * predicate, and object where one or more of them is a wildcard.
       * 
+-     * @param bindings the current bindings, not used in this constraint
+-     * @param source the source to query for the statement constraints
+-     * @param defaultDatasets the datasets to query, if non-default graphs are
+-     *            being used
+-     * @param namedDatasets the named datasets to use in graph constraints, not
+-     *            used in this constraint
+-     * 
       */
 -    public RdfBindingSet constrain(RdfBindingSet bindings, RdfSource source,
 -            Collection defaultDatasets, Collection namedDatasets) {
@@ -4114,50 +4341,179 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj'
  
          ExpressionLogic subExpr = this.data.getSubjectExpression();
          ExpressionLogic predExpr = this.data.getPredicateExpression();
-@@ -109,32 +109,33 @@
+@@ -104,39 +99,77 @@
+             object = (Value) objExpr;
+         }
  
+-        RdfBindingSetImpl newBindings = new RdfBindingSetImpl(
++        if (variables.isEmpty()) {
++	        RdfBindingSetImpl emptyBindings = new RdfBindingSetImpl(
+                 (Variable[]) variables.toArray(new Variable[0]));
+-
++        	return emptyBindings;
++        }
++        
++		if (p.graphVariable != null) {
++			variables.add(p.graphVariable);
++		}
++		
++        RdfBindingSetImpl newBindings = new RdfBindingSetImpl(
++                        (Variable[]) variables.toArray(new Variable[0]));
          Iterator statements;
-         if (!variables.isEmpty()) {
+-        if (!variables.isEmpty()) {
 -            if (defaultDatasets == null) {
-+            if (p.defaultDatasets == null) {
-                 // This adds an extra column to the returned set for the GRAPH
-                 // constraint to process
-                 variables.add(StreamedGraphConstraintLogic.CONTEXT_VARIABLE);
-                 newBindings = new RdfBindingSetImpl(
-                         (Variable[]) variables.toArray(new Variable[0]));
+-                // This adds an extra column to the returned set for the GRAPH
+-                // constraint to process
+-                variables.add(StreamedGraphConstraintLogic.CONTEXT_VARIABLE);
+-                newBindings = new RdfBindingSetImpl(
+-                        (Variable[]) variables.toArray(new Variable[0]));
 -                statements = source.getStatements(subject, verb, object);
-+                statements = p.source.getStatements(subject, verb, object);
-                 addGraphStatements(newBindings, statements, flags);
-             } else {
+-                addGraphStatements(newBindings, statements, flags);
+-            } else {
 -                if (defaultDatasets.isEmpty()) {
-+                if (p.defaultDatasets.isEmpty()) {
-                     // This is if no FROM graphs are specified
+-                    // This is if no FROM graphs are specified
 -                    statements = source.getDefaultStatements(subject, verb,
-+                    statements = p.source.getDefaultStatements(subject, verb,
-                             object);
-                     addStatements(newBindings, statements, flags);
-                 } else {
-                     // This is if FROM graphs are specified or FROM NAMED and
-                     // we're in a GRAPH constraint
+-                            object);
+-                    addStatements(newBindings, statements, flags);
+-                } else {
+-                    // This is if FROM graphs are specified or FROM NAMED and
+-                    // we're in a GRAPH constraint
 -                    for (Iterator i = defaultDatasets.iterator(); i.hasNext();) {
 -                        statements = source.getStatements(subject, verb,
-+                    for (Iterator i = p.defaultDatasets.iterator(); i.hasNext();) {
-+                        statements = p.source.getStatements(subject, verb,
-                                 object, (URI) i.next());
-                         addStatements(newBindings, statements, flags);
-                     }
-                 }
-             }
-         }
+-                                object, (URI) i.next());
+-                        addStatements(newBindings, statements, flags);
+-                    }
+-                }
+-            }
+-        }
 -        return newBindings;
-+		  
++
++		if (!(p.source instanceof AdvancedRdfSource)) {
++			if (p.sourceDatasets == null) {
++			    if (p.defaultDatasets.size() == 0) {
++	                statements = p.source.getDefaultGraphStatements(subject, verb, object);
++	            } else {
++	            	statements = p.source.getStatements(subject, verb, object, (URI[])p.defaultDatasets.toArray(new URI[0]));
++	            }
++	        } else {
++			    if (p.sourceDatasets.size() == 0) {
++	                statements = p.source.getNamedGraphStatements(subject, verb, object);
++	            } else {
++	            	statements = p.source.getStatements(subject, verb, object, (URI[])p.sourceDatasets.toArray(new URI[0]));
++	            }
++	        }
++	    } else {
++	    	AdvancedRdfSource src = (AdvancedRdfSource)p.source;
++
++			Value[] subject2 = getValues(subExpr, p);
++			Value[] verb2 = getValues(predExpr, p);
++			Value[] object2 = getValues(objExpr, p);
++			Object[] litFilters = getFilters(objExpr, p);
++
++			if (p.sourceDatasets == null) {
++			    if (p.defaultDatasets.size() == 0) {
++	                statements = src.getDefaultGraphStatements(subject2, verb2, object2, litFilters, p.limit);
++	            } else {
++	            	statements = src.getStatements(subject2, verb2, object2, (URI[])p.defaultDatasets.toArray(new URI[0]), litFilters, p.limit);
++	            }
++	        } else {
++			    if (p.sourceDatasets.size() == 0) {
++	                statements = src.getNamedGraphStatements(subject2, verb2, object2, litFilters, p.limit);
++	            } else {
++	            	statements = src.getStatements(subject2, verb2, object2, (URI[])p.sourceDatasets.toArray(new URI[0]), litFilters, p.limit);
++	            }
++	        }
++	    }
++        
++        addStatements(newBindings, statements, flags, p.graphVariable);
++        
 +        return p.projectOrderDistinctLimit(newBindings);
      }
  
++	private Value[] getValues(ExpressionLogic value, ConstraintLogic.CallParams p) {
++		if (!(value instanceof Variable)) return new Value[] { (Value)value };
++		if (p.knownValues == null) return null;
++		Set values = (Set)p.knownValues.get((Variable)value);
++		if (values == null) return null;
++		return (Value[])values.toArray(new Value[0]);
++	}
++	private Object[] getFilters(ExpressionLogic value, ConstraintLogic.CallParams p) {
++		if (!(value instanceof Variable)) return null;
++		if (p.knownFilters == null) return null;
++		List filters = (List)p.knownFilters.get((Variable)value);
++		if (filters == null) return null;
++		return filters.toArray();
++	}
++
      /**
+      * Adds statements to a binding set, according to whether the field was
+      * being bound to a variable or not.
+@@ -146,49 +179,7 @@
+      * @param flags an array holding flags that specify which fields to use
+      */
+     private void addStatements(RdfBindingSetImpl set, Iterator statements,
+-            int[] flags) {
+-        while (statements.hasNext()) {
+-            LenientStatement statement = (LenientStatement) statements.next();
+-            if (flags[0] != 0 && flags[0] == flags[2]) {
+-                if (!statement.getSubject().equals(statement.getObject())) {
+-                    continue;
+-                }
+-            }
+-            if (flags[0] != 0 && flags[0] == flags[1]) {
+-                if (!statement.getSubject().equals(statement.getPredicate())) {
+-                    continue;
+-                }
+-            }
+-            if (flags[1] != 0 && flags[1] == flags[2]) {
+-                if (!statement.getPredicate().equals(statement.getObject())) {
+-                    continue;
+-                }
+-            }
+-            
+-            RdfBindingRowImpl newRow = new RdfBindingRowImpl();
+-            if (flags[0] == 1) {
+-                newRow.addBinding((Variable) this.data.getSubjectExpression(), statement.getSubject());
+-            }
+-            if (flags[1] == 2) {
+-                newRow.addBinding((Variable) this.data.getPredicateExpression(), statement.getPredicate());
+-            }
+-            if (flags[2] == 3) {
+-                newRow.addBinding((Variable) this.data.getObjectExpression(), statement.getObject());
+-            }
+-            set.addRow(newRow);
+-        }
+-    }
+-
+-    /**
+-     * Adds statements to a binding set, according to whether the field was
+-     * being bound to a variable or not.
+-     * 
+-     * @param set the set to add the statements to
+-     * @param statements the fully realized statements from the source
+-     * @param flags an array holding flags that specify which fields to use
+-     */
+-    private void addGraphStatements(RdfBindingSetImpl set, Iterator statements,
+-            int[] flags) {
++            int[] flags, Variable graphVariable) {
+         while (statements.hasNext()) {
+             GraphStatement statement = (GraphStatement) statements.next();
+             if (flags[0] != 0 && flags[0] == flags[2]) {
+@@ -216,8 +207,10 @@
+             }
+             if (flags[2] == 3) {
+                 newRow.addBinding((Variable) this.data.getObjectExpression(), statement.getObject());
++            }
++            if (graphVariable != null) {
++                newRow.addBinding(graphVariable, statement.getGraphName());
+             }
+-            newRow.addBinding(StreamedGraphConstraintLogic.CONTEXT_VARIABLE, statement.getGraphName());
+             set.addRow(newRow);
+         }
+     }
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj' --exclude='*.rej' work-copy/src/main/name/levering/ryan/sparql/logic/naive/DefaultUnionConstraintLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/naive/DefaultUnionConstraintLogic.java
 --- work-copy/src/main/name/levering/ryan/sparql/logic/naive/DefaultUnionConstraintLogic.java	2007-10-07 07:19:19.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/logic/naive/DefaultUnionConstraintLogic.java	2008-07-11 15:29:45.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/logic/naive/DefaultUnionConstraintLogic.java	2008-08-13 15:25:18.000000000 -0400
 @@ -7,9 +7,12 @@
  
  import java.util.Collection;
@@ -4171,7 +4527,16 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj'
  import name.levering.ryan.sparql.model.data.UnionConstraintData;
  import name.levering.ryan.sparql.model.logic.ConstraintLogic;
  import name.levering.ryan.sparql.model.logic.helper.SetUnionLogic;
-@@ -60,18 +63,76 @@
+@@ -51,27 +54,79 @@
+ 	 * Iterates over the collection of binding sets returned by the group
+ 	 * constraints and forms the aggregate union of all of them.
+ 	 * 
+-	 * @param bindings the current bindings, not used in this constraint
+-	 * @param source the RDF triple source, passed onto the sub constraints
+-	 * @param defaultDatasets the default graphs to query, passed on to the sub
+-	 *            constraints
+-	 * @param namedDatasets the named graphs to query, passed on to the sub
+-	 *            constraints
  	 * @return a set containing the union of all the bound values of all the sub
  	 *         constraints
  	 */
@@ -4305,8 +4670,8 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj'
   * is the aggregation of two other binding sets. This implementation does this
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj' --exclude='*.rej' work-copy/src/main/name/levering/ryan/sparql/logic/streamed/AdvancedGroupConstraintLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/streamed/AdvancedGroupConstraintLogic.java
 --- work-copy/src/main/name/levering/ryan/sparql/logic/streamed/AdvancedGroupConstraintLogic.java	1969-12-31 19:00:00.000000000 -0500
-+++ work-copy/src/main/name/levering/ryan/sparql/logic/streamed/AdvancedGroupConstraintLogic.java	2008-04-27 11:25:16.000000000 -0400
-@@ -0,0 +1,629 @@
++++ work-copy/src/main/name/levering/ryan/sparql/logic/streamed/AdvancedGroupConstraintLogic.java	2008-08-13 16:24:53.000000000 -0400
+@@ -0,0 +1,621 @@
 +/*
 + * SPARQL Engine
 + * Copyright (C) 2005 Ryan Levering, All rights reserved.
@@ -4395,14 +4760,6 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj'
 +    /**
 +     * Applies each subconstraint in turn, saving filter and optional
 +     * constraints for last, as according to specification.
-+     * 
-+     * @param bindings the current running bindings, ignored here
-+     * @param source the source to query RDF triples, passed on to
-+     *            subconstraints
-+     * @param defaultDatasets the datasets to query by default, passed on to
-+     *            subconstraints
-+     * @param namedDatasets the named datasets to query in an unbound graph
-+     *            query, passed on to subconstraints
 +     */
 +    public RdfBindingSet constrain(ConstraintLogic.CallParams p) {
 +	
@@ -4886,7 +5243,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj'
 +		URI rdftype = valueFactory.createURI("http://www.w3.org/1999/02/22-rdf-syntax-ns#type");
 +		String typeuri = "http://www.w3.org/2002/07/owl#" +
 +			( forward ? "FunctionalProperty" : "InverseFunctionalProperty");
-+		boolean ret = source.hasDefaultStatement(predicate, rdftype, valueFactory.createURI(typeuri));
++		boolean ret = source.hasDefaultGraphStatement(predicate, rdftype, valueFactory.createURI(typeuri));
 +		map.put(predicate, new Boolean(ret));
 +		return ret;
 +	}
@@ -5014,7 +5371,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj'
  
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj' --exclude='*.rej' work-copy/src/main/name/levering/ryan/sparql/logic/streamed/StreamedFilterConstraintLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/streamed/StreamedFilterConstraintLogic.java
 --- work-copy/src/main/name/levering/ryan/sparql/logic/streamed/StreamedFilterConstraintLogic.java	2007-10-07 07:19:19.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/logic/streamed/StreamedFilterConstraintLogic.java	2008-07-11 15:28:33.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/logic/streamed/StreamedFilterConstraintLogic.java	2008-08-13 15:38:25.000000000 -0400
 @@ -10,6 +10,7 @@
  import java.util.Iterator;
  import java.util.LinkedList;
@@ -5023,8 +5380,15 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj'
  
  import name.levering.ryan.sparql.common.RdfBindingRow;
  import name.levering.ryan.sparql.common.RdfBindingSet;
-@@ -76,9 +77,8 @@
- 	 *            this constraint
+@@ -69,16 +70,10 @@
+ 	 * Filters the passed in binding set, only adding those rows that return a
+ 	 * true boolean value to the returned binding set.
+ 	 * 
+-	 * @param bindings the current bound values
+-	 * @param source the RDF source, not used in this constraint
+-	 * @param defaultDatasets the datasets to query, not used in this constraint
+-	 * @param namedDatasets the named datasets for graph queries, not used in
+-	 *            this constraint
  	 * @return a binding set with values that pass through the filter expression
  	 */
 -	public RdfBindingSet constrain(RdfBindingSet bindings, RdfSource source, Collection defaultDatasets,
@@ -5035,7 +5399,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj'
  	}
  
  	private class FilterBindingSet extends AbstractRdfBindingSet implements StackedRdfBindingSet {
-@@ -139,6 +139,9 @@
+@@ -139,6 +134,9 @@
  						}
  					} catch (TypeError e) {
  						// Ignore and don't return
@@ -5045,7 +5409,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj'
  					}
  				}
  				return null;
-@@ -155,16 +158,4 @@
+@@ -155,16 +153,4 @@
  
  
  	}
@@ -5064,131 +5428,351 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj'
  }
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj' --exclude='*.rej' work-copy/src/main/name/levering/ryan/sparql/logic/streamed/StreamedGraphConstraintLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/streamed/StreamedGraphConstraintLogic.java
 --- work-copy/src/main/name/levering/ryan/sparql/logic/streamed/StreamedGraphConstraintLogic.java	2007-10-07 07:19:19.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/logic/streamed/StreamedGraphConstraintLogic.java	2007-10-21 12:35:15.000000000 -0400
-@@ -10,6 +10,7 @@
- import java.util.Collection;
++++ work-copy/src/main/name/levering/ryan/sparql/logic/streamed/StreamedGraphConstraintLogic.java	2008-08-13 17:42:00.000000000 -0400
+@@ -7,9 +7,12 @@
+ 
+ import java.util.ArrayList;
+ import java.util.Arrays;
+-import java.util.Collection;
++import java.util.Collection;
++import java.util.HashSet;
  import java.util.Iterator;
  import java.util.List;
 +import java.util.Map;
++import java.util.Set;
  
  import name.levering.ryan.sparql.common.RdfBindingRow;
  import name.levering.ryan.sparql.common.RdfBindingSet;
-@@ -85,21 +86,21 @@
+@@ -38,14 +41,6 @@
+  * @version 1.0
+  */
+ public class StreamedGraphConstraintLogic implements ConstraintLogic {
+-
+-    /**
+-     * This dummy variable is used to bind in inner triples and then be matched
+-     * in this constraint.
+-     */
+-    public static final Variable CONTEXT_VARIABLE = new VariableImpl(
+-            StreamedGraphConstraintLogic.class.getName());
+-
+     /**
+      * The data that holds the group constraint and the URI/variable list of
+      * named graphs.
+@@ -74,288 +69,35 @@
+      * Does the constraining of the binding set, by returning a binding set of
+      * variables bound in the named graphs by the subconstraints. It is expected
+      * to be intersected with the previous constraints in the containing group
+-     * constraint.
+-     * 
+-     * @param bindings the current bindings, not used in this constraint
+-     * @param source the source, passed on to the group constraint
+-     * @param defaultDatasets the datasets to use in the query, not used in this
+-     *            constraint
+-     * @param namedDatasets the named datasets, used in case the graph variable
+-     *            is not bound
++     * constraint.
++     *
       * @return a binding set of values bound in the named graphs, potentially
       *         with a bound graph variable
       */
 -    public RdfBindingSet constrain(RdfBindingSet bindings, RdfSource source,
 -            Collection defaultDatasets, Collection namedDatasets) {
-+    public RdfBindingSet constrain(ConstraintLogic.CallParams p) {
- 
-         RdfBindingSet fullSet = new RdfBindingSetImpl();
+-
+-        RdfBindingSet fullSet = new RdfBindingSetImpl();
 -        if (bindings != null && bindings.iterator().hasNext()) {
 -            for (Iterator i = bindings.iterator(); i.hasNext();) {
-+        if (p.bindings != null && p.bindings.iterator().hasNext()) {
-+            for (Iterator i = p.bindings.iterator(); i.hasNext();) {
-                 RdfBindingRow row = (RdfBindingRow) i.next();
-                 Object evaluation = this.data.getGraph().evaluate(row);
-                 // If this evaluates to an un-bound variable, assume we want to
-                 // apply the group to any named dataset
-                 if (evaluation instanceof Variable) {
+-                RdfBindingRow row = (RdfBindingRow) i.next();
+-                Object evaluation = this.data.getGraph().evaluate(row);
+-                // If this evaluates to an un-bound variable, assume we want to
+-                // apply the group to any named dataset
+-                if (evaluation instanceof Variable) {
 -                    if (namedDatasets.isEmpty()) {
-+                    if (p.namedDatasets.isEmpty()) {
-                         // Here we want to use any named dataset in the data
+-                        // Here we want to use any named dataset in the data
 -                        RdfBindingSet namedResults = this.data.getConstraint().constrain(
 -                                bindings, source, null, namedDatasets);
-+								 ConstraintLogic.CallParams p2 = p.clone();
-+								 p2.defaultDatasets = null;
-+                        RdfBindingSet namedResults = this.data.getConstraint().constrain(p2);
- 
-                         RdfBindingSet sourcedSet = changeSource(
-                                 (Variable) evaluation, namedResults);
-@@ -107,12 +108,13 @@
-                         fullSet = this.unionLogic.union(fullSet, sourcedSet);
-                     } else {
-                         // If there are named datasets, only use those
+-
+-                        RdfBindingSet sourcedSet = changeSource(
+-                                (Variable) evaluation, namedResults);
+-
+-                        fullSet = this.unionLogic.union(fullSet, sourcedSet);
+-                    } else {
+-                        // If there are named datasets, only use those
 -                        for (Iterator j = namedDatasets.iterator(); j.hasNext();) {
-+                        for (Iterator j = p.namedDatasets.iterator(); j.hasNext();) {
-                             URI namedSet = (URI) j.next();
+-                            URI namedSet = (URI) j.next();
 -                            Collection datasets = Arrays.asList(new Object[] { namedSet });
- 
+-
 -                            RdfBindingSet namedResults = this.data.getConstraint().constrain(
 -                                    bindings, source, datasets, namedDatasets);
-+									  ConstraintLogic.CallParams p2 = p.clone();
-+									  p2.defaultDatasets = Arrays.asList(new Object[] { namedSet });
-+									  
-+                            RdfBindingSet namedResults = this.data.getConstraint().constrain(p2);
- 
-                             RdfBindingSet sourcedSet = addSource(
-                                     (Variable) evaluation, namedSet,
-@@ -122,25 +124,27 @@
-                         }
-                     }
-                 } else if (this.data.getGraph() instanceof Variable) {
+-
+-                            RdfBindingSet sourcedSet = addSource(
+-                                    (Variable) evaluation, namedSet,
+-                                    namedResults);
+-
+-                            fullSet = this.unionLogic.union(fullSet, sourcedSet);
+-                        }
+-                    }
+-                } else if (this.data.getGraph() instanceof Variable) {
 -                    Collection datasets = Arrays.asList(new Object[] { evaluation });
 -                    RdfBindingSet namedResults = this.data.getConstraint().constrain(
 -                            bindings, source, datasets, namedDatasets);
-+						   ConstraintLogic.CallParams p2 = p.clone();
-+						   p2.defaultDatasets = Arrays.asList(new Object[] { evaluation });
-+                    RdfBindingSet namedResults = this.data.getConstraint().constrain(p2);
-                     fullSet = this.unionLogic.union(fullSet, addSource(
-                             (Variable) this.data.getGraph(), (URI) evaluation,
-                             namedResults));
-                 } else {
+-                    fullSet = this.unionLogic.union(fullSet, addSource(
+-                            (Variable) this.data.getGraph(), (URI) evaluation,
+-                            namedResults));
+-                } else {
 -                    Collection datasets = Arrays.asList(new Object[] { evaluation });
-+						   ConstraintLogic.CallParams p2 = p.clone();
-+						   p2.defaultDatasets = Arrays.asList(new Object[] { evaluation });
-                     fullSet = this.unionLogic.union(fullSet,
+-                    fullSet = this.unionLogic.union(fullSet,
 -                            this.data.getConstraint().constrain(bindings,
 -                                    source, datasets, namedDatasets));
-+                            this.data.getConstraint().constrain(p2));
-                 }
-             }
-         } else {
-             if (this.data.getGraph() instanceof Variable) {
+-                }
+-            }
+-        } else {
+-            if (this.data.getGraph() instanceof Variable) {
 -                if (namedDatasets.isEmpty()) {
-+                if (p.namedDatasets.isEmpty()) {
-                     // Here we want to use any named dataset in the data
+-                    // Here we want to use any named dataset in the data
 -                    RdfBindingSet namedResults = this.data.getConstraint().constrain(
 -                            bindings, source, null, namedDatasets);
-+							ConstraintLogic.CallParams p2 = p.clone();
-+							p2.defaultDatasets = null;
-+
-+							RdfBindingSet namedResults = this.data.getConstraint().constrain(p2);
- 
-                     RdfBindingSet sourcedSet = changeSource(
-                             (Variable) this.data.getGraph(), namedResults);
-@@ -148,12 +152,13 @@
-                     fullSet = this.unionLogic.union(fullSet, sourcedSet);
-                 } else {
-                     // If there are named datasets, only use those
+-
+-                    RdfBindingSet sourcedSet = changeSource(
+-                            (Variable) this.data.getGraph(), namedResults);
+-
+-                    fullSet = this.unionLogic.union(fullSet, sourcedSet);
+-                } else {
+-                    // If there are named datasets, only use those
 -                    for (Iterator j = namedDatasets.iterator(); j.hasNext();) {
-+                    for (Iterator j = p.namedDatasets.iterator(); j.hasNext();) {
-                         URI namedSet = (URI) j.next();
+-                        URI namedSet = (URI) j.next();
 -                        Collection datasets = Arrays.asList(new Object[] { namedSet });
-+							
-+								 ConstraintLogic.CallParams p2 = p.clone();
-+								 p2.defaultDatasets = Arrays.asList(new Object[] { namedSet });
- 
+-
 -                        RdfBindingSet namedResults = this.data.getConstraint().constrain(
 -                                bindings, source, datasets, namedDatasets);
-+                        RdfBindingSet namedResults = this.data.getConstraint().constrain(p2);
- 
-                         RdfBindingSet sourcedSet = addSource(
-                                 (Variable) this.data.getGraph(), namedSet,
-@@ -163,10 +168,10 @@
-                     }
-                 }
-             } else {
+-
+-                        RdfBindingSet sourcedSet = addSource(
+-                                (Variable) this.data.getGraph(), namedSet,
+-                                namedResults);
+-
+-                        fullSet = this.unionLogic.union(fullSet, sourcedSet);
+-                    }
+-                }
+-            } else {
 -                Collection datasets = Arrays.asList(new Object[] { this.data.getGraph() });
-+					  ConstraintLogic.CallParams p2 = p.clone();
-+					  p2.defaultDatasets = Arrays.asList(new Object[] { this.data.getGraph() });
-                 fullSet = this.unionLogic.union(fullSet,
+-                fullSet = this.unionLogic.union(fullSet,
 -                        this.data.getConstraint().constrain(bindings, source,
 -                                datasets, namedDatasets));
-+                        this.data.getConstraint().constrain(p2));
-             }
-         }
-         return fullSet;
+-            }
+-        }
+-        return fullSet;
+-    }
+-
+-    /**
+-     * Adds the source column to a value binding set, when variables are
+-     * specified in the graph name list. This helper method refactors out some
+-     * logic from the constraint method.
+-     * 
+-     * @param variable the variable to bind the source to
+-     * @param source the source that will be the value in the column for the
+-     *            rows
+-     * @param set the set to add the source column to
+-     * @return a set with the source value added to each row under a variable
+-     *         header
+-     */
+-    private RdfBindingSet addSource(Variable variable, URI source,
+-            RdfBindingSet set) {
+-        return new VariableAddSourceSet(set, variable, source);
+-    }
+-
+-    /**
+-     * Changes the source column to have the appropriate variable name as
+-     * defined in a GRAPH ?var query.
+-     * 
+-     * @param variable the variable that will be the new header
+-     * @param set the set to modify the column in
+-     */
+-    private RdfBindingSet changeSource(Variable variable, RdfBindingSet set) {
+-        return new VariableNameChangeSet(set, variable);
+-    }
+-    
+-    private class VariableNameChangeSet extends AbstractRdfBindingSet implements StackedRdfBindingSet {
+-
+-        final RdfBindingSet set;
+-
+-        final Variable newVar;
+-
+-        VariableNameChangeSet(RdfBindingSet set, Variable newVar) {
+-            this.set = set;
+-            this.newVar = newVar;
+-        }
+-
+-        public Iterator iterator() {
+-            return new VariableNameChangeIterator();
+-        }
+-
+-        public List getVariables() {
+-            List setVars = new ArrayList(this.set.getVariables());
+-            setVars.remove(CONTEXT_VARIABLE);
+-            setVars.add(this.newVar);
+-            return setVars;
+-        }
+-
+-        private class VariableNameChangeIterator implements Iterator {
+-
+-            private Iterator setIterator = VariableNameChangeSet.this.set.iterator();
+-
+-            public void remove() {
+-                this.setIterator.remove();
+-            }
+-
+-            public boolean hasNext() {
+-                return this.setIterator.hasNext();
+-            }
+-
+-            public Object next() {
+-                return new VariableNameChangeRow(
+-                        (RdfBindingRow) this.setIterator.next());
+-            }
+-
+-            private class VariableNameChangeRow extends AbstractRdfBindingRow {
+-
+-                private RdfBindingRow row;
+-
+-                VariableNameChangeRow(RdfBindingRow row) {
+-                    super(VariableNameChangeSet.this);
+-                    this.row = row;
+-                }
+-
+-                public Value getValue(Variable variable) {
+-                    if (variable.equals(VariableNameChangeSet.this.newVar)) {
+-                        return this.row.getValue(CONTEXT_VARIABLE);
+-                    } else {
+-                        return this.row.getValue(variable);
+-                    }
+-                }
+-
+-                public List getVariables() {
+-                    return VariableNameChangeSet.this.getVariables();
+-                }
+-            }
+-        }
+-
+-        public String describeSet() {
+-            return "SET GRAPH VARIABLE";
+-        }
+-
+-		public void setSource(RdfSource source) {
+-			if (this.set instanceof SourcedRdfBindingSet) {
+-				((SourcedRdfBindingSet) this.set).setSource(source);
+-			}
+-		}
+-
+-		public void accept(StreamedBindingSetVisitor setVisitor) {
+-			setVisitor.visit(this);
+-		}
+-		public Collection getDependencies() {
+-			return Arrays.asList(new RdfBindingSet[] { this.set });
+-		}
+-
+-    }
+-
+-    private class VariableAddSourceSet extends AbstractRdfBindingSet implements StackedRdfBindingSet {
+-
+-        RdfBindingSet set;
+-
+-        Variable newVar;
+-
+-        URI source;
+-
+-        VariableAddSourceSet(RdfBindingSet set, Variable newVar, URI source) {
+-            this.set = set;
+-            this.newVar = newVar;
+-            this.source = source;
+-        }
+-
+-        public Iterator iterator() {
+-            return new VariableAddSourceIterator();
+-        }
+-
+-        public List getVariables() {
+-            List setVars = new ArrayList(this.set.getVariables());
+-            setVars.add(this.newVar);
+-            return setVars;
+-        }
+-
+-        private class VariableAddSourceIterator implements Iterator {
+-
+-            private Iterator setIterator = VariableAddSourceSet.this.set.iterator();
+-
+-            public void remove() {
+-                this.setIterator.remove();
+-            }
+-
+-            public boolean hasNext() {
+-                return this.setIterator.hasNext();
+-            }
+-
+-            public Object next() {
+-                return new VariableAddSourceRow(
+-                        (RdfBindingRow) this.setIterator.next());
+-            }
+-
+-            private class VariableAddSourceRow extends AbstractRdfBindingRow {
+-
+-                private RdfBindingRow row;
+-
+-                VariableAddSourceRow(RdfBindingRow row) {
+-                    super(VariableAddSourceSet.this);
+-                    this.row = row;
+-                }
+-
+-                public Value getValue(Variable variable) {
+-                    if (variable.equals(VariableAddSourceSet.this.newVar)) {
+-                        return VariableAddSourceSet.this.source;
+-                    } else {
+-                        return this.row.getValue(variable);
+-                    }
+-                }
+-
+-                public List getVariables() {
+-                    return VariableAddSourceSet.this.getVariables();
+-                }
+-            }
+-        }
+-
+-        public String describeSet() {
+-            return "ADD STATEMENT SOURCE";
+-        }
+-
+-		public void accept(StreamedBindingSetVisitor setVisitor) {
+-			setVisitor.visit(this);
+-		}
+-		public Collection getDependencies() {
+-			return Arrays.asList(new RdfBindingSet[] { this.set });
+-		}
+-
++    public RdfBindingSet constrain(ConstraintLogic.CallParams p) {
++        ConstraintLogic.CallParams p2 = p.clone();
++        
++        // If this graph binds a variable, then when evaluating statements within
++        // this constraint, graph variables are set to bind to this variable.
++        // If we know the value of this variable from previous graph statements,
++        // then we say that the graphs for triple constraints down below comes from
++        // those values. If not, then we say that the graphs come from the query's
++        // FROM NAMED set.
++        if (this.data.getGraph() instanceof Variable) {
++        	p2.graphVariable = (Variable)this.data.getGraph();
++            p2.sourceDatasets = (Collection)p.knownValues.get(this.data.getGraph());
++            if (p2.sourceDatasets == null)
++            	p2.sourceDatasets = p.namedDatasets;
++            if (p2.distinguishedVariables == null)
++            	p2.distinguishedVariables = new HashSet();
++            p2.distinguishedVariables.add(this.data.getGraph());
++        } else {
++        	HashSet c = new HashSet();
++        	c.add(this.data.getGraph());
++        	p2.sourceDatasets = c;
++        }
++        
++		return this.data.getConstraint().constrain(p2);
+     }
+ 
+     /**
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj' --exclude='*.rej' work-copy/src/main/name/levering/ryan/sparql/logic/streamed/StreamedSetProjectionLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/streamed/StreamedSetProjectionLogic.java
 --- work-copy/src/main/name/levering/ryan/sparql/logic/streamed/StreamedSetProjectionLogic.java	2007-10-07 07:19:19.000000000 -0400
 +++ work-copy/src/main/name/levering/ryan/sparql/logic/streamed/StreamedSetProjectionLogic.java	2007-10-21 12:35:15.000000000 -0400
@@ -5207,141 +5791,156 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj'
  			public List getVariables() {
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj' --exclude='*.rej' work-copy/src/main/name/levering/ryan/sparql/logic/streamed/StreamedTripleConstraintLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/streamed/StreamedTripleConstraintLogic.java
 --- work-copy/src/main/name/levering/ryan/sparql/logic/streamed/StreamedTripleConstraintLogic.java	2007-10-07 07:19:19.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/logic/streamed/StreamedTripleConstraintLogic.java	2008-02-05 15:55:21.000000000 -0500
-@@ -10,11 +10,14 @@
- import java.util.Iterator;
- import java.util.List;
- import java.util.NoSuchElementException;
-+import java.util.Map;
-+import java.util.Set;
- 
- import name.levering.ryan.sparql.common.GraphStatement;
- import name.levering.ryan.sparql.common.RdfBindingRow;
- import name.levering.ryan.sparql.common.RdfBindingSet;
- import name.levering.ryan.sparql.common.RdfSource;
-+import name.levering.ryan.sparql.common.AdvancedRdfSource;
- import name.levering.ryan.sparql.common.URI;
- import name.levering.ryan.sparql.common.Value;
- import name.levering.ryan.sparql.common.Variable;
-@@ -62,8 +65,7 @@
- 	 * @param namedDatasets the named datasets to use in graph constraints, not
- 	 *            used in this constraint
- 	 */
++++ work-copy/src/main/name/levering/ryan/sparql/logic/streamed/StreamedTripleConstraintLogic.java	1969-12-31 19:00:00.000000000 -0500
+@@ -1,443 +0,0 @@
+-/*
+- * SPARQL Engine
+- * Copyright (C) 2005 Ryan Levering, All rights reserved.
+- * See LICENSE for full license information
+- */
+-package name.levering.ryan.sparql.logic.streamed;
+-
+-import java.util.ArrayList;
+-import java.util.Collection;
+-import java.util.Iterator;
+-import java.util.List;
+-import java.util.NoSuchElementException;
+-
+-import name.levering.ryan.sparql.common.GraphStatement;
+-import name.levering.ryan.sparql.common.RdfBindingRow;
+-import name.levering.ryan.sparql.common.RdfBindingSet;
+-import name.levering.ryan.sparql.common.RdfSource;
+-import name.levering.ryan.sparql.common.URI;
+-import name.levering.ryan.sparql.common.Value;
+-import name.levering.ryan.sparql.common.Variable;
+-import name.levering.ryan.sparql.common.impl.AbstractRdfBindingRow;
+-import name.levering.ryan.sparql.common.impl.AbstractRdfBindingSet;
+-import name.levering.ryan.sparql.common.impl.StatementImpl;
+-import name.levering.ryan.sparql.model.data.TripleConstraintData;
+-import name.levering.ryan.sparql.model.logic.ConstraintLogic;
+-import name.levering.ryan.sparql.model.logic.ExpressionLogic;
+-
+-/**
+- * This is the logic that handles most of the interaction with the end
+- * RdfSource. Most other constraints pass the source down to triple constraints,
+- * which provide the core bound values to manipulate. This is responsible for
+- * querying the defaultDatasets for statements with wildcard placeholders.
+- * 
+- * @author Ryan Levering
+- * @version 1.1
+- */
+-public class StreamedTripleConstraintLogic implements ConstraintLogic {
+-
+-	/**
+-	 * The data containing the possible subject, predicate, and object to find.
+-	 */
+-	final TripleConstraintData data;
+-
+-	/**
+-	 * Creates a new triple constraint logic that constrains a database to match
+-	 * particular statement criteria.
+-	 * 
+-	 * @param data the data holding the statement data to match
+-	 */
+-	public StreamedTripleConstraintLogic(TripleConstraintData data) {
+-		this.data = data;
+-	}
+-
+-	/**
+-	 * Returns a binding set of bound values matching a particular subject,
+-	 * predicate, and object where one or more of them is a wildcard.
+-	 * 
+-	 * @param bindings the current bindings, not used in this constraint
+-	 * @param source the source to query for the statement constraints
+-	 * @param defaultDatasets the datasets to query, if non-default graphs are
+-	 *            being used
+-	 * @param namedDatasets the named datasets to use in graph constraints, not
+-	 *            used in this constraint
+-	 */
 -	public RdfBindingSet constrain(RdfBindingSet bindings, RdfSource source, Collection defaultDatasets,
 -			Collection namedDatasets) {
-+	public RdfBindingSet constrain(ConstraintLogic.CallParams p) {
- 
- 		ExpressionLogic subExpr = this.data.getSubjectExpression();
- 		ExpressionLogic predExpr = this.data.getPredicateExpression();
-@@ -74,12 +76,12 @@
- 		Value subject = null;
- 		if (subExpr instanceof Variable) {
- 			variables.add(subExpr);
+-
+-		ExpressionLogic subExpr = this.data.getSubjectExpression();
+-		ExpressionLogic predExpr = this.data.getPredicateExpression();
+-		ExpressionLogic objExpr = this.data.getObjectExpression();
+-
+-		int[] flags = new int[3];
+-		List variables = new ArrayList();
+-		Value subject = null;
+-		if (subExpr instanceof Variable) {
+-			variables.add(subExpr);
 -			flags[0] = 1;
-+			flags[0] = variables.size();
- 			if (subExpr.equals(predExpr)) {
+-			if (subExpr.equals(predExpr)) {
 -				flags[1] = 1;
-+				flags[1] = flags[0];
- 			}
- 			if (subExpr.equals(objExpr)) {
+-			}
+-			if (subExpr.equals(objExpr)) {
 -				flags[2] = 1;
-+				flags[2] = flags[0];
- 			}
- 		} else {
- 			subject = (Value) subExpr;
-@@ -88,10 +90,10 @@
- 		URI verb = null;
- 		if (predExpr instanceof Variable && flags[1] == 0) {
- 			variables.add(predExpr);
+-			}
+-		} else {
+-			subject = (Value) subExpr;
+-		}
+-
+-		URI verb = null;
+-		if (predExpr instanceof Variable && flags[1] == 0) {
+-			variables.add(predExpr);
 -			flags[1] = 2;
-+			flags[1] = variables.size();
- 			if (predExpr.equals(objExpr)) {
+-			if (predExpr.equals(objExpr)) {
 -				flags[2] = 2;
 -			}
-+				flags[2] = flags[2];
-+			}                               
- 		} else {
- 			verb = (URI) predExpr;
- 		}
-@@ -99,90 +101,132 @@
- 		Value object = null;
- 		if (objExpr instanceof Variable && flags[2] == 0) {
- 			variables.add(objExpr);
+-		} else {
+-			verb = (URI) predExpr;
+-		}
+-
+-		Value object = null;
+-		if (objExpr instanceof Variable && flags[2] == 0) {
+-			variables.add(objExpr);
 -			flags[2] = 3;
-+			flags[2] = variables.size();
- 		} else if (flags[2] == 0) {
- 			object = (Value) objExpr;
- 		}
-+		
-+		TripleQueryOptions query = new TripleQueryOptions();
-+		query.source = p.source;
-+		query.variables = variables;
-+		query.flags = flags;
-+		query.knownValues = p.knownValues;
-+		query.knownFilters = p.knownFilters;
-+		query.limit = p.limit;
-+
-+		if (p.defaultDatasets == null) {
-+			query.includeSource = true;
- 
+-		} else if (flags[2] == 0) {
+-			object = (Value) objExpr;
+-		}
+-
 -		if (defaultDatasets == null) {
- 			// This adds an extra column to the returned set for the GRAPH
- 			// constraint to process
+-			// This adds an extra column to the returned set for the GRAPH
+-			// constraint to process
 -			if (source != null) {
 -				StatementBindingSet bindingSet = new StatementBindingSet(source, variables, flags, true);
-+			if (p.source != null) {
-+				StatementBindingSet bindingSet = new StatementBindingSet(query);
- 				bindingSet.addIterator(new StatementImpl(subject, verb, object));
+-				bindingSet.addIterator(new StatementImpl(subject, verb, object));
 -				return bindingSet;
-+				return p.projectOrderDistinctLimit(bindingSet);
- 			} else {
+-			} else {
 -				StreamedTripleBindingSet bindingSet = new StreamedTripleBindingSet(variables, flags, true);
-+				StreamedTripleBindingSet bindingSet = new StreamedTripleBindingSet(query);
- 				bindingSet.addIterator(new StatementImpl(subject, verb, object));
+-				bindingSet.addIterator(new StatementImpl(subject, verb, object));
 -				return bindingSet;
-+				return p.projectOrderDistinctLimit(bindingSet);
- 			}
- 		} else {
+-			}
+-		} else {
 -			if (source != null) {
 -				StatementBindingSet bindingSet = new StatementBindingSet(source, variables, flags, false);
 -				if (defaultDatasets.isEmpty()) {
-+			query.includeSource = false;
-+			
-+			if (p.source != null) {
-+				StatementBindingSet bindingSet = new StatementBindingSet(query);
-+				if (p.defaultDatasets.isEmpty()) {
- 					// This is if no FROM graphs are specified
- 					bindingSet.addIterator(new StatementImpl(subject, verb, object));
- 				} else {
- 					// This is if FROM graphs are specified or FROM NAMED and
- 					// we're in a GRAPH constraint
+-					// This is if no FROM graphs are specified
+-					bindingSet.addIterator(new StatementImpl(subject, verb, object));
+-				} else {
+-					// This is if FROM graphs are specified or FROM NAMED and
+-					// we're in a GRAPH constraint
 -					for (Iterator i = defaultDatasets.iterator(); i.hasNext();) {
-+					for (Iterator i = p.defaultDatasets.iterator(); i.hasNext();) {
- 						bindingSet.addIterator(new StatementImpl(subject, verb, object, (URI) i.next()));
- 					}
- 				}
+-						bindingSet.addIterator(new StatementImpl(subject, verb, object, (URI) i.next()));
+-					}
+-				}
 -				return bindingSet;
-+				return p.projectOrderDistinctLimit(bindingSet);
- 			} else {
+-			} else {
 -				StreamedTripleBindingSet bindingSet = new StreamedTripleBindingSet(variables, flags, false);
 -				if (defaultDatasets.isEmpty()) {
-+				StreamedTripleBindingSet bindingSet = new StreamedTripleBindingSet(query);
-+				if (p.defaultDatasets.isEmpty()) {
- 					// This is if no FROM graphs are specified
- 					bindingSet.addIterator(new StatementImpl(subject, verb, object));
- 				} else {
- 					// This is if FROM graphs are specified or FROM NAMED and
- 					// we're in a GRAPH constraint
+-					// This is if no FROM graphs are specified
+-					bindingSet.addIterator(new StatementImpl(subject, verb, object));
+-				} else {
+-					// This is if FROM graphs are specified or FROM NAMED and
+-					// we're in a GRAPH constraint
 -					for (Iterator i = defaultDatasets.iterator(); i.hasNext();) {
-+					for (Iterator i = p.defaultDatasets.iterator(); i.hasNext();) {
- 						bindingSet.addIterator(new StatementImpl(subject, verb, object, (URI) i.next()));
- 					}
- 				}
+-						bindingSet.addIterator(new StatementImpl(subject, verb, object, (URI) i.next()));
+-					}
+-				}
 -				return bindingSet;
-+				return p.projectOrderDistinctLimit(bindingSet);
- 			}
- 		}
- 	}
+-			}
+-		}
+-	}
 -
 -	/**
 -	 * This set is the lowest level binding set that wraps a request to an
@@ -5354,254 +5953,309 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj'
 -	 */
 -	private class StatementBindingSet extends AbstractRdfBindingSet {
 -
-+	
-+	private class TripleQueryOptions implements Cloneable {
- 		/**
- 		 * The RDF source that's being queried.
- 		 */
+-		/**
+-		 * The RDF source that's being queried.
+-		 */
 -		final RdfSource source;
-+		RdfSource source;
- 
- 		/**
- 		 * The variables that are being bound to values in the RDF source.
- 		 */
+-
+-		/**
+-		 * The variables that are being bound to values in the RDF source.
+-		 */
 -		final List variables;
-+		List variables;
- 
- 		/**
- 		 * Flags that allow a shortcut to checking for the equality of two
- 		 * equivalent variables.
- 		 */
+-
+-		/**
+-		 * Flags that allow a shortcut to checking for the equality of two
+-		 * equivalent variables.
+-		 */
 -		final int[] flags;
-+		int[] flags;
-+		
-+		/**
-+		 * Whether or not to include the graph name in the returned bindings.
-+		 */
-+		boolean includeSource;
- 
- 		/**
+-
+-		/**
 -		 * The statements that are matched against the RDF source.
-+		 * A mapping from variables to Lists of Values that the bindings
-+		 * must be drawn from.  (Possibly null if not applicable.)
- 		 */
+-		 */
 -		final List statementIterators = new ArrayList();
-+		Map knownValues;
- 
- 		/**
+-
+-		/**
 -		 * Whether or not to include the graph name in the returned bindings.
-+		 * A mapping from variables to Lists of filters (objects) that the bindings
-+		 * must satisfy.  (Possibly null if not applicable.)
- 		 */
+-		 */
 -		final boolean includeSource;
-+		Map knownFilters;
-+		
-+		/**
-+		 * -1 if no limit, otherwise the most number of statements to return (but
-+		 * may be ignored).
-+		 */
-+		int limit;
-+		
-+		public TripleQueryOptions clone() {
-+			try {
-+				return (TripleQueryOptions)super.clone();
-+			} catch (CloneNotSupportedException e) {
-+				// lame
-+				throw new RuntimeException(e);
-+			}
-+		}
-+	}
-+
-+	/**
-+	 * This set is the lowest level binding set that wraps a request to an
-+	 * RdfSource. It returns an iterator that uses the row iterators from the
-+	 * RdfSource getStatement call to check if returned rows match the equality
-+	 * criteria in the passed in flags.
-+	 * 
-+	 * @author Ryan Levering
-+	 * @version 1.1
-+	 */
-+	private class StatementBindingSet extends AbstractRdfBindingSet {
-+		final TripleQueryOptions query;
-+		
-+		/**
-+		 * The statements that are matched against the RDF source.
-+		 */
-+		final List statementIterators = new ArrayList();
- 
- 		/**
- 		 * Creates a new binding set that queries a particular RdfSource,
-@@ -194,11 +238,8 @@
- 		 * @param flags indicates the presence of variable equivalency
- 		 * @param includeSource whether to bind the graph name as well
- 		 */
+-
+-		/**
+-		 * Creates a new binding set that queries a particular RdfSource,
+-		 * binding particular variables using shortcut flags and potentially
+-		 * including the source graph name in the output bound variables.
+-		 * 
+-		 * @param source the source to get the data from
+-		 * @param variables the variables being bound in the binding set
+-		 * @param flags indicates the presence of variable equivalency
+-		 * @param includeSource whether to bind the graph name as well
+-		 */
 -		private StatementBindingSet(RdfSource source, List variables, int[] flags, boolean includeSource) {
 -			this.source = source;
 -			this.variables = variables;
 -			this.flags = flags;
 -			this.includeSource = includeSource;
-+		private StatementBindingSet(TripleQueryOptions query) {
-+			this.query = query;
- 		}
- 
- 		void addIterator(GraphStatement statementIterator) {
-@@ -210,8 +251,8 @@
- 		}
- 
- 		public List getVariables() {
+-		}
+-
+-		void addIterator(GraphStatement statementIterator) {
+-			this.statementIterators.add(statementIterator);
+-		}
+-
+-		public Iterator iterator() {
+-			return new BoundStatementIterator();
+-		}
+-
+-		public List getVariables() {
 -			List extVariables = new ArrayList(this.variables);
 -			if (this.includeSource) {
-+			List extVariables = new ArrayList(this.query.variables);
-+			if (this.query.includeSource) {
- 				extVariables.add(StreamedGraphConstraintLogic.CONTEXT_VARIABLE);
- 			}
- 			return extVariables;
-@@ -272,24 +313,70 @@
- 				// We should only get here if there was never a chance
- 				return null;
- 			}
+-				extVariables.add(StreamedGraphConstraintLogic.CONTEXT_VARIABLE);
+-			}
+-			return extVariables;
+-		}
 -
-+			
- 			private Iterator getStatements(GraphStatement statement) {
-+				if (StatementBindingSet.this.query.source instanceof AdvancedRdfSource)
-+					return getStatementsAdvanced(statement);
-+				else
-+					return getStatementsSimple(statement);
-+			}
-+			
-+			private Iterator getStatementsSimple(GraphStatement statement) {
-+				Value s = statement.getSubject();
-+				URI p = statement.getPredicate();
-+				Value o = statement.getObject();
-+				
-+				if (statement.getGraphName() == null) {
-+					if (StatementBindingSet.this.query.includeSource) {
-+						return StatementBindingSet.this.query.source.getStatements(s, p, o);
-+					} else {
-+						return StatementBindingSet.this.query.source.getDefaultStatements(s, p, o);
-+					}
-+				} else {
-+					return StatementBindingSet.this.query.source.getStatements(s, p, o, statement.getGraphName());
-+				}
-+			}
-+			
-+			private Iterator getStatementsAdvanced(GraphStatement statement) {
-+				AdvancedRdfSource source = (AdvancedRdfSource)StatementBindingSet.this.query.source;
-+				
-+				Value[] s = getValues(statement.getSubject(), 0);
-+				Value[] p = getValues(statement.getPredicate(), 1);
-+				Value[] o = getValues(statement.getObject(), 2);
-+				Object[] litFilters = getFilters(statement.getObject());
-+				
- 				if (statement.getGraphName() == null) {
+-		private class BoundStatementIterator implements Iterator {
+-
+-			private final Iterator itIterator = StatementBindingSet.this.statementIterators.iterator();
+-
+-			private Iterator statementIterator = null;
+-
+-			private GraphStatement nextStatement = null;
+-
+-			private BoundStatementIterator() {
+-				if (this.itIterator.hasNext()) {
+-					this.statementIterator = getStatements((GraphStatement) this.itIterator.next());
+-				}
+-
+-				this.nextStatement = nextStatement();
+-			}
+-
+-			private GraphStatement nextStatement() {
+-				while (this.statementIterator != null) {
+-
+-					// Only come out of this loop if statementIterator is null
+-					// (doomed)
+-					// or we have a good statementIterator
+-					while (this.statementIterator != null && !this.statementIterator.hasNext()) {
+-						if (this.itIterator.hasNext()) {
+-							this.statementIterator = getStatements((GraphStatement) this.itIterator.next());
+-						} else {
+-							// This is one end condition, there are no more
+-							// iterators
+-							this.statementIterator = null;
+-							return null;
+-						}
+-					}
+-
+-					if (this.statementIterator != null) {
+-						// We've found a statement iterator that has elements
+-						GraphStatement statement = (GraphStatement) this.statementIterator.next();
+-						while (statement != null && !this.checkStatement(statement)) {
+-							if (this.statementIterator.hasNext()) {
+-								statement = (GraphStatement) this.statementIterator.next();
+-							} else {
+-								// We ran out of statements here, go back for
+-								// another iterator
+-								statement = null;
+-							}
+-						}
+-						if (statement != null) {
+-							// This is another end condition, we found a match
+-							return statement;
+-						}
+-					}
+-				}
+-
+-				// We should only get here if there was never a chance
+-				return null;
+-			}
+-
+-			private Iterator getStatements(GraphStatement statement) {
+-				if (statement.getGraphName() == null) {
 -					if (StatementBindingSet.this.includeSource) {
 -						return StatementBindingSet.this.source.getStatements(statement.getSubject(), statement
 -								.getPredicate(), statement.getObject());
-+					if (StatementBindingSet.this.query.includeSource) {
-+						return source.getStatements(s, p, o, litFilters, StatementBindingSet.this.query.limit);
- 					} else {
+-					} else {
 -						return StatementBindingSet.this.source.getDefaultStatements(statement.getSubject(), statement
 -								.getPredicate(), statement.getObject());
-+						return source.getDefaultStatements(s, p, o, litFilters, StatementBindingSet.this.query.limit);
- 					}
- 				} else {
+-					}
+-				} else {
 -					return StatementBindingSet.this.source.getStatements(statement.getSubject(), statement
 -							.getPredicate(), statement.getObject(), statement.getGraphName());
-+					return source.getStatements(s, p, o, new URI[] { statement.getGraphName() }, litFilters, StatementBindingSet.this.query.limit);
- 				}
- 			}
-+			
-+			private Value[] getValues(Value value, int index) {
-+				if (value != null) return new Value[] { value };
-+				if (StatementBindingSet.this.query.knownValues == null) return null;
-+				int varIndex = StatementBindingSet.this.query.flags[index]-1;
-+				Variable variable = (Variable)StatementBindingSet.this.query.variables.get(varIndex); 
-+				Set values = (Set)StatementBindingSet.this.query.knownValues.get(variable);
-+				if (values == null) return null;
-+				return (Value[])values.toArray(new Value[0]);
-+			}
-+			private Object[] getFilters(Value value) {
-+				if (value != null) return null;
-+				if (StatementBindingSet.this.query.knownFilters == null) return null;
-+				int varIndex = StatementBindingSet.this.query.flags[2]-1;
-+				Variable variable = (Variable)StatementBindingSet.this.query.variables.get(varIndex);
-+				List filters = (List)StatementBindingSet.this.query.knownFilters.get(variable);
-+				if (filters == null) return null;
-+				return filters.toArray();
-+			}
- 
- 			private boolean checkStatement(GraphStatement statement) {
+-				}
+-			}
+-
+-			private boolean checkStatement(GraphStatement statement) {
 -				int[] localFlags = StatementBindingSet.this.flags;
-+				int[] localFlags = StatementBindingSet.this.query.flags;
- 
- 				if (localFlags[0] != 0 && localFlags[0] == localFlags[2]) {
- 					if (!statement.getSubject().equals(statement.getObject())) {
-@@ -337,14 +424,14 @@
- 
- 				public Value getValue(Variable variable) {
- 					// Special case for the source
+-
+-				if (localFlags[0] != 0 && localFlags[0] == localFlags[2]) {
+-					if (!statement.getSubject().equals(statement.getObject())) {
+-						return false;
+-					}
+-				}
+-				if (localFlags[0] != 0 && localFlags[0] == localFlags[1]) {
+-					if (!statement.getSubject().equals(statement.getPredicate())) {
+-						return false;
+-					}
+-				}
+-				if (localFlags[1] != 0 && localFlags[1] == localFlags[2]) {
+-					if (!statement.getPredicate().equals(statement.getObject())) {
+-						return false;
+-					}
+-				}
+-				return true;
+-			}
+-
+-			public void remove() {
+-				throw new UnsupportedOperationException();
+-			}
+-
+-			public boolean hasNext() {
+-				return this.nextStatement != null;
+-			}
+-
+-			public Object next() {
+-				if (this.nextStatement == null) {
+-					throw new NoSuchElementException();
+-				}
+-				RdfBindingRow row = new StatementBindingRow(this.nextStatement);
+-				this.nextStatement = nextStatement();
+-				return row;
+-			}
+-
+-			private class StatementBindingRow extends AbstractRdfBindingRow {
+-
+-				private final GraphStatement statement;
+-
+-				StatementBindingRow(GraphStatement statement) {
+-					super(StatementBindingSet.this);
+-					this.statement = statement;
+-				}
+-
+-				public Value getValue(Variable variable) {
+-					// Special case for the source
 -					if (StatementBindingSet.this.includeSource
-+					if (StatementBindingSet.this.query.includeSource
- 							&& variable.equals(StreamedGraphConstraintLogic.CONTEXT_VARIABLE)) {
- 						return this.statement.getGraphName();
- 					}
- 					// First get the index
- 					int index = getIndex(variable);
- 
+-							&& variable.equals(StreamedGraphConstraintLogic.CONTEXT_VARIABLE)) {
+-						return this.statement.getGraphName();
+-					}
+-					// First get the index
+-					int index = getIndex(variable);
+-
 -					int[] localFlags = StatementBindingSet.this.flags;
-+					int[] localFlags = StatementBindingSet.this.query.flags;
- 					if (index == 2) {
- 						// If the variable is in the last spot, it's got to be
- 						// the object
-@@ -374,7 +461,7 @@
- 
- 				private int getIndex(Variable variable) {
- 					int index = 0;
+-					if (index == 2) {
+-						// If the variable is in the last spot, it's got to be
+-						// the object
+-						return this.statement.getObject();
+-					} else if (index == 1) {
+-						// If the variable is the second one, it's either the
+-						// pred or object
+-						if (localFlags[1] != 0 && localFlags[0] != 0) {
+-							// It's the predicate if the subject and predicate
+-							// are variables
+-							return this.statement.getPredicate();
+-						} else {
+-							return this.statement.getObject();
+-						}
+-					} else if (index == 0) {
+-						// If the variable is the first, it could be any
+-						if (localFlags[0] != 0) {
+-							return this.statement.getSubject();
+-						} else if (localFlags[1] != 0) {
+-							return this.statement.getPredicate();
+-						} else {
+-							return this.statement.getObject();
+-						}
+-					}
+-					return null;
+-				}
+-
+-				private int getIndex(Variable variable) {
+-					int index = 0;
 -					for (Iterator vars = StatementBindingSet.this.variables.iterator(); vars.hasNext(); index++) {
-+					for (Iterator vars = StatementBindingSet.this.query.variables.iterator(); vars.hasNext(); index++) {
- 						Variable var = (Variable) vars.next();
- 						if (variable.equals(var)) {
- 							return index;
-@@ -404,22 +491,18 @@
- 
- 	private class StreamedTripleBindingSet extends VirtualRdfBindingSet {
- 
+-						Variable var = (Variable) vars.next();
+-						if (variable.equals(var)) {
+-							return index;
+-						}
+-					}
+-					return -1;
+-				}
+-
+-				public List getVariables() {
+-					return StatementBindingSet.this.getVariables();
+-				}
+-
+-			}
+-		}
+-
+-		public String describeSet() {
+-			return "FETCH TRIPLES FOR [" + StreamedTripleConstraintLogic.this.data.getSubjectExpression() + ","
+-					+ StreamedTripleConstraintLogic.this.data.getPredicateExpression() + ","
+-					+ StreamedTripleConstraintLogic.this.data.getObjectExpression() + "]";
+-		}
+-
+-		public void accept(StreamedBindingSetVisitor setVisitor) {
+-			setVisitor.visit(this);
+-		}
+-
+-	}
+-
+-	private class StreamedTripleBindingSet extends VirtualRdfBindingSet {
+-
 -		private final List variables;
 -
 -		private final int[] flags;
 -
 -		private final boolean includeSource;
 -
-+		private final TripleQueryOptions query;
-+		
- 		private final List statementIterators = new ArrayList();
- 
+-		private final List statementIterators = new ArrayList();
+-
 -		public StreamedTripleBindingSet(List variables, int[] flags, boolean includeSource) {
 -			this.variables = variables;
 -			this.flags = flags;
 -			this.includeSource = includeSource;
-+		public StreamedTripleBindingSet(TripleQueryOptions query) {
-+			this.query = query;
- 		}
- 
- 		public void setSource(RdfSource source) {
+-		}
+-
+-		public void setSource(RdfSource source) {
 -			StatementBindingSet set = new StatementBindingSet(source, this.variables, this.flags, this.includeSource);
-+			TripleQueryOptions q = query.clone();
-+			q.source = source;
-+			StatementBindingSet set = new StatementBindingSet(q);
- 			for (Iterator statementIt = statementIterators.iterator(); statementIt.hasNext();) {
- 				set.addIterator((GraphStatement) statementIt.next());
- 			}
-@@ -440,4 +523,4 @@
- 			setVisitor.visit(this);
- 		}
- 	}
+-			for (Iterator statementIt = statementIterators.iterator(); statementIt.hasNext();) {
+-				set.addIterator((GraphStatement) statementIt.next());
+-			}
+-			setSourcedSet(set);
+-		}
+-
+-		public String describeSet() {
+-			return "FETCH TRIPLES FOR [" + StreamedTripleConstraintLogic.this.data.getSubjectExpression() + ","
+-					+ StreamedTripleConstraintLogic.this.data.getPredicateExpression() + ","
+-					+ StreamedTripleConstraintLogic.this.data.getObjectExpression() + "]";
+-		}
+-
+-		void addIterator(GraphStatement statement) {
+-			this.statementIterators.add(statement);
+-		}
+-
+-		public void accept(StreamedBindingSetVisitor setVisitor) {
+-			setVisitor.visit(this);
+-		}
+-	}
 -}
 \ No newline at end of file
-+}
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj' --exclude='*.rej' work-copy/src/main/name/levering/ryan/sparql/logic/StreamedLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/StreamedLogic.java
 --- work-copy/src/main/name/levering/ryan/sparql/logic/StreamedLogic.java	2007-10-07 07:19:19.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/logic/StreamedLogic.java	2008-08-09 17:06:38.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/logic/StreamedLogic.java	2008-08-13 16:43:14.000000000 -0400
+@@ -65,6 +65,7 @@
+ import name.levering.ryan.sparql.logic.function.StringCastFunction;
+ import name.levering.ryan.sparql.logic.naive.DefaultGroupConstraintLogic;
+ import name.levering.ryan.sparql.logic.naive.DefaultOptionalConstraintLogic;
++import name.levering.ryan.sparql.logic.naive.DefaultTripleConstraintLogic;
+ import name.levering.ryan.sparql.logic.naive.DefaultUnionConstraintLogic;
+ import name.levering.ryan.sparql.logic.naive.StaticGraphDistinctionLogic;
+ import name.levering.ryan.sparql.logic.streamed.IndexedSetDistinctionLogic;
+@@ -75,7 +76,6 @@
+ import name.levering.ryan.sparql.logic.streamed.StreamedSetProjectionLogic;
+ import name.levering.ryan.sparql.logic.streamed.StreamedSetRangeLogic;
+ import name.levering.ryan.sparql.logic.streamed.StreamedSetUnionLogic;
+-import name.levering.ryan.sparql.logic.streamed.StreamedTripleConstraintLogic;
+ import name.levering.ryan.sparql.model.data.AskQueryData;
+ import name.levering.ryan.sparql.model.data.CallExpressionData;
+ import name.levering.ryan.sparql.model.data.ConstructQueryData;
 @@ -151,7 +151,7 @@
  		registerExternalFunction(SPARQLConstants.DOUBLE_TYPE, DoubleCastFunction.getFactory());
  		registerExternalFunction(SPARQLConstants.DECIMAL_TYPE, DecimalCastFunction.getFactory());
@@ -5631,6 +6285,15 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj'
  	}
  
  	/**
+@@ -319,7 +319,7 @@
+ 						.getPredicateExpression()), data);
+ 			}
+ 		}
+-		return new StreamedTripleConstraintLogic(data);
++		return new DefaultTripleConstraintLogic(data);
+ 	}
+ 
+ 	/**
 @@ -339,9 +339,7 @@
  	 * @return the logic handling the OPTIONAL constraint
  	 */
@@ -5655,7 +6318,23 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj'
  	/**
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj' --exclude='*.rej' work-copy/src/main/name/levering/ryan/sparql/logic/StreamedStrictLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/StreamedStrictLogic.java
 --- work-copy/src/main/name/levering/ryan/sparql/logic/StreamedStrictLogic.java	2007-10-07 07:19:19.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/logic/StreamedStrictLogic.java	2008-08-09 17:06:38.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/logic/StreamedStrictLogic.java	2008-08-13 16:43:33.000000000 -0400
+@@ -32,6 +32,7 @@
+ import name.levering.ryan.sparql.logic.naive.DefaultGroupConstraintLogic;
+ import name.levering.ryan.sparql.logic.naive.DefaultOptionalConstraintLogic;
+ import name.levering.ryan.sparql.logic.naive.DefaultUnionConstraintLogic;
++import name.levering.ryan.sparql.logic.naive.DefaultTripleConstraintLogic;
+ import name.levering.ryan.sparql.logic.streamed.IndexedSetDistinctionLogic;
+ import name.levering.ryan.sparql.logic.streamed.IndexedSetIntersectLogic;
+ import name.levering.ryan.sparql.logic.streamed.IndexedSetJoinLogic;
+@@ -40,7 +41,6 @@
+ import name.levering.ryan.sparql.logic.streamed.StreamedSetProjectionLogic;
+ import name.levering.ryan.sparql.logic.streamed.StreamedSetRangeLogic;
+ import name.levering.ryan.sparql.logic.streamed.StreamedSetUnionLogic;
+-import name.levering.ryan.sparql.logic.streamed.StreamedTripleConstraintLogic;
+ import name.levering.ryan.sparql.model.data.AskQueryData;
+ import name.levering.ryan.sparql.model.data.CallExpressionData;
+ import name.levering.ryan.sparql.model.data.ConstructQueryData;
 @@ -100,7 +100,7 @@
  		registerExternalFunction(SPARQLConstants.DOUBLE_TYPE, DoubleCastFunction.getFactory());
  		registerExternalFunction(SPARQLConstants.DECIMAL_TYPE, DecimalCastFunction.getFactory());
@@ -5682,6 +6361,15 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj'
 -		return new DefaultDescribeQueryLogic(data, new StreamedSetProjectionLogic(), new StreamedSetRangeLogic());
 +	public DescribeQueryLogic getDescribeQueryLogic(DescribeQueryData data, SPARQLValueFactory valueFactory) {
 +		return new DefaultDescribeQueryLogic(data, new StreamedSetProjectionLogic(), new StreamedSetRangeLogic(), valueFactory);
+ 	}
+ 
+ 	/**
+@@ -211,7 +211,7 @@
+ 	 * @return the logic handling the triple constraint
+ 	 */
+ 	public ConstraintLogic getTripleConstraintLogic(TripleConstraintData data) {
+-		return new StreamedTripleConstraintLogic(data);
++		return new DefaultTripleConstraintLogic(data);
  	}
  
  	/**
@@ -5741,8 +6429,8 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj'
       * 
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj' --exclude='*.rej' work-copy/src/main/name/levering/ryan/sparql/model/logic/ConstraintLogic.java work-copy/src/main/name/levering/ryan/sparql/model/logic/ConstraintLogic.java
 --- work-copy/src/main/name/levering/ryan/sparql/model/logic/ConstraintLogic.java	2006-08-20 20:00:59.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/model/logic/ConstraintLogic.java	2008-04-27 11:15:14.000000000 -0400
-@@ -6,10 +6,18 @@
++++ work-copy/src/main/name/levering/ryan/sparql/model/logic/ConstraintLogic.java	2008-08-13 17:43:33.000000000 -0400
+@@ -6,9 +6,18 @@
  package name.levering.ryan.sparql.model.logic;
  
  import java.util.Collection;
@@ -5752,16 +6440,17 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj'
 +import java.util.Set;
  
  import name.levering.ryan.sparql.common.RdfBindingSet;
- import name.levering.ryan.sparql.common.RdfSource;
- 
+-import name.levering.ryan.sparql.common.RdfSource;
++import name.levering.ryan.sparql.common.RdfSource;
++import name.levering.ryan.sparql.common.Variable;
++
 +import name.levering.ryan.sparql.model.logic.helper.SetRangeLogic;
 +import name.levering.ryan.sparql.model.logic.helper.SetProjectionLogic;
 +import name.levering.ryan.sparql.model.logic.helper.SetDistinctionLogic;
-+
+ 
  /**
   * The logic that every constraint satisfies. It currently can be used two ways.
-  * If the logic is dependent on current evaluated bindings (FILTER and
-@@ -27,16 +35,148 @@
+@@ -27,16 +36,165 @@
       * Constrains the value bindings by either constraining the current value
       * bindings or returning a set that will be constrained via intersection
       * with the current set.
@@ -5789,17 +6478,32 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj'
 +		  * The RDF data source, which is dealt with by the triple constraint
 +		  */
 +		 public RdfSource source;
-+       
++		 
 +		 /**
-+		  * The datasets that are currently being used for binding
++		  * The FROM datasets used in group constraints outside of a GRAPH constraint.
 +		  */
 +		 public Collection defaultDatasets;
 +		 
 +		 /**
-+		  * The datasets that are used in the GRAPH constraint for unbound variables
++		  * The FROM NAMED datasets used in the GRAPH constraint with unbound variables.
 +		  */
 +		 public Collection namedDatasets;
 +		 
++		 /**
++		  * The current set of graph URIs that constraints are being evaluated against.
++		  * If null, then defaultDatasets should be used. Inside a GRAPH
++		  * constraint with a variable, this becomes namedDatasets. Inside a GRAPH
++		  * constraint with a URI, this becomes a singleton set containing that URI.
++		  */
++		 public Collection sourceDatasets;
++		 
++		 /**
++		  * When evaluating a triple constraint, a variable to bind to the graph URI
++		  * containing each triple, or null to discard graph information in the
++		  * resulting bindings.
++		  */
++		 public Variable graphVariable;
++
 +		 /**
 +		  * A List of OrderExpressionLogic objects that control how the
 +		  * results should be ordered, or null if no order is specified.
@@ -5871,8 +6575,10 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj'
 +			 CallParams p = new CallParams();
 +			 p.bindings = bindings;
 +			 p.source = source;
-+			 p.defaultDatasets = defaultDatasets == null ? null : new java.util.ArrayList(defaultDatasets);
-+			 p.namedDatasets = namedDatasets == null ? null : new java.util.ArrayList(namedDatasets);
++			 p.defaultDatasets = defaultDatasets;
++			 p.namedDatasets = namedDatasets;
++			 p.sourceDatasets = sourceDatasets;
++			 p.graphVariable = graphVariable;
 +			 p.distinguishedVariables = distinguishedVariables == null ? null : new java.util.HashSet(distinguishedVariables);
 +			 p.orderExpressions = orderExpressions == null ? null : new java.util.ArrayList(orderExpressions);
 +			 p.limit = limit;
@@ -6949,7 +7655,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj'
  }
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj' --exclude='*.rej' work-copy/src/main/name/levering/ryan/sparql/parser/model/SPARQLParserTreeConstants.java work-copy/src/main/name/levering/ryan/sparql/parser/model/SPARQLParserTreeConstants.java
 --- work-copy/src/main/name/levering/ryan/sparql/parser/model/SPARQLParserTreeConstants.java	2007-10-07 07:19:57.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/parser/model/SPARQLParserTreeConstants.java	2008-08-13 07:42:12.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/parser/model/SPARQLParserTreeConstants.java	2008-08-13 17:54:20.000000000 -0400
 @@ -1,141 +1,139 @@
 -/* Generated By:JJTree: Do not edit this line. C:/workspaces/sparql/SPARQL Engine Trunk/src/main/name/levering/ryan/sparql/parser/model\SPARQLParserTreeConstants.java */
 -
@@ -7382,9 +8088,30 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj'
 +    
 +    public abstract Set getVariables();
  }
+diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj' --exclude='*.rej' work-copy/src/main/name/levering/ryan/sparql/parser/ParseException.java work-copy/src/main/name/levering/ryan/sparql/parser/ParseException.java
+--- work-copy/src/main/name/levering/ryan/sparql/parser/ParseException.java	2006-08-20 20:01:00.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/parser/ParseException.java	2008-08-13 14:41:24.000000000 -0400
+@@ -29,7 +29,7 @@
+                         String[] tokenImageVal
+                        )
+   {
+-    super("");
++    super("");
+     specialConstructor = true;
+     currentToken = currentTokenVal;
+     expectedTokenSequences = expectedTokenSequencesVal;
+@@ -100,7 +100,7 @@
+     }
+     String expected = "";
+     int maxSize = 0;
+-    for (int i = 0; i < expectedTokenSequences.length; i++) {
++    for (int i = 0; i < expectedTokenSequences.length; i++) {
+       if (maxSize < expectedTokenSequences[i].length) {
+         maxSize = expectedTokenSequences[i].length;
+       }
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj' --exclude='*.rej' work-copy/src/main/name/levering/ryan/sparql/parser/SPARQLParserConstants.java work-copy/src/main/name/levering/ryan/sparql/parser/SPARQLParserConstants.java
 --- work-copy/src/main/name/levering/ryan/sparql/parser/SPARQLParserConstants.java	2007-10-07 07:19:57.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/parser/SPARQLParserConstants.java	2008-08-13 07:42:28.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/parser/SPARQLParserConstants.java	2008-08-13 17:54:21.000000000 -0400
 @@ -1,139 +1,136 @@
 -/* Generated By:JJTree&JavaCC: Do not edit this line. SPARQLParserConstants.java */
 -package name.levering.ryan.sparql.parser;
@@ -7663,7 +8390,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj'
 +}
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj' --exclude='*.rej' work-copy/src/main/name/levering/ryan/sparql/parser/SPARQLParser.java work-copy/src/main/name/levering/ryan/sparql/parser/SPARQLParser.java
 --- work-copy/src/main/name/levering/ryan/sparql/parser/SPARQLParser.java	2007-10-07 07:19:39.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/parser/SPARQLParser.java	2008-08-13 07:42:28.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/parser/SPARQLParser.java	2008-08-13 17:54:21.000000000 -0400
 @@ -1,4422 +1,3217 @@
 -/* Generated By:JJTree&JavaCC: Do not edit this line. SPARQLParser.java */
 -package name.levering.ryan.sparql.parser;
@@ -15303,7 +16030,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj'
 +}
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj' --exclude='*.rej' work-copy/src/main/name/levering/ryan/sparql/parser/SPARQLParserTokenManager.java work-copy/src/main/name/levering/ryan/sparql/parser/SPARQLParserTokenManager.java
 --- work-copy/src/main/name/levering/ryan/sparql/parser/SPARQLParserTokenManager.java	2007-10-07 07:19:57.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/parser/SPARQLParserTokenManager.java	2008-08-13 07:42:28.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/parser/SPARQLParserTokenManager.java	2008-08-13 17:54:21.000000000 -0400
 @@ -1,3660 +1,3997 @@
 -/* Generated By:JJTree&JavaCC: Do not edit this line. SPARQLParserTokenManager.java */
 -package name.levering.ryan.sparql.parser;
