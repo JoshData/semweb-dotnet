@@ -357,9 +357,7 @@ namespace SemWeb {
 				SelectableSource[] sources = GetSources(ref meta2);
 				if (sources == null) continue;
 				
-				if (meta2 == null)
-					filter.Metas = null;
-				else
+				if (meta2 != null)
 					filter.Metas = new Entity[] { meta2 };
 
 				// If reasoning is applied, delegate this call to the last reasoner
