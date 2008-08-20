@@ -4311,7 +4311,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj'
  }
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj' --exclude='*.rej' work-copy/src/main/name/levering/ryan/sparql/logic/naive/DefaultTripleConstraintLogic.java work-copy/src/main/name/levering/ryan/sparql/logic/naive/DefaultTripleConstraintLogic.java
 --- work-copy/src/main/name/levering/ryan/sparql/logic/naive/DefaultTripleConstraintLogic.java	2007-10-07 07:19:19.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/logic/naive/DefaultTripleConstraintLogic.java	2008-08-13 17:50:32.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/logic/naive/DefaultTripleConstraintLogic.java	2008-08-17 11:20:44.000000000 -0400
 @@ -9,7 +9,10 @@
  import java.util.Collection;
  import java.util.Iterator;
@@ -4341,7 +4341,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj'
  
          ExpressionLogic subExpr = this.data.getSubjectExpression();
          ExpressionLogic predExpr = this.data.getPredicateExpression();
-@@ -104,39 +99,77 @@
+@@ -104,81 +99,80 @@
              object = (Value) objExpr;
          }
  
@@ -4350,16 +4350,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj'
 +	        RdfBindingSetImpl emptyBindings = new RdfBindingSetImpl(
                  (Variable[]) variables.toArray(new Variable[0]));
 -
-+        	return emptyBindings;
-+        }
-+        
-+		if (p.graphVariable != null) {
-+			variables.add(p.graphVariable);
-+		}
-+		
-+        RdfBindingSetImpl newBindings = new RdfBindingSetImpl(
-+                        (Variable[]) variables.toArray(new Variable[0]));
-         Iterator statements;
+-        Iterator statements;
 -        if (!variables.isEmpty()) {
 -            if (defaultDatasets == null) {
 -                // This adds an extra column to the returned set for the GRAPH
@@ -4385,23 +4376,76 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj'
 -                    }
 -                }
 -            }
--        }
++        	return emptyBindings;
+         }
 -        return newBindings;
-+
+-    }
++        
++		if (p.graphVariable != null) {
++			variables.add(p.graphVariable);
++		}
++		
++        RdfBindingSetImpl newBindings = new RdfBindingSetImpl(
++                        (Variable[]) variables.toArray(new Variable[0]));
++        Iterator statements;
+ 
+-    /**
+-     * Adds statements to a binding set, according to whether the field was
+-     * being bound to a variable or not.
+-     * 
+-     * @param set the set to add the statements to
+-     * @param statements the fully realized statements from the source
+-     * @param flags an array holding flags that specify which fields to use
+-     */
+-    private void addStatements(RdfBindingSetImpl set, Iterator statements,
+-            int[] flags) {
+-        while (statements.hasNext()) {
+-            LenientStatement statement = (LenientStatement) statements.next();
+-            if (flags[0] != 0 && flags[0] == flags[2]) {
+-                if (!statement.getSubject().equals(statement.getObject())) {
+-                    continue;
+-                }
+-            }
+-            if (flags[0] != 0 && flags[0] == flags[1]) {
+-                if (!statement.getSubject().equals(statement.getPredicate())) {
+-                    continue;
+-                }
+-            }
+-            if (flags[1] != 0 && flags[1] == flags[2]) {
+-                if (!statement.getPredicate().equals(statement.getObject())) {
+-                    continue;
+-                }
+-            }
+-            
+-            RdfBindingRowImpl newRow = new RdfBindingRowImpl();
+-            if (flags[0] == 1) {
+-                newRow.addBinding((Variable) this.data.getSubjectExpression(), statement.getSubject());
+-            }
+-            if (flags[1] == 2) {
+-                newRow.addBinding((Variable) this.data.getPredicateExpression(), statement.getPredicate());
+-            }
+-            if (flags[2] == 3) {
+-                newRow.addBinding((Variable) this.data.getObjectExpression(), statement.getObject());
+-            }
+-            set.addRow(newRow);
+-        }
 +		if (!(p.source instanceof AdvancedRdfSource)) {
 +			if (p.sourceDatasets == null) {
-+			    if (p.defaultDatasets.size() == 0) {
-+	                statements = p.source.getDefaultGraphStatements(subject, verb, object);
-+	            } else {
-+	            	statements = p.source.getStatements(subject, verb, object, (URI[])p.defaultDatasets.toArray(new URI[0]));
-+	            }
-+	        } else {
-+			    if (p.sourceDatasets.size() == 0) {
-+	                statements = p.source.getNamedGraphStatements(subject, verb, object);
-+	            } else {
-+	            	statements = p.source.getStatements(subject, verb, object, (URI[])p.sourceDatasets.toArray(new URI[0]));
-+	            }
-+	        }
++				// When querying the default dataset, we always use this method and do not pass
++				// any graph information. It is up to the data source to handle FROM clauses.
++				statements = p.source.getDefaultGraphStatements(subject, verb, object);
++				/*if (p.defaultDatasets.size() == 0) {
++					statements = p.source.getDefaultGraphStatements(subject, verb, object);
++				} else {
++					statements = p.source.getStatements(subject, verb, object, (URI[])p.defaultDatasets.toArray(new URI[0]));
++				}*/
++		  } else {
++			 if (p.sourceDatasets.size() == 0) {
++					 statements = p.source.getNamedGraphStatements(subject, verb, object);
++				} else {
++					statements = p.source.getStatements(subject, verb, object, (URI[])p.sourceDatasets.toArray(new URI[0]));
++				}
++		  }
 +	    } else {
 +	    	AdvancedRdfSource src = (AdvancedRdfSource)p.source;
 +
@@ -4448,66 +4492,25 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj'
      /**
       * Adds statements to a binding set, according to whether the field was
       * being bound to a variable or not.
-@@ -146,49 +179,7 @@
+@@ -187,8 +181,8 @@
+      * @param statements the fully realized statements from the source
       * @param flags an array holding flags that specify which fields to use
       */
-     private void addStatements(RdfBindingSetImpl set, Iterator statements,
--            int[] flags) {
--        while (statements.hasNext()) {
--            LenientStatement statement = (LenientStatement) statements.next();
--            if (flags[0] != 0 && flags[0] == flags[2]) {
--                if (!statement.getSubject().equals(statement.getObject())) {
--                    continue;
--                }
--            }
--            if (flags[0] != 0 && flags[0] == flags[1]) {
--                if (!statement.getSubject().equals(statement.getPredicate())) {
--                    continue;
--                }
--            }
--            if (flags[1] != 0 && flags[1] == flags[2]) {
--                if (!statement.getPredicate().equals(statement.getObject())) {
--                    continue;
--                }
--            }
--            
--            RdfBindingRowImpl newRow = new RdfBindingRowImpl();
--            if (flags[0] == 1) {
--                newRow.addBinding((Variable) this.data.getSubjectExpression(), statement.getSubject());
--            }
--            if (flags[1] == 2) {
--                newRow.addBinding((Variable) this.data.getPredicateExpression(), statement.getPredicate());
--            }
--            if (flags[2] == 3) {
--                newRow.addBinding((Variable) this.data.getObjectExpression(), statement.getObject());
--            }
--            set.addRow(newRow);
--        }
--    }
--
--    /**
--     * Adds statements to a binding set, according to whether the field was
--     * being bound to a variable or not.
--     * 
--     * @param set the set to add the statements to
--     * @param statements the fully realized statements from the source
--     * @param flags an array holding flags that specify which fields to use
--     */
 -    private void addGraphStatements(RdfBindingSetImpl set, Iterator statements,
 -            int[] flags) {
++    private void addStatements(RdfBindingSetImpl set, Iterator statements,
 +            int[] flags, Variable graphVariable) {
          while (statements.hasNext()) {
              GraphStatement statement = (GraphStatement) statements.next();
              if (flags[0] != 0 && flags[0] == flags[2]) {
-@@ -216,8 +207,10 @@
-             }
+@@ -217,7 +211,9 @@
              if (flags[2] == 3) {
                  newRow.addBinding((Variable) this.data.getObjectExpression(), statement.getObject());
-+            }
-+            if (graphVariable != null) {
-+                newRow.addBinding(graphVariable, statement.getGraphName());
              }
 -            newRow.addBinding(StreamedGraphConstraintLogic.CONTEXT_VARIABLE, statement.getGraphName());
++            if (graphVariable != null) {
++                newRow.addBinding(graphVariable, statement.getGraphName());
++            }
              set.addRow(newRow);
          }
      }
@@ -7655,7 +7658,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj'
  }
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj' --exclude='*.rej' work-copy/src/main/name/levering/ryan/sparql/parser/model/SPARQLParserTreeConstants.java work-copy/src/main/name/levering/ryan/sparql/parser/model/SPARQLParserTreeConstants.java
 --- work-copy/src/main/name/levering/ryan/sparql/parser/model/SPARQLParserTreeConstants.java	2007-10-07 07:19:57.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/parser/model/SPARQLParserTreeConstants.java	2008-08-13 17:54:20.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/parser/model/SPARQLParserTreeConstants.java	2008-08-20 14:36:43.000000000 -0400
 @@ -1,141 +1,139 @@
 -/* Generated By:JJTree: Do not edit this line. C:/workspaces/sparql/SPARQL Engine Trunk/src/main/name/levering/ryan/sparql/parser/model\SPARQLParserTreeConstants.java */
 -
@@ -8111,7 +8114,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj'
        }
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj' --exclude='*.rej' work-copy/src/main/name/levering/ryan/sparql/parser/SPARQLParserConstants.java work-copy/src/main/name/levering/ryan/sparql/parser/SPARQLParserConstants.java
 --- work-copy/src/main/name/levering/ryan/sparql/parser/SPARQLParserConstants.java	2007-10-07 07:19:57.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/parser/SPARQLParserConstants.java	2008-08-13 17:54:21.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/parser/SPARQLParserConstants.java	2008-08-20 14:36:44.000000000 -0400
 @@ -1,139 +1,136 @@
 -/* Generated By:JJTree&JavaCC: Do not edit this line. SPARQLParserConstants.java */
 -package name.levering.ryan.sparql.parser;
@@ -8390,7 +8393,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj'
 +}
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj' --exclude='*.rej' work-copy/src/main/name/levering/ryan/sparql/parser/SPARQLParser.java work-copy/src/main/name/levering/ryan/sparql/parser/SPARQLParser.java
 --- work-copy/src/main/name/levering/ryan/sparql/parser/SPARQLParser.java	2007-10-07 07:19:39.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/parser/SPARQLParser.java	2008-08-13 17:54:21.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/parser/SPARQLParser.java	2008-08-20 14:36:44.000000000 -0400
 @@ -1,4422 +1,3217 @@
 -/* Generated By:JJTree&JavaCC: Do not edit this line. SPARQLParser.java */
 -package name.levering.ryan.sparql.parser;
@@ -16030,7 +16033,7 @@ diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj'
 +}
 diff -urN --exclude=.svn --exclude=.settings --exclude=META-INF --exclude='*.jj' --exclude='*.rej' work-copy/src/main/name/levering/ryan/sparql/parser/SPARQLParserTokenManager.java work-copy/src/main/name/levering/ryan/sparql/parser/SPARQLParserTokenManager.java
 --- work-copy/src/main/name/levering/ryan/sparql/parser/SPARQLParserTokenManager.java	2007-10-07 07:19:57.000000000 -0400
-+++ work-copy/src/main/name/levering/ryan/sparql/parser/SPARQLParserTokenManager.java	2008-08-13 17:54:21.000000000 -0400
++++ work-copy/src/main/name/levering/ryan/sparql/parser/SPARQLParserTokenManager.java	2008-08-20 14:36:44.000000000 -0400
 @@ -1,3660 +1,3997 @@
 -/* Generated By:JJTree&JavaCC: Do not edit this line. SPARQLParserTokenManager.java */
 -package name.levering.ryan.sparql.parser;

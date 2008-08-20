@@ -2,7 +2,8 @@
 	  SelectableSources it contains.
 	* SPARQL: Refactoring how (default/named) datasets are handled.
 	  - Added SparqlEngine.GetDefaultDatasets which returns the
-	    FROM clause URIs.
+	    FROM clause URIs. See the API docs for SemWeb.Query.SparqlEngine
+	    for details.
 
 2008-08-09 Version 1.062
 

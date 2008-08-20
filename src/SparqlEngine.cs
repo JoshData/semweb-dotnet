@@ -155,6 +155,18 @@ namespace SemWeb.Query {
 			return (string[])ret.ToArray(typeof(string));
 		}
         
+		public string[] GetNamedDatasets() {
+			ArrayList ret = new ArrayList();
+			java.util.Collection c = query.getNamedDatasets();
+
+			object[] c2 = c.toArray();
+			for (int i = 0; i < c2.Length; i++) {
+				name.levering.ryan.sparql.common.URI uri = (name.levering.ryan.sparql.common.URI)c2.GetValue(i);
+				ret.Add(uri.getURI());
+			}
+			return (string[])ret.ToArray(typeof(string));
+		}
+
       /* QUERY EXECUTION METHODS */
 	
 		public override void Run(SelectableSource source, TextWriter output) {
@@ -474,7 +486,8 @@ namespace SemWeb.Query {
 			/**
 			 * Gets all statements with a specific subject, predicate and/or object in
 			 * a named graph of the repository. All three parameters may be null to
-			 * indicate wildcards. This is only used in SPARQL queries when no graph			 * names are indicated.
+			 * indicate wildcards. This is only used in SPARQL queries when no graph
+			 * names are indicated.
 			 * 
 			 * @param subj subject of pattern
 			 * @param pred predicate of pattern
@@ -941,14 +954,17 @@ namespace SemWeb.Query {
 		    		// Otherwise, we are told what graph to use. If sourceDatasets is null, 
 		    		// we are looking in the default graph.
 		    		} else if (p.sourceDatasets == null) {
-		    			if (p.defaultDatasets.size() == 0) {
+		    			/*if (p.defaultDatasets.size() == 0) {
 	    					metaField = Statement.DefaultMeta;
 	    				} else if (p.defaultDatasets.size() == 1) {
 	    					metaField = s.ToEntity((Value)p.defaultDatasets.iterator().next());
 	    				} else {
 	    					metaField = new SemWebVariable();
 	    					opts.VariableKnownValues[(Variable)metaField] = s.ToEntities((Value[])p.defaultDatasets.toArray(new Value[0]));
-	    				}
+	    				}*/
+						
+						// For the default Graph, we always pass DefaultMeta.
+						metaField = Statement.DefaultMeta;
 		    		
 		    		// Otherwise, we are looking in the indicated graphs.
 			    	} else {
