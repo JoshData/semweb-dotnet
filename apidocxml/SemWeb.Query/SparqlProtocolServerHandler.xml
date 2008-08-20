@@ -20,7 +20,7 @@
       <example>
         <code>&lt;configuration&gt;
      &lt;configSections&gt;
-          &lt;section name="sparqlSources" type="System.Configuration.NameValueSectionHandler,System"/&gt;
+          &lt;section name="sparqlSources" type="System.Configuration.NameValueSectionHandler"/&gt;
      &lt;/configSections&gt;
 
      &lt;system.web&gt;
@@ -59,9 +59,28 @@
           <term>Creating a web.config file in the directory using the template above.</term>
         </item>
         <item>
-          <term>Running "xsp" from within the directory.</term>
+          <term>Running "xsp" or "xsp2" from within the directory. Use "xsp" if you have include the .NET 1.1 SemWeb binary DLLs, otherwise "xsp2".</term>
         </item>
       </list>
+      <para>To run the SPARQL protocol server under Apache with mod_mono, you just need to place the web.config file in a working ASP.NET application and instruct Apache to use ASP.NET to handle the path to the endpoint Here's a minimal Apache configuration:</para>
+      <example>
+        <code>
+MonoAutoApplication disabled
+MonoServerPath /usr/local/bin/mod-mono-server2 # if using the .NET 2.0 SemWeb DLLs only
+MonoApplications "/:/var/www"
+&lt;Location /sparql&gt;
+    SetHandler mono
+&lt;/Location&gt;</code>
+      </example>
+      <para>To use Apache and mod_aspdotnet on Windows, use this Apache configuration instead:</para>
+      <example>
+        <code>
+AspNetMount / "C:/webserver/doc_root"
+&lt;Location /sparql&gt;
+    SetHandler asp.net
+    AspNet Virtual
+&lt;/Location&gt;</code>
+      </example>
       <para>You may want to add this index.html file to create a form to experiment with SPARQL queries:</para>
       <example>
         <code>&lt;html&gt;
