@@ -11,7 +11,7 @@
   <Interfaces />
   <Docs>
     <summary>Represents an XSD dateTime, date, or time.</summary>
-    <remarks>This class is returned by <see href="M:SemWeb.Literal.ParseValue()" /> for xsd:dateTime, xsd:date, and xsd:time values. Use the HasDate and HasTime fields to determine which data type the value came from.</remarks>
+    <remarks>This class is returned by <see href="M:SemWeb.Literal.ParseValue" /> for xsd:dateTime, xsd:date, and xsd:time values. Use the HasDate and HasTime fields to determine which data type the value came from.</remarks>
   </Docs>
   <Members>
     <Member MemberName=".ctor">

@@ -23,7 +23,6 @@ all:
 	PROFILE=DOTNET1 make
 	PROFILE=DOTNET2 make
 	PROFILE=SILVERLIGHT make
-	PROFILE=DOTNET3 make
 
 # If we have a PROFILE specified.
 else
@@ -37,12 +36,6 @@ endif
 ifeq "$(PROFILE)" "DOTNET2"
 BIN=bin_generics
 MCS=gmcs -d:DOTNET2
-MCS_LIBS=-r:System.Data -r:System.Web
-endif
-
-ifeq "$(PROFILE)" "DOTNET3"
-BIN=bin_linq
-MCS=gmcs -d:DOTNET2 -d:DOTNET3
 MCS_LIBS=-r:System.Data -r:System.Web
 endif
 

@@ -55,7 +55,7 @@ $ time mono semweb/bin_generics/rdfstorage.exe -out "mysql:bsbm:Database=test" -
 
 <pre class="code">&lt;configuration>
      &lt;configSections>
-          &lt;section name="sparqlSources" type="System.Configuration.NameValueSectionHandler,System"/>
+          &lt;section name="sparqlSources" type="System.Configuration.NameValueSectionHandler"/>
      &lt;/configSections>
 
      &lt;system.web>
@@ -77,6 +77,8 @@ $ time mono semweb/bin_generics/rdfstorage.exe -out "mysql:bsbm:Database=test" -
 <p>Start the SPARQL endpoint. <tt>xsp2</tt> is the standalone ASP.NET server from Mono. The MONO_PATH environment variable tells Mono where to look for the binaries that implement the SPARQL Protocol.</p>
 
 <pre class="code">$ MONO_PATH=semweb/bin_generics xsp2</pre>
+
+<p>See the documentation for <a href="../apidocs/SemWeb.Query/SparqlProtocolServerHandler.html">SemWeb.Query.SparqlProtocolServerHandler</a> for instructions on setting up an endpoint using Apache with mod_mono or mod_aspdotnet.</p>
 
 <p>Verify the SPARQL endpoint is working by visiting in your browser:</p>
 
@@ -125,7 +127,7 @@ $ time mono semweb/bin_generics/rdfstorage.exe -out "mysql:bsbm:Database=test" -
 
 <p>The 25M dataset was loaded with the DISABLEKEYS MySQL import mode, rather than LOCK.</p>
 
-<p>For comparison, load time for the 1M data set was 224 seconds. This is about double-to-2.5 times the time of Jena SDB (Hash) with MySQL over Joseki3 (117s) and  Virtuoso Open-Source Edition v5.0.6 and v5.0.7 (87s), as reported in the BSBM results.</p>
+<p>For comparison, load time for the 1M data set was 224 seconds. This is about double-to-2.5 times the time of Jena SDB (Hash) with MySQL over Joseki3 (117s) and  Virtuoso Open-Source Edition v5.0.6 and v5.0.7 (87s), as reported in the BSBM results. For the larger 25M dataset, the load time at 4.5 hours was only 1.2 times slower than Jena SDB but 1.7 times faster than Sesame over Tomcat and 3 times faster than Virtuoso.</p>
 
 <p>Results for query execution are reported below. Note that it is entirely unknown whether the query results are correct. Query 4 on the 25M dataset (I am not sure about the other dataset sizes) always yielded no results, for instance.</p>
 

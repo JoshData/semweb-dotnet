@@ -146,7 +146,7 @@
       </Parameters>
       <Docs>
         <param name="other">A resource to be compared with.</param>
-        <summary>This implements the .NET 1.0 IComparable interface method to compare two Resources. The public method <see cref="M:SemWeb.Resource.CompareTo(SemWeb.Resource)" /> is also available, and in .NET 2.0 Resource additionally implements <see cref="T:System.IComparable&lt;SemWeb.Resource&gt;"/>.</summary>
+        <summary>This implements the .NET 1.0 IComparable interface method to compare two Resources. The public method <see cref="M:SemWeb.Resource.CompareTo(SemWeb.Resource)" /> is also available, and in .NET 2.0 Resource additionally implements <see cref="T:System.IComparable&lt;SemWeb.Resource&gt;" />.</summary>
         <returns>The value that would be returned by calling <see cref="M:SemWeb.Resource.CompareTo(SemWeb.Resource)" />.</returns>
         <remarks>This method calls <see cref="M:SemWeb.Resource.CompareTo(SemWeb.Resource)" />. A InvalidCastException is thrown if <paramref name="other" /> is not an instance of <see cref="T:SemWeb.Resource" />.</remarks>
       </Docs>

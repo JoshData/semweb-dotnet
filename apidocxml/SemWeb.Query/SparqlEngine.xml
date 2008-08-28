@@ -11,8 +11,8 @@
   <Docs>
     <summary>A SPARQL query engine.</summary>
     <remarks>
-        <para>This SPARQL engine parses and evaluates a SPARQL language query against any <see cref="T:SemWeb.SelectableSource" /> or <see cref="T:SemWeb.QueryableSource" />. If the queried data source is a <see cref="T:SemWeb.QueryableSource" />, the Query method is used where possible. Otherwise, query execution falls back to calling <see cref="T:SemWeb.SelectableSource" />'s Contains and Select methods.</para>
-		  <para>This class is a fork of the SPARQL engine library at http://sparql.sourceforge.net/ by Ryan Levering, version 0.8. The upstream library has been heavily modified, however.</para>
+      <para>This SPARQL engine parses and evaluates a SPARQL language query against any <see cref="T:SemWeb.SelectableSource" /> or <see cref="T:SemWeb.QueryableSource" />. If the queried data source is a <see cref="T:SemWeb.QueryableSource" />, the Query method is used where possible. Otherwise, query execution falls back to calling <see cref="T:SemWeb.SelectableSource" />'s Contains and Select methods.</para>
+      <para>This class is a fork of the SPARQL engine library at http://sparql.sourceforge.net/ by Ryan Levering, version 0.8. The upstream library has been heavily modified, however.</para>
       <example>
         <para>This example runs a SELECT query on a data source and writes the results as XML to standard output.</para>
         <code lang="C#">MemoryStore datamodel = new MemoryStore(new RdfXmlReader("rdfdata.rdf"));
@@ -30,8 +30,7 @@ query.Run(datamodel, Console.Out).  </code>
       <para>Triples inside of a GRAPH clause with an explicit URI, such as "GRAPH &lt;....uri...&gt; { ...graph pattern... }", are matched against the data source by passing the URI specified in the graph clause as the value of <see cref="F:SemWeb.Statement.Meta" /> or as a one-element array in <see cref="F:SemWeb.SelectFilter.Meta" />.</para>
       <para>In GRAPH clauses with graph variables, such as "GRAPH ?g { ...graph pattern... }", the potential values of the graph variable can sometimes be inferred from previous statements referencing the graph variable that were already evaluated during the processing of the query. Failing that, the potential values of graph variables are drawn from the set of FROM NAMED graphs, if any were specified. If any potential values for the graph variable are known, they are passed together in the <see cref="F:SemWeb.SelectFilter.Meta" /> field in calls to Contains, Select, or (if there is just one such value) Query on the data source, or if there is more than one value then in a call to Query the <see cref="F:SemWeb.Statement.Meta" /> field is set to a new <see cref="T:SemWeb.Variable" /> and <see cref="F:SemWeb.Query.QueryOptions.VariableKnownValues" /> is filled in with the potential values for the variable </para>
       <para>In GRAPH clauses with graph variables whose values are not known at all, null is passed as the value of <see cref="F:SemWeb.SelectFilter.Meta" />, or in a call to <see cref="M:SemWeb.QueryableSource.Query(SemWeb.Statement[],SemWeb.Query.QueryOptions,SemWeb.Query.QueryResultSink)" /> the <see cref="F:SemWeb.Statement.Meta" />  field is set to a new <see cref="T:SemWeb.Variable" />.</para>
-		
-		<para>Since, for instance, it is impossible to set the Meta field of statements in RDF/XML, it is recommended in order to process GRAPH clauses to implement your own <see cref="T:SemWeb.SelectableSource" /> to pass as the data source for queries that will inspect the Meta field and pass off calls to Contains and Select to the correct source graph.</para>
+      <para>Since, for instance, it is impossible to set the Meta field of statements in RDF/XML, it is recommended in order to process GRAPH clauses to implement your own <see cref="T:SemWeb.SelectableSource" /> to pass as the data source for queries that will inspect the Meta field and pass off calls to Contains and Select to the correct source graph.</para>
     </remarks>
   </Docs>
   <Members>
