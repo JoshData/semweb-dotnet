@@ -4,6 +4,8 @@
 	  - Added SparqlEngine.GetDefaultDatasets which returns the
 	    FROM clause URIs. See the API docs for SemWeb.Query.SparqlEngine
 	    for details.
+	* SQLStore: Query() now doesn't always use as many JOINs since too
+	  many joins slows down the MySQL query optimizer.
 	* Added documentation for setting up a SPARQL endpoint with
 	  Apache mod_mono (Unix) or mod_aspdotnet (Windows), by
 	  Florian Schmedding.

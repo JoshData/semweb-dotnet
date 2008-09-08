@@ -1561,9 +1561,20 @@ namespace SemWeb.Stores {
 			// we initialize these things while locked, but use them after we release the lock
 			ArrayList results = new ArrayList();
 			Hashtable resourceCache = new Hashtable(); // map resource ID to Resource instances
-						
-			// Lock the store and make sure we are initialized and any pending add's have been committed. 
 
+			// We can either include JOINs to the entities and literals table for every variable
+			// in the query, or we can delay fetching that information to separate SELECTs
+			// after the main part of the query is done. If we are including DISTINCT, then we
+			// don't want to do the JOINs because the JOINs happen before the DISTINCT and will
+			// be unnecessarily repeated. Also if the query has many variables, say more than 6,
+			// then it may slow down query planning (the MySQL optimizer) to include them all in
+			// one query.
+			bool joinEntitiesAndLiterals = true;
+			if (useDistinct) joinEntitiesAndLiterals = false;
+			if (varOrder.Length > 6) joinEntitiesAndLiterals = false;
+						
+			// Lock the store and make sure we are initialized and any pending add's have been committed.
+			
 			lock (syncroot) {
 			
 			Init();
@@ -1623,7 +1634,7 @@ namespace SemWeb.Stores {
 							// LEFT JOIN the entities table for this variable to get its URI
 							// only if it is a distinguished variable and we are not using DISTINCT.
 							varSelectedEntity[v] = false;
-							if (!useDistinct && distinguishedVars.Contains(v)) {
+							if (joinEntitiesAndLiterals && distinguishedVars.Contains(v)) {
 								varSelectedEntity[v] = true; // Record that we are selecting the entities table for this variable.
 								fromClause.Append(" LEFT JOIN ");
 								fromClause.Append(table);
@@ -1645,7 +1656,7 @@ namespace SemWeb.Stores {
 							bool hasLitFilter = (options.VariableLiteralFilters != null && options.VariableLiteralFilters.ContainsKey(v));
 							#endif
 							varSelectedLiteral[v] = false;
-							if (i == 2 && ((!useDistinct && distinguishedVars.Contains(v)) || hasLitFilter)) {
+							if (i == 2 && ((joinEntitiesAndLiterals && distinguishedVars.Contains(v)) || hasLitFilter)) {
 								varSelectedLiteral[v] = true; // Record that we are selecting the literals table for this variable.
 								fromClause.Append(" LEFT JOIN ");
 								fromClause.Append(table);
