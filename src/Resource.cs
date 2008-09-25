@@ -657,40 +657,40 @@ namespace SemWeb {
 		#endif
 		
 		public static Literal FromValue(float value) {
-			return new Literal(value.ToString(), null, NS.XMLSCHEMA + "float");
+			return new Literal(XmlConvert.ToString(value), null, NS.XMLSCHEMA + "float");
 		}
 		public static Literal FromValue(double value) {
-			return new Literal(value.ToString(), null, NS.XMLSCHEMA + "double");
+			return new Literal(XmlConvert.ToString(value), null, NS.XMLSCHEMA + "double");
 		}
 		public static Literal FromValue(byte value) {
 			if (value <= 127)
-				return new Literal(value.ToString(), null, NS.XMLSCHEMA + "byte");
+				return new Literal(XmlConvert.ToString(value), null, NS.XMLSCHEMA + "byte");
 			else
-				return new Literal(value.ToString(), null, NS.XMLSCHEMA + "unsignedByte");
+				return new Literal(XmlConvert.ToString(value), null, NS.XMLSCHEMA + "unsignedByte");
 		}
 		public static Literal FromValue(short value) {
-			return new Literal(value.ToString(), null, NS.XMLSCHEMA + "short");
+			return new Literal(XmlConvert.ToString(value), null, NS.XMLSCHEMA + "short");
 		}
 		public static Literal FromValue(int value) {
-			return new Literal(value.ToString(), null, NS.XMLSCHEMA + "int");
+			return new Literal(XmlConvert.ToString(value), null, NS.XMLSCHEMA + "int");
 		}
 		public static Literal FromValue(long value) {
-			return new Literal(value.ToString(), null, NS.XMLSCHEMA + "long");
+			return new Literal(XmlConvert.ToString(value), null, NS.XMLSCHEMA + "long");
 		}
 		public static Literal FromValue(sbyte value) {
-			return new Literal(value.ToString(), null, NS.XMLSCHEMA + "byte");
+			return new Literal(XmlConvert.ToString(value), null, NS.XMLSCHEMA + "byte");
 		}
 		public static Literal FromValue(ushort value) {
-			return new Literal(value.ToString(), null, NS.XMLSCHEMA + "unsignedShort");
+			return new Literal(XmlConvert.ToString(value), null, NS.XMLSCHEMA + "unsignedShort");
 		}
 		public static Literal FromValue(uint value) {
-			return new Literal(value.ToString(), null, NS.XMLSCHEMA + "unsignedInt");
+			return new Literal(XmlConvert.ToString(value), null, NS.XMLSCHEMA + "unsignedInt");
 		}
 		public static Literal FromValue(ulong value) {
-			return new Literal(value.ToString(), null, NS.XMLSCHEMA + "unsignedLong");
+			return new Literal(XmlConvert.ToString(value), null, NS.XMLSCHEMA + "unsignedLong");
 		}
 		public static Literal FromValue(Decimal value) {
-			return new Literal(value.ToString(), null, NS.XMLSCHEMA + "decimal");
+			return new Literal(XmlConvert.ToString(value), null, NS.XMLSCHEMA + "decimal");
 		}
 		public static Literal FromValue(bool value) {
 			return new Literal(value ? "true" : "false", null, NS.XMLSCHEMA + "boolean");

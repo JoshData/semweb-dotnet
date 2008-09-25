@@ -1,3 +1,6 @@
+	* Literal.FromValue now uses XmlConvert.ToString rather than
+	  object.ToString() to be culture-insensitive. Patch from
+	  Gabriel Kronberger, thanks!
 	* Store.Select now passes Meta fields properly down into the
 	  SelectableSources it contains.
 	* SPARQL: Refactoring how (default/named) datasets are handled.
