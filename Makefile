@@ -1,5 +1,4 @@
-VERSION=1.062
-    # don't forget to update src/AssemblyInfo.cs!!
+VERSION=`grep AssemblyVersion src/AssemblyInfo_Shared.cs |sed "s/.assembly: AssemblyVersion..\(.*\).../\1/"`
 
 ########################
 
@@ -54,6 +53,7 @@ endif
 # Core Library
 	
 MAIN_SOURCES = \
+	src/AssemblyInfo_Shared.cs \
 	src/AssemblyInfo.cs \
 	src/NamespaceManager.cs src/Util.cs src/UriMap.cs \
 	src/Resource.cs src/Statement.cs \
@@ -66,7 +66,10 @@ MAIN_SOURCES = \
 	src/Algos.cs src/SparqlClient.cs \
 	src/GraphVizWriter.cs
 
-$(BIN)/SemWeb.dll: $(MAIN_SOURCES) Makefile
+signing.key:
+	sn -k signing.key
+
+$(BIN)/SemWeb.dll: $(MAIN_SOURCES) Makefile signing.key
 	mkdir -p $(BIN)
 	$(MCS) -debug $(MAIN_SOURCES) $(MCS_LIBS) -out:$(BIN)/SemWeb.dll -t:library
 
@@ -74,31 +77,31 @@ $(BIN)/SemWeb.dll: $(MAIN_SOURCES) Makefile
 
 ifneq "$(PROFILE)" "SILVERLIGHT"  # auxiliary assemblies aren't compiled in the Silverlight build
 
-$(BIN)/SemWeb.Sparql.dll: src/SparqlEngine.cs src/SparqlProtocol.cs
-	$(MCS) -debug src/SparqlEngine.cs src/SparqlProtocol.cs -out:$(BIN)/SemWeb.Sparql.dll \
+$(BIN)/SemWeb.Sparql.dll: src/SparqlEngine.cs src/SparqlProtocol.cs src/AssemblyInfo_Shared.cs signing.key
+	$(MCS) -debug src/SparqlEngine.cs src/SparqlProtocol.cs src/AssemblyInfo_Shared.cs -out:$(BIN)/SemWeb.Sparql.dll \
 		-t:library -r:$(BIN)/SemWeb.dll -r:$(BIN)/sparql-core.dll -r:$(BIN)/IKVM.GNU.Classpath.dll \
 		-r:System.Web
 
-$(BIN)/SemWeb.PostgreSQLStore.dll: src/PostgreSQLStore.cs
+$(BIN)/SemWeb.PostgreSQLStore.dll: src/PostgreSQLStore.cs src/AssemblyInfo_Shared.cs signing.key
 ifneq "$(npgsql_available)" "0"
-	$(MCS) -debug src/PostgreSQLStore.cs -out:$(BIN)/SemWeb.PostgreSQLStore.dll -t:library \
+	$(MCS) -debug src/PostgreSQLStore.cs src/AssemblyInfo_Shared.cs -out:$(BIN)/SemWeb.PostgreSQLStore.dll -t:library \
 		-r:$(BIN)/SemWeb.dll -r:System.Data -r:Npgsql
 else
 	@echo "SKIPPING compilation of SemWeb.PosgreSQLStore.dll because Npgsql assembly seems to be not available in the GAC.";
 endif
 
-$(BIN)/SemWeb.SqliteStore.dll: src/SQLiteStore.cs
+$(BIN)/SemWeb.SqliteStore.dll: src/SQLiteStore.cs src/AssemblyInfo_Shared.cs signing.key
 ifneq "$(sqlite_available)" "0"
-	$(MCS) -debug src/SQLiteStore.cs -out:$(BIN)/SemWeb.SqliteStore.dll -t:library \
+	$(MCS) -debug src/SQLiteStore.cs src/AssemblyInfo_Shared.cs -out:$(BIN)/SemWeb.SqliteStore.dll -t:library \
 		-r:$(BIN)/SemWeb.dll -r:System.Data -r:Mono.Data.SqliteClient
 else
 	@echo "SKIPPING compilation of SemWeb.SqliteStore.dll because Mono.Data.SqliteClient assembly seems to be not available in the GAC.";
 endif
 	
-$(BIN)/SemWeb.MySQLStore.dll: src/MySQLStore.cs
+$(BIN)/SemWeb.MySQLStore.dll: src/MySQLStore.cs src/AssemblyInfo_Shared.cs signing.key
 ifneq "$(PROFILE)" "DOTNET1" # the MySql.Data lib we are compiling against is 2.0.
 ifneq "$(mysql_available)" "0"
-	$(MCS) -debug src/MySQLStore.cs -out:$(BIN)/SemWeb.MySQLStore.dll -t:library\
+	$(MCS) -debug src/MySQLStore.cs src/AssemblyInfo_Shared.cs -out:$(BIN)/SemWeb.MySQLStore.dll -t:library\
 		 -r:$(BIN)/SemWeb.dll -r:System.Data -r:MySql.Data -d:CONNECTOR -lib:lib
 	#$(MCS) -debug src/MySQLStore.cs -out:$(BIN)/SemWeb.MySQLStore-ByteFX.dll -t:library\
 	# -r:$(BIN)/SemWeb.dll -r:System.Data -r:ByteFX.Data -d:BYTEFX
@@ -107,20 +110,20 @@ else
 endif
 endif
 
-$(BIN)/SemWeb.SQLServerStore.dll: src/SQLServerStore.cs
-	$(MCS) -debug src/SQLServerStore.cs -out:$(BIN)/SemWeb.SQLServerStore.dll -t:library\
+$(BIN)/SemWeb.SQLServerStore.dll: src/SQLServerStore.cs src/AssemblyInfo_Shared.cs signing.key
+	$(MCS) -debug src/SQLServerStore.cs src/AssemblyInfo_Shared.cs -out:$(BIN)/SemWeb.SQLServerStore.dll -t:library\
 		 -r:$(BIN)/SemWeb.dll -r:System.Data
 endif
 
 # Utility programs
 
-$(BIN)/rdfstorage.exe: tools/rdfstorage.cs
+$(BIN)/rdfstorage.exe: tools/rdfstorage.cs src/AssemblyInfo_Shared.cs signing.key
 	$(MCS) -debug tools/rdfstorage.cs -out:$(BIN)/rdfstorage.exe -r:$(BIN)/SemWeb.dll -r:Mono.GetOptions
 	
-$(BIN)/rdfquery.exe: tools/rdfquery.cs
+$(BIN)/rdfquery.exe: tools/rdfquery.cs src/AssemblyInfo_Shared.cs signing.key
 	$(MCS) -debug tools/rdfquery.cs -out:$(BIN)/rdfquery.exe -r:$(BIN)/SemWeb.dll -r:$(BIN)/SemWeb.Sparql.dll -r:Mono.GetOptions	
 
-$(BIN)/euler.exe: tools/euler.cs
+$(BIN)/euler.exe: tools/euler.cs src/AssemblyInfo_Shared.cs signing.key
 	$(MCS) -debug tools/euler.cs -out:$(BIN)/euler.exe -r:$(BIN)/SemWeb.dll -r:$(BIN)/SemWeb.Sparql.dll
 
 endif

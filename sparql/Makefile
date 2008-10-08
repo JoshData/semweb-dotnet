@@ -18,6 +18,7 @@ build-sparql:
 	sed -i "s/ upstream\// work-copy\//" local-changes.diff
 	cd $(SPARQL); $(ANT) grammar jar;
 	mono $(IKVM) -out:sparql-core.dll -nostacktraceinfo \
+		-keyfile:../signing.key -version:`grep AssemblyVersion ../src/AssemblyInfo_Shared.cs |sed "s/.assembly: AssemblyVersion..\(.*\).../\1/"` \
 		$(SPARQL)/dist/sparql-core.jar 
 	MONO_PATH=.:$(IKVM_BIN) mono --aot -O=all sparql-core.dll
 	cp sparql-core.dll* ../bin
