@@ -654,7 +654,6 @@ namespace SemWeb {
 			if (DataType == null) return this;
 			return new Literal(ParseValue().ToString(), Language, DataType);
 		}
-		#endif
 		
 		public static Literal FromValue(float value) {
 			return new Literal(XmlConvert.ToString(value), null, NS.XMLSCHEMA + "float");
@@ -733,6 +732,7 @@ namespace SemWeb {
 				return new Literal((DateTime.Today + value).ToString("HH\\:mm\\:ss.FFFFFFF0"), null, NS.XMLSCHEMA + "time");
 			}
 		}
+		#endif
 	}
 
 
