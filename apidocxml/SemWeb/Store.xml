@@ -310,6 +310,10 @@ Example:  "n3:mydata.n3"</description>
               <term>sparql-http:[URL]</term>
               <description>A <see cref="T:SemWeb.Remote.SparqlHttpSource" />, which accesses a remote data source using the SPARQL Protocol.  Example: "sparql-http:http://www.govtrack.us/sparql"</description>
             </item>
+            <item>
+              <term>url:[URL]</term>
+              <description>A <see cref="T:SemWeb.RdfReader" /> of an appropriate type which reads the Notation 3, RDF/XML or other resource specified by the URL over the network.</description>
+            </item>
           </list>
           <para>The SQL stores can be both read from and written to, despite the name of this method.</para>
         </remarks>

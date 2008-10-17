@@ -127,7 +127,7 @@
       </Parameters>
       <Docs>
         <param name="type">The stream type.</param>
-        <param name="source">The name of the source stream, as a file name, or "-" for standard input.</param>
+        <param name="source">The name of the source stream, as a file name, or "-" for standard input. If the <paramref name="type"/> is "url" then this argument is interpreted as a URL and the resource is fetched over the network.</param>
         <summary>Creates a RdfReader in the factory paradigm for the given file.</summary>
         <returns>
           <para>The type of reader returned is given in the following table.</para>
@@ -148,6 +148,13 @@
               <term>"n3", "text/n3", "text/rdf+n3", "application/n3", "turtle", "text/turtle", "application/turtle", "application/x-turtle", "nt", "ntriples"</term>
               <description>
                 <see cref="T:SemWeb.N3Reader" />
+              </description>
+            </item>
+            <item>
+              <term>"url"</term>
+              <description>
+              	The <paramref name="type"/> argument is interpreted as a URL and the resource is loaded over the network. Its
+              	type is determined automatically.
               </description>
             </item>
           </list>

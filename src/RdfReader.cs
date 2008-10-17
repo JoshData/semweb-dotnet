@@ -141,6 +141,10 @@ namespace SemWeb {
 				case "nt":
 				case "ntriples":
 					return new N3Reader(source);
+				#if !SILVERLIGHT
+				case "url":
+					return LoadFromUri(new Uri(source));
+				#endif
 				default:
 					throw new ArgumentException("Unknown parser or MIME type: " + type);
 			}

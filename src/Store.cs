@@ -92,6 +92,7 @@ namespace SemWeb {
 				case "nt":
 				case "turtle":
 				case "dot":
+				case "url":
 					if (spec == "") throw new ArgumentException("Use: " + type + ":filename");
 					if (output) {
 						return RdfWriter.Create(type, spec);
