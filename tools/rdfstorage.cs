@@ -15,8 +15,8 @@ using SemWeb;
 
 public class RDFStorage {
 	private class Opts : Mono.GetOptions.Options {
-		[Mono.GetOptions.Option("The {format} for the input files: xml, n3, or spec to use a full spec.")]
-		public string @in = "xml";
+		[Mono.GetOptions.Option("The {format} for the input files: xml, n3, url to treat the command-line arguments as URLs (format determined automatically), or a specification string used with Store.Create. The default autodetects from the file name.")]
+		public string @in = null;
 
 		[Mono.GetOptions.Option("The destination {storage}.  Default is N3 to standard out.")]
 		public string @out = "n3:-";
@@ -85,15 +85,6 @@ public class RDFStorage {
 				} catch (Exception e) {
 					Console.Error.WriteLine("The --clear option was not successful: " + e.Message);
 				}
-			}
-		}
-		
-		if (opts.@in == "xml") {
-			// Use file extension to override default parser type.
-			foreach (string file in opts.RemainingArguments) {
-				if (file.EndsWith(".nt") || file.EndsWith(".n3") || file.EndsWith(".ttl"))
-					opts.@in = "n3";
-				break;
 			}
 		}
 		
@@ -166,9 +157,24 @@ public class RDFStorage {
 				
 					StatementFilterSink filter = new StatementFilterSink(storage);
 				
-					if (format != "spec") {
-						using (RdfReader parser = RdfReader.Create(format, infile)) {
-							parser.BaseUri = baseuri;
+					if (format == null || format != "spec") {
+						string fmt = format;
+						if (fmt == null) {
+							// Use file extension to override default parser type.
+							if (infile.StartsWith("http:"))
+								fmt = "url";
+							else if (infile.EndsWith(".nt") || infile.EndsWith(".n3") || infile.EndsWith(".ttl"))
+								fmt = "n3";
+							else if (infile.EndsWith(".xml") || infile.EndsWith(".rdf"))
+								fmt = "xml";
+							else {
+								Console.Error.WriteLine("Unrecognized file extension in " + infile + ": Trying RDF/XML.");
+								fmt = "xml";
+							}
+						}
+					
+						using (RdfReader parser = RdfReader.Create(fmt, infile)) {
+							if (baseuri != null) parser.BaseUri = baseuri;
 							if (meta != null) parser.Meta = meta;
 						
 							if (storage is RdfWriter)

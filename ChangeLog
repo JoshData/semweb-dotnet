@@ -11,6 +11,8 @@
 	  Similarly for Store.CreateForInput.
 	* SQLStore: Query() now doesn't always use as many JOINs since too
 	  many joins slows down the MySQL query optimizer.
+	* rdfstorage: Guess file type on a file-by-file basis, and allow
+	  guessing to load URLs if it sees "http://".
 	* Added documentation for setting up a SPARQL endpoint with
 	  Apache mod_mono (Unix) or mod_aspdotnet (Windows), by
 	  Florian Schmedding.
