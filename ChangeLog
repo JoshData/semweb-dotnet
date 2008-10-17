@@ -16,6 +16,7 @@
 	* Added documentation for setting up a SPARQL endpoint with
 	  Apache mod_mono (Unix) or mod_aspdotnet (Windows), by
 	  Florian Schmedding.
+	* Added documentation on how to use the rdfstorage.exe tool.
 	* Removed the bin_linq build since it is the same as bin_generics.
 	* All assemblies are now strong-named. At the moment I'm keeping
 	  the signing file private, but if you compile with 'make' it'll

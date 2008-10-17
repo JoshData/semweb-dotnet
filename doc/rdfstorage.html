@@ -1,0 +1,112 @@
+<html>
+	<head>
+		<title>SemWeb: rdfstorage.exe Command Line Tool</title>
+		<link rel="stylesheet" type="text/css" href="stylesheet.css"/>
+	</head>
+	
+	<body>
+
+<p><a href="index.html">SemWeb Documentation</a></p>
+<h1>rdfstorage.exe Command Line Tool</h1>
+
+<p>The <tt>rdfstorage.exe</tt> program is a command-line tool that is a part of the SemWeb library for reading and writing RDF and loading RDF into persistent storage like a database. The program gets data from a source in some format and puts the data elsewhere, in another format, as per the command-line options you provide.</p>
+
+<p>If you run <tt>rdfstorage.exe</tt> without any command-line options, the possible options are displayed. On Windows, just type <tt>rdfstorage.exe</tt>. On Linux, or on Windows but using the Mono .NET runtime, type <tt>mono rdfstorage.exe</tt>. I'll assume you're using Linux in the examples below. The "$" at the start of the line is the command-prompt: no need to type that.</p>
+
+<pre class="code">$ mono rdfstorage.exe
+RDFStorage - Move RDF Data Between Storage Types
+
+Usage: rdfstorage [options] file1 file2...
+Options:
+     -baseuri:URI     The default base URI for the input streams.
+     -clear           Clear the storage before importing data.
+     -in:format       The format for the input files: xml, n3, url to treat the command-line
+                      arguments as URLs (format determined automatically), or a specification
+                      string used with Store.Create. The default autodetects from the file name.
+     -meta:URI        The URI of a resource that expresses meta information.
+     -out:storage     The destination storage.  Default is N3 to standard out.
+     -outbaseuri:URI  The base URI for the output stream (if supported).
+     -stats           Emit status information to STDERR when writing to STDOUT.</pre>
+     
+<p>There are three types of command-line arguments: input arguments, output options, and general options. The options that take a parameter are optionaly specified with a colon and no space (as indicated in the help output) or separated by a space.</p>
+
+<h3>Input Arguments</h3>
+
+<h4>Reading Files or URLs</h4>
+
+<p>The input command-line arguments specify the source of RDF data that will be written or stored elsewhere. Input can come from a file, a web URL, or a database. The default mode is to read from the file names or URLs specified on the command line and detect their format from their file extension or MIME type for URLs. For example:</p>
+
+<pre class="code">$ mono rdfstorage.exe file1.rdf file2.rdf</pre>
+
+<pre class="code">$ mono rdfstorage.exe http://razor.occams.info/foaf.rdf</pre>
+
+<p>The first example reads the two RDF/XML files; the second example reads the RDF file from the web. If no output options are specified, the contents of the files are written in Notation 3 format to standard output, which means you will see the contents written to the console. Or, you can redirect the output to a file:</p>
+
+<pre class="code">$ mono rdfstorage.exe file1.rdf file2.rdf > output.n3</pre>
+
+<p>Output options are explained in the next section.</p>
+
+<p>When the file arguments are not correctly understood, you can specify the format with the <tt>-in:FORMAT</tt> option, where <tt>FORMAT</tt> is either <tt>xml</tt> or <tt>n3</tt> (when reading from files) or <tt>url</tt> (to read from a URL and automatically detect the type). (Turtle and N-Triples are subsets of the Notation 3 format, so you can use the <tt>n3</tt> option to read files of this type.) For instance:</p>
+
+<pre class="code">$ mono rdfstorage.exe -in xml file1.rdf file2.rdf > output.n3</pre>
+
+<h4>Reading from Standard Input</h4>
+
+<p>You can read in from standard input, to use pipes or redirection on the command line, by using a dash (-) for the file name. In this case, you really need to use <tt>-in:xml</tt> or <tt>-in:n3</tt> to specify the format. E.g.:</p>
+
+<pre class="code">$ mono rdfstorage.exe -in n3 - &lt; input.n3 > output.n3</pre>
+
+<h4>Setting the Base URI Explicitly</h4>
+
+<p>Both RDF/XML and Notation 3 files can resolve URIs against the URI of the document itself. When loading a document from the web, the client knows the URI he is accessing and it is not specified within the file itself. When a file with relative URIs and no explicit base URI set within the file is being loaded from somewhere besides its original location, use the <tt>baseuri:URI</tt> option to set the base URI explicitly. This option is overridden by name base URI set within the file.</p>
+
+<pre class="code">$ mono rdfstorage.exe -in n3 -baseuri http://www.example.org/# - &lt; input.n3 > output.n3</pre>
+
+<h4>Reading from Databases</h4>
+
+<p>To read RDF from a database, you set <tt>-in spec</tt> and then instead of a file name provide a specification string in one of the formats described in <a href="../apidocs/SemWeb/Store.html#M:SemWeb.Store.CreateForInput(System.String)">Store.CreateForInput(string)</a>. For instance:</p>
+
+<pre class="code">$ mono rdfstorage.exe -in spec "mysql:sec:Database=rdf;Server=localhost;User Id=rdf"</pre>
+
+<h3>Output Options</h3>
+
+<h4>Writing to Files or Standard Output</h4>
+
+<p>The default mode of <tt>rdfstorage.exe</tt> is to write the RDF in Notation 3 format to standard output. Using the <tt>-out DESTINATION</tt> option the output can be set to a file or standard output in several formats or to a database. <tt>DESTINATION</tt> is a specification string of the form described in <a href="../apidocs/SemWeb/Store.html#M:SemWeb.Store.CreateForOutput(System.String)">Store.CreateForOutput(string)</a>.</p>
+
+<p>You can output to a file or standard out using <tt>-out FORMAT:FILENAME</tt>. Four file formats are available: <tt>xml</tt> (RDF/XML), <tt>n3</tt> (Notation 3), <tt>turtle</tt> (Turtle), <tt>nt</tt> (N-Triples), and <tt>dot</tt> (GraphViz format). <tt>FILENAME</tt> is either the name of the file to write (or overwrite), or a dash (-) to write to standard output.</p>
+
+<p>For example, this will convert a file from RDF/XML to Notation 3:</p>
+
+<pre class="code">$ mono rdfstorage.exe -out n3:foaf.n3 foaf.rdf</pre>
+
+<p>Or if you prefer using shell redirection:</p>
+
+<pre class="code">$ mono rdfstorage.exe -out n3:- - &lt; input.rdf > output.n3</pre>
+
+<p>And to convert from Notation 3 to RDF/XML, this time giving an explicit input file type:</p>
+
+<pre class="code">$ mono rdfstorage.exe -in n3 -out xml:foaf.rdf foaf.n3</pre>
+
+<p>When writing RDF/XML, you can set the value of the <tt>xml:base</tt> attribute using the <tt>-outbaseuri URI</tt> option:</p>
+
+<pre class="code">$ mono rdfstorage.exe -in n3 -out xml:foaf.rdf -outbaseuri http://www.example.org/ foaf.n3</pre>
+
+<h4>Storing RDF in a Database</h4>
+
+<p>To write RDF to a database, you use <tt>-out</tt> with a specification string in one of the formats described in <a href="../apidocs/SemWeb/Store.html#M:SemWeb.Store.CreateForOutput(System.String)">Store.CreateForOutput(string)</a>. For instance, to write to a MySQL database rdf in tables starting with "sec" use:</p>
+
+<pre class="code">$ mono rdfstorage.exe -out "mysql:sec:Database=rdf;Server=localhost;User Id=rdf" database.rdf</pre>
+
+<p>The format of the specification string is generally the type of database (mysql, sqlserver, etc.), a colon, the name of the tables to use, a colon, and then a database connection string.</p>
+
+<p>To clear the database's contents (that is, dropping the relevant tables given by the specification string), use the <tt>-clear</tt> option. The database is cleared before any files are read into it.</p>
+
+<pre class="code">$ mono rdfstorage.exe -clear -out "mysql:sec:Database=rdf;Server=localhost;User Id=rdf" database.rdf</pre>
+
+<h3>General Options</h3>
+
+<p><tt>rdfstorage.exe</tt> will normally print status messages to standard error (i.e. the console). It hides these messages if it thinks it is writing to the console, so that the output does not get mixed up. To write these messages to the console anyway (for instance if you've redirected standard output to a file), give the <tt>-stats</tt> option.</p>
+
+	</body>
+</html>
