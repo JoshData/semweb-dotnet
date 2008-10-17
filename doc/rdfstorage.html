@@ -9,7 +9,9 @@
 <p><a href="index.html">SemWeb Documentation</a></p>
 <h1>rdfstorage.exe Command Line Tool</h1>
 
-<p>The <tt>rdfstorage.exe</tt> program is a command-line tool that is a part of the SemWeb library for reading and writing RDF and loading RDF into persistent storage like a database. The program gets data from a source in some format and puts the data elsewhere, in another format, as per the command-line options you provide.</p>
+<p>The <tt>rdfstorage.exe</tt> program is a command-line tool that is a part of the SemWeb library for reading and writing RDF and loading RDF into persistent storage like a database, or for validating documents. The program gets data from a source in some format and puts the data elsewhere, in another format, as per the command-line options you provide.</p>
+
+<p>Any validation errors and warnings in input files will be reported to the console.</p>
 
 <p>If you run <tt>rdfstorage.exe</tt> without any command-line options, the possible options are displayed. On Windows, just type <tt>rdfstorage.exe</tt>. On Linux, or on Windows but using the Mono .NET runtime, type <tt>mono rdfstorage.exe</tt>. I'll assume you're using Linux in the examples below. The "$" at the start of the line is the command-prompt: no need to type that.</p>
 
@@ -46,19 +48,23 @@ Options:
 
 <p>Output options are explained in the next section.</p>
 
-<p>When the file arguments are not correctly understood, you can specify the format with the <tt>-in:FORMAT</tt> option, where <tt>FORMAT</tt> is either <tt>xml</tt> or <tt>n3</tt> (when reading from files) or <tt>url</tt> (to read from a URL and automatically detect the type). (Turtle and N-Triples are subsets of the Notation 3 format, so you can use the <tt>n3</tt> option to read files of this type.) For instance:</p>
+<p>If you intend only to validate the input files, on Linux you can redirect the output to <tt>/dev/null</tt> so you don't have to worry about it. If there are any errors or warnings, they will be written to the console (standard error). Also specify <tt>-stats</tt> to get a count of the number of triples in the document.</p>
+
+<pre class="code">$ mono rdfstorage.exe -stats testfile.rdf > /dev/null</pre>
+
+<p>When the file arguments are not correctly understood, you can specify the format with the <tt>-in FORMAT</tt> option, where <tt>FORMAT</tt> is either <tt>xml</tt> or <tt>n3</tt> (when reading from files) or <tt>url</tt> (to read from a URL and automatically detect the type). (Turtle and N-Triples are subsets of the Notation 3 format, so you can use the <tt>n3</tt> option to read files of this type.) For instance:</p>
 
 <pre class="code">$ mono rdfstorage.exe -in xml file1.rdf file2.rdf > output.n3</pre>
 
 <h4>Reading from Standard Input</h4>
 
-<p>You can read in from standard input, to use pipes or redirection on the command line, by using a dash (-) for the file name. In this case, you really need to use <tt>-in:xml</tt> or <tt>-in:n3</tt> to specify the format. E.g.:</p>
+<p>You can read in from standard input, to use pipes or redirection on the command line, by using a dash (-) for the file name. In this case, you really need to use <tt>-in xml</tt> or <tt>-in n3</tt> to specify the format. E.g.:</p>
 
 <pre class="code">$ mono rdfstorage.exe -in n3 - &lt; input.n3 > output.n3</pre>
 
 <h4>Setting the Base URI Explicitly</h4>
 
-<p>Both RDF/XML and Notation 3 files can resolve URIs against the URI of the document itself. When loading a document from the web, the client knows the URI he is accessing and it is not specified within the file itself. When a file with relative URIs and no explicit base URI set within the file is being loaded from somewhere besides its original location, use the <tt>baseuri:URI</tt> option to set the base URI explicitly. This option is overridden by name base URI set within the file.</p>
+<p>Both RDF/XML and Notation 3 files can resolve relative URIs found in the document against the URI of the document itself. When loading a document from the web, the client knows the URI he is accessing if it is not specified within the file itself. When a file with relative URIs and no explicit base URI set within the file is being loaded from somewhere besides its original location, use the <tt>-baseuri URI</tt> option to set the base URI explicitly. This option is overridden by any base URI provided explicitly within the file.</p>
 
 <pre class="code">$ mono rdfstorage.exe -in n3 -baseuri http://www.example.org/# - &lt; input.n3 > output.n3</pre>
 
