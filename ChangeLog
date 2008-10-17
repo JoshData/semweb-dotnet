@@ -13,6 +13,9 @@
 	  Apache mod_mono (Unix) or mod_aspdotnet (Windows), by
 	  Florian Schmedding.
 	* Removed the bin_linq build since it is the same as bin_generics.
+	* All assemblies are now strong-named. At the moment I'm keeping
+	  the signing file private, but if you compile with 'make' it'll
+	  generate one for you automatically.
 
 2008-08-09 Version 1.062
 
