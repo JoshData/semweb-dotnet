@@ -29,7 +29,7 @@
 <p>Create a test dataset using the BSBM dataset generator. Below <i>products</i> is the data set scale factor. Use 1915 to get a 1 million triples data set.</p>
 
 <pre class="code">$ java -cp bin:lib/ssj.jar benchmark.generator.Generator -pc <i>products</i> \
-	-s nt -dir <i>datadir</i> -fn <i>datadir</i>/dataset</pre>
+	-s ttl -dir <i>datadir</i> -fn <i>datadir</i>/dataset</pre>
 	
 <p>Download the current version of the SemWeb .NET library from the website <a href="http://razor.occams.info/code/semweb">http://razor.occams.info/code/semweb</a>. Save and extract the library package into a directory within your BSBM directory. We'll call the directory <tt>semweb</tt>.</p>
 
@@ -42,14 +42,14 @@ query_cache_size = 512M</pre>
 
 <p>Load the dataset into the database. You may have to change the path to SemWeb and to the dataset.nt N-Triples file, depending on your setup. Additionally, you can change "Database=test" below to any connection string described in the <a href="http://dev.mysql.com/doc/refman/5.0/en/connector-net-using-connecting.html#connector-net-using-connecting-connection-string">MySQL Connector documentation</a>.</p>
 
-<pre class="code">$ export SEMWEB_MYSQL_IMPORT_MODE=LOCK
-$ time mono semweb/bin_generics/rdfstorage.exe -out "mysql:bsbm:Database=test" -clear dataset.nt</pre>
+<pre class="code">$ export SEMWEB_MYSQL_IMPORT_MODE=DISABLEKEYS
+$ time mono semweb/bin_generics/rdfstorage.exe -out "mysql:bsbm:Database=test" -clear <i>datadir</i>/dataset.ttl</pre>
 
-<p>There are three data import modes for MySQL. The default wraps the import in a transaction, and is the slowest method. The next method locks the tables for reading and writing while importing the data. This is what is used here, activated by the environment variable, and speeds up the import a bit.</p>
+<p>There are three data import modes for MySQL. The choice is activated by the environment variable SEMWEB_MYSQL_IMPORT_MODE and can speed up the import a bit. The default mode wraps the import in a transaction, and is the slowest method. The next method locks the tables for reading and writing while importing the data ("LOCK"). The third method ("DISABLEKEYS") delays generating indexes on the table until after all of the data is loaded. The table should not be accessed by another program while importing data when DISABLEKEYS is used.</p>
 
-<p>On the 1915-product 1M-triples data set, I get the following output:</p>
+<p>On the 2785-product 1M-triples data set, I get the following output:</p>
 
-<pre class="code">dataset.nt  3m44s, 996396 statements, 4441 st/sec</pre>
+<pre class="code">Total Time: 1m48s, 991958 statements, 9145 st/sec</pre>
 
 <p>Create a file web.config with the contents below. This will configure the ASP.NET server that will run the SPARQL endpoint. Replace "Database=test" with the same connection string above, if you changed it.</p>
 
