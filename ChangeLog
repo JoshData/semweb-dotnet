@@ -1,3 +1,5 @@
+2008-11-20 Version 1.063
+
 	* Literal.FromValue now uses XmlConvert.ToString rather than
 	  object.ToString() to be culture-insensitive. Patch from
 	  Gabriel Kronberger, thanks!
