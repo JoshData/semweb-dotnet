@@ -1,3 +1,6 @@
+	* SparqlClient: Proper method call for setting xmlns (reported
+	  by sir_neanderthal, thanks!).
+
 2008-11-20 Version 1.063
 
 	* Literal.FromValue now uses XmlConvert.ToString rather than
