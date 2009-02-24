@@ -37,6 +37,7 @@
     <Compile Include="AssemblyInfo.cs" />
     <Compile Include="Euler.cs" />
     <Compile Include="GraphMatch.cs" />
+    <Compile Include="GraphVizWriter.cs" />
     <Compile Include="Inference.cs" />
     <Compile Include="Interfaces.cs" />
     <Compile Include="LiteralFilters.cs" />

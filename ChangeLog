@@ -1,5 +1,6 @@
 	* SparqlClient: Proper method call for setting xmlns (reported
 	  by sir_neanderthal, thanks!).
+	* SemWeb.csproj, semweb.mdp: Add GraphVizWriter (oops).
 
 2008-11-20 Version 1.063
 
