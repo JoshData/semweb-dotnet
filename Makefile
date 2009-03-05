@@ -27,13 +27,13 @@ all:
 else
 
 ifeq "$(PROFILE)" "DOTNET1"
-BIN=bin
+BIN=bin_net11
 MCS=mcs -d:DOTNET1
 MCS_LIBS=-r:System.Data -r:System.Web
 endif
 
 ifeq "$(PROFILE)" "DOTNET2"
-BIN=bin_generics
+BIN=bin
 MCS=gmcs -d:DOTNET2
 MCS_LIBS=-r:System.Data -r:System.Web
 endif
@@ -133,7 +133,7 @@ endif
 
 apidocxml: Makefile
 	monodocer \
-		-assembly:bin_generics/SemWeb.dll -assembly:bin_generics/SemWeb.Sparql.dll \
+		-assembly:bin/SemWeb.dll -assembly:bin/SemWeb.Sparql.dll \
 		-path:apidocxml --delete --pretty
 	#mono /usr/lib/monodoc/monodocs2slashdoc.exe doc > SemWeb.docs.xml
 	mkdir -p apidocs
@@ -144,7 +144,7 @@ apidocxml: Makefile
 package: all
 	rm -rf package-workspace
 	mkdir -p package-workspace/semweb-$(VERSION)
-	cp -R bin bin_generics bin_silverlight src tools apidocs apidocxml doc \
+	cp -R bin_net11 bin bin_silverlight src tools apidocs apidocxml doc \
 		ChangeLog Makefile README.txt semweb.mds semweb.sln \
 		package-workspace/semweb-$(VERSION)
 	mkdir package-workspace/semweb-$(VERSION)/sparql

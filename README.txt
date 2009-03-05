@@ -12,8 +12,10 @@ SemWeb is a library for use in other C# and .NET applications on either
 Mono or Microsoft's .NET. The library comes as a collection of
 .NET assemblies. There are two directories for the compiled assemblies:
 
-	bin: Binaries compiled for .NET 1.1 (no generics).
-	bin_generics: Binaries compiled for .NET 2.0 (generics).
+	bin: Binaries compiled for .NET 2.0 (generics).
+
+	bin_net11: Binaries compiled for .NET 1.1 (no generics).
+	           Also, no MySQL support.
 	
 Each directory contains the files:
 
@@ -22,7 +24,8 @@ Each directory contains the files:
 
 	SemWeb.MySQLStore.dll, SemWeb.PostgreSQLStore.dll, SemWeb.SqliteStore.dll
 		Assemblies providing SQLStore implementations for
-		those RDBMSs. (details to be entered here later)
+		those RDBMSs. The MySQL library isn't available in
+		the .NET 1.0 build.
 	
 	SemWeb.Sparql.dll
 		An assembly providing the SPARQL engine class. It requires
@@ -71,7 +74,7 @@ BUILD INSTRUCTIONS
 Run make if you're in Linux.  Nothing complicated here.  You'll need
 Mono installed (and the MySQL/Connector and Sqlite Client DLLs for SQL 
 database support, optionally).  It'll build .NET 1.1 binaries to the
-bin directory and .NET 2.0 binaries with generics to the bin_generics
+bin_net11 directory and .NET 2.0 binaries with generics to the bin
 directory.
 
 A MonoDevelop solution file (semweb.mds) and a Visual Studio 2005 solution

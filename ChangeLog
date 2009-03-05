@@ -1,3 +1,7 @@
+	* Renamed the bin directories. bin now contains the .NET 2.0
+	  generics build. bin_net11 has the old bin directory for .NET 1.1.
+	  The .csproj and .mdp files are updated accordingly to now
+	  build to bin.
 	* SparqlClient: Proper method call for setting xmlns (reported
 	  by sir_neanderthal, thanks!).
 	* SemWeb.csproj, semweb.mdp: Add GraphVizWriter (oops).
