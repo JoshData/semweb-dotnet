@@ -685,6 +685,8 @@ namespace SemWeb.Query {
 		}
 		
 		static bool quickDupCheckIsDup(BindingSet newbindings, Resource[] newValues, int nMatches) {
+			return false;
+		
 			// If there is a more than 10-to-1 ratio of rejected duplicates
 			// to unique rows, then we check all rows.  Otherwise we check the first 100.
 

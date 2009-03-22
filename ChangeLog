@@ -1,3 +1,4 @@
+	* GraphMatch.cs: Removed duplicate check: it's far too slow.
 	* Store.cs: Improved error message if a store assembly aint there.
 	* Renamed the bin directories. bin now contains the .NET 2.0
 	  generics build. bin_net11 has the old bin directory for .NET 1.1.
