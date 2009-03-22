@@ -133,7 +133,7 @@ namespace SemWeb {
 					}
 					ttype = Type.GetType(classtype);
 					if (ttype == null)
-						throw new NotSupportedException("The storage type in <" + classtype + "> could not be found.");
+						throw new NotSupportedException("The storage type in <" + classtype + "> could not be found. Make sure the assembly can be found at runtime.");
 					return Activator.CreateInstance(ttype, new object[] { spec, table });
 				/*case "bdb":
 					return new SemWeb.Stores.BDBStore(spec);*/
