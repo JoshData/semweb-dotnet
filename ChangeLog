@@ -4,8 +4,12 @@
 	  generics build. bin_net11 has the old bin directory for .NET 1.1.
 	  The .csproj and .mdp files are updated accordingly to now
 	  build to bin.
-	* SparqlClient: Proper method call for setting xmlns (reported
+	* SparqlXmlQuerySink: Proper method call for setting xmlns (reported
 	  by sir_neanderthal, thanks!).
+	* SparqlHttpSource: In the documentation note that HTTP 417 errors
+	  can come up because of Expect: headers. The fix is to set
+	  "System.Net.ServicePointManager.Expect100Continue = false;" early on
+	  in the application. It's also set here.
 	* SemWeb.csproj, semweb.mdp: Add GraphVizWriter (oops).
 
 2008-11-20 Version 1.063

@@ -21,6 +21,7 @@
     <remarks>
       <para>The SparqlHttpSource accesses remote data using the SPARQL Protocol over HTTP.</para>
       <para>SPARQL has some serious limitations regarding blank nodes.  Critically, a blank node returned by a SPARQL query cannot be referenced in future queries.  As a result, blank nodes returned by calls to this source cannot be used in future select calls to this source.</para>
+      <para>The .NET HTTP infrastructure is set to normally send HTTP Expect: headers in POST calls. These headers are not supported by all servers and can result in HTTP 417 response error codes. To fix this, execute "System.Net.ServicePointManager.Expect100Continue = false;" early on in your application.</para>
     </remarks>
   </Docs>
   <Members>

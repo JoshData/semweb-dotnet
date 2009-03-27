@@ -224,6 +224,7 @@ namespace SemWeb.Remote {
 			
 			string method = "POST";
 			
+			System.Net.ServicePointManager.Expect100Continue = false;
 			System.Net.WebRequest rq;
 			
 			if (Debug) {

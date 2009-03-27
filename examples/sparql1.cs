@@ -7,6 +7,8 @@ using SemWeb.Query;
 public class Sparql1 {
 
 	public static void Main() {
+		System.Net.ServicePointManager.Expect100Continue = false; // don't send HTTP Expect: headers which confuse some servers
+	
 		string endpoint = "http://www.rdfabout.com/sparql";
 		
 		string ex1 = "PREFIX foaf: <http://xmlns.com/foaf/0.1/>\n"

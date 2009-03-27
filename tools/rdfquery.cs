@@ -26,6 +26,8 @@ public class RDFQuery {
 	}
 
 	public static void Main(string[] args) {
+		System.Net.ServicePointManager.Expect100Continue = false;
+	            
 		Opts opts = new Opts();
 		opts.ProcessArgs(args);
 
