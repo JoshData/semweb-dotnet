@@ -13,6 +13,8 @@
 	  in the application. It's also set here.
 	* SQLStore (etc): Refactored the methods for escaping strings and
 	  added a N prefix to strings for SQLServer.
+	* SQLServerStore: Added required binary collation to prevent errors
+	  when entities/literals differ in case only.
 	* SemWeb.csproj, semweb.mdp: Add GraphVizWriter (oops).
 
 2008-11-20 Version 1.063

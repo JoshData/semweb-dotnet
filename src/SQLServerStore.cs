@@ -235,10 +235,10 @@ namespace SemWeb.Stores {
 				"(subject INT NOT NULL, predicate INT NOT NULL, objecttype INT NOT NULL, object INT NOT NULL, meta INT NOT NULL);",
 				
 				"CREATE TABLE " + table + "_literals" +
-				"(id INT NOT NULL, value " + textColumnType + " NOT NULL, language NVARCHAR(255), datatype NVARCHAR(255), hash NCHAR(28), PRIMARY KEY(id));",
+				"(id INT NOT NULL, value " + textColumnType + " COLLATE Latin1_General_BIN2 NOT NULL, language NVARCHAR(255) COLLATE Latin1_General_BIN2, datatype NVARCHAR(255) COLLATE Latin1_General_BIN2, hash NCHAR(28), PRIMARY KEY(id));",
 				
 				"CREATE TABLE " + table + "_entities" +
-				"(id INT NOT NULL, value NVARCHAR(" + MAX_URI_LENGTH + ") NOT NULL, PRIMARY KEY(id));"
+				"(id INT NOT NULL, value NVARCHAR(" + MAX_URI_LENGTH + ") COLLATE Latin1_General_BIN2 NOT NULL, PRIMARY KEY(id));"
 			};
 		}
 
