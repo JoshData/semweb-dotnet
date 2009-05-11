@@ -1,3 +1,5 @@
+2009-05-11 Version 1.064
+
 	* GraphMatch.cs: Removed duplicate check: it's far too slow.
 	* Store.cs: Improved error message if a store assembly aint there.
 	* Renamed the bin directories. bin now contains the .NET 2.0
@@ -16,6 +18,8 @@
 	* SQLServerStore: Added required binary collation to prevent errors
 	  when entities/literals differ in case only.
 	* SemWeb.csproj, semweb.mdp: Add GraphVizWriter (oops).
+	* Discontinued the Silverlight build as it needs serious work
+	  to avoid various unavailable classes.
 
 2008-11-20 Version 1.063
 

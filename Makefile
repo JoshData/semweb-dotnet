@@ -21,7 +21,7 @@ ifeq "$(PROFILE)" ""
 all:
 	PROFILE=DOTNET1 make
 	PROFILE=DOTNET2 make
-	PROFILE=SILVERLIGHT make
+	#PROFILE=SILVERLIGHT make
 
 # If we have a PROFILE specified.
 else
@@ -144,7 +144,7 @@ apidocxml: Makefile
 package: all
 	rm -rf package-workspace
 	mkdir -p package-workspace/semweb-$(VERSION)
-	cp -R bin_net11 bin bin_silverlight src tools apidocs apidocxml doc \
+	cp -R bin_net11 bin src tools apidocs apidocxml doc \
 		ChangeLog Makefile README.txt semweb.mds semweb.sln \
 		package-workspace/semweb-$(VERSION)
 	mkdir package-workspace/semweb-$(VERSION)/sparql
