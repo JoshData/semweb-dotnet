@@ -6,10 +6,13 @@
 	  build to bin.
 	* SparqlXmlQuerySink: Proper method call for setting xmlns (reported
 	  by sir_neanderthal, thanks!).
+	* Euler: Fixed NullReferenceException on failed proofs.
 	* SparqlHttpSource: In the documentation note that HTTP 417 errors
 	  can come up because of Expect: headers. The fix is to set
 	  "System.Net.ServicePointManager.Expect100Continue = false;" early on
 	  in the application. It's also set here.
+	* SQLStore (etc): Refactored the methods for escaping strings and
+	  added a N prefix to strings for SQLServer.
 	* SemWeb.csproj, semweb.mdp: Add GraphVizWriter (oops).
 
 2008-11-20 Version 1.063

@@ -48,15 +48,19 @@ namespace SemWeb.Stores {
 		
 		protected override void CreateLikeTest(string column, string match, int method, System.Text.StringBuilder command) {
 			command.Append( column );
-			command.Append( " LIKE '" );
+			command.Append( " LIKE N'" );
 			if( method == 1 || method == 2 ) command.Append( "%" ); // contains or ends-with
-			EscapedAppend( command, match, false, true );
+			EscapedAppend( command, match, true );
 			if( method != 2 ) command.Append( "%" ); // contains or starts-with
 			command.Append( "' ESCAPE '\\'" );
 		}
 
-		protected override void EscapedAppend( StringBuilder b, string str, bool quotes, bool forLike ) {
-			if( quotes ) b.Append( GetQuoteChar() );
+		protected override void EscapedAppend(StringBuilder b, string str) {
+			EscapedAppend(b, str, false);
+		}
+		
+		private void EscapedAppend(StringBuilder b, string str, bool forLike) {
+			if( !forLike ) { b.Append( 'N' ); b.Append( '\'' ); }
 			for( int i = 0; i < str.Length; i++ ) {
 				char c = str[ i ];
 				switch( c ) {
@@ -77,7 +81,7 @@ namespace SemWeb.Stores {
 						break;
 				}
 			}
-			if( quotes ) b.Append( GetQuoteChar() );
+			if( !forLike ) b.Append( '\'' );
 		}
 
 		public override void Close() {
@@ -193,10 +197,6 @@ namespace SemWeb.Stores {
 			RunCommand( "ALTER INDEX [predicate_index] ON " + TableName + "_statements REBUILD" );
 			RunCommand( "ALTER INDEX [object_index] ON " + TableName + "_statements REBUILD" );
 			RunCommand( "ALTER INDEX [meta_index] ON " + TableName + "_statements REBUILD" );
-		}
-
-		protected override char GetQuoteChar() {
-			return '\'';
 		}
 
 		protected override void CreateTable() {

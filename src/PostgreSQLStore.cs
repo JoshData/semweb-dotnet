@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Text;
 
 using System.Data;
 using Npgsql;
@@ -17,7 +18,7 @@ namespace SemWeb.Stores {
 
 		public PostgreSQLStore(string connectionString, string table)
 			: base(table) {
-
+			
 			this.CreateTableCommands = new string[] {
 				"CREATE TABLE " + table + "_statements" +
 				"(subject INTEGER NOT NULL, predicate INTEGER NOT NULL, objecttype INTEGER NOT NULL, object INTEGER NOT NULL, meta INTEGER NOT NULL);",
@@ -52,17 +53,43 @@ namespace SemWeb.Stores {
 			command.Append(" IS NULL");
 		}
 		
+		protected override void EscapedAppend(StringBuilder b, string str) {
+			EscapedAppend(b, str, false);
+		}
+		
+		private void EscapedAppend(StringBuilder b, string str, bool forLike) {
+			if (!forLike) b.Append('\'');
+			for (int i = 0; i < str.Length; i++) {
+				char c = str[i];
+				switch (c) {
+					case '\n': b.Append("\\n"); break;
+					case '\\':
+					case '\"':
+					case '*':
+					case '\'':
+						b.Append('\\');
+						b.Append(c);
+						break;
+					case '%':
+					case '_':
+						if (forLike)
+							b.Append('\\');
+						b.Append(c);
+						break;
+					default:
+						b.Append(c);
+						break;
+				}
+			}
+			if (!forLike) b.Append('\'');
+		}
+
 		protected override void CreateLikeTest(string column, string match, int method, System.Text.StringBuilder command) {
 			command.Append(column);
 			command.Append(" LIKE '");
 			if (method == 1 || method == 2) command.Append("%"); // contains or ends-with
 			
-			// Postgres is weird. Because we will use the backslash to escape % and _, we have
-			// to escape the string twice.  Once regularly, and then again to escape all
-			// backslashes and %'s and _'s.
-			System.Text.StringBuilder bldr = new System.Text.StringBuilder();
-			EscapedAppend(bldr, match, false, false);
-			EscapedAppend(command, match, false, true);
+			EscapedAppend(command, match, true);
 			
 			if (method != 2) command.Append("%"); // contains or starts-with
 			command.Append("'");
@@ -125,9 +152,6 @@ namespace SemWeb.Stores {
 					if (Debug) Console.Error.WriteLine(e);
 				}
 			}
-		}
-		protected override char GetQuoteChar() {
-			return '\'';
 		}
 	}
 }

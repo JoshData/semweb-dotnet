@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections;
+using System.Text;
 
 using System.Data;
 
@@ -60,11 +61,42 @@ namespace SemWeb.Stores {
 			command.Append(column);
 			command.Append(" LIKE \"");
 			if (method == 1 || method == 2) command.Append("%"); // contains or ends-with
-			EscapedAppend(command, match, false, true);
+			EscapedAppend(command, match, true);
 			if (method != 2) command.Append("%"); // contains or starts with
 			command.Append("\"");
 		}
 
+		protected override void EscapedAppend(StringBuilder b, string str) {
+			EscapedAppend(b, str, false);
+		}
+		
+		private void EscapedAppend(StringBuilder b, string str, bool forLike) {
+			if (!forLike) b.Append('\"');
+			for (int i = 0; i < str.Length; i++) {
+				char c = str[i];
+				switch (c) {
+					case '\n': b.Append("\\n"); break;
+					case '\\':
+					case '\"':
+					case '*':
+					case '\'':
+						b.Append('\\');
+						b.Append(c);
+						break;
+					case '%':
+					case '_':
+						if (forLike)
+							b.Append('\\');
+						b.Append(c);
+						break;
+					default:
+						b.Append(c);
+						break;
+				}
+			}
+			if (!forLike) b.Append('\"');
+		}
+		
 		public override void Close() {
 			base.Close();
 			if (connection != null)

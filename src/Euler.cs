@@ -426,7 +426,8 @@ namespace SemWeb.Inference {
 							
 						} else {
 							// If the predicate fails, decrement the life of the parent.
-							decrementLife(c.parent, cached_subproofs);
+							if (c.parent != null)
+								decrementLife(c.parent, cached_subproofs);
 						}
 						continue;
 					}
@@ -439,7 +440,8 @@ namespace SemWeb.Inference {
 					// If resolving this statement requires putting a literal in subject or predicate position, we
 					// can't prove it.
 					if (t_resolved == Statement.All) {
-						decrementLife(c.parent, cached_subproofs);
+						if (c.parent != null)
+							decrementLife(c.parent, cached_subproofs);
 						continue;
 					}
 						
@@ -529,7 +531,7 @@ namespace SemWeb.Inference {
 					
 					// If we did not add anything back into the queue for this item, then
 					// we decrement the life of the parent.
-					if (c.liveChildren == 0)
+					if (c.liveChildren == 0 && c.parent != null)
 						decrementLife(c.parent, cached_subproofs);
 				}
 			}

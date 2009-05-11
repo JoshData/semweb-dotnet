@@ -132,10 +132,6 @@ namespace SemWeb.Stores {
 		// these all the time.
 		StringBuilder cmdBuffer = new StringBuilder();
 		 
-		// The quote character that surrounds strings in SQL statements.
-		// Initialized in the constructor.
-		char quote;
-		
 		// Ensure that calls to Select() and Query() are synchronized to make these methods thread-safe.
 		object syncroot = new object();
 		
@@ -169,8 +165,6 @@ namespace SemWeb.Stores {
 		// The constructor called by subclasses.
 		protected SQLStore(string table) {
 			this.table = table;
-			
-			quote = GetQuoteChar();
 		}
 		
 		protected string TableName { get { return table; } }
@@ -242,9 +236,9 @@ namespace SemWeb.Stores {
 			
 			string newverdata = SerializeVersionInfo(verdata);
 			if (verdatastr == null)
-				RunCommand("INSERT INTO " + table + "_literals (id, value) VALUES (0, " + Escape(newverdata, true) + ")");
+				RunCommand("INSERT INTO " + table + "_literals (id, value) VALUES (0, " + Escape(newverdata) + ")");
 			else if (verdatastr != newverdata)
-				RunCommand("UPDATE " + table + "_literals SET value = " + Escape(newverdata, true) + " WHERE id = 0");
+				RunCommand("UPDATE " + table + "_literals SET value = " + Escape(newverdata) + " WHERE id = 0");
 				
 			return isNew;
 		}
@@ -376,9 +370,7 @@ namespace SemWeb.Stores {
 				b.Append("id FROM ");
 				b.Append(table);
 				b.Append("_literals WHERE hash =");
-				b.Append(quote);
-				b.Append(GetLiteralHash(literal));
-				b.Append(quote);
+				EscapedAppend(b, GetLiteralHash(literal));
 				if (SupportsLimitClause)
 					b.Append(" LIMIT 1");
 				b.Append(';');
@@ -430,9 +422,7 @@ namespace SemWeb.Stores {
 			else
 				b.Append("NULL");
 			b.Append(',');
-			b.Append(quote);
-			b.Append(GetLiteralHash(literal));
-			b.Append(quote);
+			EscapedAppend(b, GetLiteralHash(literal));
 			b.Append(')');
 			if (!insertCombined)
 				b.Append(';');
@@ -772,9 +762,7 @@ namespace SemWeb.Stores {
 					
 					if (hasLiterals)
 						cmd.Append(" , ");
-					cmd.Append(quote);
-					cmd.Append(hash);
-					cmd.Append(quote);
+					EscapedAppend(cmd, hash);
 					hasLiterals = true;
 					litseen[hash] = lit;
 				}
@@ -1212,9 +1200,7 @@ namespace SemWeb.Stores {
 					
 					if (hasLiterals)
 						cmd_l.Append(" , ");
-					cmd_l.Append(quote);
-					cmd_l.Append(hash);
-					cmd_l.Append(quote);
+					EscapedAppend(cmd_l, hash);
 					hasLiterals = true;
 					seen_l[hash] = lit;
 					ctr++;
@@ -1980,7 +1966,7 @@ namespace SemWeb.Stores {
 		private string FilterToSQL(LiteralFilter filter, string col) {
 			if (filter is SemWeb.Filters.StringCompareFilter) {
 				SemWeb.Filters.StringCompareFilter f = (SemWeb.Filters.StringCompareFilter)filter;
-				return col + FilterOpToSQL(f.Type) + Escape(f.Pattern, true);
+				return col + FilterOpToSQL(f.Type) + Escape(f.Pattern);
 			}
 			if (filter is SemWeb.Filters.StringContainsFilter) {
 				SemWeb.Filters.StringContainsFilter f = (SemWeb.Filters.StringContainsFilter)filter;
@@ -2013,54 +1999,14 @@ namespace SemWeb.Stores {
 			}			
 		}
 		
-		private string Escape(string str, bool quotes) {
+		private string Escape(string str) {
 			if (str == null) return "NULL";
 			StringBuilder b = new StringBuilder();
-			EscapedAppend(b, str, quotes, false);
+			EscapedAppend(b, str);
 			return b.ToString();
 		}
 		
-		protected void EscapedAppend(StringBuilder b, string str) {
-			EscapedAppend(b, str, true, false);
-		}
-
-		protected virtual char GetQuoteChar() {
-			return '\"';
-		}
-		protected virtual void EscapedAppend(StringBuilder b, string str, bool quotes, bool forLike) {
-			if (quotes) b.Append(quote);
-			for (int i = 0; i < str.Length; i++) {
-				char c = str[i];
-				switch (c) {
-					case '\n': b.Append("\\n"); break;
-					case '\\':
-					case '\"':
-					case '*':
-					case '\'':
-						b.Append('\\');
-						b.Append(c);
-						break;
-					case '%':
-					case '_':
-						if (forLike)
-							b.Append('\\');
-						b.Append(c);
-						break;
-					default:
-						b.Append(c);
-						break;
-				}
-			}
-			if (quotes) b.Append(quote);
-		}
-		
-		/*internal static void Escape(StringBuilder b) {
-			b.Replace("\\", "\\\\");
-			b.Replace("\"", "\\\"");
-			b.Replace("\n", "\\n");
-			b.Replace("%", "\\%");
-			b.Replace("*", "\\*");
-		}*/
+		protected abstract void EscapedAppend(StringBuilder b, string str);
 
 		public void Import(StatementSource source) {
 			if (source == null) throw new ArgumentNullException();
