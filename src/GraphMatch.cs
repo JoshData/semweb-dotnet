@@ -131,6 +131,7 @@ namespace SemWeb.Query {
 		}
 		
 		internal static Variable[] toArray(VarKnownValuesType2 kv) {
+			if (kv == null) return new Variable[0]; // can be null when called from Store.ChunkQuery
 			Variable[] ret = new Variable[kv.Count];
 			int ctr = 0;
 			foreach (Variable v in kv.Keys)

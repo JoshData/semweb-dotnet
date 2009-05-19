@@ -1,3 +1,5 @@
+	* GraphMatch.cs: Corrected NullReferenceException (thanks MW!).
+
 2009-05-11 Version 1.064
 
 	* GraphMatch.cs: Removed duplicate check: it's far too slow.
