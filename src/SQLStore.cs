@@ -1735,13 +1735,13 @@ namespace SemWeb.Stores {
 			
 			cmd.Append("SELECT ");
 
+			if (useDistinct) cmd.Append("DISTINCT ");
+			
 			if (!SupportsLimitClause && options.Limit > 0) {
 				cmd.Append("TOP ");
 				cmd.Append(options.Limit);
 				cmd.Append(' ');
 			}
-			
-			if (useDistinct) cmd.Append("DISTINCT ");
 			
 			// Add all of the distinguished variables to the SELECT clause.
 			bool firstvar = true;
