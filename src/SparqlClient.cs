@@ -300,7 +300,7 @@ namespace SemWeb.Remote {
 			if (outputObj is BooleanWrap) {
 				BooleanWrap bw = (BooleanWrap)outputObj;
 				
-				if (mimetype != null && mimetype != "application/sparql-results+xml" && mimetype != "text/xml")
+				if (mimetype != null && mimetype != "application/sparql-results+xml" && mimetype != "text/xml" && mimetype != "application/xml")
 					throw new ApplicationException("The result of the query was not a SPARQL Results document.");
 					
 				XmlReader xmldoc = new XmlTextReader(stream);
