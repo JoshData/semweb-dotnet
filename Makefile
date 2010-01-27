@@ -118,10 +118,10 @@ endif
 # Utility programs
 
 $(BIN)/rdfstorage.exe: tools/rdfstorage.cs src/AssemblyInfo_Shared.cs signing.key
-	$(MCS) -debug tools/rdfstorage.cs -out:$(BIN)/rdfstorage.exe -r:$(BIN)/SemWeb.dll -r:Mono.GetOptions
+	$(MCS) -debug tools/rdfstorage.cs -out:$(BIN)/rdfstorage.exe -r:$(BIN)/SemWeb.dll -r:bin/Mono.GetOptions.dll
 	
 $(BIN)/rdfquery.exe: tools/rdfquery.cs src/AssemblyInfo_Shared.cs signing.key
-	$(MCS) -debug tools/rdfquery.cs -out:$(BIN)/rdfquery.exe -r:$(BIN)/SemWeb.dll -r:$(BIN)/SemWeb.Sparql.dll -r:Mono.GetOptions	
+	$(MCS) -debug tools/rdfquery.cs -out:$(BIN)/rdfquery.exe -r:$(BIN)/SemWeb.dll -r:$(BIN)/SemWeb.Sparql.dll -r:bin/Mono.GetOptions.dll
 
 $(BIN)/euler.exe: tools/euler.cs src/AssemblyInfo_Shared.cs signing.key
 	$(MCS) -debug tools/euler.cs -out:$(BIN)/euler.exe -r:$(BIN)/SemWeb.dll -r:$(BIN)/SemWeb.Sparql.dll

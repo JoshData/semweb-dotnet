@@ -1,5 +1,6 @@
 	* GraphMatch.cs: Corrected NullReferenceException (thanks MW!).
 	* SQLStore: TOP and DISTINCT needed to go the other way (thanks Steve!).
+	* Makefile: Changed path to Mono.GetOptions.
 
 2009-05-11 Version 1.064
 
