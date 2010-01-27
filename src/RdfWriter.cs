@@ -97,7 +97,7 @@ namespace SemWeb {
 				case "nt":
 				case "ntriples":
 					N3Writer w2 = new N3Writer(file);
-					w2.Format = N3Writer.Formats.Turtle;
+					w2.Format = N3Writer.Formats.NTriples;
 					return w2;
 				case "dot":
 					return new GraphVizWriter(file);

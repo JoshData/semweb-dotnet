@@ -1,3 +1,5 @@
+	* RdfWriter.Create with "nt" type was configured for Turtle because
+	  of a typo.
 	* GraphMatch.cs: Corrected NullReferenceException (thanks MW!).
 	* SQLStore: TOP and DISTINCT needed to go the other way (thanks Steve!).
 	* Makefile: Changed path to Mono.GetOptions.
