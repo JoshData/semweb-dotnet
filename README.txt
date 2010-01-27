@@ -23,9 +23,17 @@ Each directory contains the files:
 		This is the core library.
 
 	SemWeb.MySQLStore.dll, SemWeb.PostgreSQLStore.dll, SemWeb.SqliteStore.dll
-		Assemblies providing SQLStore implementations for
-		those RDBMSs. The MySQL library isn't available in
-		the .NET 1.0 build.
+		Assemblies providing SQLStore implementations for those RDBMSs.
+		
+		The MySQL library isn't available in the .NET 1.0 build because
+		the MySQL Connector client library is .NET 2.0 only. SemWeb.MySQLStore
+		is compiled against MySQL Connector version 6.0.3. You might
+		need to recompile it if you use a different version.
+		
+		The PostreSQL library is compiled against Npgsql 2.0.0.0.
+		
+		The Sqlite library is compiled against Mono.Data.Sqlite
+		version 2.0.0.0.
 	
 	SemWeb.Sparql.dll
 		An assembly providing the SPARQL engine class. It requires
