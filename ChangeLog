@@ -1,5 +1,6 @@
 	* RdfWriter.Create with "nt" type was configured for Turtle because
 	  of a typo.
+	* RdfReader: Literal validation was missing an exception check.
 	* SparqlHttpSource: Allow results to come back with application/xml
 	  mime type.
 	* GraphMatch.cs: Corrected NullReferenceException (thanks MW!).

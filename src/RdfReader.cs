@@ -96,6 +96,8 @@ namespace SemWeb {
 				literal.ParseValue();
 			} catch (FormatException e) {
 				OnWarning("Typed literal has an invalid lexical value: " + e.Message + ": " + literal);
+			} catch (ArgumentOutOfRangeException e) {
+				OnWarning("Typed literal has an invalid lexical value: " + literal);
 			}
 			#endif
 		}
