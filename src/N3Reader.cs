@@ -253,19 +253,9 @@ namespace SemWeb {
 			return source.Peek();
 		}
 		
-		private void ReadEscapedChar(char c, StringBuilder b, MyReader source, Location loc) {
-			if (c == 'n') b.Append('\n');
-			else if (c == 'r') b.Append('\r');
-			else if (c == 't') b.Append('\t');
-			else if (c == '\\') b.Append('\\');		
-			else if (c == '"') b.Append('"');
-			else if (c == '\'') b.Append('\'');
-			else if (c == 'a') b.Append('\a');
-			else if (c == 'b') b.Append('\b');
-			else if (c == 'f') b.Append('\f');
-			else if (c == 'v') b.Append('\v');
-			else if (c == '\n') { }
-			else if (c == '\r') { }
+		private void ReadEscapedChar(char c, StringBuilder b, MyReader source, Location loc, bool esc3E, bool escSPQ, bool escN3) {
+			// AbsoluteURIs (NTriples), RelativeURIs (Turtle), strings, and longStrings all allow \'s to be escaped and u and U notation.
+			if (c == '\\') b.Append('\\');		
 			else if (c == 'u' || c == 'U') {
 				StringBuilder num = new StringBuilder();
 				if (c == 'u')  {
@@ -286,11 +276,26 @@ namespace SemWeb {
 				
 				int unicode = int.Parse(num.ToString(), System.Globalization.NumberStyles.AllowHexSpecifier);
 				b.Append((char)unicode); // is this correct?
-				
-			} else if (char.IsDigit((char)c) || c == 'x')
-				OnError("Octal and hex byte-value escapes are deprecated and not supported", loc);
+			}
+			
+			// RelativeURis in Turtle (but not string or longString or NTriples Absolute URis) allow >'s to be escaped.
+			else if (esc3E && c == '>') b.Append(">");
+			
+			// AbsoluteURIs (NTriples), string, and longString allow the three space escapes and the double quote.
+			else if (escSPQ && c == 'n') b.Append('\n');
+			else if (escSPQ && c == 'r') b.Append('\r');
+			else if (escSPQ && c == 't') b.Append('\t');
+			else if (escSPQ && c == '"') b.Append('"');
+			
+			// In Notation 3 strings, additional escapes are allowed.
+			else if (escN3 && c == '\'') b.Append('\'');
+			else if (escN3 && c == '\n') { }
+			else if (escN3 && c == '\r') { }
+			
+			else if (char.IsDigit((char)c) || c == 'x' || c == 'a' || c == 'b' || c == 'f' || c == 'v')
+				OnError("Octal and hex byte-value escapes and other escapes are deprecated and not supported", loc);
 			else
-				OnError("Unrecognized escape character: " + (char)c, loc);
+				OnError("Invalid escape character: " + (char)c, loc);
 		}
 		
 		private StringBuilder readTokenBuffer = new StringBuilder();
@@ -308,7 +313,7 @@ namespace SemWeb {
 			b.Append((char)firstchar);
 
 			if (firstchar == '<') {
-				// This is a URI or the <= verb.  URIs can be escaped like strings, at least in the NTriples spec.
+				// This is a URI or the <= verb.  URIs can have \'s and <'s escaped with a backslash, plus \u and \U notation.
 				bool escaped = false;
 				while (true) {
 					int c = source.Read();
@@ -318,7 +323,9 @@ namespace SemWeb {
 						return "<="; // the <= verb
 					
 					if (escaped) {
-						ReadEscapedChar((char)c, b, source, loc);
+						ReadEscapedChar((char)c, b, source, loc, true, true, false);
+							// the first flag should be set true only if not NTriples, but we are flexible on reading.
+							// the second flag should be set true only if NTriples, but we are flexible on reading.
 						escaped = false;
 					} else if (c == '\\') {
 						escaped = true;
@@ -330,8 +337,8 @@ namespace SemWeb {
 				}
 				
 			} else if (firstchar == '"') {
-				// A string: ("""[^"\\]*(?:(?:\\.|"(?!""))[^"\\]*)*""")|("[^"\\]*(?:\\.[^"\\]*)*")
-				// What kind of crazy regex is this??
+				// This can either be a string "..." or a longString """...""", which additionally allows embedded \n, \r, and \t, and quotes.
+				
 				b.Length = 0; // get rid of the open quote
 				bool escaped = false;
 				bool triplequoted = false;
@@ -339,17 +346,18 @@ namespace SemWeb {
 					int c = source.Read();
 					if (c == -1) OnError("Unexpected end of stream within a string", loc);
 					
-					if (b.Length == 0 && c == (int)'"' && source.Peek() == (int)'"') {
+					// Check if this is started by three quotes. If we've already read three quotes, don't keep checking or we can't read """""".
+					if (b.Length == 0 && c == (int)'"' && source.Peek() == (int)'"' && !triplequoted) {
 						triplequoted = true;
 						source.Read();
 						continue;
 					}
 					
-					if (!escaped && c == '\\')
-						escaped = true;
-					else if (escaped) {
-						ReadEscapedChar((char)c, b, source, loc);
+					if (escaped) {
+						ReadEscapedChar((char)c, b, source, loc, false, true, true); // the last flag should be set true only if N3, but we are flexible on reading
 						escaped = false;
+					} else if (c == '\\') {
+						escaped = true;
 					} else {
 						if (c == '"' && !triplequoted)
 							break;

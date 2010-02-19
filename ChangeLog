@@ -1,3 +1,5 @@
+	* N3Reader: Correct what escapes are valid where, and fix parse of
+	  """""", the empty longString.
 	* RdfWriter.Create with "nt" type was configured for Turtle because
 	  of a typo.
 	* RdfReader: Literal validation was missing an exception check.
