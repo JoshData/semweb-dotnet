@@ -3,6 +3,7 @@ using System.Collections;
 using System.IO;
 using System.Text;
 using System.Xml;
+using System.Collections.Generic;
 
 using SemWeb;
 
@@ -21,6 +22,7 @@ namespace SemWeb {
 			public bool EmbedNamedNodes = true;
 			public bool UsePredicateAttributes = true;
 			public bool UseParseTypeLiteral = true;
+			public bool UseParseTypeCollection = false;
 			
 			internal bool UseParseTypeResource = false; // this is broken because it uses Clone(), which breaks references in Hashtables
 			
@@ -415,6 +417,25 @@ namespace SemWeb {
 				predicate.RemoveAttribute("nodeID", NS.RDF); // it's on the lower node
 				node.RemoveAttribute("nodeID", NS.RDF); // not needed anymore
 			}
+
+			// Predicates that refer to collections can be condensend by using parseType=Collection.
+			if (opts.UseParseTypeCollection) {
+				XmlNamespaceManager nsmgr = new XmlNamespaceManager(this.doc.NameTable);
+				nsmgr.AddNamespace(ns.GetPrefix(NS.RDF), NS.RDF);
+				foreach (XmlElement pred in predicateNodes) {
+					Stack itemElements;
+					if (TryGetPredicateListItemElements(pred, nsmgr, out itemElements))	{
+						//detach old definition
+						pred.RemoveAll();
+
+						//attach item elements directly
+						SetAttribute(pred, NS.RDF, ns.GetPrefix(NS.RDF), "parseType", "Collection");
+						foreach (XmlElement itemElement in itemElements) {
+							pred.AppendChild(itemElement);
+						}
+					}
+				}
+			}
 			
 			// Predicates that have rdf:Description nodes 1) with only literal
 			// properties (with no language/datatype/parsetype) can be
@@ -478,7 +499,89 @@ namespace SemWeb {
 				}
 			}
 		}
-		
+
+		// Detects and adds the list items from the list specification, or returns false.
+		bool TryGetPredicateListItemElements(XmlElement predicateElement, XmlNamespaceManager nsmgr, out Stack itemElements) {
+			itemElements = null;
+			
+			// Already collapsed?
+			if (predicateElement.GetAttribute("parseType", NS.RDF) == "Collection")	{
+				if (predicateElement.Attributes.Count > 1) return false;
+
+				itemElements = new Stack();
+				for (int i = predicateElement.ChildNodes.Count - 1; i >= 0; i--) {
+					System.Xml.XmlElement itemElement = predicateElement.ChildNodes[i] as System.Xml.XmlElement;
+					itemElements.Push(itemElement);
+				}
+				return true;
+			}
+
+			// Is rest a property with a resource as object?
+			XmlElement restElement = predicateElement.FirstChild as XmlElement;
+			if (restElement == null) {
+				if (predicateElement.GetAttribute("resource", NS.RDF) == NS.RDF + "nil") {
+					if (predicateElement.Attributes.Count > 1) return false;
+
+					itemElements = new Stack();
+					return true;
+				}
+				else return false;
+			}
+			else {
+				if (predicateElement.Attributes.Count > 0) return false;
+
+				return TryGetListItemElements(restElement, nsmgr, out itemElements);
+			}
+		}
+
+		// Detects and adds the list items from the list specification, or returns false.
+		bool TryGetListItemElements(XmlElement element, XmlNamespaceManager nsmgr, out Stack itemElements) {
+			itemElements = null;
+
+			if (element.NamespaceURI + element.LocalName != NS.RDF + "List"
+			&& element.NamespaceURI + element.LocalName != NS.RDF + "Description")
+				return false; //not a list
+
+			if (element.GetAttribute("about", NS.RDF) == NS.RDF + "nil") {
+				if (element.Attributes.Count > 1) return false;
+				else {
+					itemElements = new Stack();
+					return true;
+				}
+			}
+			else {
+				if (element.Attributes.Count > 0) return false;
+
+				XmlElement firstPred = element.SelectSingleNode("rdf:first", nsmgr) as XmlElement;
+				XmlElement restPred = element.SelectSingleNode("rdf:rest", nsmgr) as XmlElement;
+				if (firstPred != null && restPred != null && element.ChildNodes.Count == 2) {
+					// Is first a property with a resource as object?
+					XmlElement itemElement = null;
+					if (firstPred.HasAttribute("resource", NS.RDF)) {
+						if (firstPred.Attributes.Count > 1) return false;
+
+						itemElement = element.OwnerDocument.CreateElement(ns.GetPrefix(NS.RDF), "Description", NS.RDF);
+						SetAttribute(itemElement, NS.RDF, ns.GetPrefix(NS.RDF), "resource", firstPred.GetAttribute("resource", NS.RDF));
+					}
+					else {
+						if (firstPred.Attributes.Count > 0) return false;
+
+						itemElement = firstPred.FirstChild as XmlElement;
+						if (itemElement == null) return false;
+					}
+
+					if (TryGetPredicateListItemElements(restPred, nsmgr, out itemElements)) {
+						itemElements.Push(itemElement);
+						return true;
+					}
+					else return false;
+				}
+				else {
+					return false;
+				}
+			}
+		}
+
 		public override void Close() {
 			Start(); // make sure the document node was written
 			

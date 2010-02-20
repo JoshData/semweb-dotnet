@@ -1,3 +1,5 @@
+	* RdfWriter: New option UseParseTypeCollection to support concise
+	  parseType="Collection" on output. Patch by arisvandijk.
 	* N3Reader: Correct what escapes are valid where, and fix parse of
 	  """""", the empty longString.
 	* RdfWriter.Create with "nt" type was configured for Turtle because
