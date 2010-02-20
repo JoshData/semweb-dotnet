@@ -7,7 +7,7 @@ using System.Runtime.CompilerServices;
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]		
 
-[assembly: AssemblyVersion("1.0.6.4")]
+[assembly: AssemblyVersion("1.0.6.5")]
 [assembly: AssemblyDelaySign(false)]
 [assembly: AssemblyKeyFile ("signing.key")]
 [assembly: AssemblyKeyName("")]
