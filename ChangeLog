@@ -1,3 +1,5 @@
+	* Euler: Custom user predicates nasty bug reported by Ruben Verborgh.
+
 2010-02-20 Version 1.065
 
 	* RdfWriter: New option UseParseTypeCollection to support concise

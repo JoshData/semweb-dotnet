@@ -383,7 +383,7 @@ namespace SemWeb.Inference {
 						
 						} else {
 							// The array of arguments to this relation comes from a pre-grouped arg list.
-							args = (Resource[])c.rule.callArgs[t.Subject];
+							args = (Resource[])((ICloneable)c.rule.callArgs[t.Subject]).Clone();
 							unifyResult = new Variable[args.Length];
 							
 							for (int i = 0; i < args.Length; i++) {
