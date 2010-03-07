@@ -133,6 +133,7 @@ namespace SemWeb {
 					}
 					
 				} else {
+					if (xml.LocalName == "RDF") OnWarning("Document element looks like rdf:RDF but the namespace <" + xml.NamespaceURI + "> is wrong so it is being read as a resource description.");
 					ParseDescription();
 				
 				}

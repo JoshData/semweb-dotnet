@@ -209,7 +209,7 @@ namespace SemWeb {
 					
 				case 's': // first character in scheme
 					if (!ValidateUriIsAlpha(c))
-						return "The character '" + c + "' (" + ((int)c).ToString("x") + ") is not allowed as the first character in a URI, which is the start of the scheme.";
+						return "The character '" + c + "' (" + ((int)c).ToString("x") + ") is not allowed as the first character in a URI. The URI must start with a scheme such as \"http:\".";
 					state = 'S';
 					break;
 				
@@ -231,7 +231,7 @@ namespace SemWeb {
 					else {
 						// This is the first character of ipath-rootless, which must be an ipchar
 						if (!ValidateUriIsIpchar(c))
-							return "The character '" + c + "' (" + ((int)c).ToString("x") + ") is not allowed at the start of the (rootless) path portion of the URI.";
+							return "The character '" + c + "' (" + ((int)c).ToString("x") + ") is not allowed immediately after the URI scheme (a slash is most common).";
 						state = 'r';
 					}
 					break;
@@ -240,7 +240,7 @@ namespace SemWeb {
 					if (c == '/')
 						state = 'a'; // iauthority, to lead into ipath-abempty
 					else if (!ValidateUriIsIpchar(c))
-						return "The character '" + c + "' (" + ((int)c).ToString("x") + ") is not allowed at the start of the (absolute without authority) path portion of the URI.";
+						return "The character '" + c + "' (" + ((int)c).ToString("x") + ") is not allowed after the URI's first slash. A second slash is common, or the rest of the path.";
 					// For the rest of ipath-absolute, we go to state r.
 					state = 'r';
 					break;

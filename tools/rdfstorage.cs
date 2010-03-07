@@ -180,11 +180,14 @@ public class RDFStorage {
 							if (storage is RdfWriter)
 								((RdfWriter)storage).Namespaces.AddFrom(parser.Namespaces);
 						
-							parser.Select(filter);
-							if (parser.Warnings.Count > 0)
-								Console.Error.WriteLine("\nThere were warnings parsing this file:");
-							foreach (string warning in parser.Warnings)
-								Console.Error.WriteLine("> " + warning);
+							try {
+								parser.Select(filter);
+							} finally {
+								if (parser.Warnings.Count > 0)
+									Console.Error.WriteLine("\nThere were warnings parsing this file:");
+								foreach (string warning in parser.Warnings)
+									Console.Error.WriteLine("> " + warning);
+							}
 						}
 					} else {
 						StatementSource src = Store.Create(infile);
