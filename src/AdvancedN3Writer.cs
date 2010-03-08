@@ -110,9 +110,9 @@ namespace SemWeb
             foreach (string prefix in m_NamespaceManager.GetPrefixes())
             {
                 Write("@prefix ");
-                Write(prefix);
+                WriteEscaped(prefix);
                 Write(": <");
-                Write(m_NamespaceManager.GetNamespace(prefix));
+                WriteEscaped(m_NamespaceManager.GetNamespace(prefix));
                 Write(">.\n");
             }
         }
@@ -232,7 +232,7 @@ namespace SemWeb
         protected virtual void WriteLiteral(Literal literal)
         {
             Write('"');
-            Write(literal.Value);
+            WriteEscaped(literal.Value);
             Write('"');
         }
 
@@ -259,11 +259,23 @@ namespace SemWeb
             if (entity is BNode)
             {
                 Write(entity is Variable ? "?" : "_:");
-                Write(((BNode)entity).LocalName ?? ("bnode" + Math.Abs(entity.GetHashCode())));
+                WriteEscaped(((BNode)entity).LocalName ?? ("bnode" + Math.Abs(entity.GetHashCode())));
             }
             else
             {
-                Write(m_NamespaceManager.Normalize(entity.Uri));
+                string prefix, localname;
+                if (m_NamespaceManager.Normalize(entity.Uri, out prefix, out localname))
+                {
+                    WriteEscaped(prefix);
+                    Write(':');
+                    WriteEscaped(localname);
+                }
+                else
+                {
+                    Write('<');
+                    WriteEscaped(entity.Uri);
+                    Write('>');
+                }
             }
         }
 
@@ -332,6 +344,47 @@ namespace SemWeb
         protected void Write(string s)
         {
             m_Writer.Write(s);
+        }
+
+        /// <summary>
+        /// Writes the specified string to the output writer, escaping special characters.
+        /// </summary>
+        /// <param name="s">The string.</param>
+        protected void WriteEscaped(string s)
+        {
+            int length = s.Length;
+            for (int i = 0; i < length; i++)
+            {
+                char c = s[i];
+                int charCode = (int)c;
+                switch (charCode)
+                {
+                    case 0x09: Write(@"\t"); break;
+                    case 0x0A: Write(@"\n"); break;
+                    case 0x0D: Write(@"\r"); break;
+                    case 0x22: Write(@"\" + '"'); break;
+                    case 0x5C: Write(@"\\"); break;
+                    default:
+                        if (charCode >= 0x20 && charCode <= 0x7E)
+                        {
+                            Write(c);
+                        }
+                        else
+                        {
+                            if (!Char.IsSurrogate(c) || i == length - 1)
+                            {
+                                Write(@"\u");
+                                Write(charCode.ToString("X4"));
+                            }
+                            else
+                            {
+                                Write(@"\U");
+                                Write(Char.ConvertToUtf32(c, s[++i]).ToString("X8"));
+                            }
+                        }
+                        break;
+                }
+            }
         }
 
         /// <summary>

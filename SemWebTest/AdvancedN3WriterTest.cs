@@ -70,6 +70,23 @@ namespace SemWeb
         }
 
         [Test]
+        public void TestEscaping()
+        {
+			// note: should test for unicode characters >= \U0001000,
+			//       but Mono on Linux does not support this. (works in Windows .Net)
+            string subject = "http://\u00E9xampl\u00E8.org/\t\n\u000B\u000C\r\u000E\u0012\u001F";
+
+            AdvancedN3Writer instance = new AdvancedN3Writer(writer);
+            instance.Namespaces.AddNamespace("http://\u00E9xampl\u00E8.org/", "ex");
+            instance.Add(new Statement(subject, "\uABCD", (Literal)"\u0020\u0021\u000A"));
+            instance.Close();
+
+            string expected = @"@prefix ex: <http://\u00E9xampl\u00E8.org/>." + '\n'
+                            + @"ex:\t\n\u000B\u000C\r\u000E\u0012\u001F <\uABCD> " + "\" !\\n\".";
+            Assert.AreEqual(expected, writer.ToString());
+        }
+
+        [Test]
         public void TestReifiedStatementsSingleOccurence()
         {
             AdvancedN3Writer instance = new AdvancedN3Writer(writer);
