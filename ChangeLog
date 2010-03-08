@@ -2,6 +2,9 @@
 	* RdfXmlReader: If the root looks like rdf:RDF but isn't, give a warning.
 	* Entity.ValidateUri: Improve the error strings a bit.
 	* rdfstorage: On parse fail, also output warnings if any.
+	* Constants: Added namespace with common RDF constants.
+	* AdvancedN3Writer: Initial version, support for reifications and lists.
+	* SemWebTest: Added unit test project.
 
 2010-02-20 Version 1.065
 
