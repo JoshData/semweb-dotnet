@@ -35,7 +35,7 @@ namespace SemWeb.IO {
 			writer.WriteLine("digraph G {");
 		}
 		
-		public override NamespaceManager Namespaces { get { return ns; } }
+		public override NamespaceManager Namespaces { get { return ns; } set { ns = value; } }
 		
 		public override void Add(Statement statement) {
 			if (statement.AnyNull) throw new ArgumentNullException();

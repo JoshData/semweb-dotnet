@@ -65,7 +65,7 @@ MAIN_SOURCES = \
 	src/Inference.cs src/RDFS.cs src/Euler.cs src/SpecialRelations.cs \
 	src/Algos.cs src/SparqlClient.cs \
 	src/GraphVizWriter.cs \
-	src/AdvancedN3Writer.cs
+	src/TurtleWriter.cs src/NTriplesWriter.cs
 
 signing.key:
 	sn -k signing.key

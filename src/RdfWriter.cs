@@ -1,5 +1,4 @@
 using System;
-using System.Collections;
 using System.IO;
 
 using SemWeb.IO;
@@ -9,7 +8,7 @@ namespace SemWeb {
 		string baseuri;
 		bool closed;
 		
-		public abstract NamespaceManager Namespaces { get; }
+		public abstract NamespaceManager Namespaces { get; set; }
 		
 		public string BaseUri {
 			get {
@@ -63,16 +62,14 @@ namespace SemWeb {
 						throw new NotSupportedException("RDF/XML output is not supported by the Silverlight build of the SemWeb library.");
 					#endif
 				case "n3":
+					#if DOTNET2
 					return new N3Writer(output);
+					#endif
 				case "turtle":
-					N3Writer w = new N3Writer(output);
-					w.Format = N3Writer.Formats.Turtle;
-					return w;
+                    return new TurtleWriter(output);
 				case "nt":
 				case "ntriples":
-					N3Writer w2 = new N3Writer(output);
-					w2.Format = N3Writer.Formats.NTriples;
-					return w2;
+					return new NTriplesWriter(output);
 				case "dot":
 					return new GraphVizWriter(output);
 				default:
@@ -89,16 +86,14 @@ namespace SemWeb {
 						throw new NotSupportedException("RDF/XML output is not supported by the Silverlight build of the SemWeb library.");
 					#endif
 				case "n3":
+					#if DOTNET2
 					return new N3Writer(file);
+					#endif
 				case "turtle":
-					N3Writer w = new N3Writer(file);
-					w.Format = N3Writer.Formats.Turtle;
-					return w;
+                    return new TurtleWriter(file);
 				case "nt":
 				case "ntriples":
-					N3Writer w2 = new N3Writer(file);
-					w2.Format = N3Writer.Formats.NTriples;
-					return w2;
+					return new NTriplesWriter(file);
 				case "dot":
 					return new GraphVizWriter(file);
 				default:

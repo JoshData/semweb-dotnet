@@ -119,7 +119,7 @@ namespace SemWeb {
 			doc.AppendChild(root);
 		}
 		
-		public override NamespaceManager Namespaces { get { return ns; } }
+		public override NamespaceManager Namespaces { get { return ns; } set { ns = value; } }
 		
 		char[] normalizechars = { '#', '/' };
 		

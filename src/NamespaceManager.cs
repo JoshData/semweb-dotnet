@@ -53,7 +53,7 @@ namespace SemWeb {
 			return null;
 		}
 		
-		public bool Normalize(string uri, out string prefix, out string localname) {
+		public virtual bool Normalize(string uri, out string prefix, out string localname) {
 			int hash = uri.LastIndexOf('#');
 			if (hash > 0) {
 				prefix = GetPrefix(uri.Substring(0, hash+1));
@@ -78,7 +78,7 @@ namespace SemWeb {
 			return false;
 		}
 		
-		public string Normalize(string uri) {
+		public virtual string Normalize(string uri) {
 			string prefix, localname;
 			if (Normalize(uri, out prefix, out localname)) {
 				bool ok = true;
@@ -93,7 +93,7 @@ namespace SemWeb {
 			return "<" + uri + ">";
 		}
 		
-		public string Resolve(string qname) {
+		public virtual string Resolve(string qname) {
 			int colon = qname.IndexOf(':');
 			if (colon == -1) throw new ArgumentException("Invalid qualified name.");
 			string prefix = qname.Substring(0, colon);
@@ -102,7 +102,7 @@ namespace SemWeb {
 			return ns + qname.Substring(colon+1);
 		}
 		
-		public ICollection GetNamespaces() {
+		public virtual ICollection GetNamespaces() {
 			if (parent == null) return atob.Keys;
 			ArrayList items = new ArrayList(atob.Keys);
 			foreach (string ns in parent.GetNamespaces())
@@ -111,7 +111,7 @@ namespace SemWeb {
 			return items;
 		}
 
-		public ICollection GetPrefixes() {
+		public virtual ICollection GetPrefixes() {
 			if (parent == null) return atob.Values;
 			ArrayList items = new ArrayList(atob.Values);
 			foreach (string ns in parent.GetPrefixes())

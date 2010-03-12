@@ -33,7 +33,9 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AdvancedN3WriterTest.cs" />
+    <Compile Include="N3WriterTest.cs" />
+    <Compile Include="NTriplesWriterTest.cs" />
+    <Compile Include="TurtleWriterTest.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>

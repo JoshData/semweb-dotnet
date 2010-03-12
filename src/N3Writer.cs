@@ -1,244 +1,402 @@
-using System;
+#if DOTNET2
 using System.Collections;
+using System.Collections.Generic;
 using System.IO;
-using System.Text;
+using SemWeb.Constants;
 
-using SemWeb;
+namespace SemWeb
+{
+    /// <summary>
+    /// Writer that outputs triples in Notation3 format.
+    /// </summary>
+    /// <remarks>
+    /// This class' memory use is proportional to the number of statements written.
+    /// Intended for pretty printing.
+    /// Use <see cref="TurtleWriter"/> or <see cref="NTriplesWriter"/> for performance.
+    /// </remarks>
+    public class N3Writer : TurtleWriter
+    {
+        /// <summary>Entity abbreviations.</summary>
+        protected static readonly Hashtable N3Abbreviations;
 
-namespace SemWeb {
-	public class N3Writer : RdfWriter, CanForgetBNodes {
-		TextWriter writer;
-		NamespaceManager2 ns = new NamespaceManager2();
-		bool hasWritten = false;
-		bool closed = false;
-		bool closeStream = false;
-		
-		string lastSubject = null, lastPredicate = null;
-		
-		Hashtable anonNames = new Hashtable();
-		Hashtable anonNameMap = new Hashtable();
-		
-		Formats format = Formats.Turtle;
-		
-		private const string xsdInteger = NS.XMLSCHEMA + "integer";
-		private const string xsdDouble = NS.XMLSCHEMA + "double";
-		
-		public enum Formats {
-			NTriples,
-			Turtle,
-			Notation3
-		}
-		
-		public N3Writer(string file) : this(GetWriter(file)) { closeStream = true; }
+        /// <summary>All non-reified, non-list statements, keyed by subject.</summary>
+        private Lookup<Entity, Statement> m_StatementsBySubject = new Lookup<Entity, Statement>();
+        /// <summary>All reified statements, keyed by statement ID.</summary>
+        private Lookup<Entity, Statement> m_ReifiedStatementsById = new Lookup<Entity, Statement>();
+        /// <summary>All list values, keyed by list ID.</summary>
+        private Dictionary<Entity, Resource> m_ValuesByListId = new Dictionary<Entity, Resource>();
+        /// <summary>All list tail IDs, keyed by list ID.</summary>
+        private Dictionary<Entity, Entity> m_TailsByListId = new Dictionary<Entity, Entity>();
 
-		public N3Writer(TextWriter writer) {
-			this.writer = writer;
-		}
-		
-		public override NamespaceManager Namespaces { get { return ns; } }
-		
-		public Formats Format { get { return format; } set { format = value; } }
-		
-		public override void Add(Statement statement) {
-			if (statement.AnyNull) throw new ArgumentNullException();
-			WriteStatement2(URI(statement.Subject), URI(statement.Predicate),
-				statement.Object is Literal ? Literal((Literal)statement.Object) : URI((Entity)statement.Object));
-		}
+        /// <summary>
+        /// Initializes the <see cref="N3Writer"/> class.
+        /// </summary>
+        static N3Writer()
+        {
+            N3Abbreviations = new Hashtable(TurtleAbbreviations);
+            N3Abbreviations[Predicate.LogImplies.Uri] = "=>";
+        }
 
-		public override void Close() {
-			base.Close();
-			if (closed) return;
-			if (hasWritten)
-				writer.WriteLine(".");
-			closed = true;
-			hasWritten = false;
-			if (closeStream)
-				writer.Close();
-			else
-				writer.Flush();
-		}
+        /// <summary>
+        /// Gets the namespace abbreviations hashtable.
+        /// </summary>
+        /// <value></value>
+        /// <returns>A hashtable of URI/abbreviation pairs.</returns>
+        protected override Hashtable Abbreviations { get { return N3Abbreviations; } }
 
-		private string Literal(Literal literal) {
-			#if !SILVERLIGHT
-			if (format == Formats.NTriples || literal.DataType == null) return literal.ToString();
-			if (literal.DataType == xsdInteger) return literal.ParseValue().ToString();
-			if (literal.DataType == xsdDouble && format == Formats.Notation3) return literal.ParseValue().ToString();
-			#endif
-			return literal.ToString();
-		}
-		
-		private string URI(Entity entity) {
-			if (entity is Variable && ((Variable)entity).LocalName != null)
-				return "?" + ((Variable)entity).LocalName;
-				
-			if (entity is BNode) {
-				string name = ((BNode)entity).LocalName;
-				if (name != null &&
-					(anonNameMap[name] == null || (BNode)anonNameMap[name] == entity)
-					&& !name.StartsWith("bnode")) {
-					return "_:" + name;
-				} else if (anonNames[entity] != null) {
-					return (string)anonNames[entity];
-				} else {
-					string id = "_:bnode" + anonNames.Count;
-					anonNames[entity] = id;
-					return id;
-				}
-			}
-			
-			string uri = entity.Uri;
-			string effectiveBaseUri = BaseUri == null ? "#" : BaseUri;
-			if (effectiveBaseUri != null && uri.StartsWith(effectiveBaseUri)) {
-				int len = effectiveBaseUri.Length;
-				bool ok = true;
-				for (int i = len; i < uri.Length; i++) {
-					if (!char.IsLetterOrDigit(uri[i])) { ok = false; break; }
-				}
-				if (ok)
-					return ":" + uri.Substring(len);
-			}
-			if (Format == Formats.NTriples) return "<" + Escape(uri) + ">";
-			
-			string ret = ns.Normalize(uri);
-			if (ret[0] != '<') return ret;
-			
-			return "<" + Escape(uri) + ">";
-		}
-		
-		private static char HexDigit(char c, int digit) {
-			int n = (((int)c) >> (digit * 4)) & 0xF;
-			if (n <= 9)
-				return (char)('0' + n);
-			else
-				return (char)('A' + (n-10));
-		}
-		
-		internal static string Escape(string str) {
-			// Check if any escaping is necessary, following the NTriples spec.
-			bool needed = false;
-			for (int i = 0; i < str.Length; i++) {
-				char c = str[i];
-				if (!((c >= 0x20 && c <= 0x21) || (c >= 0x23 && c <= 0x5B) || (c >= 0x5D && c <= 0x7E))) {
-					needed = true;
-					break;
-				}
-			}
-			
-			if (!needed) return str;
-			
-			StringBuilder b = new StringBuilder();
-			for (int i = 0; i < str.Length; i++) {
-				char c = str[i];
-				if ((c >= 0x20 && c <= 0x21) || (c >= 0x23 && c <= 0x5B) || (c >= 0x5D && c <= 0x7E)) {
-					b.Append(c);
-				} else if (c == 0x9) {
-					b.Append("\\t");				
-				} else if (c == 0xA) {
-					b.Append("\\n");				
-				} else if (c == 0xD) {
-					b.Append("\\r");				
-				} else if (c == 0x22) {
-					b.Append("\\\"");				
-				} else if (c == 0x5C) {
-					b.Append("\\\\");				
-				} else if (c <= 0x8 || c == 0xB || c == 0xC || (c >= 0xE && c <= 0x1F) || (c >= 0x7F && c <= 0xFFFF)) {
-					b.Append("\\u");
-					b.Append(HexDigit(c, 3));
-					b.Append(HexDigit(c, 2));
-					b.Append(HexDigit(c, 1));
-					b.Append(HexDigit(c, 0));
-				/*} else if (c >= 0x10000) {
-					b.Append("\\U");
-					b.Append(HexDigit(c, 7));
-					b.Append(HexDigit(c, 6));
-					b.Append(HexDigit(c, 5));
-					b.Append(HexDigit(c, 4));
-					b.Append(HexDigit(c, 3));
-					b.Append(HexDigit(c, 2));
-					b.Append(HexDigit(c, 1));
-					b.Append(HexDigit(c, 0));*/
-				}
-			}
-			return b.ToString();
-		}
-		
-		private void WriteStatement2(string subj, string pred, string obj) {
-			closed = false;
-			
-			// Write the prefix directives at the beginning.
-			if (ns.addedPrefixes.Count > 0 && !(Format == Formats.NTriples)) {
-				if (hasWritten) {
-					writer.Write(".\n");
-					lastSubject = null;
-					lastPredicate = null;
-					hasWritten = false; // really means whether a statement is "open", missing a period
-				}
-				foreach (string prefix in ns.addedPrefixes) {
-					writer.Write("@prefix ");
-					writer.Write(prefix);
-					writer.Write(": <");
-					writer.Write(ns.GetNamespace(prefix));
-					writer.Write("> .\n");
-				}
-				ns.addedPrefixes.Clear();
-			}
+        /// <summary>
+        /// Initializes a new <see cref="N3Writer"/> instance.
+        /// </summary>
+        /// <param name="writer">The writer.</param>
+        public N3Writer(TextWriter writer) : base(writer) { }
 
-			// Repeated subject.
-			if (lastSubject != null && lastSubject == subj && !(Format == Formats.NTriples)) {
-				// Repeated predicate too.
-				if (lastPredicate != null && lastPredicate == pred) {
-					writer.Write(",\n\t\t");
-					WriteThing(obj);
-					
-				// Just a repeated subject.
-				} else {
-					writer.Write(";\n\t");
-					WriteThing(pred);
-					WriteThing(obj);
-					lastPredicate = pred;
-				}
-			
-			// The subject became the object.  Abbreviate with
-			// is...of notation (Notation3 format only).
-			} else if (lastSubject != null && lastSubject == obj && (Format == Formats.Notation3)) {
-				writer.Write(";\n\tis ");
-				WriteThing(pred);
-				writer.Write("of ");
-				WriteThing(subj);
-				lastPredicate = null;
-			
-			// Start a new statement.
-			} else {
-				if (hasWritten) // finish the last statement
-					writer.Write(".\n");
-					
-				WriteThing(subj);
-				WriteThing(pred);
-				WriteThing(obj);
-				
-				lastSubject = subj;
-				lastPredicate = pred;
-			}
-			
-			hasWritten = true;
-		}
-		
-		private void WriteThing(string text) {
-			writer.Write(text);
-			writer.Write(" ");
-		}
-	
-		private class NamespaceManager2 : NamespaceManager {
-			public ArrayList addedPrefixes = new ArrayList();
-			public override void AddNamespace(string uri, string prefix) {
-				base.AddNamespace(uri, prefix);
-				addedPrefixes.Add(prefix);
-			}
-		}
-		
-		void CanForgetBNodes.ForgetBNode(BNode bnode) {
-			anonNames.Remove(bnode);
-			anonNameMap.Remove(bnode);
-		}
-	}
+        /// <summary>
+        /// Initializes a new <see cref="N3Writer"/> instance.
+        /// </summary>
+        /// <param name="file">The file.</param>
+        public N3Writer(string file) : this(GetWriter(file)) { }
+
+        /// <summary>
+        /// Adds the statement.
+        /// </summary>
+        /// <param name="statement">The statement (not a formula).</param>
+        protected override void AddStatement(Statement statement)
+        {
+            Entity predicate = statement.Predicate;
+            if (predicate == Predicate.RdfFirst && !m_ValuesByListId.ContainsKey(statement.Subject))
+                m_ValuesByListId.Add(statement.Subject, statement.Object);
+            else if (predicate == Predicate.RdfRest && !m_TailsByListId.ContainsKey(statement.Subject))
+                m_TailsByListId.Add(statement.Subject, (Entity)statement.Object);
+            else
+                m_StatementsBySubject.Add(statement.Subject, statement);
+        }
+
+        /// <summary>
+        /// Adds the formula.
+        /// </summary>
+        /// <param name="formula">The formula.</param>
+        protected override void AddFormula(Statement formula)
+        {
+            m_ReifiedStatementsById.Add(formula.Meta, formula);
+        }
+
+        /// <summary>
+        /// Removes the specified statement, marking it as written.
+        /// </summary>
+        /// <param name="statement">The statement.</param>
+        protected void Remove(Statement statement)
+        {
+            m_StatementsBySubject.Remove(statement.Subject, statement);
+            m_ReifiedStatementsById.Remove(statement.Meta, statement);
+        }
+
+        /// <summary>
+        /// Closes N3 output.
+        /// </summary>
+        public override void Close()
+        {
+            WriteNamespaces();
+            WriteStatements();
+
+            base.Close();
+        }
+
+        /// <summary>
+        /// Writes all statements to the output writer, grouped by subject.
+        /// </summary>
+        protected virtual void WriteStatements()
+        {
+            Queue<Entity> subjects = new Queue<Entity>(SortEntities(m_StatementsBySubject.Keys));
+            while (subjects.Count > 0)
+            {
+                Entity subject = subjects.Peek();
+                if (m_StatementsBySubject.Keys.Contains(subject))
+                {
+                    List<Statement> statements = new List<Statement>(m_StatementsBySubject[subject]);
+                    statements.Sort(CompareStatementBodies);
+                    foreach (Statement statement in statements)
+                        WriteStatement(statement);
+                }
+                subjects.Dequeue();
+            }
+        }
+
+        /// <summary>
+        /// Compares the statement bodies for sorting.
+        /// </summary>
+        /// <param name="x">The first statement.</param>
+        /// <param name="y">The second statement.</param>
+        /// <returns>A number indicating the order of <paramref name="x"/> and <paramref name="y"/></returns>
+        protected virtual int CompareStatementBodies(Statement x, Statement y)
+        {
+            int predicateComp = x.Predicate.CompareTo(y.Predicate);
+            return predicateComp != 0 ? predicateComp : x.Object.CompareTo(y.Object);
+        }
+
+        /// <summary>
+        /// Writes the bodies of the specified statements (sharing a subject) to the output writer.
+        /// </summary>
+        /// <param name="statements">The statements.</param>
+        protected virtual void WriteStatementBodies(List<Statement> statements)
+        {
+            foreach (Statement statement in statements)
+                WriteStatementBody(statement);
+        }
+
+        /// <summary>
+        /// Writes the specified entity to the output writer.
+        /// </summary>
+        /// <param name="entity">The entity.</param>
+        protected override void WriteEntity(Entity entity)
+        {
+            if (IsFormulaId(entity))
+                WriteFormula(entity);
+            else if (IsListId(entity))
+                WriteList(entity);
+            else
+                base.WriteEntity(entity);
+        }
+
+        /// <summary>
+        /// Writes the formula identified by the specified ID to the output writer.
+        /// </summary>
+        /// <param name="formulaId">The formula ID.</param>
+        protected virtual void WriteFormula(Entity formulaId)
+        {
+            List<Statement> statements = new List<Statement>(m_ReifiedStatementsById[formulaId]);
+            bool multipleStatements = statements.Count > 1;
+
+            Write('{');
+            if (!multipleStatements)
+            {
+                WriteFormulaStatement(statements[0]);
+            }
+            else
+            {
+                foreach (Statement statement in statements)
+                {
+                    Write("\n ");
+                    WriteFormulaStatement(statement);
+                }
+                Write('\n');
+            }
+            Write('}');
+        }
+
+        /// <summary>
+        /// Writes the statement of a formula to the output writer.
+        /// </summary>
+        /// <param name="statement">The statement.</param>
+        protected virtual void WriteFormulaStatement(Statement statement)
+        {
+            bool subjectIsFormula = IsFormulaId(statement.Subject);
+            bool objectIsFormula = IsFormulaId(statement.Object);
+
+            if (!subjectIsFormula)
+            {
+                WriteEntity(statement.Subject);
+                Write(' ');
+            }
+            else
+            {
+                Write('\n');
+                WriteFormula(statement.Subject);
+                Write('\n');
+            }
+
+            WritePredicate(statement.Predicate);
+
+            if (!objectIsFormula)
+            {
+                Write(' ');
+                WriteResource(statement.Object);
+                Write('.');
+            }
+            else
+            {
+                Write('\n');
+                WriteFormula((Entity)statement.Object);
+                Write(".\n");
+            }
+        }
+
+        /// <summary>
+        /// Writes the specified list to the output writer.
+        /// </summary>
+        /// <param name="listId">The list ID.</param>
+        protected virtual void WriteList(Entity listId)
+        {
+            Write('(');
+            while (listId != Identifier.RdfNil)
+            {
+                Resource item;
+                if (m_ValuesByListId.TryGetValue(listId, out item) && item != Identifier.RdfNil)
+                {
+                    WriteResource(item);
+                }
+
+                Entity tail;
+                Resource oldItem = item;
+                if (m_TailsByListId.TryGetValue(listId, out tail))
+                {
+                    listId = m_TailsByListId[listId];
+                    if (listId != Identifier.RdfNil)
+                    {
+                        if (IsFormulaId(oldItem))
+                            Write('\n');
+                        Write(' ');
+                    }
+                }
+                else
+                {
+                    Write(' ');
+                    WriteEntity(new BNode());
+                    listId = Identifier.RdfNil;
+                }
+            }
+            Write(')');
+        }
+
+        /// <summary>
+        /// Determines whether the specified resource is the ID of a formula.
+        /// </summary>
+        /// <param name="node">The node.</param>
+        /// <returns><c>true</c> if the resource is a formula ID; otherwise, <c>false</c>.</returns>
+        protected bool IsFormulaId(Resource node)
+        {
+            return node is Entity && m_ReifiedStatementsById.Contains((Entity)node);
+        }
+
+        /// <summary>
+        /// Determines whether the specified resource is the ID of a list.
+        /// </summary>
+        /// <param name="node">The node.</param>
+        /// <returns><c>true</c> if the resource is a list ID; otherwise, <c>false</c>.</returns>
+        protected bool IsListId(Resource node)
+        {
+            return node is Entity
+                && (m_ValuesByListId.ContainsKey((Entity)node)
+                 || m_TailsByListId.ContainsKey((Entity)node));
+        }
+
+        /// <summary>
+        /// Returns the first element in the collection or the default value if the collection is empty.
+        /// </summary>
+        /// <typeparam name="T">Element type.</typeparam>
+        /// <param name="items">The items.</param>
+        /// <returns>The first element or the default value.</returns>
+        protected T FirstOrDefault<T>(IEnumerable<T> items)
+        {
+            IEnumerator<T> enumerator = items.GetEnumerator();
+            return enumerator.MoveNext() ? enumerator.Current : default(T);
+        }
+
+        /// <summary>
+        /// Sorts the entities.
+        /// </summary>
+        /// <param name="items">The items.</param>
+        /// <returns>A sorted list of entities.</returns>
+        protected List<Entity> SortEntities(IEnumerable<Entity> items)
+        {
+            List<Entity> sortedItems = new List<Entity>(items);
+            sortedItems.Sort(delegate(Entity x, Entity y)
+            {
+                if (x is BNode && !(y is BNode))
+                    return 1;
+                if (y is BNode && !(x is BNode))
+                    return -1;
+                return x.ToString().CompareTo(y.ToString());
+            });
+            return sortedItems;
+        }
+
+        /// <summary>
+        /// Implements a multi-valued dictionary.
+        /// </summary>
+        /// <typeparam name="K">Key type.</typeparam>
+        /// <typeparam name="V">Value type.</typeparam>
+        protected sealed class Lookup<K, V>
+        {
+            /// <summary>Dictionary of items.</summary>
+            private Dictionary<K, Dictionary<V, V>> m_Items;
+
+            /// <summary>
+            /// Gets the items with the specified key.
+            /// </summary>
+            /// <value>The items, or an empty collection if no item with the specified key exists.</value>
+            public ICollection<V> this[K key] { get { return GetAll(key); } }
+
+            /// <summary>
+            /// Gets the keys of the dictionary.
+            /// </summary>
+            /// <value>The keys.</value>
+            public ICollection<K> Keys { get { return m_Items.Keys; } }
+
+            /// <summary>
+            /// Gets a value indicating whether this collection is empty.
+            /// </summary>
+            /// <value><c>true</c> if this collection is empty; otherwise, <c>false</c>.</value>
+            public bool IsEmpty { get { return m_Items.Count == 0; } }
+
+            /// <summary>
+            /// Initializes a new <see cref="Lookup&lt;K, V&gt;"/> instance.
+            /// </summary>
+            public Lookup()
+            {
+                m_Items = new Dictionary<K, Dictionary<V, V>>();
+            }
+
+            /// <summary>
+            /// Determines whether the collection contains items with the specified key.
+            /// </summary>
+            /// <param name="key">The key.</param>
+            /// <returns><c>true</c> if the key is present; otherwise, <c>false</c>.</returns>
+            public bool Contains(K key)
+            {
+                return m_Items.ContainsKey(key);
+            }
+
+            /// <summary>
+            /// Adds the specified value with the specified key.
+            /// </summary>
+            /// <param name="key">The key.</param>
+            /// <param name="item">The item.</param>
+            public void Add(K key, V item)
+            {
+                Dictionary<V, V> keyStatements;
+                if (!m_Items.TryGetValue(key, out keyStatements))
+                    m_Items[key] = keyStatements = new Dictionary<V, V>();
+                if (!keyStatements.ContainsKey(item))
+                    keyStatements.Add(item, item);
+            }
+
+            /// <summary>
+            /// Removes the item with the specified key.
+            /// </summary>
+            /// <param name="key">The key.</param>
+            /// <param name="statement">The statement.</param>
+            public void Remove(K key, V statement)
+            {
+                Dictionary<V, V> keyStatements;
+                if (m_Items.TryGetValue(key, out keyStatements))
+                {
+                    keyStatements.Remove(statement);
+                    if (keyStatements.Count == 0)
+                        m_Items.Remove(key);
+                }
+            }
+
+            /// <summary>
+            /// Gets all items with the specified key.
+            /// </summary>
+            /// <param name="key">The key.</param>
+            /// <returns>The items.</returns>
+            public ICollection<V> GetAll(K key)
+            {
+                Dictionary<V, V> keyStatements;
+                return m_Items.TryGetValue(key, out keyStatements) ? keyStatements.Keys : (ICollection<V>)new V[0];
+            }
+        }
+    }
 }
+#endif

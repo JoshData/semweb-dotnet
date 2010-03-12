@@ -464,17 +464,17 @@ namespace SemWeb {
 		public override string ToString() {
 			System.Text.StringBuilder ret = new System.Text.StringBuilder();
 			ret.Append('"');
-			ret.Append(N3Writer.Escape(Value));
+			ret.Append(Value);
 			ret.Append('"');
 			
 			if (Language != null) {
 				ret.Append('@');
-				ret.Append(N3Writer.Escape(Language));
+				ret.Append(Language);
 			}
 			
 			if (DataType != null) {
 				ret.Append("^^<");
-				ret.Append(N3Writer.Escape(DataType));
+				ret.Append(DataType);
 				ret.Append(">");
 			}
 			return ret.ToString();

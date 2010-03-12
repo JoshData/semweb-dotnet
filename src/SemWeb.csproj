@@ -42,7 +42,7 @@
     <Compile Include="LiteralFilters.cs" />
     <Compile Include="MemoryStore.cs" />
     <Compile Include="N3Reader.cs" />
-    <Compile Include="N3Writer.cs" />
+    <Compile Include="TurtleWriter.cs" />
     <Compile Include="NamespaceManager.cs" />
     <Compile Include="Query.cs" />
     <Compile Include="RdfReader.cs" />
@@ -58,8 +58,9 @@
     <Compile Include="Util.cs" />
     <Compile Include="SQLStore.cs" />
     <Compile Include="SpecialRelations.cs" />
-    <Compile Include="AdvancedN3Writer.cs" />
+    <Compile Include="N3Writer.cs" />
     <Compile Include="Constants.cs" />
+    <Compile Include="NTriplesWriter.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System" />
