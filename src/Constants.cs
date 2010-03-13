@@ -6,6 +6,7 @@ namespace SemWeb.Constants
     public static class Namespace
     {
         public const string RDF = "http://www.w3.org/1999/02/22-rdf-syntax-ns#";
+        public const string OWL = "http://www.w3.org/2002/07/owl#";
         public const string LOG = "http://www.w3.org/2000/10/swap/log#";
         public const string XMLSCHEMA = "http://www.w3.org/2001/XMLSchema#";
     }
@@ -42,6 +43,8 @@ namespace SemWeb.Constants
         public static readonly Entity RdfObject = Namespace.RDF + "object";
         public static readonly Entity RdfFirst = Namespace.RDF + "first";
         public static readonly Entity RdfRest = Namespace.RDF + "rest";
+
+        public static readonly Entity OwlSameAs = Namespace.OWL + "sameAs";
 
         public static readonly Entity LogImplies = Namespace.LOG + "implies";
     }

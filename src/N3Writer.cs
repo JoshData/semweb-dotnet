@@ -34,6 +34,7 @@ namespace SemWeb
         static N3Writer()
         {
             N3Abbreviations = new Hashtable(TurtleAbbreviations);
+            N3Abbreviations[Predicate.OwlSameAs.Uri] = "=";
             N3Abbreviations[Predicate.LogImplies.Uri] = "=>";
         }
 
