@@ -250,9 +250,12 @@ namespace SemWeb
         {
             /// <summary>The original namespace manager.</summary>
             private NamespaceManager m_OriginalNamespaceManager;
-
             /// <summary>Hashtable of URI/abbreviation pairs.</summary>
             private Hashtable m_Abbreviations;
+            /// <summary>Minimum abbreviated URI length.</summary>
+            private readonly int m_MinKeyLength;
+            /// <summary>Maximum abbreviated URI length.</summary>
+            private readonly int m_MaxKeyLength;
 
             /// <summary>
             /// Initializes a new <see cref="AbbreviatedNamespaceManagerWrapper"/> instance.
@@ -263,6 +266,15 @@ namespace SemWeb
             {
                 m_OriginalNamespaceManager = originalNamespaceManager;
                 m_Abbreviations = abbreviations;
+				
+                // calculate minimum and maximum abbreviated URI length
+                m_MaxKeyLength = 0;
+                m_MinKeyLength = int.MaxValue;
+                foreach (var key in abbreviations.Keys)
+                {
+                    m_MinKeyLength = Math.Min(((string) key).Length, m_MinKeyLength);
+                    m_MaxKeyLength = Math.Max(((string)key).Length, m_MaxKeyLength);
+                }
             }
 
             /// <summary>
@@ -304,7 +316,9 @@ namespace SemWeb
             /// <returns><c>true</c> if a normalization was successful; otherwise, <c>false</c>.</returns>
             public override bool Normalize(string uri, out string prefix, out string localname)
             {
-                if (m_Abbreviations.ContainsKey(uri))
+                // performance optimization: check abbreviations can contain URI by checking its length
+                if (uri.Length >= m_MinKeyLength && uri.Length <= m_MaxKeyLength
+                    && m_Abbreviations.ContainsKey(uri))
                 {
                     prefix = null;
                     localname = (string)m_Abbreviations[uri];
