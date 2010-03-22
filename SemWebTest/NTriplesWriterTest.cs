@@ -96,7 +96,7 @@ namespace SemWeb
         }
 
         [Test]
-        public void TestWriteFormula()
+        public void TestWriteFormulaWithOneStatement()
         {
             NTriplesWriter instance = new NTriplesWriter(writer);
 
@@ -110,6 +110,31 @@ namespace SemWeb
                               "_:bnode <http://www.w3.org/1999/02/22-rdf-syntax-ns#subject> <A>.\n" +
                               "_:bnode <http://www.w3.org/1999/02/22-rdf-syntax-ns#predicate> <b>.\n" +
                               "_:bnode <http://www.w3.org/1999/02/22-rdf-syntax-ns#object> <C>.\n";
+            Assert.AreEqual(expected, Regex.Replace(writer.ToString(), @"_:bnode\d+", "_:bnode"));
+        }
+
+        [Test]
+        public void TestWriteFormulaWithTwoStatements()
+        {
+            NTriplesWriter instance = new NTriplesWriter(writer);
+
+            BNode statementId = new BNode("s");
+            instance.Add(new Statement("A", "b", (Entity)"C", statementId));
+            instance.Add(new Statement("D", "e", (Entity)"F", statementId));
+            instance.Close();
+
+            // should not repeat "_:s a log:Formula"
+            string expected = "_:s <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2000/10/swap/log#Formula>.\n" +
+                              "_:s <http://www.w3.org/2000/10/swap/log#includes> _:bnode.\n" +
+                              "_:bnode <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#Statement>.\n" +
+                              "_:bnode <http://www.w3.org/1999/02/22-rdf-syntax-ns#subject> <A>.\n" +
+                              "_:bnode <http://www.w3.org/1999/02/22-rdf-syntax-ns#predicate> <b>.\n" +
+                              "_:bnode <http://www.w3.org/1999/02/22-rdf-syntax-ns#object> <C>.\n" +
+                              "_:s <http://www.w3.org/2000/10/swap/log#includes> _:bnode.\n" +
+                              "_:bnode <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#Statement>.\n" +
+                              "_:bnode <http://www.w3.org/1999/02/22-rdf-syntax-ns#subject> <D>.\n" +
+                              "_:bnode <http://www.w3.org/1999/02/22-rdf-syntax-ns#predicate> <e>.\n" +
+                              "_:bnode <http://www.w3.org/1999/02/22-rdf-syntax-ns#object> <F>.\n";
             Assert.AreEqual(expected, Regex.Replace(writer.ToString(), @"_:bnode\d+", "_:bnode"));
         }
     }

@@ -21,7 +21,7 @@ namespace SemWeb
 
         /// <summary>All non-reified, non-list statements, keyed by subject.</summary>
         private Lookup<Entity, Statement> m_StatementsBySubject = new Lookup<Entity, Statement>();
-        /// <summary>All reified statements, keyed by statement ID.</summary>
+        /// <summary>All reified statements, keyed by formula ID.</summary>
         private Lookup<Entity, Statement> m_ReifiedStatementsById = new Lookup<Entity, Statement>();
         /// <summary>All list values, keyed by list ID.</summary>
         private Dictionary<Entity, Resource> m_ValuesByListId = new Dictionary<Entity, Resource>();
@@ -73,12 +73,12 @@ namespace SemWeb
         }
 
         /// <summary>
-        /// Adds the formula.
+        /// Adds the statement of a formula.
         /// </summary>
-        /// <param name="formula">The formula.</param>
-        protected override void AddFormula(Statement formula)
+        /// <param name="statement">The statement.</param>
+        protected override void AddFormulaStatement(Statement statement)
         {
-            m_ReifiedStatementsById.Add(formula.Meta, formula);
+            m_ReifiedStatementsById.Add(statement.Meta, statement);
         }
 
         /// <summary>

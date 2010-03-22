@@ -15,6 +15,9 @@ namespace SemWeb
         /// <summary>Namespace manager.</summary>
         private NamespaceManager m_NamespaceManager = new NamespaceManager();
 
+        /// <summary>ID of the formula last added.</summary>
+        private Entity m_LastFormulaId;
+
         /// <summary>
         /// Initializes a new <see cref="NTriplesWriter"/> instance.
         /// </summary>
@@ -50,7 +53,7 @@ namespace SemWeb
             if (statement.Meta == Statement.DefaultMeta)
                 AddStatement(statement);
             else
-                AddFormula(statement);
+                AddFormulaStatement(statement);
         }
 
         /// <summary>
@@ -64,19 +67,25 @@ namespace SemWeb
         }
 
         /// <summary>
-        /// Adds the formula.
+        /// Adds the statement of a formula.
         /// </summary>
-        /// <param name="formula">The formula.</param>
-        protected virtual void AddFormula(Statement formula)
+        /// <param name="statement">The statement.</param>
+        protected virtual void AddFormulaStatement(Statement statement)
         {
-            BNode formulaId = new BNode();
-            AddStatement(new Statement(formula.Meta, Predicate.RdfType, Identifier.LogFormula));
-            AddStatement(new Statement(formula.Meta, Predicate.LogIncludes, formulaId));
+            Entity formulaId = statement.Meta;
+            Entity statementId = new BNode();
 
-            AddStatement(new Statement(formulaId, Predicate.RdfType, Identifier.RdfStatement));
-            AddStatement(new Statement(formulaId, Predicate.RdfSubject, formula.Subject));
-            AddStatement(new Statement(formulaId, Predicate.RdfPredicate, formula.Predicate));
-            AddStatement(new Statement(formulaId, Predicate.RdfObject, formula.Object));
+            if (m_LastFormulaId != formulaId)
+            {
+                m_LastFormulaId = formulaId;
+                AddStatement(new Statement(formulaId, Predicate.RdfType, Identifier.LogFormula));
+            }
+
+            AddStatement(new Statement(formulaId, Predicate.LogIncludes, statementId));
+            AddStatement(new Statement(statementId, Predicate.RdfType, Identifier.RdfStatement));
+            AddStatement(new Statement(statementId, Predicate.RdfSubject, statement.Subject));
+            AddStatement(new Statement(statementId, Predicate.RdfPredicate, statement.Predicate));
+            AddStatement(new Statement(statementId, Predicate.RdfObject, statement.Object));
         }
 
         /// <summary>
