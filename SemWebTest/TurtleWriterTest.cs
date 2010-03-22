@@ -1,5 +1,6 @@
 #if DOTNET2
 using System.IO;
+using System.Text.RegularExpressions;
 using NUnit.Framework;
 using SemWeb.Constants;
 
@@ -223,11 +224,13 @@ namespace SemWeb
             instance.Add(new Statement("A", "b", (Entity)"C", statementId));
             instance.Close();
 
-            string expected = "_:s a <http://www.w3.org/1999/02/22-rdf-syntax-ns#Statement>;\n" +
+            string expected = "_:s a <http://www.w3.org/2000/10/swap/log#Formula>;\n" +
+                              "\t<http://www.w3.org/2000/10/swap/log#includes> _:bnode.\n" +
+                              "_:bnode a <http://www.w3.org/1999/02/22-rdf-syntax-ns#Statement>;\n" +
                               "\t<http://www.w3.org/1999/02/22-rdf-syntax-ns#subject> <A>;\n" +
                               "\t<http://www.w3.org/1999/02/22-rdf-syntax-ns#predicate> <b>;\n" +
                               "\t<http://www.w3.org/1999/02/22-rdf-syntax-ns#object> <C>.";
-            Assert.AreEqual(expected, writer.ToString());
+            Assert.AreEqual(expected, Regex.Replace(writer.ToString(), @"_:bnode\d+", "_:bnode"));
         }
     }
 }

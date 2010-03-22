@@ -69,10 +69,14 @@ namespace SemWeb
         /// <param name="formula">The formula.</param>
         protected virtual void AddFormula(Statement formula)
         {
-            AddStatement(new Statement(formula.Meta, Predicate.RdfType, Identifier.RdfStatement));
-            AddStatement(new Statement(formula.Meta, Predicate.RdfSubject, formula.Subject));
-            AddStatement(new Statement(formula.Meta, Predicate.RdfPredicate, formula.Predicate));
-            AddStatement(new Statement(formula.Meta, Predicate.RdfObject, formula.Object));
+            BNode formulaId = new BNode();
+            AddStatement(new Statement(formula.Meta, Predicate.RdfType, Identifier.LogFormula));
+            AddStatement(new Statement(formula.Meta, Predicate.LogIncludes, formulaId));
+
+            AddStatement(new Statement(formulaId, Predicate.RdfType, Identifier.RdfStatement));
+            AddStatement(new Statement(formulaId, Predicate.RdfSubject, formula.Subject));
+            AddStatement(new Statement(formulaId, Predicate.RdfPredicate, formula.Predicate));
+            AddStatement(new Statement(formulaId, Predicate.RdfObject, formula.Object));
         }
 
         /// <summary>

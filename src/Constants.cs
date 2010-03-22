@@ -29,8 +29,9 @@ namespace SemWeb.Constants
         public static readonly Entity XmlInteger = XML_INTEGER;
         public static readonly Entity XmlDouble = XML_DOUBLE;
         public static readonly Entity XmlDecimal = XML_DECIMAL;
-		public static readonly Entity XmlFloat = XML_FLOAT;
         public static readonly Entity XmlBoolean = XML_BOOLEAN;
+		
+		public static readonly Entity LogFormula = Namespace.LOG + "Formula";
     }
 
     /// <summary>
@@ -48,5 +49,6 @@ namespace SemWeb.Constants
         public static readonly Entity OwlSameAs = Namespace.OWL + "sameAs";
 
         public static readonly Entity LogImplies = Namespace.LOG + "implies";
+        public static readonly Entity LogIncludes = Namespace.LOG + "includes";
     }
 }

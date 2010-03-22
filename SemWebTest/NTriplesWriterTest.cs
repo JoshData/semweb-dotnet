@@ -1,4 +1,5 @@
 using System.IO;
+using System.Text.RegularExpressions;
 using NUnit.Framework;
 using SemWeb.Constants;
 
@@ -103,11 +104,13 @@ namespace SemWeb
             instance.Add(new Statement("A", "b", (Entity)"C", statementId));
             instance.Close();
 
-            string expected = "_:s <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#Statement>.\n" +
-                              "_:s <http://www.w3.org/1999/02/22-rdf-syntax-ns#subject> <A>.\n" +
-                              "_:s <http://www.w3.org/1999/02/22-rdf-syntax-ns#predicate> <b>.\n" +
-                              "_:s <http://www.w3.org/1999/02/22-rdf-syntax-ns#object> <C>.\n";
-            Assert.AreEqual(expected, writer.ToString());
+            string expected = "_:s <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2000/10/swap/log#Formula>.\n" + 
+                              "_:s <http://www.w3.org/2000/10/swap/log#includes> _:bnode.\n" +
+                              "_:bnode <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#Statement>.\n" +
+                              "_:bnode <http://www.w3.org/1999/02/22-rdf-syntax-ns#subject> <A>.\n" +
+                              "_:bnode <http://www.w3.org/1999/02/22-rdf-syntax-ns#predicate> <b>.\n" +
+                              "_:bnode <http://www.w3.org/1999/02/22-rdf-syntax-ns#object> <C>.\n";
+            Assert.AreEqual(expected, Regex.Replace(writer.ToString(), @"_:bnode\d+", "_:bnode"));
         }
     }
 }
