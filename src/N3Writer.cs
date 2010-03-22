@@ -165,7 +165,8 @@ namespace SemWeb
         protected virtual void WriteFormula(Entity formulaId)
         {
             List<Statement> statements = new List<Statement>(m_ReifiedStatementsById[formulaId]);
-            bool multipleStatements = statements.Count > 1;
+			bool multipleStatements = statements.Count > 1;
+			statements.Sort(CompareStatementBodies);
 
             Write('{');
             if (!multipleStatements)
