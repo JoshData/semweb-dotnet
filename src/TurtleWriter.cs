@@ -199,7 +199,7 @@ namespace SemWeb
             switch(dataType)
             {
                 case Identifier.XML_INTEGER:
-                case Identifier.XML_INTEGER_SHORT:
+                case Identifier.XML_INTEGER_ABBREV:
                 case Identifier.XML_DOUBLE:
                 case Identifier.XML_DECIMAL:
                 case Identifier.XML_FLOAT:

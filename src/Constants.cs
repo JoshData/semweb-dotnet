@@ -20,7 +20,7 @@ namespace SemWeb.Constants
         public static readonly Entity RdfNil = Namespace.RDF + "nil";
 
         public const string XML_INTEGER = Namespace.XMLSCHEMA + "integer";
-        public const string XML_INTEGER_SHORT = Namespace.XMLSCHEMA + "int";
+        public const string XML_INTEGER_ABBREV = Namespace.XMLSCHEMA + "int";
         public const string XML_DOUBLE = Namespace.XMLSCHEMA + "double";
         public const string XML_DECIMAL = Namespace.XMLSCHEMA + "decimal";
         public const string XML_FLOAT = Namespace.XMLSCHEMA + "float";
@@ -29,6 +29,7 @@ namespace SemWeb.Constants
         public static readonly Entity XmlInteger = XML_INTEGER;
         public static readonly Entity XmlDouble = XML_DOUBLE;
         public static readonly Entity XmlDecimal = XML_DECIMAL;
+		public static readonly Entity XmlFloat = XML_FLOAT;
         public static readonly Entity XmlBoolean = XML_BOOLEAN;
     }
 
