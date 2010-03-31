@@ -19,6 +19,7 @@
       <Type Name="N3Writer" Kind="Class" />
       <Type Name="N3Writer+Formats" Kind="Enumeration" />
       <Type Name="NamespaceManager" Kind="Class" />
+      <Type Name="NTriplesWriter" Kind="Class" />
       <Type Name="ParserException" Kind="Class" />
       <Type Name="QueryableSource" Kind="Interface" />
       <Type Name="RdfReader" Kind="Class" />
@@ -35,6 +36,7 @@
       <Type Name="StatementSource" Kind="Interface" />
       <Type Name="StaticSource" Kind="Interface" />
       <Type Name="Store" Kind="Class" />
+      <Type Name="TurtleWriter" Kind="Class" />
       <Type Name="Variable" Kind="Class" />
       <Type Name="XsdDateTime" Kind="Class" />
     </Namespace>
@@ -44,6 +46,11 @@
       <Type Name="MSG" Kind="Class" />
       <Type Name="MSG+Graph" Kind="Class" />
       <Type Name="SubgraphIterator" Kind="Class" />
+    </Namespace>
+    <Namespace Name="SemWeb.Constants">
+      <Type Name="Identifier" Kind="Class" />
+      <Type Name="Namespace" Kind="Class" />
+      <Type Name="Predicate" Kind="Class" />
     </Namespace>
     <Namespace Name="SemWeb.Filters">
       <Type Name="DateTimeCompareFilter" Kind="Class" />
@@ -104,23 +111,8 @@
     </Namespace>
   </Types>
   <Assemblies>
-    <Assembly Name="SemWeb" Version="1.0.6.2">
+    <Assembly Name="SemWeb" Version="1.0.7.0">
       <Attributes>
-        <Attribute>
-          <AttributeName>System.Runtime.CompilerServices.RuntimeCompatibility(WrapNonExceptionThrows=true)</AttributeName>
-        </Attribute>
-        <Attribute>
-          <AttributeName>System.Reflection.AssemblyKeyName("")</AttributeName>
-        </Attribute>
-        <Attribute>
-          <AttributeName>System.Reflection.AssemblyTrademark("")</AttributeName>
-        </Attribute>
-        <Attribute>
-          <AttributeName>System.Reflection.AssemblyCopyright("Copyright (c) 2008 Joshua Tauberer &lt;http://razor.occams.info&gt;")</AttributeName>
-        </Attribute>
-        <Attribute>
-          <AttributeName>System.Reflection.AssemblyProduct("")</AttributeName>
-        </Attribute>
         <Attribute>
           <AttributeName>System.Reflection.AssemblyCompany("")</AttributeName>
         </Attribute>
@@ -128,15 +120,45 @@
           <AttributeName>System.Reflection.AssemblyConfiguration("")</AttributeName>
         </Attribute>
         <Attribute>
+          <AttributeName>System.Reflection.AssemblyCopyright("Copyright (c) 2008 Joshua Tauberer &lt;http://razor.occams.info&gt;")</AttributeName>
+        </Attribute>
+        <Attribute>
           <AttributeName>System.Reflection.AssemblyDescription("A library for applications using RDF and the semantic web.")</AttributeName>
+        </Attribute>
+        <Attribute>
+          <AttributeName>System.Reflection.AssemblyKeyName("")</AttributeName>
+        </Attribute>
+        <Attribute>
+          <AttributeName>System.Reflection.AssemblyProduct("")</AttributeName>
         </Attribute>
         <Attribute>
           <AttributeName>System.Reflection.AssemblyTitle("SemWeb")</AttributeName>
         </Attribute>
+        <Attribute>
+          <AttributeName>System.Reflection.AssemblyTrademark("")</AttributeName>
+        </Attribute>
+        <Attribute>
+          <AttributeName>System.Runtime.CompilerServices.RuntimeCompatibility(WrapNonExceptionThrows=true)</AttributeName>
+        </Attribute>
       </Attributes>
     </Assembly>
-    <Assembly Name="SemWeb.Sparql" Version="0.0.0.0">
+    <Assembly Name="SemWeb.Sparql" Version="1.0.7.0">
       <Attributes>
+        <Attribute>
+          <AttributeName>System.Reflection.AssemblyCompany("")</AttributeName>
+        </Attribute>
+        <Attribute>
+          <AttributeName>System.Reflection.AssemblyConfiguration("")</AttributeName>
+        </Attribute>
+        <Attribute>
+          <AttributeName>System.Reflection.AssemblyKeyName("")</AttributeName>
+        </Attribute>
+        <Attribute>
+          <AttributeName>System.Reflection.AssemblyProduct("")</AttributeName>
+        </Attribute>
+        <Attribute>
+          <AttributeName>System.Reflection.AssemblyTrademark("")</AttributeName>
+        </Attribute>
         <Attribute>
           <AttributeName>System.Runtime.CompilerServices.RuntimeCompatibility(WrapNonExceptionThrows=true)</AttributeName>
         </Attribute>

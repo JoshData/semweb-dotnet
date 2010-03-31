@@ -4,6 +4,7 @@
     <AssemblyName>SemWeb</AssemblyName>
     <AssemblyVersion>1.0.6.0</AssemblyVersion>
     <AssemblyVersion>1.0.6.2</AssemblyVersion>
+    <AssemblyVersion>1.0.7.0</AssemblyVersion>
   </AssemblyInfo>
   <Base>
     <BaseTypeName>System.Object</BaseTypeName>
@@ -37,6 +38,7 @@
       </Docs>
       <AssemblyInfo>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
     <Member MemberName="AddVariable">
@@ -55,6 +57,7 @@
       </Docs>
       <AssemblyInfo>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
     <Member MemberName="BaseUri">
@@ -70,6 +73,7 @@
       </Docs>
       <AssemblyInfo>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
     <Member MemberName="Create">
@@ -110,9 +114,11 @@
           </list>
         </returns>
         <remarks>None.</remarks>
+        <exception cref="T:System.ArgumentException">To be added; from: <see cref="M:SemWeb.RdfReader.Create(System.String,System.IO.Stream)" /></exception>
       </Docs>
       <AssemblyInfo>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
     <Member MemberName="Create">
@@ -127,7 +133,7 @@
       </Parameters>
       <Docs>
         <param name="type">The stream type.</param>
-        <param name="source">The name of the source stream, as a file name, or "-" for standard input. If the <paramref name="type"/> is "url" then this argument is interpreted as a URL and the resource is fetched over the network.</param>
+        <param name="source">The name of the source stream, as a file name, or "-" for standard input. If the <paramref name="type" /> is "url" then this argument is interpreted as a URL and the resource is fetched over the network.</param>
         <summary>Creates a RdfReader in the factory paradigm for the given file.</summary>
         <returns>
           <para>The type of reader returned is given in the following table.</para>
@@ -153,16 +159,18 @@
             <item>
               <term>"url"</term>
               <description>
-              	The <paramref name="type"/> argument is interpreted as a URL and the resource is loaded over the network. Its
+              	The <paramref name="type" /> argument is interpreted as a URL and the resource is loaded over the network. Its
               	type is determined automatically.
               </description>
             </item>
           </list>
         </returns>
         <remarks>None.</remarks>
+        <exception cref="T:System.ArgumentException">To be added; from: <see cref="M:SemWeb.RdfReader.Create(System.String,System.String)" /></exception>
       </Docs>
       <AssemblyInfo>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
     <Member MemberName="Dispose">
@@ -181,6 +189,7 @@
       </ImplementsInterfaceMethods>
       <AssemblyInfo>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
     <Member MemberName="LoadFromUri">
@@ -201,9 +210,11 @@
           <para>The format of the document is detected as follows.  If the document has a mime-type of text/xml, application/xml, application/rss+xml, or application/rdf+xml, the document is treated as an RDF/XML document.  If the document has a mime-type of text/rdf+n3, application/n3, application/turtle, or application/x-turtle, the document is treated as a Notation3 document.  If the mime-type is not recognized, the document's file name extension is checked.  If it is .xml or .rss, it is treated as an RDF/XML document.  If it is .n3, .ttl, or .nt, it is treated as a Notation3 document.</para>
           <para>If the format could not be determined, a <see cref="T:System.InvalidOperationException" /> is thrown.</para>
         </remarks>
+        <exception cref="T:System.InvalidOperationException">To be added; from: <see cref="M:SemWeb.RdfReader.LoadFromUri(System.Uri)" /></exception>
       </Docs>
       <AssemblyInfo>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
     <Member MemberName="Meta">
@@ -222,6 +233,7 @@
       </Docs>
       <AssemblyInfo>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
     <Member MemberName="Namespaces">
@@ -237,6 +249,7 @@
       </Docs>
       <AssemblyInfo>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
     <Member MemberName="OnWarning">
@@ -255,6 +268,7 @@
       </Docs>
       <AssemblyInfo>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
     <Member MemberName="ReuseEntities">
@@ -270,6 +284,7 @@
       </Docs>
       <AssemblyInfo>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
     <Member MemberName="Select">
@@ -291,6 +306,7 @@
       </ImplementsInterfaceMethods>
       <AssemblyInfo>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
     <Member MemberName="SemWeb.StatementSource.Distinct">
@@ -306,6 +322,7 @@
       </Docs>
       <AssemblyInfo>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
     <Member MemberName="System.IDisposable.Dispose">
@@ -321,6 +338,7 @@
       </Docs>
       <AssemblyInfo>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
     <Member MemberName="ValidateLiteral">
@@ -328,6 +346,7 @@
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
         <ReturnType>System.Void</ReturnType>
@@ -346,6 +365,7 @@
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
         <ReturnType>System.Boolean</ReturnType>
@@ -369,6 +389,7 @@
       </Docs>
       <AssemblyInfo>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
     <Member MemberName="Warnings">
@@ -384,6 +405,7 @@
       </Docs>
       <AssemblyInfo>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
   </Members>

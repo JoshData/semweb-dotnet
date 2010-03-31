@@ -3,6 +3,7 @@
   <AssemblyInfo>
     <AssemblyName>SemWeb.Sparql</AssemblyName>
     <AssemblyVersion>0.0.0.0</AssemblyVersion>
+    <AssemblyVersion>1.0.7.0</AssemblyVersion>
   </AssemblyInfo>
   <Base>
     <BaseTypeName>System.Object</BaseTypeName>
@@ -116,6 +117,7 @@ LIMIT 10
       </Docs>
       <AssemblyInfo>
         <AssemblyVersion>0.0.0.0</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
     <Member MemberName="CreateQuery">
@@ -137,6 +139,7 @@ LIMIT 10
       </Docs>
       <AssemblyInfo>
         <AssemblyVersion>0.0.0.0</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
     <Member MemberName="GetDataSource">
@@ -153,9 +156,11 @@ LIMIT 10
         <summary>Gets the data source to query.</summary>
         <returns>A data source to query.</returns>
         <remarks>None.</remarks>
+        <exception cref="T:System.InvalidOperationException">To be added; from: <see cref="M:SemWeb.Query.SparqlProtocolServerHandler.GetDataSource(System.Boolean@)" /></exception>
       </Docs>
       <AssemblyInfo>
         <AssemblyVersion>0.0.0.0</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
     <Member MemberName="MaximumLimit">
@@ -170,6 +175,7 @@ LIMIT 10
       </Docs>
       <AssemblyInfo>
         <AssemblyVersion>0.0.0.0</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
     <Member MemberName="ProcessRequest">
@@ -191,6 +197,7 @@ LIMIT 10
       </ImplementsInterfaceMethods>
       <AssemblyInfo>
         <AssemblyVersion>0.0.0.0</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
     <Member MemberName="RunQuery">
@@ -216,6 +223,7 @@ LIMIT 10
       </Docs>
       <AssemblyInfo>
         <AssemblyVersion>0.0.0.0</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
     <Member MemberName="System.Web.IHttpHandler.IsReusable">
@@ -231,6 +239,7 @@ LIMIT 10
       </Docs>
       <AssemblyInfo>
         <AssemblyVersion>0.0.0.0</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
   </Members>

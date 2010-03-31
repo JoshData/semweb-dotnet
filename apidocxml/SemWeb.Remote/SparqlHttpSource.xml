@@ -4,6 +4,7 @@
     <AssemblyName>SemWeb</AssemblyName>
     <AssemblyVersion>1.0.6.0</AssemblyVersion>
     <AssemblyVersion>1.0.6.2</AssemblyVersion>
+    <AssemblyVersion>1.0.7.0</AssemblyVersion>
   </AssemblyInfo>
   <Base>
     <BaseTypeName>System.Object</BaseTypeName>
@@ -38,6 +39,7 @@
       </Docs>
       <AssemblyInfo>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
     <Member MemberName="Contains">
@@ -57,12 +59,14 @@
           <para>Due to the nature of RDF and the limitations of SPARQL, passing a BNode to this method will immediately return false. There is no way to include a BNode from the remote store inside a query.</para>
           <para>This method currently throws NotImplementedException. Sorry! (If you want the method, feel free to submit a patch!)</para>
         </remarks>
+        <exception cref="T:System.NotImplementedException">To be added; from: <see cref="M:SemWeb.Remote.SparqlHttpSource.Contains(SemWeb.Resource)" /></exception>
       </Docs>
       <ImplementsInterfaceMethods>
         <InterfaceImpl Type="SemWeb.SelectableSource" Member="Contains" cref="M:SemWeb.SelectableSource.Contains(SemWeb.Resource)" />
       </ImplementsInterfaceMethods>
       <AssemblyInfo>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
     <Member MemberName="Contains">
@@ -85,6 +89,7 @@
       </ImplementsInterfaceMethods>
       <AssemblyInfo>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
     <Member MemberName="Distinct">
@@ -103,6 +108,7 @@
       </ImplementsInterfaceMethods>
       <AssemblyInfo>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
     <Member MemberName="MetaQuery">
@@ -127,6 +133,7 @@
       </ImplementsInterfaceMethods>
       <AssemblyInfo>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
     <Member MemberName="ParseSparqlResponse">
@@ -147,6 +154,7 @@
       </Docs>
       <AssemblyInfo>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
     <Member MemberName="ParseSparqlResponse">
@@ -167,6 +175,7 @@
       </Docs>
       <AssemblyInfo>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
     <Member MemberName="Query">
@@ -186,12 +195,14 @@
         <param name="sink">To be added.</param>
         <summary>To be added.</summary>
         <remarks>To be added.</remarks>
+        <exception cref="T:System.ArgumentException">To be added; from: <see cref="M:SemWeb.Remote.SparqlHttpSource.Query(SemWeb.Statement[],SemWeb.Query.QueryOptions,SemWeb.Query.QueryResultSink)" />, <see cref="M:SemWeb.Remote.SparqlHttpSource.Query(SemWeb.Statement[],SemWeb.Query.QueryOptions,SemWeb.Query.QueryResultSink)" />, <see cref="M:SemWeb.Remote.SparqlHttpSource.Query(SemWeb.Statement[],SemWeb.Query.QueryOptions,SemWeb.Query.QueryResultSink)" /></exception>
       </Docs>
       <ImplementsInterfaceMethods>
         <InterfaceImpl Type="SemWeb.QueryableSource" Member="Query" cref="M:SemWeb.QueryableSource.Query(SemWeb.Statement[],SemWeb.Query.QueryOptions,SemWeb.Query.QueryResultSink)" />
       </ImplementsInterfaceMethods>
       <AssemblyInfo>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
     <Member MemberName="RunSparqlQuery">
@@ -215,6 +226,7 @@
       </ImplementsInterfaceMethods>
       <AssemblyInfo>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
     <Member MemberName="RunSparqlQuery">
@@ -238,6 +250,7 @@
       </ImplementsInterfaceMethods>
       <AssemblyInfo>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
     <Member MemberName="RunSparqlQuery">
@@ -261,6 +274,7 @@
       </ImplementsInterfaceMethods>
       <AssemblyInfo>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
     <Member MemberName="RunSparqlQuery">
@@ -284,6 +298,7 @@
       </ImplementsInterfaceMethods>
       <AssemblyInfo>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
     <Member MemberName="Select">
@@ -305,6 +320,7 @@
       </ImplementsInterfaceMethods>
       <AssemblyInfo>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
     <Member MemberName="Select">
@@ -328,6 +344,7 @@
       </ImplementsInterfaceMethods>
       <AssemblyInfo>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
     <Member MemberName="Select">
@@ -351,6 +368,7 @@
       </ImplementsInterfaceMethods>
       <AssemblyInfo>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
   </Members>

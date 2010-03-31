@@ -4,6 +4,7 @@
     <AssemblyName>SemWeb</AssemblyName>
     <AssemblyVersion>1.0.6.0</AssemblyVersion>
     <AssemblyVersion>1.0.6.2</AssemblyVersion>
+    <AssemblyVersion>1.0.7.0</AssemblyVersion>
   </AssemblyInfo>
   <Base>
     <BaseTypeName>System.Object</BaseTypeName>
@@ -24,6 +25,7 @@
       </Docs>
       <AssemblyInfo>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
     <Member MemberName=".ctor">
@@ -39,6 +41,7 @@
       </Docs>
       <AssemblyInfo>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
     <Member MemberName="AddFrom">
@@ -57,6 +60,7 @@
       </Docs>
       <AssemblyInfo>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
     <Member MemberName="AddNamespace">
@@ -77,6 +81,7 @@
       </Docs>
       <AssemblyInfo>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
     <Member MemberName="GetNamespace">
@@ -96,10 +101,11 @@
       </Docs>
       <AssemblyInfo>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
     <Member MemberName="GetNamespaces">
-      <MemberSignature Language="C#" Value="public System.Collections.ICollection GetNamespaces ();" />
+      <MemberSignature Language="C#" Value="public virtual System.Collections.ICollection GetNamespaces ();" />
       <MemberType>Method</MemberType>
       <ReturnValue>
         <ReturnType>System.Collections.ICollection</ReturnType>
@@ -112,6 +118,7 @@
       </Docs>
       <AssemblyInfo>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
     <Member MemberName="GetPrefix">
@@ -131,10 +138,11 @@
       </Docs>
       <AssemblyInfo>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
     <Member MemberName="GetPrefixes">
-      <MemberSignature Language="C#" Value="public System.Collections.ICollection GetPrefixes ();" />
+      <MemberSignature Language="C#" Value="public virtual System.Collections.ICollection GetPrefixes ();" />
       <MemberType>Method</MemberType>
       <ReturnValue>
         <ReturnType>System.Collections.ICollection</ReturnType>
@@ -147,10 +155,11 @@
       </Docs>
       <AssemblyInfo>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
     <Member MemberName="Normalize">
-      <MemberSignature Language="C#" Value="public string Normalize (string uri);" />
+      <MemberSignature Language="C#" Value="public virtual string Normalize (string uri);" />
       <MemberType>Method</MemberType>
       <ReturnValue>
         <ReturnType>System.String</ReturnType>
@@ -166,10 +175,11 @@
       </Docs>
       <AssemblyInfo>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
     <Member MemberName="Normalize">
-      <MemberSignature Language="C#" Value="public bool Normalize (string uri, out string prefix, out string localname);" />
+      <MemberSignature Language="C#" Value="public virtual bool Normalize (string uri, out string prefix, out string localname);" />
       <MemberType>Method</MemberType>
       <ReturnValue>
         <ReturnType>System.Boolean</ReturnType>
@@ -189,10 +199,11 @@
       </Docs>
       <AssemblyInfo>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
     <Member MemberName="Resolve">
-      <MemberSignature Language="C#" Value="public string Resolve (string qname);" />
+      <MemberSignature Language="C#" Value="public virtual string Resolve (string qname);" />
       <MemberType>Method</MemberType>
       <ReturnValue>
         <ReturnType>System.String</ReturnType>
@@ -205,9 +216,11 @@
         <summary>Converts a QName into a full URI.</summary>
         <returns>A URI equivalent to the QName.</returns>
         <remarks>The QName is split on its colon.  The prefix and colon are replaced by the namespace corresponding to the prefix.  An exception is thrown if the prefix is not known to the namespace manager.</remarks>
+        <exception cref="T:System.ArgumentException">To be added; from: <see cref="M:SemWeb.NamespaceManager.Resolve(System.String)" />, <see cref="M:SemWeb.NamespaceManager.Resolve(System.String)" /></exception>
       </Docs>
       <AssemblyInfo>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
   </Members>

@@ -4,6 +4,7 @@
     <AssemblyName>SemWeb</AssemblyName>
     <AssemblyVersion>1.0.6.0</AssemblyVersion>
     <AssemblyVersion>1.0.6.2</AssemblyVersion>
+    <AssemblyVersion>1.0.7.0</AssemblyVersion>
   </AssemblyInfo>
   <Base>
     <BaseTypeName>SemWeb.Query.Query</BaseTypeName>
@@ -24,6 +25,7 @@
       </Docs>
       <AssemblyInfo>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
     <Member MemberName=".ctor">
@@ -52,6 +54,7 @@ new GraphMatch(queryGraph).Run(targetData, Console.Out);  </code>
       </Docs>
       <AssemblyInfo>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
     <Member MemberName=".ctor">
@@ -67,6 +70,7 @@ new GraphMatch(queryGraph).Run(targetData, Console.Out);  </code>
       </Docs>
       <AssemblyInfo>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
     <Member MemberName="AddGraphStatement">
@@ -85,6 +89,7 @@ new GraphMatch(queryGraph).Run(targetData, Console.Out);  </code>
       </Docs>
       <AssemblyInfo>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
     <Member MemberName="AddLiteralFilter">
@@ -105,7 +110,24 @@ new GraphMatch(queryGraph).Run(targetData, Console.Out);  </code>
       </Docs>
       <AssemblyInfo>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
+    </Member>
+    <Member MemberName="GetExplanation">
+      <MemberSignature Language="C#" Value="public override string GetExplanation ();" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.String</ReturnType>
+      </ReturnValue>
+      <Parameters />
+      <Docs>
+        <summary>To be added.</summary>
+        <returns>To be added.</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
     </Member>
     <Member MemberName="ReorderQuery">
       <MemberSignature Language="C#" Value="public static SemWeb.Statement[] ReorderQuery (SemWeb.Statement[] graph, SemWeb.Variable[] fixedVariables, SemWeb.SelectableSource schema, bool[,] groupingPreference);" />
@@ -130,7 +152,28 @@ new GraphMatch(queryGraph).Run(targetData, Console.Out);  </code>
       </Docs>
       <AssemblyInfo>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
+    </Member>
+    <Member MemberName="Run">
+      <MemberSignature Language="C#" Value="public override void Run (SemWeb.SelectableSource targetModel, SemWeb.Query.QueryResultSink result);" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="targetModel" Type="SemWeb.SelectableSource" />
+        <Parameter Name="result" Type="SemWeb.Query.QueryResultSink" />
+      </Parameters>
+      <Docs>
+        <param name="targetModel">To be added.</param>
+        <param name="result">To be added.</param>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
     </Member>
     <Member MemberName="SetDistinguishedVariable">
       <MemberSignature Language="C#" Value="public void SetDistinguishedVariable (SemWeb.Variable variable);" />
@@ -148,6 +191,7 @@ new GraphMatch(queryGraph).Run(targetData, Console.Out);  </code>
       </Docs>
       <AssemblyInfo>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
     <Member MemberName="SetVariableRange">
@@ -168,6 +212,7 @@ new GraphMatch(queryGraph).Run(targetData, Console.Out);  </code>
       </Docs>
       <AssemblyInfo>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
   </Members>

@@ -4,6 +4,7 @@
     <AssemblyName>SemWeb</AssemblyName>
     <AssemblyVersion>1.0.6.0</AssemblyVersion>
     <AssemblyVersion>1.0.6.2</AssemblyVersion>
+    <AssemblyVersion>1.0.7.0</AssemblyVersion>
   </AssemblyInfo>
   <Base>
     <BaseTypeName>System.Object</BaseTypeName>
@@ -37,6 +38,7 @@
       </Docs>
       <AssemblyInfo>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
     <Member MemberName=".ctor">
@@ -52,6 +54,7 @@
       </Docs>
       <AssemblyInfo>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
     <Member MemberName=".ctor">
@@ -67,6 +70,7 @@
       </Docs>
       <AssemblyInfo>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
     <Member MemberName="Add">
@@ -85,9 +89,12 @@
           <para>The Subject, Predicate, Object, and Meta fields of the statement must not be <see langword="null" /> or an <see cref="T:System.ArgumentNullException" /> is thrown.</para>
           <para>An <see cref="T:System.InvalidOperationException" /> is thrown if more than one data source has been added to the Store with AddSource (in which case SemWeb would not know which data source to add the statement to) or if the data source added is not a <see cref="T:SemWeb.ModifiableSource" />.</para>
         </remarks>
+        <exception cref="T:System.ArgumentNullException">To be added; from: <see cref="M:SemWeb.Store.Add(SemWeb.Statement)" /></exception>
+        <exception cref="T:System.InvalidOperationException">To be added; from: <see cref="M:SemWeb.Store.Add(SemWeb.Statement)" />, <see cref="M:SemWeb.Store.Add(SemWeb.Statement)" /></exception>
       </Docs>
       <AssemblyInfo>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
     <Member MemberName="AddReasoner">
@@ -106,6 +113,7 @@
       </Docs>
       <AssemblyInfo>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
     <Member MemberName="AddSource">
@@ -124,6 +132,7 @@
       </Docs>
       <AssemblyInfo>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
     <Member MemberName="AddSource">
@@ -144,9 +153,11 @@
           <para>The data source is added to the store and is identified by <paramref name="uri" />. An <see cref="T:System.ArgumentException" /> is thrown if <paramref name="uri" /> has already been used in a previous call to this method.</para>
           <para>In calls to Contains(Statement), Select, Add, Remove, RemoveAll, and Replace(Statement,Statement), the Meta field of the statement argument is used to choose which data source added with AddSource to query for information.  When the supplied Meta field is <see langword="null" /> or when no named data sources have been added to the Store through a call to this method, all data sources are queried. However, when named data sources have been added with this method and the supplied Meta field is <see cref="F:SemWeb.Statement.DefaultMeta" />, only unnamed data sources added through the other AddSource method (<see cref="M:SemWeb.Store.AddSource(SemWeb.SelectableSource)" />) are queried, and when the supplied <see cref="F:SemWeb.Statement.DefaultMeta" />'s URI matches the URI of a named data source added through this method, only that data source is queried.</para>
         </remarks>
+        <exception cref="T:System.ArgumentException">To be added; from: <see cref="M:SemWeb.Store.AddSource(SemWeb.SelectableSource,System.String)" /></exception>
       </Docs>
       <AssemblyInfo>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
     <Member MemberName="Clear">
@@ -159,12 +170,14 @@
       <Docs>
         <summary>Clears the contents of the store.</summary>
         <remarks>An <see cref="T:System.InvalidOperationException" /> is thrown if more than one data source has been added to the Store with AddSource (in which case SemWeb would not want to clear them all) or if the data source added is not a <see cref="T:SemWeb.ModifiableSource" />.  The underlying data source is cleared with <see cref="M:SemWeb.ModifiableSource.Clear()" />.</remarks>
+        <exception cref="T:System.InvalidOperationException">To be added; from: <see cref="M:SemWeb.Store.Clear" />, <see cref="M:SemWeb.Store.Clear" /></exception>
       </Docs>
       <ImplementsInterfaceMethods>
         <InterfaceImpl Type="SemWeb.ModifiableSource" Member="Clear" cref="M:SemWeb.ModifiableSource.Clear" />
       </ImplementsInterfaceMethods>
       <AssemblyInfo>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
     <Member MemberName="Contains">
@@ -187,6 +200,7 @@
       </ImplementsInterfaceMethods>
       <AssemblyInfo>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
     <Member MemberName="Contains">
@@ -212,6 +226,7 @@ any statement matching the template.</returns>
       </ImplementsInterfaceMethods>
       <AssemblyInfo>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
     <Member MemberName="Create">
@@ -246,6 +261,7 @@ n3:file1.n3|n3:file2.n3|...  (loads each of the files into memory and returns a 
       </Docs>
       <AssemblyInfo>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
     <Member MemberName="CreateForInput">
@@ -320,6 +336,7 @@ Example:  "n3:mydata.n3"</description>
       </Docs>
       <AssemblyInfo>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
     <Member MemberName="CreateForOutput">
@@ -379,6 +396,7 @@ in the GraphViz dot format. Example:  "dot:mydata.dot"</description>
       </Docs>
       <AssemblyInfo>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
     <Member MemberName="DataSources">
@@ -394,6 +412,7 @@ in the GraphViz dot format. Example:  "dot:mydata.dot"</description>
       </Docs>
       <AssemblyInfo>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
     <Member MemberName="DefaultContains">
@@ -415,6 +434,7 @@ in the GraphViz dot format. Example:  "dot:mydata.dot"</description>
       </Docs>
       <AssemblyInfo>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
     <Member MemberName="DefaultReplace">
@@ -437,6 +457,7 @@ in the GraphViz dot format. Example:  "dot:mydata.dot"</description>
       </Docs>
       <AssemblyInfo>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
     <Member MemberName="DefaultReplace">
@@ -459,6 +480,7 @@ in the GraphViz dot format. Example:  "dot:mydata.dot"</description>
       </Docs>
       <AssemblyInfo>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
     <Member MemberName="DefaultSelect">
@@ -481,6 +503,7 @@ in the GraphViz dot format. Example:  "dot:mydata.dot"</description>
       </Docs>
       <AssemblyInfo>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
     <Member MemberName="Dispose">
@@ -500,6 +523,7 @@ in the GraphViz dot format. Example:  "dot:mydata.dot"</description>
       </ImplementsInterfaceMethods>
       <AssemblyInfo>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
     <Member MemberName="Distinct">
@@ -518,6 +542,7 @@ in the GraphViz dot format. Example:  "dot:mydata.dot"</description>
       </ImplementsInterfaceMethods>
       <AssemblyInfo>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
     <Member MemberName="GetBNodeFromPersistentId">
@@ -540,6 +565,7 @@ in the GraphViz dot format. Example:  "dot:mydata.dot"</description>
       </ImplementsInterfaceMethods>
       <AssemblyInfo>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
     <Member MemberName="GetEntities">
@@ -559,6 +585,7 @@ in the GraphViz dot format. Example:  "dot:mydata.dot"</description>
       </ImplementsInterfaceMethods>
       <AssemblyInfo>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
     <Member MemberName="GetEntitiesOfType">
@@ -578,6 +605,7 @@ in the GraphViz dot format. Example:  "dot:mydata.dot"</description>
       </Docs>
       <AssemblyInfo>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
     <Member MemberName="GetMetas">
@@ -597,6 +625,7 @@ in the GraphViz dot format. Example:  "dot:mydata.dot"</description>
       </ImplementsInterfaceMethods>
       <AssemblyInfo>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
     <Member MemberName="GetPersistentBNodeId">
@@ -619,6 +648,7 @@ in the GraphViz dot format. Example:  "dot:mydata.dot"</description>
       </ImplementsInterfaceMethods>
       <AssemblyInfo>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
     <Member MemberName="GetPredicates">
@@ -638,6 +668,7 @@ in the GraphViz dot format. Example:  "dot:mydata.dot"</description>
       </ImplementsInterfaceMethods>
       <AssemblyInfo>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
     <Member MemberName="Import">
@@ -656,12 +687,14 @@ in the GraphViz dot format. Example:  "dot:mydata.dot"</description>
           <para>An <see cref="T:System.InvalidOperationException" /> is thrown if more than one data source has been added to the Store with AddSource or if the data source added is not a <see cref="T:SemWeb.ModifiableSource" />.</para>
           <para>See <see cref="M:SemWeb.ModifiableSource.Import(SemWeb.StatementSource)" />.</para>
         </remarks>
+        <exception cref="T:System.InvalidOperationException">To be added; from: <see cref="M:SemWeb.Store.Import(SemWeb.StatementSource)" />, <see cref="M:SemWeb.Store.Import(SemWeb.StatementSource)" /></exception>
       </Docs>
       <ImplementsInterfaceMethods>
         <InterfaceImpl Type="SemWeb.ModifiableSource" Member="Import" cref="M:SemWeb.ModifiableSource.Import(SemWeb.StatementSource)" />
       </ImplementsInterfaceMethods>
       <AssemblyInfo>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
     <Member MemberName="MetaQuery">
@@ -686,6 +719,7 @@ in the GraphViz dot format. Example:  "dot:mydata.dot"</description>
       </ImplementsInterfaceMethods>
       <AssemblyInfo>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
     <Member MemberName="Query">
@@ -705,6 +739,7 @@ in the GraphViz dot format. Example:  "dot:mydata.dot"</description>
       </Docs>
       <AssemblyInfo>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
     <Member MemberName="Query">
@@ -730,6 +765,7 @@ in the GraphViz dot format. Example:  "dot:mydata.dot"</description>
       </ImplementsInterfaceMethods>
       <AssemblyInfo>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
     <Member MemberName="Remove">
@@ -751,6 +787,7 @@ in the GraphViz dot format. Example:  "dot:mydata.dot"</description>
       </ImplementsInterfaceMethods>
       <AssemblyInfo>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
     <Member MemberName="RemoveAll">
@@ -772,6 +809,7 @@ in the GraphViz dot format. Example:  "dot:mydata.dot"</description>
       </ImplementsInterfaceMethods>
       <AssemblyInfo>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
     <Member MemberName="Replace">
@@ -798,6 +836,7 @@ in the GraphViz dot format. Example:  "dot:mydata.dot"</description>
       </ImplementsInterfaceMethods>
       <AssemblyInfo>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
     <Member MemberName="Replace">
@@ -824,6 +863,7 @@ in the GraphViz dot format. Example:  "dot:mydata.dot"</description>
       </ImplementsInterfaceMethods>
       <AssemblyInfo>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
     <Member MemberName="Select">
@@ -843,6 +883,7 @@ in the GraphViz dot format. Example:  "dot:mydata.dot"</description>
       </Docs>
       <AssemblyInfo>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
     <Member MemberName="Select">
@@ -875,6 +916,7 @@ in the GraphViz dot format. Example:  "dot:mydata.dot"</description>
       </Docs>
       <AssemblyInfo>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
     <Member MemberName="Select">
@@ -896,6 +938,7 @@ in the GraphViz dot format. Example:  "dot:mydata.dot"</description>
       </ImplementsInterfaceMethods>
       <AssemblyInfo>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
     <Member MemberName="Select">
@@ -919,6 +962,7 @@ in the GraphViz dot format. Example:  "dot:mydata.dot"</description>
       </ImplementsInterfaceMethods>
       <AssemblyInfo>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
     <Member MemberName="Select">
@@ -942,6 +986,7 @@ in the GraphViz dot format. Example:  "dot:mydata.dot"</description>
       </ImplementsInterfaceMethods>
       <AssemblyInfo>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
     <Member MemberName="SelectObjects">
@@ -967,6 +1012,7 @@ in the GraphViz dot format. Example:  "dot:mydata.dot"</description>
       </Docs>
       <AssemblyInfo>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
     <Member MemberName="SelectSubjects">
@@ -992,6 +1038,7 @@ in the GraphViz dot format. Example:  "dot:mydata.dot"</description>
       </Docs>
       <AssemblyInfo>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
     <Member MemberName="SemWeb.StatementSink.Add">
@@ -1011,6 +1058,7 @@ in the GraphViz dot format. Example:  "dot:mydata.dot"</description>
       </Docs>
       <AssemblyInfo>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
     <Member MemberName="StatementCount">
@@ -1031,6 +1079,7 @@ in the GraphViz dot format. Example:  "dot:mydata.dot"</description>
       </ImplementsInterfaceMethods>
       <AssemblyInfo>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
     <Member MemberName="Write">
@@ -1049,6 +1098,7 @@ in the GraphViz dot format. Example:  "dot:mydata.dot"</description>
       </Docs>
       <AssemblyInfo>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
   </Members>

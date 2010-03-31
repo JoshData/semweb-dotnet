@@ -4,6 +4,7 @@
     <AssemblyName>SemWeb</AssemblyName>
     <AssemblyVersion>1.0.6.0</AssemblyVersion>
     <AssemblyVersion>1.0.6.2</AssemblyVersion>
+    <AssemblyVersion>1.0.7.0</AssemblyVersion>
   </AssemblyInfo>
   <Base>
     <BaseTypeName>System.Object</BaseTypeName>
@@ -65,6 +66,7 @@ CREATE TABLE TABLEPREFIX_literals (id INT NOT NULL, value BLOB NOT NULL,
       </Docs>
       <AssemblyInfo>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
     <Member MemberName="Add">
@@ -80,9 +82,11 @@ CREATE TABLE TABLEPREFIX_literals (id INT NOT NULL, value BLOB NOT NULL,
         <param name="statement">To be added.</param>
         <summary>To be added.</summary>
         <remarks>To be added.</remarks>
+        <exception cref="T:System.ArgumentNullException">To be added; from: <see cref="M:SemWeb.Stores.SQLStore.Add(SemWeb.Statement)" /></exception>
       </Docs>
       <AssemblyInfo>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
     <Member MemberName="BeginTransaction">
@@ -98,6 +102,7 @@ CREATE TABLE TABLEPREFIX_literals (id INT NOT NULL, value BLOB NOT NULL,
       </Docs>
       <AssemblyInfo>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
     <Member MemberName="Clear">
@@ -116,6 +121,7 @@ CREATE TABLE TABLEPREFIX_literals (id INT NOT NULL, value BLOB NOT NULL,
       </ImplementsInterfaceMethods>
       <AssemblyInfo>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
     <Member MemberName="Close">
@@ -131,6 +137,7 @@ CREATE TABLE TABLEPREFIX_literals (id INT NOT NULL, value BLOB NOT NULL,
       </Docs>
       <AssemblyInfo>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
     <Member MemberName="Contains">
@@ -153,6 +160,7 @@ CREATE TABLE TABLEPREFIX_literals (id INT NOT NULL, value BLOB NOT NULL,
       </ImplementsInterfaceMethods>
       <AssemblyInfo>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
     <Member MemberName="Contains">
@@ -175,6 +183,7 @@ CREATE TABLE TABLEPREFIX_literals (id INT NOT NULL, value BLOB NOT NULL,
       </ImplementsInterfaceMethods>
       <AssemblyInfo>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
     <Member MemberName="CreateEntityPrefixTest">
@@ -198,6 +207,7 @@ CREATE TABLE TABLEPREFIX_literals (id INT NOT NULL, value BLOB NOT NULL,
       </Docs>
       <AssemblyInfo>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
     <Member MemberName="CreateIndexes">
@@ -213,6 +223,7 @@ CREATE TABLE TABLEPREFIX_literals (id INT NOT NULL, value BLOB NOT NULL,
       </Docs>
       <AssemblyInfo>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
     <Member MemberName="CreateLikeTest">
@@ -237,6 +248,7 @@ CREATE TABLE TABLEPREFIX_literals (id INT NOT NULL, value BLOB NOT NULL,
       </Docs>
       <AssemblyInfo>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
     <Member MemberName="CreateNullTest">
@@ -257,6 +269,7 @@ CREATE TABLE TABLEPREFIX_literals (id INT NOT NULL, value BLOB NOT NULL,
       </Docs>
       <AssemblyInfo>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
     <Member MemberName="CreateTable">
@@ -272,6 +285,7 @@ CREATE TABLE TABLEPREFIX_literals (id INT NOT NULL, value BLOB NOT NULL,
       </Docs>
       <AssemblyInfo>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
     <Member MemberName="Distinct">
@@ -290,6 +304,7 @@ CREATE TABLE TABLEPREFIX_literals (id INT NOT NULL, value BLOB NOT NULL,
       </ImplementsInterfaceMethods>
       <AssemblyInfo>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
     <Member MemberName="EndTransaction">
@@ -305,10 +320,11 @@ CREATE TABLE TABLEPREFIX_literals (id INT NOT NULL, value BLOB NOT NULL,
       </Docs>
       <AssemblyInfo>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
     <Member MemberName="EscapedAppend">
-      <MemberSignature Language="C#" Value="protected void EscapedAppend (System.Text.StringBuilder b, string str);" />
+      <MemberSignature Language="C#" Value="protected abstract void EscapedAppend (System.Text.StringBuilder b, string str);" />
       <MemberType>Method</MemberType>
       <ReturnValue>
         <ReturnType>System.Void</ReturnType>
@@ -325,6 +341,7 @@ CREATE TABLE TABLEPREFIX_literals (id INT NOT NULL, value BLOB NOT NULL,
       </Docs>
       <AssemblyInfo>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
     <Member MemberName="EscapedAppend">
@@ -371,6 +388,7 @@ CREATE TABLE TABLEPREFIX_literals (id INT NOT NULL, value BLOB NOT NULL,
       </ImplementsInterfaceMethods>
       <AssemblyInfo>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
     <Member MemberName="GetEntities">
@@ -390,6 +408,7 @@ CREATE TABLE TABLEPREFIX_literals (id INT NOT NULL, value BLOB NOT NULL,
       </ImplementsInterfaceMethods>
       <AssemblyInfo>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
     <Member MemberName="GetMetas">
@@ -409,6 +428,7 @@ CREATE TABLE TABLEPREFIX_literals (id INT NOT NULL, value BLOB NOT NULL,
       </ImplementsInterfaceMethods>
       <AssemblyInfo>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
     <Member MemberName="GetPersistentBNodeId">
@@ -431,6 +451,7 @@ CREATE TABLE TABLEPREFIX_literals (id INT NOT NULL, value BLOB NOT NULL,
       </ImplementsInterfaceMethods>
       <AssemblyInfo>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
     <Member MemberName="GetPredicates">
@@ -450,6 +471,7 @@ CREATE TABLE TABLEPREFIX_literals (id INT NOT NULL, value BLOB NOT NULL,
       </ImplementsInterfaceMethods>
       <AssemblyInfo>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
     <Member MemberName="GetQuoteChar">
@@ -482,6 +504,7 @@ CREATE TABLE TABLEPREFIX_literals (id INT NOT NULL, value BLOB NOT NULL,
       </Docs>
       <AssemblyInfo>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
     <Member MemberName="HasUniqueStatementsConstraint">
@@ -497,6 +520,7 @@ CREATE TABLE TABLEPREFIX_literals (id INT NOT NULL, value BLOB NOT NULL,
       </Docs>
       <AssemblyInfo>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
     <Member MemberName="Import">
@@ -512,12 +536,15 @@ CREATE TABLE TABLEPREFIX_literals (id INT NOT NULL, value BLOB NOT NULL,
         <param name="source">To be added.</param>
         <summary>To be added.</summary>
         <remarks>To be added.</remarks>
+        <exception cref="T:System.ArgumentNullException">To be added; from: <see cref="M:SemWeb.Stores.SQLStore.Import(SemWeb.StatementSource)" /></exception>
+        <exception cref="T:System.InvalidOperationException">To be added; from: <see cref="M:SemWeb.Stores.SQLStore.Import(SemWeb.StatementSource)" /></exception>
       </Docs>
       <ImplementsInterfaceMethods>
         <InterfaceImpl Type="SemWeb.ModifiableSource" Member="Import" cref="M:SemWeb.ModifiableSource.Import(SemWeb.StatementSource)" />
       </ImplementsInterfaceMethods>
       <AssemblyInfo>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
     <Member MemberName="InsertIgnoreCommand">
@@ -533,6 +560,7 @@ CREATE TABLE TABLEPREFIX_literals (id INT NOT NULL, value BLOB NOT NULL,
       </Docs>
       <AssemblyInfo>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
     <Member MemberName="MaximumUriLength">
@@ -548,6 +576,7 @@ CREATE TABLE TABLEPREFIX_literals (id INT NOT NULL, value BLOB NOT NULL,
       </Docs>
       <AssemblyInfo>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
     <Member MemberName="MetaQuery">
@@ -572,6 +601,7 @@ CREATE TABLE TABLEPREFIX_literals (id INT NOT NULL, value BLOB NOT NULL,
       </ImplementsInterfaceMethods>
       <AssemblyInfo>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
     <Member MemberName="Query">
@@ -591,12 +621,14 @@ CREATE TABLE TABLEPREFIX_literals (id INT NOT NULL, value BLOB NOT NULL,
         <param name="sink">To be added.</param>
         <summary>To be added.</summary>
         <remarks>To be added.</remarks>
+        <exception cref="T:System.ArgumentException">To be added; from: <see cref="M:SemWeb.Stores.SQLStore.Query(SemWeb.Statement[],SemWeb.Query.QueryOptions,SemWeb.Query.QueryResultSink)" />, <see cref="M:SemWeb.Stores.SQLStore.Query(SemWeb.Statement[],SemWeb.Query.QueryOptions,SemWeb.Query.QueryResultSink)" /></exception>
       </Docs>
       <ImplementsInterfaceMethods>
         <InterfaceImpl Type="SemWeb.QueryableSource" Member="Query" cref="M:SemWeb.QueryableSource.Query(SemWeb.Statement[],SemWeb.Query.QueryOptions,SemWeb.Query.QueryResultSink)" />
       </ImplementsInterfaceMethods>
       <AssemblyInfo>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
     <Member MemberName="Remove">
@@ -618,6 +650,7 @@ CREATE TABLE TABLEPREFIX_literals (id INT NOT NULL, value BLOB NOT NULL,
       </ImplementsInterfaceMethods>
       <AssemblyInfo>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
     <Member MemberName="RemoveAll">
@@ -639,6 +672,7 @@ CREATE TABLE TABLEPREFIX_literals (id INT NOT NULL, value BLOB NOT NULL,
       </ImplementsInterfaceMethods>
       <AssemblyInfo>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
     <Member MemberName="Replace">
@@ -662,6 +696,7 @@ CREATE TABLE TABLEPREFIX_literals (id INT NOT NULL, value BLOB NOT NULL,
       </ImplementsInterfaceMethods>
       <AssemblyInfo>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
     <Member MemberName="Replace">
@@ -679,12 +714,14 @@ CREATE TABLE TABLEPREFIX_literals (id INT NOT NULL, value BLOB NOT NULL,
         <param name="replacement">To be added.</param>
         <summary>To be added.</summary>
         <remarks>To be added.</remarks>
+        <exception cref="T:System.ArgumentNullException">To be added; from: <see cref="M:SemWeb.Stores.SQLStore.Replace(SemWeb.Statement,SemWeb.Statement)" />, <see cref="M:SemWeb.Stores.SQLStore.Replace(SemWeb.Statement,SemWeb.Statement)" /></exception>
       </Docs>
       <ImplementsInterfaceMethods>
         <InterfaceImpl Type="SemWeb.ModifiableSource" Member="Replace" cref="M:SemWeb.ModifiableSource.Replace(SemWeb.Statement,SemWeb.Statement)" />
       </ImplementsInterfaceMethods>
       <AssemblyInfo>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
     <Member MemberName="RunCommand">
@@ -703,6 +740,7 @@ CREATE TABLE TABLEPREFIX_literals (id INT NOT NULL, value BLOB NOT NULL,
       </Docs>
       <AssemblyInfo>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
     <Member MemberName="RunReader">
@@ -722,6 +760,7 @@ CREATE TABLE TABLEPREFIX_literals (id INT NOT NULL, value BLOB NOT NULL,
       </Docs>
       <AssemblyInfo>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
     <Member MemberName="RunScalar">
@@ -741,6 +780,7 @@ CREATE TABLE TABLEPREFIX_literals (id INT NOT NULL, value BLOB NOT NULL,
       </Docs>
       <AssemblyInfo>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
     <Member MemberName="Select">
@@ -762,6 +802,7 @@ CREATE TABLE TABLEPREFIX_literals (id INT NOT NULL, value BLOB NOT NULL,
       </ImplementsInterfaceMethods>
       <AssemblyInfo>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
     <Member MemberName="Select">
@@ -779,12 +820,14 @@ CREATE TABLE TABLEPREFIX_literals (id INT NOT NULL, value BLOB NOT NULL,
         <param name="result">To be added.</param>
         <summary>To be added.</summary>
         <remarks>To be added.</remarks>
+        <exception cref="T:System.ArgumentNullException">To be added; from: <see cref="M:SemWeb.Stores.SQLStore.Select(SemWeb.SelectFilter,SemWeb.StatementSink)" /></exception>
       </Docs>
       <ImplementsInterfaceMethods>
         <InterfaceImpl Type="SemWeb.SelectableSource" Member="Select" cref="M:SemWeb.SelectableSource.Select(SemWeb.SelectFilter,SemWeb.StatementSink)" />
       </ImplementsInterfaceMethods>
       <AssemblyInfo>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
     <Member MemberName="Select">
@@ -802,12 +845,14 @@ CREATE TABLE TABLEPREFIX_literals (id INT NOT NULL, value BLOB NOT NULL,
         <param name="result">To be added.</param>
         <summary>To be added.</summary>
         <remarks>To be added.</remarks>
+        <exception cref="T:System.ArgumentNullException">To be added; from: <see cref="M:SemWeb.Stores.SQLStore.Select(SemWeb.Statement,SemWeb.StatementSink)" /></exception>
       </Docs>
       <ImplementsInterfaceMethods>
         <InterfaceImpl Type="SemWeb.SelectableSource" Member="Select" cref="M:SemWeb.SelectableSource.Select(SemWeb.Statement,SemWeb.StatementSink)" />
       </ImplementsInterfaceMethods>
       <AssemblyInfo>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
     <Member MemberName="SemWeb.StatementSink.Add">
@@ -827,6 +872,7 @@ CREATE TABLE TABLEPREFIX_literals (id INT NOT NULL, value BLOB NOT NULL,
       </Docs>
       <AssemblyInfo>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
     <Member MemberName="StatementCount">
@@ -845,6 +891,7 @@ CREATE TABLE TABLEPREFIX_literals (id INT NOT NULL, value BLOB NOT NULL,
       </ImplementsInterfaceMethods>
       <AssemblyInfo>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
     <Member MemberName="SupportsInsertCombined">
@@ -860,6 +907,7 @@ CREATE TABLE TABLEPREFIX_literals (id INT NOT NULL, value BLOB NOT NULL,
       </Docs>
       <AssemblyInfo>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
     <Member MemberName="SupportsLimitClause">
@@ -875,6 +923,7 @@ CREATE TABLE TABLEPREFIX_literals (id INT NOT NULL, value BLOB NOT NULL,
       </Docs>
       <AssemblyInfo>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
     <Member MemberName="SupportsSubquery">
@@ -890,6 +939,7 @@ CREATE TABLE TABLEPREFIX_literals (id INT NOT NULL, value BLOB NOT NULL,
       </Docs>
       <AssemblyInfo>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
     <Member MemberName="SupportsViews">
@@ -905,6 +955,7 @@ CREATE TABLE TABLEPREFIX_literals (id INT NOT NULL, value BLOB NOT NULL,
       </Docs>
       <AssemblyInfo>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
     <Member MemberName="System.IDisposable.Dispose">
@@ -920,6 +971,7 @@ CREATE TABLE TABLEPREFIX_literals (id INT NOT NULL, value BLOB NOT NULL,
       </Docs>
       <AssemblyInfo>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
     <Member MemberName="TableName">
@@ -935,6 +987,7 @@ CREATE TABLE TABLEPREFIX_literals (id INT NOT NULL, value BLOB NOT NULL,
       </Docs>
       <AssemblyInfo>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
   </Members>

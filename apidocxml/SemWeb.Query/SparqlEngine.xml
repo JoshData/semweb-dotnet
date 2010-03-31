@@ -3,6 +3,7 @@
   <AssemblyInfo>
     <AssemblyName>SemWeb.Sparql</AssemblyName>
     <AssemblyVersion>0.0.0.0</AssemblyVersion>
+    <AssemblyVersion>1.0.7.0</AssemblyVersion>
   </AssemblyInfo>
   <Base>
     <BaseTypeName>SemWeb.Query.Query</BaseTypeName>
@@ -47,6 +48,7 @@ query.Run(datamodel, Console.Out).  </code>
       </Docs>
       <AssemblyInfo>
         <AssemblyVersion>0.0.0.0</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
     <Member MemberName=".ctor">
@@ -59,9 +61,11 @@ query.Run(datamodel, Console.Out).  </code>
         <param name="query">The SPARQL query.</param>
         <summary>Initializes the SPARQL query from a string.</summary>
         <remarks>None.</remarks>
+        <exception cref="T:SemWeb.Query.QueryFormatException">To be added; from: <see cref="M:SemWeb.Query.SparqlEngine.#ctor(System.String)" />, <see cref="M:SemWeb.Query.SparqlEngine.#ctor(System.String)" />, <see cref="M:SemWeb.Query.SparqlEngine.#ctor(System.String)" />, <see cref="M:SemWeb.Query.SparqlEngine.#ctor(System.String)" /></exception>
       </Docs>
       <AssemblyInfo>
         <AssemblyVersion>0.0.0.0</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
     <Member MemberName="AddExternalFunction">
@@ -80,6 +84,7 @@ query.Run(datamodel, Console.Out).  </code>
       </Docs>
       <AssemblyInfo>
         <AssemblyVersion>0.0.0.0</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
     <Member MemberName="AllowPersistBNodes">
@@ -94,6 +99,7 @@ query.Run(datamodel, Console.Out).  </code>
       </Docs>
       <AssemblyInfo>
         <AssemblyVersion>0.0.0.0</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
     <Member MemberName="Ask">
@@ -110,9 +116,12 @@ query.Run(datamodel, Console.Out).  </code>
         <summary>Executes an ASK query on the given data source and returns the result of the query as a boolean.</summary>
         <returns>A boolean value giving the result of the ASK query.</returns>
         <remarks>None.</remarks>
+        <exception cref="T:SemWeb.Query.QueryExecutionException">To be added; from: <see cref="M:SemWeb.Query.SparqlEngine.Ask(SemWeb.SelectableSource)" /></exception>
+        <exception cref="T:System.InvalidOperationException">To be added; from: <see cref="M:SemWeb.Query.SparqlEngine.Ask(SemWeb.SelectableSource)" /></exception>
       </Docs>
       <AssemblyInfo>
         <AssemblyVersion>0.0.0.0</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
     <Member MemberName="Ask">
@@ -133,6 +142,7 @@ query.Run(datamodel, Console.Out).  </code>
       </Docs>
       <AssemblyInfo>
         <AssemblyVersion>0.0.0.0</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
     <Member MemberName="Construct">
@@ -150,9 +160,12 @@ query.Run(datamodel, Console.Out).  </code>
         <param name="sink">The <see cref="T:SemWeb.StatementSink" /> to send the constructed statements to.</param>
         <summary>Executes a CONSTRUCT query on the given data source and sends the constructed statements to a StatementSink.</summary>
         <remarks>None.</remarks>
+        <exception cref="T:SemWeb.Query.QueryExecutionException">To be added; from: <see cref="M:SemWeb.Query.SparqlEngine.Construct(SemWeb.SelectableSource,SemWeb.StatementSink)" /></exception>
+        <exception cref="T:System.InvalidOperationException">To be added; from: <see cref="M:SemWeb.Query.SparqlEngine.Construct(SemWeb.SelectableSource,SemWeb.StatementSink)" /></exception>
       </Docs>
       <AssemblyInfo>
         <AssemblyVersion>0.0.0.0</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
     <Member MemberName="Construct">
@@ -173,6 +186,7 @@ query.Run(datamodel, Console.Out).  </code>
       </Docs>
       <AssemblyInfo>
         <AssemblyVersion>0.0.0.0</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
     <Member MemberName="Describe">
@@ -190,9 +204,12 @@ query.Run(datamodel, Console.Out).  </code>
         <param name="sink">The <see cref="T:SemWeb.StatementSink" /> to send the constructed statements to.</param>
         <summary>Executes a DESCRIBE query on the given data source and sends the constructed statements to a StatementSink.</summary>
         <remarks>None.</remarks>
+        <exception cref="T:SemWeb.Query.QueryExecutionException">To be added; from: <see cref="M:SemWeb.Query.SparqlEngine.Describe(SemWeb.SelectableSource,SemWeb.StatementSink)" /></exception>
+        <exception cref="T:System.InvalidOperationException">To be added; from: <see cref="M:SemWeb.Query.SparqlEngine.Describe(SemWeb.SelectableSource,SemWeb.StatementSink)" /></exception>
       </Docs>
       <AssemblyInfo>
         <AssemblyVersion>0.0.0.0</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
     <Member MemberName="Describe">
@@ -213,6 +230,7 @@ query.Run(datamodel, Console.Out).  </code>
       </Docs>
       <AssemblyInfo>
         <AssemblyVersion>0.0.0.0</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
     <Member MemberName="GetDefaultDatasets">
@@ -220,6 +238,39 @@ query.Run(datamodel, Console.Out).  </code>
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>0.0.0.0</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.String[]</ReturnType>
+      </ReturnValue>
+      <Parameters />
+      <Docs>
+        <summary>To be added.</summary>
+        <returns>To be added.</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="GetExplanation">
+      <MemberSignature Language="C#" Value="public override string GetExplanation ();" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.String</ReturnType>
+      </ReturnValue>
+      <Parameters />
+      <Docs>
+        <summary>To be added.</summary>
+        <returns>To be added.</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="GetNamedDatasets">
+      <MemberSignature Language="C#" Value="public string[] GetNamedDatasets ();" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
         <ReturnType>System.String[]</ReturnType>
@@ -245,7 +296,67 @@ query.Run(datamodel, Console.Out).  </code>
       </Docs>
       <AssemblyInfo>
         <AssemblyVersion>0.0.0.0</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
+    </Member>
+    <Member MemberName="MimeType">
+      <MemberSignature Language="C#" Value="public override string MimeType { set; get; }" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.String</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+        <value>To be added.</value>
+        <remarks>To be added.</remarks>
+        <exception cref="T:System.NotSupportedException">To be added; from: <see cref="M:SemWeb.Query.SparqlEngine.get_MimeType" />, <see cref="M:SemWeb.Query.SparqlEngine.set_MimeType(System.String)" />, <see cref="M:SemWeb.Query.SparqlEngine.set_MimeType(System.String)" /></exception>
+      </Docs>
+    </Member>
+    <Member MemberName="Run">
+      <MemberSignature Language="C#" Value="public override void Run (SemWeb.SelectableSource source, SemWeb.Query.QueryResultSink resultsink);" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="source" Type="SemWeb.SelectableSource" />
+        <Parameter Name="resultsink" Type="SemWeb.Query.QueryResultSink" />
+      </Parameters>
+      <Docs>
+        <param name="source">To be added.</param>
+        <param name="resultsink">To be added.</param>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+        <exception cref="T:SemWeb.Query.QueryExecutionException">To be added; from: <see cref="M:SemWeb.Query.SparqlEngine.Run(SemWeb.SelectableSource,SemWeb.Query.QueryResultSink)" /></exception>
+        <exception cref="T:System.InvalidOperationException">To be added; from: <see cref="M:SemWeb.Query.SparqlEngine.Run(SemWeb.SelectableSource,SemWeb.Query.QueryResultSink)" /></exception>
+      </Docs>
+    </Member>
+    <Member MemberName="Run">
+      <MemberSignature Language="C#" Value="public override void Run (SemWeb.SelectableSource source, System.IO.TextWriter output);" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="source" Type="SemWeb.SelectableSource" />
+        <Parameter Name="output" Type="System.IO.TextWriter" />
+      </Parameters>
+      <Docs>
+        <param name="source">To be added.</param>
+        <param name="output">To be added.</param>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+        <exception cref="T:System.NotSupportedException">To be added; from: <see cref="M:SemWeb.Query.SparqlEngine.Run(SemWeb.SelectableSource,System.IO.TextWriter)" /></exception>
+      </Docs>
     </Member>
     <Member MemberName="Select">
       <MemberSignature Language="C#" Value="public void Select (SemWeb.SelectableSource source, SemWeb.Query.QueryResultSink sink);" />
@@ -262,9 +373,11 @@ query.Run(datamodel, Console.Out).  </code>
         <param name="sink">The <see cref="T:SemWeb.Query.QueryResultSink" /> to send the resulting variable bindings to.</param>
         <summary>Executes a SELECT query on the given data source and sends the resulting variable bindings to a QueryResultSink.</summary>
         <remarks>None.</remarks>
+        <exception cref="T:System.InvalidOperationException">To be added; from: <see cref="M:SemWeb.Query.SparqlEngine.Select(SemWeb.SelectableSource,SemWeb.Query.QueryResultSink)" /></exception>
       </Docs>
       <AssemblyInfo>
         <AssemblyVersion>0.0.0.0</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
     <Member MemberName="Select">
@@ -282,9 +395,11 @@ query.Run(datamodel, Console.Out).  </code>
         <param name="output">The <see cref="T:System.IO.TextWriter" /> to output the results to in the SPARQL Results XML output format.</param>
         <summary>Executes a SELECT query on the given data source and outputs the result of the query in the SPARQL results format to a TextWriter.</summary>
         <remarks>This method can also be called through <see cref="M:SemWeb.Query.Query.Run(SemWeb.SelectableSource,System.IO.TextWriter)" />.</remarks>
+        <exception cref="T:System.InvalidOperationException">To be added; from: <see cref="M:SemWeb.Query.SparqlEngine.Select(SemWeb.SelectableSource,System.IO.TextWriter)" /></exception>
       </Docs>
       <AssemblyInfo>
         <AssemblyVersion>0.0.0.0</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
     <Member MemberName="Type">
@@ -297,9 +412,11 @@ query.Run(datamodel, Console.Out).  </code>
         <summary>Gets the type of the query.</summary>
         <value>The type of the query: SELECT, DESCRIBE, CONSTRUCT, or ASK.</value>
         <remarks>None.</remarks>
+        <exception cref="T:System.NotSupportedException">To be added; from: <see cref="M:SemWeb.Query.SparqlEngine.get_Type" /></exception>
       </Docs>
       <AssemblyInfo>
         <AssemblyVersion>0.0.0.0</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
   </Members>

@@ -4,6 +4,7 @@
     <AssemblyName>SemWeb</AssemblyName>
     <AssemblyVersion>1.0.6.0</AssemblyVersion>
     <AssemblyVersion>1.0.6.2</AssemblyVersion>
+    <AssemblyVersion>1.0.7.0</AssemblyVersion>
   </AssemblyInfo>
   <Base>
     <BaseTypeName>System.Object</BaseTypeName>
@@ -33,6 +34,7 @@
       </Docs>
       <AssemblyInfo>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
     <Member MemberName="Add">
@@ -51,6 +53,7 @@
       </Docs>
       <AssemblyInfo>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
     <Member MemberName="BaseUri">
@@ -66,6 +69,7 @@
       </Docs>
       <AssemblyInfo>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
     <Member MemberName="Close">
@@ -81,6 +85,7 @@
       </Docs>
       <AssemblyInfo>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
     <Member MemberName="Create">
@@ -100,9 +105,11 @@
         <returns>A new RdfWriter.</returns>
         <remarks>The possible values for <paramref name="type" /> are:
           <list type="table"><listheader><term><paramref name="type" /></term><description>Reader</description></listheader><item><term>"xml", "text/xml", "application/xml", "application/rdf+xml"</term><description><see cref="T:SemWeb.RdfXmlWriter" /></description></item><item><term>"n3", "text/n3", "text/rdf+n3", "application/n3"</term><description><see cref="T:SemWeb.N3Writer" /></description></item><item><term>"turtle", "text/turtle", "application/turtle", "application/x-turtle"</term><description><see cref="T:SemWeb.N3Writer" /> configured for Turtle output</description></item><item><term>"nt", "ntriples"</term><description><see cref="T:SemWeb.N3Writer" /> configured for NTriples output</description></item><item><term>"dot"</term><description><see cref="T:SemWeb.IO.GraphVizWriter" /></description></item></list></remarks>
+        <exception cref="T:System.ArgumentException">To be added; from: <see cref="M:SemWeb.RdfWriter.Create(System.String,System.IO.TextWriter)" /></exception>
       </Docs>
       <AssemblyInfo>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
     <Member MemberName="Create">
@@ -121,9 +128,11 @@
         <summary>Creates a new RdfWriter whose type is specified by a string constant.</summary>
         <returns>A new RdfWriter.</returns>
         <remarks>The possible values for <paramref name="type" /> are listed in the Remarks section of <see cref="M:SemWeb.RdfWriter.Create(System.String,System.IO.TextWriter)" /></remarks>
+        <exception cref="T:System.ArgumentException">To be added; from: <see cref="M:SemWeb.RdfWriter.Create(System.String,System.String)" /></exception>
       </Docs>
       <AssemblyInfo>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
     <Member MemberName="GetResourceKey">
@@ -143,10 +152,11 @@
       </Docs>
       <AssemblyInfo>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
     <Member MemberName="Namespaces">
-      <MemberSignature Language="C#" Value="public abstract SemWeb.NamespaceManager Namespaces { get; }" />
+      <MemberSignature Language="C#" Value="public abstract SemWeb.NamespaceManager Namespaces { set; get; }" />
       <MemberType>Property</MemberType>
       <ReturnValue>
         <ReturnType>SemWeb.NamespaceManager</ReturnType>
@@ -158,6 +168,7 @@
       </Docs>
       <AssemblyInfo>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
     <Member MemberName="SemWeb.StatementSink.Add">
@@ -177,6 +188,7 @@
       </Docs>
       <AssemblyInfo>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
     <Member MemberName="SetResourceKey">
@@ -197,6 +209,7 @@
       </Docs>
       <AssemblyInfo>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
     <Member MemberName="System.IDisposable.Dispose">
@@ -212,6 +225,7 @@
       </Docs>
       <AssemblyInfo>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
     <Member MemberName="Write">
@@ -230,6 +244,7 @@
       </Docs>
       <AssemblyInfo>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
   </Members>
