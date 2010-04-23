@@ -2,6 +2,7 @@
   <TypeSignature Language="C#" Value="public class StatementMap" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
+    <AssemblyVersion>0.0.0.0</AssemblyVersion>
     <AssemblyVersion>1.0.6.0</AssemblyVersion>
     <AssemblyVersion>1.0.6.2</AssemblyVersion>
     <AssemblyVersion>1.0.7.0</AssemblyVersion>
@@ -24,6 +25,7 @@
         <remarks>None.</remarks>
       </Docs>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
         <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
@@ -44,6 +46,7 @@
         <exception cref="T:System.ArgumentOutOfRangeException">To be added; from: <see cref="M:SemWeb.Util.StatementMap.#ctor(System.Int32,System.Single)" />, <see cref="M:SemWeb.Util.StatementMap.#ctor(System.Int32,System.Single)" /></exception>
       </Docs>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
         <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
@@ -60,6 +63,7 @@
         <remarks>None.</remarks>
       </Docs>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
         <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
@@ -80,6 +84,7 @@
         <remarks>None.</remarks>
       </Docs>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
         <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
@@ -96,6 +101,7 @@
         <remarks>None.</remarks>
       </Docs>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
         <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
@@ -116,6 +122,7 @@
         <remarks>None.</remarks>
       </Docs>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
         <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
@@ -132,6 +139,7 @@
         <remarks>The returned object may not be a new instance; that is, the same instance may be returned by future calls to Keys, and so it should not be modified by the caller.</remarks>
       </Docs>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
         <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
@@ -151,6 +159,7 @@
         <remarks>None.</remarks>
       </Docs>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
         <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
@@ -167,6 +176,7 @@
         <remarks>The returned object may not be a new instance; that is, the same instance may be returned by future calls to Values, and so it should not be modified by the caller.</remarks>
       </Docs>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
         <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>

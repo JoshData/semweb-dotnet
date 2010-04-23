@@ -2,6 +2,7 @@
   <TypeSignature Language="C#" Value="public class RDFS : SemWeb.Inference.Reasoner" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
+    <AssemblyVersion>0.0.0.0</AssemblyVersion>
     <AssemblyVersion>1.0.6.0</AssemblyVersion>
     <AssemblyVersion>1.0.6.2</AssemblyVersion>
     <AssemblyVersion>1.0.7.0</AssemblyVersion>
@@ -97,6 +98,7 @@ public class EulerTest {
         <remarks>To be added.</remarks>
       </Docs>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
         <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
@@ -114,6 +116,7 @@ public class EulerTest {
           <paramref name="schema" /> is scanned for RDFS schema statements.</remarks>
       </Docs>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
         <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
@@ -148,6 +151,7 @@ public class EulerTest {
         <remarks>The source will be scanned for schema information.  If the data source implements <see cref="T:SemWeb.SelectableSource" />, the source will be selected just for the relevant RDFS predicates.  Otherwise, the entire source will be scanned.</remarks>
       </Docs>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
         <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
@@ -211,6 +215,7 @@ public class EulerTest {
         <remarks>Add statements to the value of this property to add schema information to the inferencer.</remarks>
       </Docs>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
         <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>

@@ -1,0 +1,32 @@
+<Type Name="CanForgetBNodes" FullName="SemWeb.CanForgetBNodes">
+  <TypeSignature Language="C#" Value="public interface CanForgetBNodes" />
+  <AssemblyInfo>
+    <AssemblyName>SemWeb</AssemblyName>
+    <AssemblyVersion>0.0.0.0</AssemblyVersion>
+  </AssemblyInfo>
+  <Interfaces />
+  <Docs>
+    <summary>To be added.</summary>
+    <remarks>To be added.</remarks>
+  </Docs>
+  <Members>
+    <Member MemberName="ForgetBNode">
+      <MemberSignature Language="C#" Value="public void ForgetBNode (SemWeb.BNode bnode);" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="bnode" Type="SemWeb.BNode" />
+      </Parameters>
+      <Docs>
+        <param name="bnode">To be added.</param>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+  </Members>
+</Type>

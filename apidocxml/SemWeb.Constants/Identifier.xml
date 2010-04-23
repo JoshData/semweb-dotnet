@@ -1,0 +1,201 @@
+<Type Name="Identifier" FullName="SemWeb.Constants.Identifier">
+  <TypeSignature Language="C#" Value="public static class Identifier" />
+  <AssemblyInfo>
+    <AssemblyName>SemWeb</AssemblyName>
+    <AssemblyVersion>0.0.0.0</AssemblyVersion>
+  </AssemblyInfo>
+  <Base>
+    <BaseTypeName>System.Object</BaseTypeName>
+  </Base>
+  <Interfaces />
+  <Docs>
+    <summary>
+            Common RDF identifiers.
+            </summary>
+
+  </Docs>
+  <Members>
+    <Member MemberName="LogFormula">
+      <MemberSignature Language="C#" Value="public static readonly SemWeb.Entity LogFormula;" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>SemWeb.Entity</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+    
+      </Docs>
+    </Member>
+    <Member MemberName="RdfNil">
+      <MemberSignature Language="C#" Value="public static readonly SemWeb.Entity RdfNil;" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>SemWeb.Entity</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+    
+      </Docs>
+    </Member>
+    <Member MemberName="RdfStatement">
+      <MemberSignature Language="C#" Value="public static readonly SemWeb.Entity RdfStatement;" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>SemWeb.Entity</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+    
+      </Docs>
+    </Member>
+    <Member MemberName="XML_BOOLEAN">
+      <MemberSignature Language="C#" Value="public const string XML_BOOLEAN;" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.String</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+    
+      </Docs>
+    </Member>
+    <Member MemberName="XML_DECIMAL">
+      <MemberSignature Language="C#" Value="public const string XML_DECIMAL;" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.String</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+    
+      </Docs>
+    </Member>
+    <Member MemberName="XML_DOUBLE">
+      <MemberSignature Language="C#" Value="public const string XML_DOUBLE;" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.String</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+    
+      </Docs>
+    </Member>
+    <Member MemberName="XML_FLOAT">
+      <MemberSignature Language="C#" Value="public const string XML_FLOAT;" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.String</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+    
+      </Docs>
+    </Member>
+    <Member MemberName="XML_INTEGER">
+      <MemberSignature Language="C#" Value="public const string XML_INTEGER;" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.String</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+    
+      </Docs>
+    </Member>
+    <Member MemberName="XML_INTEGER_ABBREV">
+      <MemberSignature Language="C#" Value="public const string XML_INTEGER_ABBREV;" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.String</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+    
+      </Docs>
+    </Member>
+    <Member MemberName="XmlBoolean">
+      <MemberSignature Language="C#" Value="public static readonly SemWeb.Entity XmlBoolean;" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>SemWeb.Entity</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+    
+      </Docs>
+    </Member>
+    <Member MemberName="XmlDecimal">
+      <MemberSignature Language="C#" Value="public static readonly SemWeb.Entity XmlDecimal;" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>SemWeb.Entity</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+    
+      </Docs>
+    </Member>
+    <Member MemberName="XmlDouble">
+      <MemberSignature Language="C#" Value="public static readonly SemWeb.Entity XmlDouble;" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>SemWeb.Entity</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+    
+      </Docs>
+    </Member>
+    <Member MemberName="XmlInteger">
+      <MemberSignature Language="C#" Value="public static readonly SemWeb.Entity XmlInteger;" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>SemWeb.Entity</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+    
+      </Docs>
+    </Member>
+  </Members>
+</Type>

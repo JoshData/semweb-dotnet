@@ -2,6 +2,7 @@
   <TypeSignature Language="C#" Value="public sealed class Literal : SemWeb.Resource" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
+    <AssemblyVersion>0.0.0.0</AssemblyVersion>
     <AssemblyVersion>1.0.6.1</AssemblyVersion>
     <AssemblyVersion>1.0.6.2</AssemblyVersion>
     <AssemblyVersion>1.0.7.0</AssemblyVersion>
@@ -41,6 +42,7 @@ Console.WriteLine(thing3.DataType);</code>
         <remarks>None.</remarks>
       </Docs>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
         <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
@@ -63,6 +65,7 @@ Console.WriteLine(thing3.DataType);</code>
         <exception cref="T:System.ArgumentNullException">To be added; from: <see cref="M:SemWeb.Literal.#ctor(System.String,System.String,System.String)" /></exception>
       </Docs>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
         <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
@@ -79,6 +82,7 @@ Console.WriteLine(thing3.DataType);</code>
         <remarks>None.</remarks>
       </Docs>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
         <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
@@ -118,6 +122,7 @@ Console.WriteLine(thing3.DataType);</code>
         <remarks>None.</remarks>
       </Docs>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
         <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
@@ -138,6 +143,7 @@ Console.WriteLine(thing3.DataType);</code>
         <remarks>None.</remarks>
       </Docs>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
         <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
@@ -158,6 +164,7 @@ Console.WriteLine(thing3.DataType);</code>
         <remarks>None.</remarks>
       </Docs>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
         <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
@@ -178,6 +185,7 @@ Console.WriteLine(thing3.DataType);</code>
         <remarks>None.</remarks>
       </Docs>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
         <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
@@ -198,6 +206,7 @@ Console.WriteLine(thing3.DataType);</code>
         <remarks>None.</remarks>
       </Docs>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
         <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
@@ -218,6 +227,7 @@ Console.WriteLine(thing3.DataType);</code>
         <remarks>None.</remarks>
       </Docs>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
         <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
@@ -238,6 +248,7 @@ Console.WriteLine(thing3.DataType);</code>
         <remarks>None.</remarks>
       </Docs>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
         <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
@@ -258,6 +269,7 @@ Console.WriteLine(thing3.DataType);</code>
         <remarks>None.</remarks>
       </Docs>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
         <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
@@ -278,6 +290,7 @@ Console.WriteLine(thing3.DataType);</code>
         <remarks>None.</remarks>
       </Docs>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
         <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
@@ -298,6 +311,7 @@ Console.WriteLine(thing3.DataType);</code>
         <remarks>None.</remarks>
       </Docs>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
         <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
@@ -318,6 +332,7 @@ Console.WriteLine(thing3.DataType);</code>
         <remarks>None.</remarks>
       </Docs>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
         <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
@@ -338,6 +353,7 @@ Console.WriteLine(thing3.DataType);</code>
         <remarks>None.</remarks>
       </Docs>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
         <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
@@ -358,6 +374,7 @@ Console.WriteLine(thing3.DataType);</code>
         <remarks>None.</remarks>
       </Docs>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
         <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
@@ -378,6 +395,7 @@ Console.WriteLine(thing3.DataType);</code>
         <remarks>None.</remarks>
       </Docs>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
         <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
@@ -398,6 +416,7 @@ Console.WriteLine(thing3.DataType);</code>
         <remarks>None.</remarks>
       </Docs>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
         <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
@@ -418,6 +437,7 @@ Console.WriteLine(thing3.DataType);</code>
         <remarks>None.</remarks>
       </Docs>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
         <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
@@ -442,6 +462,7 @@ Console.WriteLine(thing3.DataType);</code>
         <remarks>None.</remarks>
       </Docs>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
         <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
@@ -466,6 +487,7 @@ Console.WriteLine(thing3.DataType);</code>
         <remarks>None.</remarks>
       </Docs>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
         <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
@@ -498,6 +520,7 @@ Console.WriteLine(thing3.DataType);</code>
         <remarks>None.</remarks>
       </Docs>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
         <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
@@ -515,6 +538,7 @@ Console.WriteLine(thing3.DataType);</code>
         <remarks>If this literal has a DataType recognized by the <see cref="M:SemWeb.Literal.ParseValue()" /> method, this method returns a new literal whose value is a normalized form of the value of this literal.  Otherwise, Normalize returns the literal unchanged.</remarks>
       </Docs>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
         <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
@@ -537,6 +561,7 @@ Console.WriteLine(thing3.DataType);</code>
         <remarks>This is an explicit cast operator.</remarks>
       </Docs>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
         <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
@@ -564,6 +589,7 @@ Console.WriteLine(thing3.DataType);</code>
         <exception cref="T:System.FormatException">To be added; from: <see cref="M:SemWeb.Literal.Parse(System.String,SemWeb.NamespaceManager)" />, <see cref="M:SemWeb.Literal.Parse(System.String,SemWeb.NamespaceManager)" /></exception>
       </Docs>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
         <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
@@ -622,6 +648,7 @@ Console.WriteLine(thing3.DataType);</code>
         </remarks>
       </Docs>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
         <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
@@ -669,6 +696,7 @@ Console.WriteLine(thing3.DataType);</code>
         <remarks>None.</remarks>
       </Docs>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
         <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>

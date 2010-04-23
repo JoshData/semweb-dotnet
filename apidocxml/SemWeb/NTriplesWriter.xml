@@ -1,0 +1,411 @@
+<Type Name="NTriplesWriter" FullName="SemWeb.NTriplesWriter">
+  <TypeSignature Language="C#" Value="public class NTriplesWriter : SemWeb.RdfWriter" />
+  <AssemblyInfo>
+    <AssemblyName>SemWeb</AssemblyName>
+    <AssemblyVersion>0.0.0.0</AssemblyVersion>
+  </AssemblyInfo>
+  <Base>
+    <BaseTypeName>SemWeb.RdfWriter</BaseTypeName>
+  </Base>
+  <Interfaces />
+  <Docs>
+    <summary>
+            Writer that outputs triples in N-Triples format.
+            </summary>
+
+  </Docs>
+  <Members>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public NTriplesWriter (System.IO.TextWriter writer);" />
+      <MemberType>Constructor</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <Parameters>
+        <Parameter Name="writer" Type="System.IO.TextWriter" />
+      </Parameters>
+      <Docs>
+        <param name="writer">The writer.</param>
+        <summary>
+            Initializes a new <see cref="T:SemWeb.NTriplesWriter" /> instance.
+            </summary>
+    
+      </Docs>
+    </Member>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public NTriplesWriter (string file);" />
+      <MemberType>Constructor</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <Parameters>
+        <Parameter Name="file" Type="System.String" />
+      </Parameters>
+      <Docs>
+        <param name="file">The File.</param>
+        <summary>
+            Initializes a new <see cref="T:SemWeb.NTriplesWriter" /> instance.
+            </summary>
+    
+      </Docs>
+    </Member>
+    <Member MemberName="AddFormulaStatement">
+      <MemberSignature Language="C#" Value="protected virtual void AddFormulaStatement (SemWeb.Statement statement);" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="statement" Type="SemWeb.Statement" />
+      </Parameters>
+      <Docs>
+        <param name="statement">The statement.</param>
+        <summary>
+            Adds the statement of a formula.
+            </summary>
+    
+      </Docs>
+    </Member>
+    <Member MemberName="AddStatement">
+      <MemberSignature Language="C#" Value="protected virtual void AddStatement (SemWeb.Statement statement);" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="statement" Type="SemWeb.Statement" />
+      </Parameters>
+      <Docs>
+        <param name="statement">The statement (not a formula).</param>
+        <summary>
+            Adds the statement.
+            </summary>
+    
+      </Docs>
+    </Member>
+    <Member MemberName="FlushWriter">
+      <MemberSignature Language="C#" Value="protected void FlushWriter ();" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters />
+      <Docs>
+        <summary>
+            Flushes the output writer.
+            </summary>
+    
+      </Docs>
+    </Member>
+    <Member MemberName="Write">
+      <MemberSignature Language="C#" Value="protected void Write (char c);" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="c" Type="System.Char" />
+      </Parameters>
+      <Docs>
+        <param name="c">The character.</param>
+        <summary>
+            Writes the specified character to the output writer.
+            </summary>
+    
+      </Docs>
+    </Member>
+    <Member MemberName="Write">
+      <MemberSignature Language="C#" Value="protected void Write (string s);" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="s" Type="System.String" />
+      </Parameters>
+      <Docs>
+        <param name="s">The string.</param>
+        <summary>
+            Writes the specified string to the output writer.
+            </summary>
+    
+      </Docs>
+    </Member>
+    <Member MemberName="WriteBNode">
+      <MemberSignature Language="C#" Value="protected virtual void WriteBNode (SemWeb.BNode bNode);" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="bNode" Type="SemWeb.BNode" />
+      </Parameters>
+      <Docs>
+        <param name="bNode">The bNode.</param>
+        <summary>
+            Writes the specified bNode to the output writer.
+            </summary>
+    
+      </Docs>
+    </Member>
+    <Member MemberName="WriteEntity">
+      <MemberSignature Language="C#" Value="protected virtual void WriteEntity (SemWeb.Entity entity);" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="entity" Type="SemWeb.Entity" />
+      </Parameters>
+      <Docs>
+        <param name="entity">The entity.</param>
+        <summary>
+            Writes the specified entity to the output writer.
+            </summary>
+    
+      </Docs>
+    </Member>
+    <Member MemberName="WriteEscaped">
+      <MemberSignature Language="C#" Value="protected void WriteEscaped (string s);" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="s" Type="System.String" />
+      </Parameters>
+      <Docs>
+        <param name="s">The string.</param>
+        <summary>
+            Writes the specified string to the output writer, escaping special characters.
+            </summary>
+    
+      </Docs>
+    </Member>
+    <Member MemberName="WriteLine">
+      <MemberSignature Language="C#" Value="protected virtual void WriteLine ();" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters />
+      <Docs>
+        <summary>
+            Starts a new line in the output writer.
+            </summary>
+    
+      </Docs>
+    </Member>
+    <Member MemberName="WriteLiteral">
+      <MemberSignature Language="C#" Value="protected virtual void WriteLiteral (SemWeb.Literal literal);" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="literal" Type="SemWeb.Literal" />
+      </Parameters>
+      <Docs>
+        <param name="literal">The literal.</param>
+        <summary>
+            Writes the literal to the output writer.
+            </summary>
+    
+      </Docs>
+    </Member>
+    <Member MemberName="WriteLiteralValue">
+      <MemberSignature Language="C#" Value="protected virtual void WriteLiteralValue (string literal);" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="literal" Type="System.String" />
+      </Parameters>
+      <Docs>
+        <param name="literal">The literal.</param>
+        <summary>
+            Writes the literal value to the output writer.
+            </summary>
+    
+      </Docs>
+    </Member>
+    <Member MemberName="WriteLiteralValueWithDataType">
+      <MemberSignature Language="C#" Value="protected virtual void WriteLiteralValueWithDataType (string literal, string dataType);" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="literal" Type="System.String" />
+        <Parameter Name="dataType" Type="System.String" />
+      </Parameters>
+      <Docs>
+        <param name="literal">The literal.</param>
+        <param name="dataType">The data type of the sliteral.</param>
+        <summary>
+            Writes the literal with the specified data type to the output writer.
+            </summary>
+    
+      </Docs>
+    </Member>
+    <Member MemberName="WriteLiteralValueWithLanguage">
+      <MemberSignature Language="C#" Value="protected virtual void WriteLiteralValueWithLanguage (string literal, string language);" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="literal" Type="System.String" />
+        <Parameter Name="language" Type="System.String" />
+      </Parameters>
+      <Docs>
+        <param name="literal">The literal.</param>
+        <param name="language">The language of the literal.</param>
+        <summary>
+            Writes the literal with the specified language to the output writer.
+            </summary>
+    
+      </Docs>
+    </Member>
+    <Member MemberName="WritePredicate">
+      <MemberSignature Language="C#" Value="protected virtual void WritePredicate (SemWeb.Entity predicate);" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="predicate" Type="SemWeb.Entity" />
+      </Parameters>
+      <Docs>
+        <param name="predicate">The predicate.</param>
+        <summary>
+            Writes the specified predicate to the output writer.
+            </summary>
+    
+      </Docs>
+    </Member>
+    <Member MemberName="WriteResource">
+      <MemberSignature Language="C#" Value="protected virtual void WriteResource (SemWeb.Resource resource);" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="resource" Type="SemWeb.Resource" />
+      </Parameters>
+      <Docs>
+        <param name="resource">The resource.</param>
+        <summary>
+            Writes the specified resource to the output writer.
+            </summary>
+    
+      </Docs>
+    </Member>
+    <Member MemberName="WriteStatement">
+      <MemberSignature Language="C#" Value="protected virtual void WriteStatement (SemWeb.Statement statement);" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="statement" Type="SemWeb.Statement" />
+      </Parameters>
+      <Docs>
+        <param name="statement">The statement.</param>
+        <summary>
+            Writes the statement to the output stream.
+            </summary>
+    
+      </Docs>
+    </Member>
+    <Member MemberName="WriteStatementBody">
+      <MemberSignature Language="C#" Value="protected virtual void WriteStatementBody (SemWeb.Statement statement);" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="statement" Type="SemWeb.Statement" />
+      </Parameters>
+      <Docs>
+        <param name="statement">The statement.</param>
+        <summary>
+            Writes the statement body to the output writer.
+            </summary>
+    
+      </Docs>
+    </Member>
+    <Member MemberName="WriteUri">
+      <MemberSignature Language="C#" Value="protected virtual void WriteUri (SemWeb.Entity entity);" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="entity" Type="SemWeb.Entity" />
+      </Parameters>
+      <Docs>
+        <param name="entity">The entity.</param>
+        <summary>
+            Writes the URI of the specified entity to the output writer.
+            </summary>
+    
+      </Docs>
+    </Member>
+  </Members>
+</Type>

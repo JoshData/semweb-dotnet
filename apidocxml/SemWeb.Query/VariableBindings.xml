@@ -2,6 +2,7 @@
   <TypeSignature Language="C#" Value="public class VariableBindings : IComparable, IComparable&lt;SemWeb.Query.VariableBindings&gt;" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
+    <AssemblyVersion>0.0.0.0</AssemblyVersion>
     <AssemblyVersion>1.0.6.0</AssemblyVersion>
     <AssemblyVersion>1.0.6.2</AssemblyVersion>
     <AssemblyVersion>1.0.7.0</AssemblyVersion>
@@ -37,6 +38,7 @@
         <exception cref="T:System.ArgumentException">To be added; from: <see cref="M:SemWeb.Query.VariableBindings.#ctor(SemWeb.Variable[],SemWeb.Resource[])" /></exception>
       </Docs>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
         <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
@@ -57,6 +59,7 @@
         <remarks>To be added.</remarks>
       </Docs>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
         <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
@@ -73,6 +76,7 @@
         <remarks>None.</remarks>
       </Docs>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
         <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
@@ -94,6 +98,7 @@
         <exception cref="T:System.ArgumentException">To be added; from: <see cref="M:SemWeb.Query.VariableBindings.get_Item(SemWeb.Variable)" /></exception>
       </Docs>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
         <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
@@ -115,6 +120,7 @@
         <exception cref="T:System.ArgumentException">To be added; from: <see cref="M:SemWeb.Query.VariableBindings.get_Item(System.String)" /></exception>
       </Docs>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
         <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
@@ -135,6 +141,7 @@
         <remarks>If a variable in the Subject, Predicate, or Meta fields is bound by a Literal value, a <see cref="T:System.InvalidCastException" /> is thrown.</remarks>
       </Docs>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
         <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
@@ -155,6 +162,7 @@
         <remarks>To be added.</remarks>
       </Docs>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
         <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
@@ -187,6 +195,7 @@
         <remarks>A value may be <see langword="null" /> to indicate an unbound variable.</remarks>
       </Docs>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
         <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
@@ -203,6 +212,7 @@
         <remarks>None.</remarks>
       </Docs>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
         <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>

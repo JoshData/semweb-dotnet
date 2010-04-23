@@ -2,6 +2,7 @@
   <TypeSignature Language="C#" Value="public enum LiteralFilter.CompType" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
+    <AssemblyVersion>0.0.0.0</AssemblyVersion>
     <AssemblyVersion>1.0.6.0</AssemblyVersion>
     <AssemblyVersion>1.0.6.2</AssemblyVersion>
     <AssemblyVersion>1.0.7.0</AssemblyVersion>
@@ -24,6 +25,7 @@
         <summary>Equal</summary>
       </Docs>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
         <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
@@ -38,6 +40,7 @@
         <summary>Greater than or equal</summary>
       </Docs>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
         <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
@@ -52,6 +55,7 @@
         <summary>Greater than</summary>
       </Docs>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
         <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
@@ -66,6 +70,7 @@
         <summary>Less than or equal</summary>
       </Docs>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
         <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
@@ -80,6 +85,7 @@
         <summary>Less than</summary>
       </Docs>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
         <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
@@ -94,6 +100,7 @@
         <summary>Not equal</summary>
       </Docs>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
         <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>

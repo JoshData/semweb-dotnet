@@ -2,9 +2,9 @@
   <TypeSignature Language="C#" Value="public class RdfXmlWriter.Options" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
+    <AssemblyVersion>0.0.0.0</AssemblyVersion>
     <AssemblyVersion>1.0.6.0</AssemblyVersion>
     <AssemblyVersion>1.0.6.2</AssemblyVersion>
-    <AssemblyVersion>1.0.7.0</AssemblyVersion>
   </AssemblyInfo>
   <Base>
     <BaseTypeName>System.Object</BaseTypeName>
@@ -24,8 +24,8 @@
         <remarks>None.</remarks>
       </Docs>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
-        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
     <Member MemberName="EmbedNamedNodes">
@@ -55,8 +55,8 @@
         </remarks>
       </Docs>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
-        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
     <Member MemberName="Full">
@@ -70,15 +70,15 @@
         <remarks>All of the instance fields in this object are <see langword="true" />, providing general RDF/XML output with options to make the document more readable.</remarks>
       </Docs>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
-        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
     <Member MemberName="UseParseTypeCollection">
       <MemberSignature Language="C#" Value="public bool UseParseTypeCollection;" />
       <MemberType>Field</MemberType>
       <AssemblyInfo>
-        <AssemblyVersion>1.0.7.0</AssemblyVersion>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
         <ReturnType>System.Boolean</ReturnType>
@@ -112,8 +112,8 @@
         </remarks>
       </Docs>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
-        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
     <Member MemberName="UsePredicateAttributes">
@@ -141,8 +141,8 @@
         </remarks>
       </Docs>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
-        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
     <Member MemberName="UseRdfID">
@@ -165,8 +165,8 @@
         </remarks>
       </Docs>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
-        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
     <Member MemberName="UseRdfLI">
@@ -194,8 +194,8 @@
         </remarks>
       </Docs>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
-        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
     <Member MemberName="UseTypedNodes">
@@ -219,8 +219,8 @@
         </remarks>
       </Docs>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
-        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
     <Member MemberName="XMP">
@@ -234,8 +234,8 @@
         <remarks>The Adobe XMP format is a reduced version of RDF/XML used for embedding metadata in images and other files.  This class turns off the output options of the RdfXmlWriter that are not supported in XMP.  The UseTypedNodes, UseRdfID, UseParseTypeLiteral, and UsePredicateAttributes fields are set to <see langword="false" />.  The remaining fields are set to <see langword="true" />.</remarks>
       </Docs>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
-        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
     </Member>
   </Members>

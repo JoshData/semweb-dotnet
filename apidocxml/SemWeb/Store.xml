@@ -2,6 +2,7 @@
   <TypeSignature Language="C#" Value="public class Store : IDisposable, SemWeb.ModifiableSource, SemWeb.QueryableSource, SemWeb.StaticSource" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
+    <AssemblyVersion>0.0.0.0</AssemblyVersion>
     <AssemblyVersion>1.0.6.0</AssemblyVersion>
     <AssemblyVersion>1.0.6.2</AssemblyVersion>
     <AssemblyVersion>1.0.7.0</AssemblyVersion>
@@ -37,6 +38,7 @@
         <remarks>Use <see cref="M:SemWeb.Store.AddSource(SemWeb.SelectableSource)" /> to add data to the store.</remarks>
       </Docs>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
         <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
@@ -53,6 +55,7 @@
         <remarks>Other data sources can be added with <see cref="M:SemWeb.Store.AddSource(SemWeb.SelectableSource)" />.</remarks>
       </Docs>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
         <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
@@ -69,6 +72,7 @@
         <remarks>The store loads the statements into memory.</remarks>
       </Docs>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
         <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
@@ -93,6 +97,7 @@
         <exception cref="T:System.InvalidOperationException">To be added; from: <see cref="M:SemWeb.Store.Add(SemWeb.Statement)" />, <see cref="M:SemWeb.Store.Add(SemWeb.Statement)" /></exception>
       </Docs>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
         <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
@@ -112,6 +117,7 @@
         <remarks>The Select and Query methods will apply inferencing to the store.  The reasoners are applied recursively in the reverse order that they were added with this method.  That is, if reasoner A is added before reasoner B, then a call to select will start with reasoner B, but when reasoner B queries the underlying data it will query reasoner A, and reasoner A will actually access any underlying data.</remarks>
       </Docs>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
         <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
@@ -131,6 +137,7 @@
         <remarks>None.</remarks>
       </Docs>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
         <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
@@ -156,6 +163,7 @@
         <exception cref="T:System.ArgumentException">To be added; from: <see cref="M:SemWeb.Store.AddSource(SemWeb.SelectableSource,System.String)" /></exception>
       </Docs>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
         <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
@@ -176,6 +184,7 @@
         <InterfaceImpl Type="SemWeb.ModifiableSource" Member="Clear" cref="M:SemWeb.ModifiableSource.Clear" />
       </ImplementsInterfaceMethods>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
         <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
@@ -199,6 +208,7 @@
         <InterfaceImpl Type="SemWeb.SelectableSource" Member="Contains" cref="M:SemWeb.SelectableSource.Contains(SemWeb.Resource)" />
       </ImplementsInterfaceMethods>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
         <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
@@ -225,6 +235,7 @@ any statement matching the template.</returns>
         <InterfaceImpl Type="SemWeb.SelectableSource" Member="Contains" cref="M:SemWeb.SelectableSource.Contains(SemWeb.Statement)" />
       </ImplementsInterfaceMethods>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
         <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
@@ -260,6 +271,7 @@ n3:file1.n3|n3:file2.n3|...  (loads each of the files into memory and returns a 
         </remarks>
       </Docs>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
         <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
@@ -335,6 +347,7 @@ Example:  "n3:mydata.n3"</description>
         </remarks>
       </Docs>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
         <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
@@ -395,6 +408,7 @@ in the GraphViz dot format. Example:  "dot:mydata.dot"</description>
         </remarks>
       </Docs>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
         <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
@@ -411,6 +425,7 @@ in the GraphViz dot format. Example:  "dot:mydata.dot"</description>
         <remarks>To be added.</remarks>
       </Docs>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
         <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
@@ -433,6 +448,7 @@ in the GraphViz dot format. Example:  "dot:mydata.dot"</description>
         <remarks>This method is intended to be used by implementors of SelectableSource.</remarks>
       </Docs>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
         <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
@@ -456,6 +472,7 @@ in the GraphViz dot format. Example:  "dot:mydata.dot"</description>
         <remarks>To be added.</remarks>
       </Docs>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
         <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
@@ -479,6 +496,7 @@ in the GraphViz dot format. Example:  "dot:mydata.dot"</description>
         <remarks>To be added.</remarks>
       </Docs>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
         <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
@@ -502,6 +520,7 @@ in the GraphViz dot format. Example:  "dot:mydata.dot"</description>
         <remarks>This method is intended to be used by subclasses of Store that do not want to provide their own implementation of Select with a SelectFilter.</remarks>
       </Docs>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
         <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
@@ -522,6 +541,7 @@ in the GraphViz dot format. Example:  "dot:mydata.dot"</description>
         <InterfaceImpl Type="System.IDisposable" Member="Dispose" cref="M:System.IDisposable.Dispose" />
       </ImplementsInterfaceMethods>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
         <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
@@ -541,6 +561,7 @@ in the GraphViz dot format. Example:  "dot:mydata.dot"</description>
         <InterfaceImpl Type="SemWeb.StatementSource" Member="Distinct" cref="P:SemWeb.StatementSource.Distinct" />
       </ImplementsInterfaceMethods>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
         <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
@@ -564,6 +585,7 @@ in the GraphViz dot format. Example:  "dot:mydata.dot"</description>
         <InterfaceImpl Type="SemWeb.StaticSource" Member="GetBNodeFromPersistentId" cref="M:SemWeb.StaticSource.GetBNodeFromPersistentId(System.String)" />
       </ImplementsInterfaceMethods>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
         <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
@@ -584,6 +606,7 @@ in the GraphViz dot format. Example:  "dot:mydata.dot"</description>
         <InterfaceImpl Type="SemWeb.StaticSource" Member="GetEntities" cref="M:SemWeb.StaticSource.GetEntities" />
       </ImplementsInterfaceMethods>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
         <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
@@ -604,6 +627,7 @@ in the GraphViz dot format. Example:  "dot:mydata.dot"</description>
         <remarks>Types are indicated using the rdf:type predicate.</remarks>
       </Docs>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
         <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
@@ -624,6 +648,7 @@ in the GraphViz dot format. Example:  "dot:mydata.dot"</description>
         <InterfaceImpl Type="SemWeb.StaticSource" Member="GetMetas" cref="M:SemWeb.StaticSource.GetMetas" />
       </ImplementsInterfaceMethods>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
         <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
@@ -647,6 +672,7 @@ in the GraphViz dot format. Example:  "dot:mydata.dot"</description>
         <InterfaceImpl Type="SemWeb.StaticSource" Member="GetPersistentBNodeId" cref="M:SemWeb.StaticSource.GetPersistentBNodeId(SemWeb.BNode)" />
       </ImplementsInterfaceMethods>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
         <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
@@ -667,6 +693,7 @@ in the GraphViz dot format. Example:  "dot:mydata.dot"</description>
         <InterfaceImpl Type="SemWeb.StaticSource" Member="GetPredicates" cref="M:SemWeb.StaticSource.GetPredicates" />
       </ImplementsInterfaceMethods>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
         <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
@@ -693,6 +720,7 @@ in the GraphViz dot format. Example:  "dot:mydata.dot"</description>
         <InterfaceImpl Type="SemWeb.ModifiableSource" Member="Import" cref="M:SemWeb.ModifiableSource.Import(SemWeb.StatementSource)" />
       </ImplementsInterfaceMethods>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
         <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
@@ -718,6 +746,7 @@ in the GraphViz dot format. Example:  "dot:mydata.dot"</description>
         <InterfaceImpl Type="SemWeb.QueryableSource" Member="MetaQuery" cref="M:SemWeb.QueryableSource.MetaQuery(SemWeb.Statement[],SemWeb.Query.QueryOptions)" />
       </ImplementsInterfaceMethods>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
         <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
@@ -738,6 +767,7 @@ in the GraphViz dot format. Example:  "dot:mydata.dot"</description>
         <remarks>See <see cref="M:SemWeb.Store.Query(SemWeb.Statement[],SemWeb.Query.QueryOptions,SemWeb.Query.QueryResultSink)" /> for details.</remarks>
       </Docs>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
         <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
@@ -764,6 +794,7 @@ in the GraphViz dot format. Example:  "dot:mydata.dot"</description>
         <InterfaceImpl Type="SemWeb.QueryableSource" Member="Query" cref="M:SemWeb.QueryableSource.Query(SemWeb.Statement[],SemWeb.Query.QueryOptions,SemWeb.Query.QueryResultSink)" />
       </ImplementsInterfaceMethods>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
         <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
@@ -786,6 +817,7 @@ in the GraphViz dot format. Example:  "dot:mydata.dot"</description>
         <InterfaceImpl Type="SemWeb.ModifiableSource" Member="Remove" cref="M:SemWeb.ModifiableSource.Remove(SemWeb.Statement)" />
       </ImplementsInterfaceMethods>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
         <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
@@ -808,6 +840,7 @@ in the GraphViz dot format. Example:  "dot:mydata.dot"</description>
         <InterfaceImpl Type="SemWeb.ModifiableSource" Member="RemoveAll" cref="M:SemWeb.ModifiableSource.RemoveAll(SemWeb.Statement[])" />
       </ImplementsInterfaceMethods>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
         <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
@@ -835,6 +868,7 @@ in the GraphViz dot format. Example:  "dot:mydata.dot"</description>
         <InterfaceImpl Type="SemWeb.ModifiableSource" Member="Replace" cref="M:SemWeb.ModifiableSource.Replace(SemWeb.Entity,SemWeb.Entity)" />
       </ImplementsInterfaceMethods>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
         <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
@@ -862,6 +896,7 @@ in the GraphViz dot format. Example:  "dot:mydata.dot"</description>
         <InterfaceImpl Type="SemWeb.ModifiableSource" Member="Replace" cref="M:SemWeb.ModifiableSource.Replace(SemWeb.Statement,SemWeb.Statement)" />
       </ImplementsInterfaceMethods>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
         <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
@@ -882,6 +917,7 @@ in the GraphViz dot format. Example:  "dot:mydata.dot"</description>
         <remarks>See <see cref="M:SemWeb.Store.Select(SemWeb.SelectFilter,SemWeb.StatementSink)" />.</remarks>
       </Docs>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
         <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
@@ -915,6 +951,7 @@ in the GraphViz dot format. Example:  "dot:mydata.dot"</description>
         </remarks>
       </Docs>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
         <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
@@ -937,6 +974,7 @@ in the GraphViz dot format. Example:  "dot:mydata.dot"</description>
         <InterfaceImpl Type="SemWeb.StatementSource" Member="Select" cref="M:SemWeb.StatementSource.Select(SemWeb.StatementSink)" />
       </ImplementsInterfaceMethods>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
         <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
@@ -961,6 +999,7 @@ in the GraphViz dot format. Example:  "dot:mydata.dot"</description>
         <InterfaceImpl Type="SemWeb.SelectableSource" Member="Select" cref="M:SemWeb.SelectableSource.Select(SemWeb.SelectFilter,SemWeb.StatementSink)" />
       </ImplementsInterfaceMethods>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
         <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
@@ -985,6 +1024,7 @@ in the GraphViz dot format. Example:  "dot:mydata.dot"</description>
         <InterfaceImpl Type="SemWeb.SelectableSource" Member="Select" cref="M:SemWeb.SelectableSource.Select(SemWeb.Statement,SemWeb.StatementSink)" />
       </ImplementsInterfaceMethods>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
         <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
@@ -1011,6 +1051,7 @@ in the GraphViz dot format. Example:  "dot:mydata.dot"</description>
         </remarks>
       </Docs>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
         <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
@@ -1037,6 +1078,7 @@ in the GraphViz dot format. Example:  "dot:mydata.dot"</description>
         </remarks>
       </Docs>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
         <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
@@ -1057,6 +1099,7 @@ in the GraphViz dot format. Example:  "dot:mydata.dot"</description>
         <remarks>This method calls <see cref="M:SemWeb.Store.Add(SemWeb.Statement)" />.</remarks>
       </Docs>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
         <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
@@ -1078,6 +1121,7 @@ in the GraphViz dot format. Example:  "dot:mydata.dot"</description>
         <InterfaceImpl Type="SemWeb.StaticSource" Member="StatementCount" cref="P:SemWeb.StaticSource.StatementCount" />
       </ImplementsInterfaceMethods>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
         <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
@@ -1097,6 +1141,7 @@ in the GraphViz dot format. Example:  "dot:mydata.dot"</description>
         <remarks>None.</remarks>
       </Docs>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
         <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>

@@ -2,130 +2,80 @@
   <TypeSignature Language="C#" Value="public class N3Writer : SemWeb.TurtleWriter" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
-    <AssemblyVersion>1.0.6.0</AssemblyVersion>
-    <AssemblyVersion>1.0.6.2</AssemblyVersion>
-    <AssemblyVersion>1.0.7.0</AssemblyVersion>
+    <AssemblyVersion>0.0.0.0</AssemblyVersion>
   </AssemblyInfo>
   <Base>
     <BaseTypeName>SemWeb.TurtleWriter</BaseTypeName>
   </Base>
-  <Interfaces>
-  </Interfaces>
+  <Interfaces />
   <Docs>
-    <summary>Writes out RDF statements to a stream in Notation 3, Turtle (the default), or NTriples format.</summary>
+    <summary>
+            Writer that outputs triples in Notation3 format.
+            </summary>
     <remarks>
-      <example>
-        <para>The following example writes out RDF statements in Turtle format to a file:</para>
-        <code lang="C#">using (N3Writer output = new N3Writer("filename.n3")) {
-    store.Write(data);
-}  </code>
-      </example>
-    </remarks>
+            This class' memory use is proportional to the number of statements written.
+            Intended for pretty printing.
+            Use <see cref="T:SemWeb.TurtleWriter" /> or <see cref="T:SemWeb.NTriplesWriter" /> for performance.
+            </remarks>
   </Docs>
   <Members>
     <Member MemberName=".ctor">
       <MemberSignature Language="C#" Value="public N3Writer (System.IO.TextWriter writer);" />
       <MemberType>Constructor</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
       <Parameters>
         <Parameter Name="writer" Type="System.IO.TextWriter" />
       </Parameters>
       <Docs>
-        <param name="writer">The TextWriter to which statements will be written.</param>
-        <summary>Creates an N3Writer that outputs statements to a TextWriter.</summary>
-        <remarks>None.</remarks>
+        <param name="writer">The writer.</param>
+        <summary>
+            Initializes a new <see cref="T:SemWeb.N3Writer" /> instance.
+            </summary>
+    
       </Docs>
-      <AssemblyInfo>
-        <AssemblyVersion>1.0.6.2</AssemblyVersion>
-        <AssemblyVersion>1.0.7.0</AssemblyVersion>
-      </AssemblyInfo>
     </Member>
     <Member MemberName=".ctor">
       <MemberSignature Language="C#" Value="public N3Writer (string file);" />
       <MemberType>Constructor</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
       <Parameters>
         <Parameter Name="file" Type="System.String" />
       </Parameters>
       <Docs>
-        <param name="file">The path to a file where the statements will be stored, or "-" to output to Console.Out.</param>
-        <summary>Creates an N3Writer that outputs statements to a file.</summary>
-        <remarks>None.</remarks>
+        <param name="file">The file.</param>
+        <summary>
+            Initializes a new <see cref="T:SemWeb.N3Writer" /> instance.
+            </summary>
+    
       </Docs>
-      <AssemblyInfo>
-        <AssemblyVersion>1.0.6.2</AssemblyVersion>
-        <AssemblyVersion>1.0.7.0</AssemblyVersion>
-      </AssemblyInfo>
     </Member>
     <Member MemberName="Abbreviations">
       <MemberSignature Language="C#" Value="protected override System.Collections.Hashtable Abbreviations { get; }" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
-        <AssemblyVersion>1.0.7.0</AssemblyVersion>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
         <ReturnType>System.Collections.Hashtable</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
-      </Docs>
-    </Member>
-    <Member MemberName="AddFormula">
-      <MemberSignature Language="C#" Value="protected override void AddFormula (SemWeb.Statement formula);" />
-      <MemberType>Method</MemberType>
-      <AssemblyInfo>
-        <AssemblyVersion>1.0.7.0</AssemblyVersion>
-      </AssemblyInfo>
-      <ReturnValue>
-        <ReturnType>System.Void</ReturnType>
-      </ReturnValue>
-      <Parameters>
-        <Parameter Name="formula" Type="SemWeb.Statement" />
-      </Parameters>
-      <Docs>
-        <param name="formula">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
-      </Docs>
-    </Member>
-    <Member MemberName="AddStatement">
-      <MemberSignature Language="C#" Value="protected override void AddStatement (SemWeb.Statement statement);" />
-      <MemberType>Method</MemberType>
-      <AssemblyInfo>
-        <AssemblyVersion>1.0.7.0</AssemblyVersion>
-      </AssemblyInfo>
-      <ReturnValue>
-        <ReturnType>System.Void</ReturnType>
-      </ReturnValue>
-      <Parameters>
-        <Parameter Name="statement" Type="SemWeb.Statement" />
-      </Parameters>
-      <Docs>
-        <param name="statement">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
-      </Docs>
-    </Member>
-    <Member MemberName="Close">
-      <MemberSignature Language="C#" Value="public override void Close ();" />
-      <MemberType>Method</MemberType>
-      <AssemblyInfo>
-        <AssemblyVersion>1.0.7.0</AssemblyVersion>
-      </AssemblyInfo>
-      <ReturnValue>
-        <ReturnType>System.Void</ReturnType>
-      </ReturnValue>
-      <Parameters />
-      <Docs>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
+        <summary>
+            Gets the namespace abbreviations hashtable.
+            </summary>
+        <returns>A hashtable of URI/abbreviation pairs.</returns>
+        <value />
+    
       </Docs>
     </Member>
     <Member MemberName="CompareStatementBodies">
       <MemberSignature Language="C#" Value="protected virtual int CompareStatementBodies (SemWeb.Statement x, SemWeb.Statement y);" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
-        <AssemblyVersion>1.0.7.0</AssemblyVersion>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
         <ReturnType>System.Int32</ReturnType>
@@ -135,18 +85,20 @@
         <Parameter Name="y" Type="SemWeb.Statement" />
       </Parameters>
       <Docs>
-        <param name="x">To be added.</param>
-        <param name="y">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
+        <param name="x">The first statement.</param>
+        <param name="y">The second statement.</param>
+        <summary>
+            Compares the statement bodies for sorting.
+            </summary>
+        <returns>A number indicating the order of <paramref name="x" /> and <paramref name="y" /></returns>
+    
       </Docs>
     </Member>
     <Member MemberName="FirstOrDefault&lt;T&gt;">
       <MemberSignature Language="C#" Value="protected T FirstOrDefault&lt;T&gt; (System.Collections.Generic.IEnumerable&lt;T&gt; items);" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
-        <AssemblyVersion>1.0.7.0</AssemblyVersion>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
         <ReturnType>T</ReturnType>
@@ -158,33 +110,20 @@
         <Parameter Name="items" Type="System.Collections.Generic.IEnumerable&lt;T&gt;" />
       </Parameters>
       <Docs>
-        <typeparam name="T">To be added.</typeparam>
-        <param name="items">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
+        <typeparam name="T">Element type.</typeparam>
+        <param name="items">The items.</param>
+        <summary>
+            Returns the first element in the collection or the default value if the collection is empty.
+            </summary>
+        <returns>The first element or the default value.</returns>
+    
       </Docs>
-    </Member>
-    <Member MemberName="Format">
-      <MemberSignature Language="C#" Value="public SemWeb.N3Writer.Formats Format { set; get; }" />
-      <MemberType>Property</MemberType>
-      <ReturnValue>
-        <ReturnType>SemWeb.N3Writer+Formats</ReturnType>
-      </ReturnValue>
-      <Docs>
-        <summary>Sets the format for output to Notation3, Turtle, or NTriples.</summary>
-        <value>A value from <see cref="T:SemWeb.N3Writer+Formats" /> that specifies the output format.</value>
-        <remarks>The default format is Turtle.</remarks>
-      </Docs>
-      <AssemblyInfo>
-        <AssemblyVersion>1.0.6.2</AssemblyVersion>
-      </AssemblyInfo>
     </Member>
     <Member MemberName="IsFormulaId">
       <MemberSignature Language="C#" Value="protected bool IsFormulaId (SemWeb.Resource node);" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
-        <AssemblyVersion>1.0.7.0</AssemblyVersion>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
         <ReturnType>System.Boolean</ReturnType>
@@ -193,17 +132,20 @@
         <Parameter Name="node" Type="SemWeb.Resource" />
       </Parameters>
       <Docs>
-        <param name="node">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
+        <param name="node">The node.</param>
+        <summary>
+            Determines whether the specified resource is the ID of a formula.
+            </summary>
+        <returns>
+          <c>true</c> if the resource is a formula ID; otherwise, <c>false</c>.</returns>
+    
       </Docs>
     </Member>
     <Member MemberName="IsListId">
       <MemberSignature Language="C#" Value="protected bool IsListId (SemWeb.Resource node);" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
-        <AssemblyVersion>1.0.7.0</AssemblyVersion>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
         <ReturnType>System.Boolean</ReturnType>
@@ -212,31 +154,34 @@
         <Parameter Name="node" Type="SemWeb.Resource" />
       </Parameters>
       <Docs>
-        <param name="node">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
+        <param name="node">The node.</param>
+        <summary>
+            Determines whether the specified resource is the ID of a list.
+            </summary>
+        <returns>
+          <c>true</c> if the resource is a list ID; otherwise, <c>false</c>.</returns>
+    
       </Docs>
     </Member>
     <Member MemberName="N3Abbreviations">
       <MemberSignature Language="C#" Value="protected static readonly System.Collections.Hashtable N3Abbreviations;" />
       <MemberType>Field</MemberType>
       <AssemblyInfo>
-        <AssemblyVersion>1.0.7.0</AssemblyVersion>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
         <ReturnType>System.Collections.Hashtable</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
+        <summary>Entity abbreviations.</summary>
+    
       </Docs>
     </Member>
     <Member MemberName="Remove">
       <MemberSignature Language="C#" Value="protected void Remove (SemWeb.Statement statement);" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
-        <AssemblyVersion>1.0.7.0</AssemblyVersion>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
         <ReturnType>System.Void</ReturnType>
@@ -245,34 +190,18 @@
         <Parameter Name="statement" Type="SemWeb.Statement" />
       </Parameters>
       <Docs>
-        <param name="statement">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
+        <param name="statement">The statement.</param>
+        <summary>
+            Removes the specified statement, marking it as written.
+            </summary>
+    
       </Docs>
-    </Member>
-    <Member MemberName="SemWeb.CanForgetBNodes.ForgetBNode">
-      <MemberSignature Language="C#" Value="void CanForgetBNodes.ForgetBNode (SemWeb.BNode bnode);" />
-      <MemberType>Method</MemberType>
-      <ReturnValue>
-        <ReturnType>System.Void</ReturnType>
-      </ReturnValue>
-      <Parameters>
-        <Parameter Name="bnode" Type="SemWeb.BNode" />
-      </Parameters>
-      <Docs>
-        <param name="bnode">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
-      </Docs>
-      <AssemblyInfo>
-        <AssemblyVersion>1.0.6.2</AssemblyVersion>
-      </AssemblyInfo>
     </Member>
     <Member MemberName="SortEntities">
       <MemberSignature Language="C#" Value="protected System.Collections.Generic.List&lt;SemWeb.Entity&gt; SortEntities (System.Collections.Generic.IEnumerable&lt;SemWeb.Entity&gt; items);" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
-        <AssemblyVersion>1.0.7.0</AssemblyVersion>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
         <ReturnType>System.Collections.Generic.List&lt;SemWeb.Entity&gt;</ReturnType>
@@ -281,35 +210,19 @@
         <Parameter Name="items" Type="System.Collections.Generic.IEnumerable&lt;SemWeb.Entity&gt;" />
       </Parameters>
       <Docs>
-        <param name="items">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
-      </Docs>
-    </Member>
-    <Member MemberName="WriteEntity">
-      <MemberSignature Language="C#" Value="protected override void WriteEntity (SemWeb.Entity entity);" />
-      <MemberType>Method</MemberType>
-      <AssemblyInfo>
-        <AssemblyVersion>1.0.7.0</AssemblyVersion>
-      </AssemblyInfo>
-      <ReturnValue>
-        <ReturnType>System.Void</ReturnType>
-      </ReturnValue>
-      <Parameters>
-        <Parameter Name="entity" Type="SemWeb.Entity" />
-      </Parameters>
-      <Docs>
-        <param name="entity">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
+        <param name="items">The items.</param>
+        <summary>
+            Sorts the entities.
+            </summary>
+        <returns>A sorted list of entities.</returns>
+    
       </Docs>
     </Member>
     <Member MemberName="WriteFormula">
       <MemberSignature Language="C#" Value="protected virtual void WriteFormula (SemWeb.Entity formulaId);" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
-        <AssemblyVersion>1.0.7.0</AssemblyVersion>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
         <ReturnType>System.Void</ReturnType>
@@ -318,16 +231,18 @@
         <Parameter Name="formulaId" Type="SemWeb.Entity" />
       </Parameters>
       <Docs>
-        <param name="formulaId">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
+        <param name="formulaId">The formula ID.</param>
+        <summary>
+            Writes the formula identified by the specified ID to the output writer.
+            </summary>
+    
       </Docs>
     </Member>
     <Member MemberName="WriteFormulaStatement">
       <MemberSignature Language="C#" Value="protected virtual void WriteFormulaStatement (SemWeb.Statement statement);" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
-        <AssemblyVersion>1.0.7.0</AssemblyVersion>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
         <ReturnType>System.Void</ReturnType>
@@ -336,16 +251,18 @@
         <Parameter Name="statement" Type="SemWeb.Statement" />
       </Parameters>
       <Docs>
-        <param name="statement">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
+        <param name="statement">The statement.</param>
+        <summary>
+            Writes the statement of a formula to the output writer.
+            </summary>
+    
       </Docs>
     </Member>
     <Member MemberName="WriteList">
       <MemberSignature Language="C#" Value="protected virtual void WriteList (SemWeb.Entity listId);" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
-        <AssemblyVersion>1.0.7.0</AssemblyVersion>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
         <ReturnType>System.Void</ReturnType>
@@ -354,16 +271,18 @@
         <Parameter Name="listId" Type="SemWeb.Entity" />
       </Parameters>
       <Docs>
-        <param name="listId">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
+        <param name="listId">The list ID.</param>
+        <summary>
+            Writes the specified list to the output writer.
+            </summary>
+    
       </Docs>
     </Member>
     <Member MemberName="WriteStatementBodies">
       <MemberSignature Language="C#" Value="protected virtual void WriteStatementBodies (System.Collections.Generic.List&lt;SemWeb.Statement&gt; statements);" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
-        <AssemblyVersion>1.0.7.0</AssemblyVersion>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
         <ReturnType>System.Void</ReturnType>
@@ -372,24 +291,28 @@
         <Parameter Name="statements" Type="System.Collections.Generic.List&lt;SemWeb.Statement&gt;" />
       </Parameters>
       <Docs>
-        <param name="statements">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
+        <param name="statements">The statements.</param>
+        <summary>
+            Writes the bodies of the specified statements (sharing a subject) to the output writer.
+            </summary>
+    
       </Docs>
     </Member>
     <Member MemberName="WriteStatements">
       <MemberSignature Language="C#" Value="protected virtual void WriteStatements ();" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
-        <AssemblyVersion>1.0.7.0</AssemblyVersion>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
         <ReturnType>System.Void</ReturnType>
       </ReturnValue>
       <Parameters />
       <Docs>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
+        <summary>
+            Writes all statements to the output writer, grouped by subject.
+            </summary>
+    
       </Docs>
     </Member>
   </Members>

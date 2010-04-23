@@ -2,6 +2,7 @@
   <TypeSignature Language="C#" Value="public abstract class SQLStore : IDisposable, SemWeb.ModifiableSource, SemWeb.QueryableSource, SemWeb.StaticSource" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
+    <AssemblyVersion>0.0.0.0</AssemblyVersion>
     <AssemblyVersion>1.0.6.0</AssemblyVersion>
     <AssemblyVersion>1.0.6.2</AssemblyVersion>
     <AssemblyVersion>1.0.7.0</AssemblyVersion>
@@ -65,6 +66,7 @@ CREATE TABLE TABLEPREFIX_literals (id INT NOT NULL, value BLOB NOT NULL,
         <remarks>The two tables used by this store will be <paramref name="table" />_statements and <paramref name="table" />_literals.</remarks>
       </Docs>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
         <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
@@ -85,6 +87,7 @@ CREATE TABLE TABLEPREFIX_literals (id INT NOT NULL, value BLOB NOT NULL,
         <exception cref="T:System.ArgumentNullException">To be added; from: <see cref="M:SemWeb.Stores.SQLStore.Add(SemWeb.Statement)" /></exception>
       </Docs>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
         <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
@@ -101,6 +104,7 @@ CREATE TABLE TABLEPREFIX_literals (id INT NOT NULL, value BLOB NOT NULL,
         <remarks>Inheritors may override this method to put a lock on the tables or begin a transaction to speed up the process of adding many statements into the tables.  The default implementation does nothing.</remarks>
       </Docs>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
         <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
@@ -120,6 +124,7 @@ CREATE TABLE TABLEPREFIX_literals (id INT NOT NULL, value BLOB NOT NULL,
         <InterfaceImpl Type="SemWeb.ModifiableSource" Member="Clear" cref="M:SemWeb.ModifiableSource.Clear" />
       </ImplementsInterfaceMethods>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
         <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
@@ -136,6 +141,7 @@ CREATE TABLE TABLEPREFIX_literals (id INT NOT NULL, value BLOB NOT NULL,
         <remarks>To be added.</remarks>
       </Docs>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
         <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
@@ -159,6 +165,7 @@ CREATE TABLE TABLEPREFIX_literals (id INT NOT NULL, value BLOB NOT NULL,
         <InterfaceImpl Type="SemWeb.SelectableSource" Member="Contains" cref="M:SemWeb.SelectableSource.Contains(SemWeb.Resource)" />
       </ImplementsInterfaceMethods>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
         <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
@@ -182,6 +189,7 @@ CREATE TABLE TABLEPREFIX_literals (id INT NOT NULL, value BLOB NOT NULL,
         <InterfaceImpl Type="SemWeb.SelectableSource" Member="Contains" cref="M:SemWeb.SelectableSource.Contains(SemWeb.Statement)" />
       </ImplementsInterfaceMethods>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
         <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
@@ -206,6 +214,7 @@ CREATE TABLE TABLEPREFIX_literals (id INT NOT NULL, value BLOB NOT NULL,
         <remarks>To be added.</remarks>
       </Docs>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
         <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
@@ -222,6 +231,7 @@ CREATE TABLE TABLEPREFIX_literals (id INT NOT NULL, value BLOB NOT NULL,
         <remarks>Inheritors may override this method to change the way indexes are created on the tables used by the SQLStore.</remarks>
       </Docs>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
         <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
@@ -247,6 +257,7 @@ CREATE TABLE TABLEPREFIX_literals (id INT NOT NULL, value BLOB NOT NULL,
         <remarks>To be added.</remarks>
       </Docs>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
         <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
@@ -268,6 +279,7 @@ CREATE TABLE TABLEPREFIX_literals (id INT NOT NULL, value BLOB NOT NULL,
         <remarks>To be added.</remarks>
       </Docs>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
         <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
@@ -284,6 +296,7 @@ CREATE TABLE TABLEPREFIX_literals (id INT NOT NULL, value BLOB NOT NULL,
         <remarks>Inheritors may override this method to change the way tables are created by the SQLStore.</remarks>
       </Docs>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
         <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
@@ -303,6 +316,7 @@ CREATE TABLE TABLEPREFIX_literals (id INT NOT NULL, value BLOB NOT NULL,
         <InterfaceImpl Type="SemWeb.StatementSource" Member="Distinct" cref="P:SemWeb.StatementSource.Distinct" />
       </ImplementsInterfaceMethods>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
         <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
@@ -319,6 +333,7 @@ CREATE TABLE TABLEPREFIX_literals (id INT NOT NULL, value BLOB NOT NULL,
         <remarks>Inheritors may override this method to end a lock or transaction started in <see cref="M:SemWeb.Stores.SQLStore.BeginTransaction()" />.</remarks>
       </Docs>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
         <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
@@ -340,6 +355,7 @@ CREATE TABLE TABLEPREFIX_literals (id INT NOT NULL, value BLOB NOT NULL,
         <remarks>To be added.</remarks>
       </Docs>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
         <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
@@ -387,6 +403,7 @@ CREATE TABLE TABLEPREFIX_literals (id INT NOT NULL, value BLOB NOT NULL,
         <InterfaceImpl Type="SemWeb.StaticSource" Member="GetBNodeFromPersistentId" cref="M:SemWeb.StaticSource.GetBNodeFromPersistentId(System.String)" />
       </ImplementsInterfaceMethods>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
         <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
@@ -407,6 +424,7 @@ CREATE TABLE TABLEPREFIX_literals (id INT NOT NULL, value BLOB NOT NULL,
         <InterfaceImpl Type="SemWeb.StaticSource" Member="GetEntities" cref="M:SemWeb.StaticSource.GetEntities" />
       </ImplementsInterfaceMethods>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
         <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
@@ -427,6 +445,7 @@ CREATE TABLE TABLEPREFIX_literals (id INT NOT NULL, value BLOB NOT NULL,
         <InterfaceImpl Type="SemWeb.StaticSource" Member="GetMetas" cref="M:SemWeb.StaticSource.GetMetas" />
       </ImplementsInterfaceMethods>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
         <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
@@ -450,6 +469,7 @@ CREATE TABLE TABLEPREFIX_literals (id INT NOT NULL, value BLOB NOT NULL,
         <InterfaceImpl Type="SemWeb.StaticSource" Member="GetPersistentBNodeId" cref="M:SemWeb.StaticSource.GetPersistentBNodeId(SemWeb.BNode)" />
       </ImplementsInterfaceMethods>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
         <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
@@ -470,6 +490,7 @@ CREATE TABLE TABLEPREFIX_literals (id INT NOT NULL, value BLOB NOT NULL,
         <InterfaceImpl Type="SemWeb.StaticSource" Member="GetPredicates" cref="M:SemWeb.StaticSource.GetPredicates" />
       </ImplementsInterfaceMethods>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
         <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
@@ -503,6 +524,7 @@ CREATE TABLE TABLEPREFIX_literals (id INT NOT NULL, value BLOB NOT NULL,
         <remarks>To be added.</remarks>
       </Docs>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
         <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
@@ -519,6 +541,7 @@ CREATE TABLE TABLEPREFIX_literals (id INT NOT NULL, value BLOB NOT NULL,
         <remarks>To be added.</remarks>
       </Docs>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
         <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
@@ -543,6 +566,7 @@ CREATE TABLE TABLEPREFIX_literals (id INT NOT NULL, value BLOB NOT NULL,
         <InterfaceImpl Type="SemWeb.ModifiableSource" Member="Import" cref="M:SemWeb.ModifiableSource.Import(SemWeb.StatementSource)" />
       </ImplementsInterfaceMethods>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
         <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
@@ -559,6 +583,7 @@ CREATE TABLE TABLEPREFIX_literals (id INT NOT NULL, value BLOB NOT NULL,
         <remarks>To be added.</remarks>
       </Docs>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
         <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
@@ -575,6 +600,7 @@ CREATE TABLE TABLEPREFIX_literals (id INT NOT NULL, value BLOB NOT NULL,
         <remarks>To be added.</remarks>
       </Docs>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
         <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
@@ -600,6 +626,7 @@ CREATE TABLE TABLEPREFIX_literals (id INT NOT NULL, value BLOB NOT NULL,
         <InterfaceImpl Type="SemWeb.QueryableSource" Member="MetaQuery" cref="M:SemWeb.QueryableSource.MetaQuery(SemWeb.Statement[],SemWeb.Query.QueryOptions)" />
       </ImplementsInterfaceMethods>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
         <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
@@ -627,6 +654,7 @@ CREATE TABLE TABLEPREFIX_literals (id INT NOT NULL, value BLOB NOT NULL,
         <InterfaceImpl Type="SemWeb.QueryableSource" Member="Query" cref="M:SemWeb.QueryableSource.Query(SemWeb.Statement[],SemWeb.Query.QueryOptions,SemWeb.Query.QueryResultSink)" />
       </ImplementsInterfaceMethods>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
         <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
@@ -649,6 +677,7 @@ CREATE TABLE TABLEPREFIX_literals (id INT NOT NULL, value BLOB NOT NULL,
         <InterfaceImpl Type="SemWeb.ModifiableSource" Member="Remove" cref="M:SemWeb.ModifiableSource.Remove(SemWeb.Statement)" />
       </ImplementsInterfaceMethods>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
         <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
@@ -671,6 +700,7 @@ CREATE TABLE TABLEPREFIX_literals (id INT NOT NULL, value BLOB NOT NULL,
         <InterfaceImpl Type="SemWeb.ModifiableSource" Member="RemoveAll" cref="M:SemWeb.ModifiableSource.RemoveAll(SemWeb.Statement[])" />
       </ImplementsInterfaceMethods>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
         <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
@@ -695,6 +725,7 @@ CREATE TABLE TABLEPREFIX_literals (id INT NOT NULL, value BLOB NOT NULL,
         <InterfaceImpl Type="SemWeb.ModifiableSource" Member="Replace" cref="M:SemWeb.ModifiableSource.Replace(SemWeb.Entity,SemWeb.Entity)" />
       </ImplementsInterfaceMethods>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
         <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
@@ -720,6 +751,7 @@ CREATE TABLE TABLEPREFIX_literals (id INT NOT NULL, value BLOB NOT NULL,
         <InterfaceImpl Type="SemWeb.ModifiableSource" Member="Replace" cref="M:SemWeb.ModifiableSource.Replace(SemWeb.Statement,SemWeb.Statement)" />
       </ImplementsInterfaceMethods>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
         <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
@@ -739,6 +771,7 @@ CREATE TABLE TABLEPREFIX_literals (id INT NOT NULL, value BLOB NOT NULL,
         <remarks>Inheritors must implemented this method.</remarks>
       </Docs>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
         <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
@@ -759,6 +792,7 @@ CREATE TABLE TABLEPREFIX_literals (id INT NOT NULL, value BLOB NOT NULL,
         <remarks>Inheritors must implement this method.</remarks>
       </Docs>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
         <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
@@ -779,6 +813,7 @@ CREATE TABLE TABLEPREFIX_literals (id INT NOT NULL, value BLOB NOT NULL,
         <remarks>Inheritors must implement this method.</remarks>
       </Docs>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
         <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
@@ -801,6 +836,7 @@ CREATE TABLE TABLEPREFIX_literals (id INT NOT NULL, value BLOB NOT NULL,
         <InterfaceImpl Type="SemWeb.StatementSource" Member="Select" cref="M:SemWeb.StatementSource.Select(SemWeb.StatementSink)" />
       </ImplementsInterfaceMethods>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
         <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
@@ -826,6 +862,7 @@ CREATE TABLE TABLEPREFIX_literals (id INT NOT NULL, value BLOB NOT NULL,
         <InterfaceImpl Type="SemWeb.SelectableSource" Member="Select" cref="M:SemWeb.SelectableSource.Select(SemWeb.SelectFilter,SemWeb.StatementSink)" />
       </ImplementsInterfaceMethods>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
         <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
@@ -851,6 +888,7 @@ CREATE TABLE TABLEPREFIX_literals (id INT NOT NULL, value BLOB NOT NULL,
         <InterfaceImpl Type="SemWeb.SelectableSource" Member="Select" cref="M:SemWeb.SelectableSource.Select(SemWeb.Statement,SemWeb.StatementSink)" />
       </ImplementsInterfaceMethods>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
         <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
@@ -871,6 +909,7 @@ CREATE TABLE TABLEPREFIX_literals (id INT NOT NULL, value BLOB NOT NULL,
         <remarks>To be added.</remarks>
       </Docs>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
         <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
@@ -890,6 +929,7 @@ CREATE TABLE TABLEPREFIX_literals (id INT NOT NULL, value BLOB NOT NULL,
         <InterfaceImpl Type="SemWeb.StaticSource" Member="StatementCount" cref="P:SemWeb.StaticSource.StatementCount" />
       </ImplementsInterfaceMethods>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
         <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
@@ -906,6 +946,7 @@ CREATE TABLE TABLEPREFIX_literals (id INT NOT NULL, value BLOB NOT NULL,
         <remarks>None.</remarks>
       </Docs>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
         <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
@@ -922,6 +963,7 @@ CREATE TABLE TABLEPREFIX_literals (id INT NOT NULL, value BLOB NOT NULL,
         <remarks>To be added.</remarks>
       </Docs>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
         <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
@@ -938,6 +980,7 @@ CREATE TABLE TABLEPREFIX_literals (id INT NOT NULL, value BLOB NOT NULL,
         <remarks>To be added.</remarks>
       </Docs>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
         <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
@@ -954,6 +997,7 @@ CREATE TABLE TABLEPREFIX_literals (id INT NOT NULL, value BLOB NOT NULL,
         <remarks>To be added.</remarks>
       </Docs>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
         <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
@@ -970,6 +1014,7 @@ CREATE TABLE TABLEPREFIX_literals (id INT NOT NULL, value BLOB NOT NULL,
         <remarks>To be added.</remarks>
       </Docs>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
         <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
@@ -986,6 +1031,7 @@ CREATE TABLE TABLEPREFIX_literals (id INT NOT NULL, value BLOB NOT NULL,
         <remarks>This property is protected and read-only.</remarks>
       </Docs>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
         <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>

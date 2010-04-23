@@ -2,6 +2,7 @@
   <TypeSignature Language="C#" Value="public class Euler : SemWeb.Inference.Reasoner" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
+    <AssemblyVersion>0.0.0.0</AssemblyVersion>
     <AssemblyVersion>1.0.6.0</AssemblyVersion>
     <AssemblyVersion>1.0.6.2</AssemblyVersion>
     <AssemblyVersion>1.0.7.0</AssemblyVersion>
@@ -113,6 +114,7 @@ public class EulerTest {
         <remarks>The source of inference statements usually comes from an N3 file with rules of the form "{ . . . antecedent statements . . . } =&gt; { . . . consequent statements . . . }", with variables such as "?var1" used in both parts. The "=&gt;" predicate is shorthand for the URI http://www.w3.org/2000/10/swap/log#implies.</remarks>
       </Docs>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
         <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
@@ -174,6 +176,7 @@ public class EulerTest {
         <exception cref="T:System.Exception">To be added; from: <see cref="M:SemWeb.Inference.Euler.Prove(SemWeb.SelectableSource,SemWeb.Statement[])" /></exception>
       </Docs>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
         <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>

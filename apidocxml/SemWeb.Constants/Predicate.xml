@@ -1,0 +1,157 @@
+<Type Name="Predicate" FullName="SemWeb.Constants.Predicate">
+  <TypeSignature Language="C#" Value="public class Predicate" />
+  <AssemblyInfo>
+    <AssemblyName>SemWeb</AssemblyName>
+    <AssemblyVersion>0.0.0.0</AssemblyVersion>
+  </AssemblyInfo>
+  <Base>
+    <BaseTypeName>System.Object</BaseTypeName>
+  </Base>
+  <Interfaces />
+  <Docs>
+    <summary>
+            Common RDF predicates.
+            </summary>
+
+  </Docs>
+  <Members>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public Predicate ();" />
+      <MemberType>Constructor</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <Parameters />
+      <Docs>
+        <summary>To be added.</summary>
+    
+      </Docs>
+    </Member>
+    <Member MemberName="LogImplies">
+      <MemberSignature Language="C#" Value="public static readonly SemWeb.Entity LogImplies;" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>SemWeb.Entity</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+    
+      </Docs>
+    </Member>
+    <Member MemberName="LogIncludes">
+      <MemberSignature Language="C#" Value="public static readonly SemWeb.Entity LogIncludes;" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>SemWeb.Entity</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+    
+      </Docs>
+    </Member>
+    <Member MemberName="OwlSameAs">
+      <MemberSignature Language="C#" Value="public static readonly SemWeb.Entity OwlSameAs;" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>SemWeb.Entity</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+    
+      </Docs>
+    </Member>
+    <Member MemberName="RdfFirst">
+      <MemberSignature Language="C#" Value="public static readonly SemWeb.Entity RdfFirst;" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>SemWeb.Entity</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+    
+      </Docs>
+    </Member>
+    <Member MemberName="RdfObject">
+      <MemberSignature Language="C#" Value="public static readonly SemWeb.Entity RdfObject;" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>SemWeb.Entity</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+    
+      </Docs>
+    </Member>
+    <Member MemberName="RdfPredicate">
+      <MemberSignature Language="C#" Value="public static readonly SemWeb.Entity RdfPredicate;" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>SemWeb.Entity</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+    
+      </Docs>
+    </Member>
+    <Member MemberName="RdfRest">
+      <MemberSignature Language="C#" Value="public static readonly SemWeb.Entity RdfRest;" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>SemWeb.Entity</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+    
+      </Docs>
+    </Member>
+    <Member MemberName="RdfSubject">
+      <MemberSignature Language="C#" Value="public static readonly SemWeb.Entity RdfSubject;" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>SemWeb.Entity</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+    
+      </Docs>
+    </Member>
+    <Member MemberName="RdfType">
+      <MemberSignature Language="C#" Value="public static readonly SemWeb.Entity RdfType;" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>SemWeb.Entity</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+    
+      </Docs>
+    </Member>
+  </Members>
+</Type>

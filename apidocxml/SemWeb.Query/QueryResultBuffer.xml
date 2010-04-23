@@ -2,6 +2,7 @@
   <TypeSignature Language="C#" Value="public class QueryResultBuffer : SemWeb.Query.QueryResultSink, System.Collections.Generic.IEnumerable&lt;SemWeb.Query.VariableBindings&gt;" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
+    <AssemblyVersion>0.0.0.0</AssemblyVersion>
     <AssemblyVersion>1.0.6.2</AssemblyVersion>
     <AssemblyVersion>1.0.7.0</AssemblyVersion>
   </AssemblyInfo>
@@ -22,6 +23,7 @@
       <MemberSignature Language="C#" Value="public QueryResultBuffer ();" />
       <MemberType>Constructor</MemberType>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
         <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
@@ -72,6 +74,7 @@
       <MemberSignature Language="C#" Value="public System.Collections.Generic.List&lt;SemWeb.Query.VariableBindings&gt; Bindings { get; }" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
         <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
@@ -88,6 +91,7 @@
       <MemberSignature Language="C#" Value="public System.Collections.Generic.List&lt;string&gt; Comments { get; }" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
         <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
@@ -122,6 +126,7 @@
       <MemberSignature Language="C#" Value="System.Collections.Generic.IEnumerator&lt;SemWeb.Query.VariableBindings&gt; IEnumerable&lt;VariableBindings&gt;.GetEnumerator ();" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
         <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
@@ -139,6 +144,7 @@
       <MemberSignature Language="C#" Value="System.Collections.IEnumerator IEnumerable.GetEnumerator ();" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
         <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
@@ -156,6 +162,7 @@
       <MemberSignature Language="C#" Value="public SemWeb.Variable[] Variables { get; }" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
         <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>

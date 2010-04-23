@@ -5,7 +5,7 @@ using SemWeb.Constants;
 namespace SemWeb
 {
     /// <summary>
-    /// NTWriter that outputs triples in N-Triples format.
+    /// Writer that outputs triples in N-Triples format.
     /// </summary>
     public class NTriplesWriter : RdfWriter
     {

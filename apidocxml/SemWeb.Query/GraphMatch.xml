@@ -2,6 +2,7 @@
   <TypeSignature Language="C#" Value="public class GraphMatch : SemWeb.Query.Query" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
+    <AssemblyVersion>0.0.0.0</AssemblyVersion>
     <AssemblyVersion>1.0.6.0</AssemblyVersion>
     <AssemblyVersion>1.0.6.2</AssemblyVersion>
     <AssemblyVersion>1.0.7.0</AssemblyVersion>
@@ -24,6 +25,7 @@
         <remarks>Set up the GraphMatch with calls to <see cref="M:SemWeb.Query.GraphMatch.AddEdge(SemWeb.Statement)" />.</remarks>
       </Docs>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
         <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
@@ -53,6 +55,7 @@ new GraphMatch(queryGraph).Run(targetData, Console.Out);  </code>
         </remarks>
       </Docs>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
         <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
@@ -69,6 +72,7 @@ new GraphMatch(queryGraph).Run(targetData, Console.Out);  </code>
         <remarks>None.</remarks>
       </Docs>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
         <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
@@ -88,6 +92,7 @@ new GraphMatch(queryGraph).Run(targetData, Console.Out);  </code>
         <remarks>Keep in mind that distinct instances of the <see cref="T:SemWeb.Variable" /> class are treated as separate variables, even if they have the same name.</remarks>
       </Docs>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
         <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
@@ -109,6 +114,7 @@ new GraphMatch(queryGraph).Run(targetData, Console.Out);  </code>
         <remarks>None.</remarks>
       </Docs>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
         <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
@@ -151,6 +157,7 @@ new GraphMatch(queryGraph).Run(targetData, Console.Out);  </code>
         <remarks>To be added.</remarks>
       </Docs>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
         <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
@@ -190,6 +197,7 @@ new GraphMatch(queryGraph).Run(targetData, Console.Out);  </code>
         <remarks>If this method is never called, all variables in the query are returned in the variable bindings. However, once this method is called, only variables distinguished by this method will be included the resulting bindings. This is useful to avoid getting distinct answers on variables that the user does not care about.</remarks>
       </Docs>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
         <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
@@ -211,6 +219,7 @@ new GraphMatch(queryGraph).Run(targetData, Console.Out);  </code>
         <remarks>All bindings for this variable will be in the provided set of resources.</remarks>
       </Docs>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
         <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>

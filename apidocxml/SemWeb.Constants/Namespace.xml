@@ -1,0 +1,75 @@
+<Type Name="Namespace" FullName="SemWeb.Constants.Namespace">
+  <TypeSignature Language="C#" Value="public static class Namespace" />
+  <AssemblyInfo>
+    <AssemblyName>SemWeb</AssemblyName>
+    <AssemblyVersion>0.0.0.0</AssemblyVersion>
+  </AssemblyInfo>
+  <Base>
+    <BaseTypeName>System.Object</BaseTypeName>
+  </Base>
+  <Interfaces />
+  <Docs>
+    <summary>
+            Common RDF namespaces.
+            </summary>
+
+  </Docs>
+  <Members>
+    <Member MemberName="LOG">
+      <MemberSignature Language="C#" Value="public const string LOG;" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.String</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+    
+      </Docs>
+    </Member>
+    <Member MemberName="OWL">
+      <MemberSignature Language="C#" Value="public const string OWL;" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.String</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+    
+      </Docs>
+    </Member>
+    <Member MemberName="RDF">
+      <MemberSignature Language="C#" Value="public const string RDF;" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.String</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+    
+      </Docs>
+    </Member>
+    <Member MemberName="XMLSCHEMA">
+      <MemberSignature Language="C#" Value="public const string XMLSCHEMA;" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.String</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+    
+      </Docs>
+    </Member>
+  </Members>
+</Type>

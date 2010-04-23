@@ -2,6 +2,7 @@
   <TypeSignature Language="C#" Value="public interface ModifiableSource : SemWeb.SelectableSource, SemWeb.StatementSink" />
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
+    <AssemblyVersion>0.0.0.0</AssemblyVersion>
     <AssemblyVersion>1.0.6.0</AssemblyVersion>
     <AssemblyVersion>1.0.6.2</AssemblyVersion>
     <AssemblyVersion>1.0.7.0</AssemblyVersion>
@@ -31,6 +32,7 @@
         <remarks>The data store is empty after a call to Clear.</remarks>
       </Docs>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
         <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
@@ -50,6 +52,7 @@
         <remarks>This method wraps a call to <see cref="M:SemWeb.StatementSource.Select(SemWeb.StatementSink)" /> in store-specific code that prepares the store for receiving many statements.  The store may make itself locked for access by other processes to make the parsing faster.  To avoid this, call <see cref="M:SemWeb.StatementSource.Select(SemWeb.StatementSink)" /> directly.</remarks>
       </Docs>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
         <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
@@ -72,6 +75,7 @@
 store.Remove(Statement.All);</code></example></remarks>
       </Docs>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
         <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
@@ -91,6 +95,7 @@ store.Remove(Statement.All);</code></example></remarks>
         <remarks>Stores may be more efficient removing statements in one call than through repeated calls to <see cref="M:SemWeb.ModifiableSource.Remove(SemWeb.Statement)" />.</remarks>
       </Docs>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
         <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
@@ -112,6 +117,7 @@ store.Remove(Statement.All);</code></example></remarks>
         <remarks>All occurences of <paramref name="find" /> in statements in the store are replaced with references to <paramref name="replacement" />.</remarks>
       </Docs>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
         <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
@@ -133,6 +139,7 @@ store.Remove(Statement.All);</code></example></remarks>
         <remarks>Store implementations may choose to optimize this method over a call to Remove followed by Add.</remarks>
       </Docs>
       <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
         <AssemblyVersion>1.0.6.2</AssemblyVersion>
         <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
