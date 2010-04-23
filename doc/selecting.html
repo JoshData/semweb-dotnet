@@ -133,7 +133,7 @@ public class Containers {
         // use the rdfs:member property to match for any rdf:_### predicates.
         Entity rdfs_member = (Entity)(RDFS+"member");
         
-        using (RdfWriter writer = new N3Writer(Console.Out)) {
+        using (RdfWriter writer = new TurtleWriter(Console.Out)) {
             writer.Namespaces.AddNamespace(RDF, "rdf");
             store.Select(new Statement(container, rdfs_member, null), writer);
         }

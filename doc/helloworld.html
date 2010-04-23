@@ -9,7 +9,7 @@
 <p><a href="index.html">SemWeb Documentation</a></p>
 <h1>SemWeb Hello World</h1>
 
-<p>Here's an example of using SemWeb to construct an RDF/XML or Notation 3 file.</p>
+<p>Here's an example of using SemWeb to construct an RDF/XML or Turtle file.</p>
 
 <p>Create a new file called <tt>helloworld.cs</tt>.  If you're using Visual Studio, create this in a new project and reference <tt>SemWeb.dll</tt> provided in the download package.</p>
 
@@ -138,14 +138,14 @@ using (RdfWriter writer = new RdfXmlWriter(Console.Out)) {
     &lt;/rdf:Description&gt;
 &lt;/rdf:RDF&gt;</pre>
 
-<p>To write out the statements in Notation 3 format, just use the <tt>N3Writer</tt> class instead.  It produces this output:</p>
+<p>To write out the statements in Turtle format, just use the <tt>TurtleWriter</tt> class instead.  It produces this output:</p>
 
 <pre class="code">
-@prefix ex: &lt;http://example.org/&gt; .
-ex:computer ex:says "Hello world!" ;
-    ex:wants _:bnode0 .
-_:bnode0 ex:description "to be human" ;
-    &lt;http://www.w3.org/1999/02/22-rdf-syntax-ns#type&gt; ex:Desire .
+@prefix ex: &lt;http://example.org/&gt;.
+ex:computer ex:says "Hello world!";
+  ex:wants _:bnode0.
+_:bnode0 ex:description "to be human";
+  &lt;http://www.w3.org/1999/02/22-rdf-syntax-ns#type&gt; ex:Desire.
 </pre>
 
 <p>Here's the complete program:</p>

@@ -1,0 +1,5 @@
+<Namespace Name="SemWeb.Constants">
+  <Docs>
+    <summary>This namesace contains common RDF entities.</summary>
+  </Docs>
+</Namespace>
