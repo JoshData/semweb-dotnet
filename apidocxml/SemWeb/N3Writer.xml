@@ -3,6 +3,7 @@
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
     <AssemblyVersion>0.0.0.0</AssemblyVersion>
+    <AssemblyVersion>1.0.7.0</AssemblyVersion>
   </AssemblyInfo>
   <Base>
     <BaseTypeName>SemWeb.TurtleWriter</BaseTypeName>
@@ -24,6 +25,7 @@
       <MemberType>Constructor</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>0.0.0.0</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
       <Parameters>
         <Parameter Name="writer" Type="System.IO.TextWriter" />
@@ -33,7 +35,7 @@
         <summary>
             Initializes a new <see cref="T:SemWeb.N3Writer" /> instance.
             </summary>
-    
+        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName=".ctor">
@@ -41,6 +43,7 @@
       <MemberType>Constructor</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>0.0.0.0</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
       <Parameters>
         <Parameter Name="file" Type="System.String" />
@@ -50,7 +53,7 @@
         <summary>
             Initializes a new <see cref="T:SemWeb.N3Writer" /> instance.
             </summary>
-    
+        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Abbreviations">
@@ -58,6 +61,7 @@
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>0.0.0.0</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
         <ReturnType>System.Collections.Hashtable</ReturnType>
@@ -66,9 +70,60 @@
         <summary>
             Gets the namespace abbreviations hashtable.
             </summary>
-        <returns>A hashtable of URI/abbreviation pairs.</returns>
+        <value>A hashtable of URI/abbreviation pairs.</value>
         <value />
-    
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="AddFormulaStatement">
+      <MemberSignature Language="C#" Value="protected override void AddFormulaStatement (SemWeb.Statement statement);" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="statement" Type="SemWeb.Statement" />
+      </Parameters>
+      <Docs>
+        <param name="statement">To be added.</param>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="AddStatement">
+      <MemberSignature Language="C#" Value="protected override void AddStatement (SemWeb.Statement statement);" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="statement" Type="SemWeb.Statement" />
+      </Parameters>
+      <Docs>
+        <param name="statement">To be added.</param>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Close">
+      <MemberSignature Language="C#" Value="public override void Close ();" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters />
+      <Docs>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="CompareStatementBodies">
@@ -76,6 +131,7 @@
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>0.0.0.0</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
         <ReturnType>System.Int32</ReturnType>
@@ -91,7 +147,7 @@
             Compares the statement bodies for sorting.
             </summary>
         <returns>A number indicating the order of <paramref name="x" /> and <paramref name="y" /></returns>
-    
+        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="FirstOrDefault&lt;T&gt;">
@@ -99,6 +155,7 @@
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>0.0.0.0</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
         <ReturnType>T</ReturnType>
@@ -116,7 +173,7 @@
             Returns the first element in the collection or the default value if the collection is empty.
             </summary>
         <returns>The first element or the default value.</returns>
-    
+        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="IsFormulaId">
@@ -124,6 +181,7 @@
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>0.0.0.0</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
         <ReturnType>System.Boolean</ReturnType>
@@ -138,7 +196,7 @@
             </summary>
         <returns>
           <c>true</c> if the resource is a formula ID; otherwise, <c>false</c>.</returns>
-    
+        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="IsListId">
@@ -146,6 +204,7 @@
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>0.0.0.0</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
         <ReturnType>System.Boolean</ReturnType>
@@ -160,7 +219,7 @@
             </summary>
         <returns>
           <c>true</c> if the resource is a list ID; otherwise, <c>false</c>.</returns>
-    
+        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="N3Abbreviations">
@@ -168,13 +227,14 @@
       <MemberType>Field</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>0.0.0.0</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
         <ReturnType>System.Collections.Hashtable</ReturnType>
       </ReturnValue>
       <Docs>
         <summary>Entity abbreviations.</summary>
-    
+        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Remove">
@@ -182,6 +242,7 @@
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>0.0.0.0</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
         <ReturnType>System.Void</ReturnType>
@@ -194,7 +255,7 @@
         <summary>
             Removes the specified statement, marking it as written.
             </summary>
-    
+        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SortEntities">
@@ -202,6 +263,7 @@
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>0.0.0.0</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
         <ReturnType>System.Collections.Generic.List&lt;SemWeb.Entity&gt;</ReturnType>
@@ -215,7 +277,25 @@
             Sorts the entities.
             </summary>
         <returns>A sorted list of entities.</returns>
-    
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="WriteEntity">
+      <MemberSignature Language="C#" Value="protected override void WriteEntity (SemWeb.Entity entity);" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="entity" Type="SemWeb.Entity" />
+      </Parameters>
+      <Docs>
+        <param name="entity">To be added.</param>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="WriteFormula">
@@ -223,6 +303,7 @@
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>0.0.0.0</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
         <ReturnType>System.Void</ReturnType>
@@ -235,7 +316,7 @@
         <summary>
             Writes the formula identified by the specified ID to the output writer.
             </summary>
-    
+        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="WriteFormulaStatement">
@@ -243,6 +324,7 @@
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>0.0.0.0</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
         <ReturnType>System.Void</ReturnType>
@@ -255,7 +337,7 @@
         <summary>
             Writes the statement of a formula to the output writer.
             </summary>
-    
+        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="WriteList">
@@ -263,6 +345,7 @@
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>0.0.0.0</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
         <ReturnType>System.Void</ReturnType>
@@ -275,7 +358,7 @@
         <summary>
             Writes the specified list to the output writer.
             </summary>
-    
+        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="WriteStatementBodies">
@@ -283,6 +366,7 @@
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>0.0.0.0</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
         <ReturnType>System.Void</ReturnType>
@@ -295,7 +379,7 @@
         <summary>
             Writes the bodies of the specified statements (sharing a subject) to the output writer.
             </summary>
-    
+        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="WriteStatements">
@@ -303,6 +387,7 @@
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>0.0.0.0</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
         <ReturnType>System.Void</ReturnType>
@@ -312,7 +397,7 @@
         <summary>
             Writes all statements to the output writer, grouped by subject.
             </summary>
-    
+        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

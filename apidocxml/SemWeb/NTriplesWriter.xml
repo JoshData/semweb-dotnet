@@ -3,6 +3,7 @@
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
     <AssemblyVersion>0.0.0.0</AssemblyVersion>
+    <AssemblyVersion>1.0.7.0</AssemblyVersion>
   </AssemblyInfo>
   <Base>
     <BaseTypeName>SemWeb.RdfWriter</BaseTypeName>
@@ -12,7 +13,7 @@
     <summary>
             Writer that outputs triples in N-Triples format.
             </summary>
-
+    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName=".ctor">
@@ -20,6 +21,7 @@
       <MemberType>Constructor</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>0.0.0.0</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
       <Parameters>
         <Parameter Name="writer" Type="System.IO.TextWriter" />
@@ -29,7 +31,7 @@
         <summary>
             Initializes a new <see cref="T:SemWeb.NTriplesWriter" /> instance.
             </summary>
-    
+        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName=".ctor">
@@ -37,6 +39,7 @@
       <MemberType>Constructor</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>0.0.0.0</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
       <Parameters>
         <Parameter Name="file" Type="System.String" />
@@ -46,7 +49,25 @@
         <summary>
             Initializes a new <see cref="T:SemWeb.NTriplesWriter" /> instance.
             </summary>
-    
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Add">
+      <MemberSignature Language="C#" Value="public override void Add (SemWeb.Statement statement);" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="statement" Type="SemWeb.Statement" />
+      </Parameters>
+      <Docs>
+        <param name="statement">To be added.</param>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="AddFormulaStatement">
@@ -54,6 +75,7 @@
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>0.0.0.0</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
         <ReturnType>System.Void</ReturnType>
@@ -66,7 +88,7 @@
         <summary>
             Adds the statement of a formula.
             </summary>
-    
+        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="AddStatement">
@@ -74,6 +96,7 @@
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>0.0.0.0</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
         <ReturnType>System.Void</ReturnType>
@@ -86,7 +109,22 @@
         <summary>
             Adds the statement.
             </summary>
-    
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Close">
+      <MemberSignature Language="C#" Value="public override void Close ();" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters />
+      <Docs>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="FlushWriter">
@@ -94,6 +132,7 @@
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>0.0.0.0</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
         <ReturnType>System.Void</ReturnType>
@@ -103,7 +142,22 @@
         <summary>
             Flushes the output writer.
             </summary>
-    
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Namespaces">
+      <MemberSignature Language="C#" Value="public override SemWeb.NamespaceManager Namespaces { set; get; }" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>SemWeb.NamespaceManager</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+        <value>To be added.</value>
+        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Write">
@@ -111,6 +165,7 @@
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>0.0.0.0</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
         <ReturnType>System.Void</ReturnType>
@@ -123,7 +178,7 @@
         <summary>
             Writes the specified character to the output writer.
             </summary>
-    
+        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Write">
@@ -131,6 +186,7 @@
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>0.0.0.0</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
         <ReturnType>System.Void</ReturnType>
@@ -143,7 +199,7 @@
         <summary>
             Writes the specified string to the output writer.
             </summary>
-    
+        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="WriteBNode">
@@ -151,6 +207,7 @@
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>0.0.0.0</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
         <ReturnType>System.Void</ReturnType>
@@ -163,7 +220,7 @@
         <summary>
             Writes the specified bNode to the output writer.
             </summary>
-    
+        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="WriteEntity">
@@ -171,6 +228,7 @@
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>0.0.0.0</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
         <ReturnType>System.Void</ReturnType>
@@ -183,7 +241,7 @@
         <summary>
             Writes the specified entity to the output writer.
             </summary>
-    
+        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="WriteEscaped">
@@ -191,6 +249,7 @@
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>0.0.0.0</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
         <ReturnType>System.Void</ReturnType>
@@ -203,7 +262,7 @@
         <summary>
             Writes the specified string to the output writer, escaping special characters.
             </summary>
-    
+        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="WriteLine">
@@ -211,6 +270,7 @@
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>0.0.0.0</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
         <ReturnType>System.Void</ReturnType>
@@ -220,7 +280,7 @@
         <summary>
             Starts a new line in the output writer.
             </summary>
-    
+        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="WriteLiteral">
@@ -228,6 +288,7 @@
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>0.0.0.0</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
         <ReturnType>System.Void</ReturnType>
@@ -240,7 +301,7 @@
         <summary>
             Writes the literal to the output writer.
             </summary>
-    
+        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="WriteLiteralValue">
@@ -248,6 +309,7 @@
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>0.0.0.0</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
         <ReturnType>System.Void</ReturnType>
@@ -260,7 +322,7 @@
         <summary>
             Writes the literal value to the output writer.
             </summary>
-    
+        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="WriteLiteralValueWithDataType">
@@ -268,6 +330,7 @@
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>0.0.0.0</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
         <ReturnType>System.Void</ReturnType>
@@ -282,7 +345,7 @@
         <summary>
             Writes the literal with the specified data type to the output writer.
             </summary>
-    
+        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="WriteLiteralValueWithLanguage">
@@ -290,6 +353,7 @@
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>0.0.0.0</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
         <ReturnType>System.Void</ReturnType>
@@ -304,7 +368,7 @@
         <summary>
             Writes the literal with the specified language to the output writer.
             </summary>
-    
+        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="WritePredicate">
@@ -312,6 +376,7 @@
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>0.0.0.0</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
         <ReturnType>System.Void</ReturnType>
@@ -324,7 +389,7 @@
         <summary>
             Writes the specified predicate to the output writer.
             </summary>
-    
+        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="WriteResource">
@@ -332,6 +397,7 @@
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>0.0.0.0</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
         <ReturnType>System.Void</ReturnType>
@@ -344,7 +410,7 @@
         <summary>
             Writes the specified resource to the output writer.
             </summary>
-    
+        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="WriteStatement">
@@ -352,6 +418,7 @@
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>0.0.0.0</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
         <ReturnType>System.Void</ReturnType>
@@ -364,7 +431,7 @@
         <summary>
             Writes the statement to the output stream.
             </summary>
-    
+        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="WriteStatementBody">
@@ -372,6 +439,7 @@
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>0.0.0.0</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
         <ReturnType>System.Void</ReturnType>
@@ -384,7 +452,7 @@
         <summary>
             Writes the statement body to the output writer.
             </summary>
-    
+        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="WriteUri">
@@ -392,6 +460,7 @@
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>0.0.0.0</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
         <ReturnType>System.Void</ReturnType>
@@ -404,7 +473,7 @@
         <summary>
             Writes the URI of the specified entity to the output writer.
             </summary>
-    
+        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

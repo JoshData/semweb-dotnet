@@ -3,6 +3,7 @@
   <AssemblyInfo>
     <AssemblyName>SemWeb</AssemblyName>
     <AssemblyVersion>0.0.0.0</AssemblyVersion>
+    <AssemblyVersion>1.0.7.0</AssemblyVersion>
   </AssemblyInfo>
   <Base>
     <BaseTypeName>System.Object</BaseTypeName>
@@ -12,7 +13,7 @@
     <summary>
             Common RDF predicates.
             </summary>
-
+    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName=".ctor">
@@ -20,11 +21,12 @@
       <MemberType>Constructor</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>0.0.0.0</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
       <Parameters />
       <Docs>
         <summary>To be added.</summary>
-    
+        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="LogImplies">
@@ -32,13 +34,14 @@
       <MemberType>Field</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>0.0.0.0</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
         <ReturnType>SemWeb.Entity</ReturnType>
       </ReturnValue>
       <Docs>
         <summary>To be added.</summary>
-    
+        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="LogIncludes">
@@ -46,13 +49,14 @@
       <MemberType>Field</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>0.0.0.0</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
         <ReturnType>SemWeb.Entity</ReturnType>
       </ReturnValue>
       <Docs>
         <summary>To be added.</summary>
-    
+        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="OwlSameAs">
@@ -60,13 +64,14 @@
       <MemberType>Field</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>0.0.0.0</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
         <ReturnType>SemWeb.Entity</ReturnType>
       </ReturnValue>
       <Docs>
         <summary>To be added.</summary>
-    
+        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="RdfFirst">
@@ -74,13 +79,14 @@
       <MemberType>Field</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>0.0.0.0</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
         <ReturnType>SemWeb.Entity</ReturnType>
       </ReturnValue>
       <Docs>
         <summary>To be added.</summary>
-    
+        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="RdfObject">
@@ -88,13 +94,14 @@
       <MemberType>Field</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>0.0.0.0</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
         <ReturnType>SemWeb.Entity</ReturnType>
       </ReturnValue>
       <Docs>
         <summary>To be added.</summary>
-    
+        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="RdfPredicate">
@@ -102,13 +109,14 @@
       <MemberType>Field</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>0.0.0.0</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
         <ReturnType>SemWeb.Entity</ReturnType>
       </ReturnValue>
       <Docs>
         <summary>To be added.</summary>
-    
+        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="RdfRest">
@@ -116,13 +124,14 @@
       <MemberType>Field</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>0.0.0.0</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
         <ReturnType>SemWeb.Entity</ReturnType>
       </ReturnValue>
       <Docs>
         <summary>To be added.</summary>
-    
+        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="RdfSubject">
@@ -130,13 +139,14 @@
       <MemberType>Field</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>0.0.0.0</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
         <ReturnType>SemWeb.Entity</ReturnType>
       </ReturnValue>
       <Docs>
         <summary>To be added.</summary>
-    
+        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="RdfType">
@@ -144,13 +154,14 @@
       <MemberType>Field</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>0.0.0.0</AssemblyVersion>
+        <AssemblyVersion>1.0.7.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
         <ReturnType>SemWeb.Entity</ReturnType>
       </ReturnValue>
       <Docs>
         <summary>To be added.</summary>
-    
+        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>
