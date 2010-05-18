@@ -7,6 +7,8 @@
 	* NTriplesWriter: Initial version and unit tests.
 	* TurtleWriter: Replaces old N3Writer. Initial version and unit tests.
 	* N3Writer: Entirely rewritten. Initial version and unit tests.
+	* Store: Write now uses a TurtleWriter to preserve the same semantics,
+	  rather than the new N3Writer.
 
 2010-02-20 Version 1.065
 

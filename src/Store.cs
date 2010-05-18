@@ -216,7 +216,7 @@ namespace SemWeb {
 		}
 		
 		public void Write(System.IO.TextWriter writer) {
-			using (RdfWriter w = new N3Writer(writer)) {
+			using (RdfWriter w = new TurtleWriter(writer)) {
 				Select(w);
 			}
 		}
