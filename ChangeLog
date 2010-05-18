@@ -1,12 +1,14 @@
+2010-05-18 Version 1.07
+
 	* Euler: Custom user predicates nasty bug reported by Ruben Verborgh.
 	* RdfXmlReader: If the root looks like rdf:RDF but isn't, give a warning.
 	* Entity.ValidateUri: Improve the error strings a bit.
 	* rdfstorage: On parse fail, also output warnings if any.
-	* Constants: Added namespace with common RDF constants.
-	* SemWebTest: Added unit test project.
-	* NTriplesWriter: Initial version and unit tests.
-	* TurtleWriter: Replaces old N3Writer. Initial version and unit tests.
-	* N3Writer: Entirely rewritten. Initial version and unit tests.
+	* Constants: Added namespace with common RDF constants. (Ruben)
+	* SemWebTest: Added unit test project. (Ruben)
+	* NTriplesWriter: Initial version and unit tests. (Ruben)
+	* TurtleWriter: Replaces old N3Writer. Initial version and unit tests. (Ruben)
+	* N3Writer: Entirely rewritten. Initial version and unit tests. (Ruben)
 	* Store: Write now uses a TurtleWriter to preserve the same semantics,
 	  rather than the new N3Writer.
 

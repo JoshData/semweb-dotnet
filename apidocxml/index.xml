@@ -1,8 +1,7 @@
 <Overview>
   <Remarks>
     <para>SemWeb is a C#/.NET library for manipulating RDF data and interacting with the semantic web.
-	SemWeb was written by Joshua Tauberer (http://razor.occams.info) and has its home at http://razor.occams.info/code/semweb  It is developed
-	and tested under Mono, but it should run on Windows fine, in principle.</para>
+    For more information, see the library homepage at <a href="http://razor.occams.info/code/semweb">http://razor.occams.info/code/semweb</a>.</para>
   </Remarks>
   <Copyright>See <a href="http://razor.occams.info/code/semweb">http://razor.occams.info/code/semweb</a>.</Copyright>
   <Types>

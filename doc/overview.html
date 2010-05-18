@@ -12,7 +12,7 @@
 <p>SemWeb is a .NET library for working with
 Resource Description Framework (RDF) data. It provides
 classes for reading, writing, manipulating, and querying RDF.
-The library does not (yet) provide any special tools for
+The library does not provide any special tools for
 OWL ontologies. That is, the library is a general-purpose
 framework for dealing with RDF statements (i.e. triples).</p>
 
@@ -80,7 +80,7 @@ to refer to the same BNode at different times.</p>
 datatype. To do so, use the three-arg <tt>Literal</tt> constructor:</p>
 
 <pre class="code">new Literal("My Semantic Web library!", "en_US", null);
-new Literal("1234", null, XSDNS + "#integer");</pre>
+new Literal("1234", null, SemWeb.Constants.Namespace.XMLSCHEMA + "integer");</pre>
 
 <p>A literal value may not have both a language and a datatype, following
 the RDF spec.</p>
@@ -156,28 +156,18 @@ ms1.Select(ms2);</pre>
 
 <p>But the <tt>MemoryStore</tt> can also be used as a utility class
 for moving from the source-sink paradigm to an iterator paradigm.
-The class implements <tt>IEnumerable</tt>, and in the .NET 2.0 build
+The class implements <tt>IEnumerable</tt> and
 <tt>IEnumerable&lt;Statement&gt;</tt>, which means you can <i>foreach</i>
 over them to iterate through the statements they contain. You need
 to keep in mind scalability issues here, though. Streaming statements
 into a MemoryStore means you are loading them all into memory, which
-may not be possible for large applications. And when using the .NET 1.1
-build (no generics), using the iterator paradigm requires boxing and
-unboxing the <tt>Statement</tt>s.</p>
+may not be possible for large applications.</p>
 
 <pre class="code">MemoryStore ms = new MemoryStore();
 datasource.Select(ms);
 foreach (Statement stmt in ms)
-	Console.WriteLine(stmt);</pre>
+    Console.WriteLine(stmt);</pre>
 	
-<p>As an alternative to <i>foreach</i>, mainly for the .NET 1.1 build,
-you can loop as follows, which doesn't require boxing/unboxing:</p>
-
-<pre class="code">for (int i = 0; i < ms.StatementCount; ms++) {
-    Statement stmt = ms[i];
-    Console.WriteLine(stmt);
-}</pre>
-
 <h3>SelectableSource</h3>
 
 <p>The <tt>SelectableSource</tt> is another part of the core
@@ -197,7 +187,8 @@ null fields for subject, predicate, or object. Those fields are
 then treated as wildcards, and the fields that have values are
 applied as filters. Filtering with <tt>new Statement(x, null, null)</tt>
 will stream to the sink only statements whose subject is <tt>x</tt>.
-While of course you could filter out the statements in your sink,
+While of course you could use the simpler <tt>Select(sink)</tt> call and
+filter the statements in your sink yourself,
 this wouldn't scale when the data source has billions of other
 irrelevant triples:</p>
 

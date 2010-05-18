@@ -19,7 +19,6 @@ mysql_available := $(shell gacutil -l MySql.Data | grep -c PublicKeyToken)
 ifeq "$(PROFILE)" ""
 
 all:
-	PROFILE=DOTNET1 make
 	PROFILE=DOTNET2 make
 	#PROFILE=SILVERLIGHT make
 
@@ -55,6 +54,7 @@ endif
 MAIN_SOURCES = \
 	src/AssemblyInfo_Shared.cs \
 	src/AssemblyInfo.cs \
+	src/Constants.cs \
 	src/NamespaceManager.cs src/Util.cs src/UriMap.cs \
 	src/Resource.cs src/Statement.cs \
 	src/Interfaces.cs \
@@ -133,12 +133,10 @@ endif
 # Generating documentation files
 
 apidocxml: Makefile
-	monodocer \
-		-assembly:bin/SemWeb.dll -assembly:bin/SemWeb.Sparql.dll \
-		-path:apidocxml --delete --pretty
+	mdoc update -o apidocxml --delete --exceptions bin/SemWeb.dll bin/SemWeb.Sparql.dll
 	#mono /usr/lib/monodoc/monodocs2slashdoc.exe doc > SemWeb.docs.xml
 	mkdir -p apidocs
-	monodocs2html -source:apidocxml -dest:apidocs -template:docstemplate.xsl
+	mdoc export-html --out=apidocs --template=docstemplate.xsl apidocxml
 
 # Generating the release package
 

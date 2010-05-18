@@ -30,7 +30,7 @@ store.Import(new N3Reader("data.n3"));
 store.Import(RdfReader.LoadFromUri(new Uri("http://www.mozilla.org/news.rdf")));
 </pre>
 
-<p><tt>LoadFromUri</tt> will determine the format of the file (XML or N3) based on the MIME type sent back from the server, or if that fails, the file extension.</p>
+<p><tt>LoadFromUri</tt> will determine the format of the file (XML, Turtle, etc.) based on the MIME type sent back from the server, or if that fails, the file extension.</p>
 
 <p>You don't have to put the contents of a file into memory.  All of the <tt>RdfReader</tt>s are "streaming", which means it doesn't need to load the entire file before getting statements out of it.  The reader can stream statements to a "sink" as soon as each is read.</p>
 

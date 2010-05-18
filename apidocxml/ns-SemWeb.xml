@@ -1,6 +1,6 @@
 <Namespace Name="SemWeb">
   <Docs>
-    <summary><para>The SemWeb namespace contains types related to using information in Resource Description Format (RDF).</para>
+    <summary><para>The SemWeb namespace contains the core library classes.</para>
 
 </summary>
     <remarks><para>The <see cref="T:SemWeb.Statement" /> structure represents a RDF statement, with a subject. predicate, object, and meta value.  The use of the meta field is optional and application-specified.</para>
