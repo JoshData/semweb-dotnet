@@ -23,6 +23,7 @@ namespace SemWeb {
 			public bool UsePredicateAttributes = true;
 			public bool UseParseTypeLiteral = true;
 			public bool UseParseTypeCollection = false;
+			public bool KeepRoots = false;
 			
 			internal bool UseParseTypeResource = false; // this is broken because it uses Clone(), which breaks references in Hashtables
 			
@@ -383,6 +384,7 @@ namespace SemWeb {
 			// For any node that was referenced by exactly one predicate,
 			// move the node into that predicate, provided the subject
 			// isn't itself!
+			if (!opts.KeepRoots)
 			foreach (DictionaryEntry e in nodeReferences) {
 				XmlElement node = (XmlElement)e.Key;
 				XmlElement predicate = (XmlElement)e.Value;

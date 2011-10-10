@@ -281,7 +281,9 @@ namespace SemWeb.Query {
 		}
 
 		public void Describe(SelectableSource source, TextWriter output) {
-			using (RdfWriter w = RdfWriter.Create(MimeType, output))
+			RdfXmlWriter.Options opts = new RdfXmlWriter.Options();
+			opts.KeepRoots = true;
+			using (RdfWriter w = RdfWriter.Create(MimeType, output, opts))
 				Describe(source, w);
 		}
 
